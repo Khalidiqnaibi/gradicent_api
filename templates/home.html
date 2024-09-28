@@ -10,7 +10,7 @@
     margin: 0;
     font-family: Arial, sans-serif;
     }
-    
+
     #menuBar {
         display: flex;
         background-color: #000;
@@ -19,12 +19,12 @@
         position: fixed;
         width: 100%;
     }
-    
+
     a {
         text-decoration: none;
         color: inherit;
     }
-    
+
     .menuItem {
         font-size: 16px;
         color: #8b8c8e;
@@ -33,27 +33,27 @@
         cursor: pointer;
         margin-left: 15px;
     }
-    
+
     .menuItem:hover {
         background-color: #fff;
         color: #333;
     }
-    
+
     .menuItem:hover  .icoo{
         filter: invert(0);
     }
-    
+
     .icoo{
         filter: invert(0);
-        width: 25px;
         margin-right:10px;
+        width: 25px;
         height: 25px;
     }
-    
+
     #content {
         padding: 20px;
     }
-    
+
     .ac-frame {
         display: flex;
         flex-direction: column;
@@ -62,12 +62,12 @@
         height: 100vh;
         background-image:url("/static/images/home.jpg");
     }
-    
+
     .bdo {
         background-color: #000;
         padding-top: 60px;
     }
-    
+
     .bd {
         display: grid;
         background-color: #abb0bb;
@@ -76,7 +76,7 @@
         border-radius: 5px;
         box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
     }
-    
+
     .header {
         justify-self: center;
         text-align: center;
@@ -84,29 +84,29 @@
         background-color: #abb0bb;
         padding: 10px;
     }
-    
+
     h1 {
         font-size: 30px;
         margin: 0;
     }
-    
+
     .main-frame {
         background-color: #abb0bb;
         padding: 5px 20px;
     }
-    
+
     .form-group {
         display: flex;
         align-items: center;
         margin-bottom: 10px;
         justify-content: space-between;
     }
-    
+
     label {
         font-size: 17px;
         margin-right: 5px;
     }
-    
+
     .form-input {
         width: 175px;
         padding: 5px;
@@ -116,8 +116,8 @@
         border: 1px solid #000;
         border-radius: 2.5px;
     }
-    
-    
+
+
     .add-patient-btn {
         justify-self: center;
         background-color: #000;
@@ -129,18 +129,18 @@
         color: rgb(255, 255, 255);
         margin-bottom: 10px;
     }
-    
+
     a.menuItem {
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 35px;
     }
-    
+
     h6 {
         margin: 0px;
     } 
-    
+
     .menu__btn {
         position: fixed;
         top: 20px;
@@ -150,7 +150,7 @@
         cursor: pointer;
         z-index: 1;
     }
-    
+
     .menu__btn > span,
     .menu__btn > span::before,
     .menu__btn > span::after {
@@ -161,17 +161,17 @@
         background-color: #616161;
         transition-duration: .25s;
     }
-    
+
     .menu__btn > span::before {
         content: '';
         top: -8px;
     }
-    
+
     .menu__btn > span::after {
         content: '';
         top: 8px;
     }
-    
+
     .menu__box {
         display: block;
         position: fixed;
@@ -182,11 +182,11 @@
         margin: 0;
         padding: 80px 0;
         list-style: none;
-        background-color: #ECEFF1;
+        background-color: #abb0bb;
         box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
         transition-duration: .25s;
     }
-    
+
     .menu__item {
         display: flex;
         padding: 12px 24px;
@@ -198,30 +198,30 @@
         text-decoration: none;
         transition-duration: .25s;
     }
-    
+
     .menu__item:hover {
         background-color: #CFD8DC;
     }
-    
+
     /* Spin transition when menu is active */
     .menu-active .menu__btn > span {
         transform: rotate(45deg);
     }
-    
+
     .menu-active .menu__btn > span::before {
         top: 0;
         transform: rotate(0deg);
     }
-    
+
     .menu-active .menu__btn > span::after {
         top: 0;
         transform: rotate(90deg);
     }
-    
+
     .menu-active .menu__box {
         left: 0 !important;
     }
-    
+
     .hamburger-menu {
         width: 60px;
         cursor: pointer;
@@ -258,7 +258,7 @@
                     <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
                 </li>
                 <li>
-                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>support</h6></a>
+                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
                 </li>
             </ul>
         </div>

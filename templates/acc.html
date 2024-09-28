@@ -43,7 +43,8 @@ a {
 }
 
 .icoo{
-    filter: invert(1);
+    filter: invert(0);
+    margin-right:10px;
     width: 25px;
     height: 25px;
 }
@@ -134,7 +135,7 @@ label {
     cursor: pointer;
     color: rgb(255, 255, 255);
 }
-a.menuItem {
+.menuItem {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -144,17 +145,132 @@ a.menuItem {
 h6 {
     margin: 0px;
 }
+    
+    #menuBar{
+        height: 40px;
+    }
+
+    .menu__btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        width: 26px;
+        height: 26px;
+        cursor: pointer;
+        z-index: 1;
+    }
+    
+    .menu__btn > span,
+    .menu__btn > span::before,
+    .menu__btn > span::after {
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background-color: #616161;
+        transition-duration: .25s;
+    }
+    
+    .menu__btn > span::before {
+        content: '';
+        top: -8px;
+    }
+    
+    .menu__btn > span::after {
+        content: '';
+        top: 8px;
+    }
+    
+    .menu__box {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 250px;
+        height: 100%;
+        margin: 0;
+        padding: 80px 0;
+        list-style: none;
+        background-color: #abb0bb;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
+        transition-duration: .25s;
+    }
+    
+    .menu__item {
+        display: flex;
+        padding: 12px 24px;
+        color: #333;
+        font-family: 'Roboto', sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        align-items: center;
+        text-decoration: none;
+        transition-duration: .25s;
+    }
+    
+    .menu__item:hover {
+        background-color: #CFD8DC;
+    }
+    
+    /* Spin transition when menu is active */
+    .menu-active .menu__btn > span {
+        transform: rotate(45deg);
+    }
+    
+    .menu-active .menu__btn > span::before {
+        top: 0;
+        transform: rotate(0deg);
+    }
+    
+    .menu-active .menu__btn > span::after {
+        top: 0;
+        transform: rotate(90deg);
+    }
+    
+    .menu-active .menu__box {
+        left: 0 !important;
+    }
+    
+    .hamburger-menu {
+        width: 60px;
+        cursor: pointer;
+    }
+    .menu__div{
+        height:25px;
+    }
     </style>
     <title>Binder Medical</title>
 </head>
 <body>
     <div id="menuBar">
-        <a class="menuItem lll" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
-        <a class="menuItem" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
-        <a class="menuItem" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
-        <a class="menuItem" title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
-        <a class="menuItem" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
-        <a class="menuItem" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>support</h6></a>
+        <div class="hamburger-menu">
+            <label class="menu__btn" for="menu__toggle">
+            <span></span>
+            </label>
+    
+            <ul class="menu__box">
+                <li>
+                    <a class="menu__item" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
+                </li>
+                <li><div class="menu__div"></div></li>
+                <li><div class="menu__div"></div></li>
+                <li>
+                    <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="ac-frame">
         <div class="background">
@@ -217,6 +333,14 @@ h6 {
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
+            const menuBtn = document.querySelector('.hamburger-menu');
+            const menuBox = document.querySelector('.menu__box');
+            const menuBar = document.getElementById('menuBar');
+            
+            // Toggle menu and spin transition
+            menuBtn.addEventListener('click', () => {
+                menuBar.classList.toggle('menu-active');
+            });
             try {
                 const userData = JSON.parse('{{ user_data | tojson | safe }}'); // Replace with actual Google ID
                 const { name, first, payed, plan } = userData;
