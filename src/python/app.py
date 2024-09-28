@@ -2626,6 +2626,8 @@ def upload_to_storage(file, file_name):
 @app.route('/uploadFile', methods=['POST'])
 def upload_file():
     google_id = session.get('google_id', None)
+    
+    # Check if file exists in request
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
 
@@ -2633,14 +2635,16 @@ def upload_file():
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
+    folder = request.form.get('folder', None)
+    
+    # Restrict uploads only to the 'drs' folder
+    if folder != 'drs':
+        return jsonify({"error": "Files can only be uploaded in the 'drs' folder"}), 403
+
     try:
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
-
-        # Read the file content to store in Firestore
-        with open(file_path, 'rb') as f:
-            file_data = f.read()
 
         # Upload to Firebase Storage
         file_url = upload_to_storage(open(file_path, 'rb'), filename)
@@ -2650,13 +2654,13 @@ def upload_file():
             'upload_date': datetime.now().isoformat(),
             'data': file_url,
             'patient_no': request.form.get('patient_no'),
-            "gid":google_id,
+            "folder": folder,
+            "gid": google_id,
             'file_type': file.content_type,
         }
         dbst.collection('files').add(file_info)
 
-        # Remove the local file
-        os.remove(file_path)
+        os.remove(file_path)  # Remove the local file
 
         return jsonify({"message": "File uploaded successfully", "file_info": file_info}), 200
 
@@ -2667,12 +2671,29 @@ def upload_file():
 def get_files():
     google_id = session.get('google_id', None)
     patient_no = request.args.get('patient_no')
+    folder = request.args.get('folder')
+    
+    print(f"Patient No: {patient_no}, Folder: {folder}, Google ID: {google_id}")
+    
     if not patient_no:
         return jsonify({"error": "Patient number is required"}), 400
-
-    files_ref = dbst.collection('files').where(filter=FieldFilter('patient_no', '==', patient_no)).where(filter=FieldFilter("gid", "==", google_id))
-    files = [doc.to_dict() for doc in files_ref.stream()]
-
+    
+    files_ref = dbst.collection('files').where('patient_no', '==', patient_no).where('gid', '==', google_id)
+    
+    files = []
+    
+    if folder == 'drs':
+        # Fetch files where folder is either 'drs' or missing (None)
+        files_query = files_ref.stream()  # Get all files for this patient
+        for doc in files_query:
+            file_data = doc.to_dict()
+            if 'folder' not in file_data or file_data['folder'] == 'drs':
+                files.append(file_data)
+    elif folder:
+        # Fetch files only in the specified folder
+        files = [doc.to_dict() for doc in files_ref.where('folder', '==', folder).stream()]
+    
+    print(f"Files fetched: {files}")
     return jsonify(files), 200
 
 @app.route('/getFile/<file_id>', methods=['GET'])

@@ -642,9 +642,14 @@
         content: '';
         top: 8px;
     }
+
+    ul{
+        overflow-y: hidden;
+    }
     
     .menu__box {
-        display: block;
+        display: flex;
+        flex-direction: column;
         position: fixed;
         top: 0;
         left: -100%;
@@ -707,6 +712,19 @@
     .icoos{
         filter: invert(1);
     }
+
+    .inputdiv{
+        display: flex;
+    }
+
+    .folders{
+        display: flex;
+        justify-content: center;
+    }
+
+    h2 {
+        text-align: center;
+    }
     </style>
     <title>Binder Medical</title>
 </head>
@@ -731,6 +749,15 @@
                     <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
                 </li>
                 <li><div class="menu__div"></div></li>
+                <li>
+                    <a class="menu__item" title="lab" href="/lab"><img class="icoo" src="/static/images/lab.png" title="lab" alt="lab"><h6>Lab</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="radiology" href="/radio"><img class="icoo" src="/static/images/radio.png" title="radiology" alt="radiology"><h6>Radiology</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="pharmacy" href="/pharma"><img class="icoo" src="/static/images/pharma.png" title="pharmacy" alt="pharmacy"><h6>Pharmacy</h6></a>
+                </li>
                 <li><div class="menu__div"></div></li>
                 <li>
                     <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
@@ -824,11 +851,27 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Patient Files</h2>
-            <input type="file" id="fileInput" title="Patient Files">
-            <button class="button" onclick="uploadFile()">Upload</button>
+    
+            <!-- Folder Buttons -->
+            <div class="folders">
+                <button class="button folder-btn" onclick="selectFolder('drs')">Doctor</button>
+                <button class="button folder-btn" onclick="selectFolder('lab')">Lab</button>
+                <button class="button folder-btn" onclick="selectFolder('radiology')">Radiology</button>
+                <button class="button folder-btn" onclick="selectFolder('pharmacies')">Pharmacy</button>
+            </div>
+    
+            <!-- File Upload, only visible in the "drs" folder -->
+            <div id="divvv" class="inputdiv">
+                <input type="file" id="fileInput" title="Patient Files" style="display:none;">
+                <button class="button" id="uploadButton" onclick="uploadFile()" style="display:none;">Upload</button>
+            </div>
+            
+    
+            <!-- File Previews -->
             <div id="filePreviews" class="file-previews"></div>
         </div>
     </div>
+    
     <script>
         let currentVisitIndex = 0;
         let visits = []; // Array to hold visit data
@@ -1311,11 +1354,16 @@
         const btn = document.querySelector(".button[onclick='openFile()']");
         const span = document.getElementsByClassName("close")[0];
         const fileInput = document.getElementById("fileInput");
-        //const fileList = document.getElementById("fileList");
+        const uploadButton = document.getElementById("uploadButton");
+        const divvv = document.getElementById("divvv");
+        let selectedFolder = '';
+        selectFolder('drs')
 
+        // Open the modal and fetch the initial files
         btn.onclick = function() {
             modal.style.display = "block";
-            fetchFiles();
+            divvv.style.display = "flex";
+            fetchFiles(); // Fetch files when opening the modal
         }
 
         span.onclick = function() {
@@ -1328,27 +1376,47 @@
             }
         }
 
+        // Function to handle folder selection
+        function selectFolder(folderName) {
+            selectedFolder = folderName;
+        
+            // Show upload input only for the 'drs' folder
+            if (folderName === 'drs') {
+                divvv.style.display= 'flex';
+                divvv.style.marginTop= '15px';
+                fileInput.style.display = 'block';
+                fileInput.style.marginRight = '5px';
+                uploadButton.style.display = 'block';
+            } else {
+                divvv.style.display= 'none';
+                fileInput.style.display = 'none';
+                uploadButton.style.display = 'none';
+            }
+        
+            // Fetch files for the selected folder
+            fetchFiles();
+        }
+
+        // Upload file, only works when the 'drs' folder is selected
         function uploadFile() {
-            const fileInput = document.getElementById('fileInput');
+            if (selectedFolder !== 'drs') {
+                alert("You can only upload files in the 'Doctors' folder.");
+                return;
+            }
+        
             const file = fileInput.files[0];
             const patientNo = patientNumber;
-
-
-
             const formData = new FormData();
             formData.append('file', file);
             formData.append('patient_no', patientNo);
-
+            formData.append('folder', selectedFolder); // Assign the current folder
+        
             fetch('/uploadFile', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
                 fileInput.value = '';
-                if(fileInput.value){
-                    fileInput.type = "text";
-                    fileInput.type = "file";
-                }
                 if (!response.ok) {
                     return response.json().then(errorData => { throw new Error(errorData.error); });
                 }
@@ -1356,145 +1424,107 @@
             })
             .then(data => {
                 console.log('File uploaded:', data);
-                fetchFiles();  // Refresh file list
+                fetchFiles(); // Refresh the file list
             })
             .catch(error => {
                 console.error('Error uploading file:', error);
                 alert('Error uploading file: ' + error.message);
-            })
+            });
         }
 
+        // Fetch files based on the selected folder
+        // Fetch files based on the selected folder
         function fetchFiles() {
-            const patient_no =  patientNumber;
-            fetch(`/getFiles?patient_no=${patient_no}`)
-                .then(response => response.json())
-                .then(files => {
-                    //fileList.innerHTML = '';
+            const patientNo = patientNumber;
+            const folderQuery = selectedFolder === 'drs' ? 'drs' : selectedFolder; // Query for the current folder
 
-                    document.getElementById("filePreviews").innerHTML = '';
-                    files.forEach(file => {
-                        const fileElement = createFilePreviewElement(file);
-                        filePreviews.appendChild(fileElement);
-                    });
-                })
-                .catch(error => console.error('Error:', error));
+            let url = `/getFiles?patient_no=${patientNo}&folder=${folderQuery}`;  // Use query parameters
+
+            //if (folderQuery === 'drs'){
+            //    url = `/getFiles?patient_no=${patientNo}`;
+            //}
+
+            fetch(url, {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(files => {
+                document.getElementById("filePreviews").innerHTML = '';
+                renderFiles(files);
+            })
+            .catch(error => console.error('Error:', error));
         }
 
+        // Render file previews
+        function renderFiles(files) {
+            files.forEach(file => {
+                const fileElement = createFilePreviewElement(file);
+                document.getElementById("filePreviews").appendChild(fileElement);
+            });
+        }
+
+        // Delete file function (same as before)
         function deleteFile(fileUrl) {
             const isConfirmed = confirm("Are you sure you want to delete this file?");
-            if (!isConfirmed) {
-                return; // Exit the function if the user does not confirm
-            }
-            fetch(`/deleteFile?url=${encodeURIComponent(fileUrl)}`, {
-                method: 'DELETE'
-            })
+            if (!isConfirmed) return;
+        
+            fetch(`/deleteFile?url=${encodeURIComponent(fileUrl)}`, { method: 'DELETE' })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Server error response: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
                 return response.json();
             })
             .then(data => {
                 console.log('File deleted successfully:', data);
-                // Update the UI or perform further actions
-                fetchFiles();  // Refresh file list
+                fetchFiles(); // Refresh the file list
             })
-            .catch(error => {
-                console.error('Error deleting file:', error);
-            });
+            .catch(error => console.error('Error deleting file:', error));
         }
 
+        // Create a file preview element (same as before)
         function createFilePreviewElement(file) {
             const filePreview = document.createElement("div");
             filePreview.classList.add("file-preview");
-
-            // Create a clickable link element
+        
             const fileLink = document.createElement("a");
             fileLink.href = file.data;
             fileLink.target = "_blank";
-
+        
             let previewElement;
-                if (file.file_type.includes('image')){
-                    previewElement = document.createElement("img");
-                    previewElement.src = file.data; // Use file URL
-                }else if(file.file_type.includes('video')) {
-                    previewElement = document.createElement("video");
-                    previewElement.controls = true;
-                    previewElement.classList.add("vidPerv");
-                    previewElement.src = file.data; // Use file URL
-                }else if (file.file_type.includes('text')) {
-                    previewElement = document.createElement("h3");
-                    previewElement.classList.add("txtPrev");
-                    previewElement.innerText = file.name; // Use file URL
-                }else if (file.file_type.includes('pdf')) {
-                    previewElement = document.createElement("h3");
-                    previewElement.classList.add("txtPrev");
-                    previewElement.innerText = file.name; // Use file URL
-                }else{
-                    previewElement = document.createElement("h3");
-                    previewElement.classList.add("txtPrev");
-                    previewElement.innerText = file.name; // Use file URL
-                }
-
+            if (file.file_type.includes('image')){
+                previewElement = document.createElement("img");
+                previewElement.src = file.data; // Use file URL
+            }else if(file.file_type.includes('video')) {
+                previewElement = document.createElement("video");
+                previewElement.controls = true;
+                previewElement.classList.add("vidPerv");
+                previewElement.src = file.data; // Use file URL
+            }else if (file.file_type.includes('text')) {
+                previewElement = document.createElement("h3");
+                previewElement.classList.add("txtPrev");
+                previewElement.innerText = file.name; // Use file URL
+            }else if (file.file_type.includes('pdf')) {
+                previewElement = document.createElement("h3");
+                previewElement.classList.add("txtPrev");
+                previewElement.innerText = file.name; // Use file URL
+            }else{
+                previewElement = document.createElement("h3");
+                previewElement.classList.add("txtPrev");
+                previewElement.innerText = file.name; // Use file URL
+            }
+        
             const deleteBtn = document.createElement('span');
             deleteBtn.className = 'delete-btn';
             deleteBtn.innerHTML = '&times;';
             deleteBtn.onclick = () => deleteFile(file.data);
-
+        
             fileLink.appendChild(previewElement);
-            filePreview.appendChild(deleteBtn)
+            if (selectedFolder === 'drs') {
+                filePreview.appendChild(deleteBtn);
+            }
             filePreview.appendChild(fileLink);
             return filePreview;
         }
-        
-        function printVisit() {
-            const isConfirmed = confirm("After printing you cant change this visits info , are you sure you want to print this visit? \n في حال الطباعة لا يمكن تغيير معلومات الزيارة ,هل تريد الطباعة؟");
-            if (!isConfirmed) {
-                return; // Exit the function if the user does not confirm
-            }
-            fetch('/kkprint', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ vno: currentVisitIndex })
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Extract the filename from the Content-Disposition header
-                    const disposition = response.headers.get('Content-Disposition');
-                    const filename = disposition ? disposition.split('filename=')[1].replace(/"/g, '') : 'visit.docx';
-        
-                    return response.blob().then(blob => {
-                        // Create a link element to trigger the download
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'visit.docx';
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    });
-                    
-                } else {
-                    throw new Error('Failed to download the visit document');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to print visit. Please try again.');
-            });
 
-            fetch(`/getPatientData`)
-            .then(response => response.json())
-            .then(data => {
-                visits = data.visits;
-                patientNumber = data.patientss_number+1; // Set patient number// Display patient number
-                populatePatientData(visits[currentVisitIndex]);
-                
-                
-                
-            })
-            .catch(error => console.error('Error fetching patient data:', error));
-        }
         
     </script>
 
