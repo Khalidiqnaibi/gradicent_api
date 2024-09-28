@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
+    <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+    <style>
+        body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    }
+    
+    #menuBar {
+        display: flex;
+        background-color: #000;
+        border-bottom: 2px solid #000;
+        height:40px;
+        position: fixed;
+        width: 100%;
+    }
+    
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .menuItem {
+        font-size: 16px;
+        color: #8b8c8e;
+        border-radius: 5px;
+        padding: 5px;
+        cursor: pointer;
+        margin-left: 15px;
+    }
+    
+    .menuItem:hover {
+        background-color: #fff;
+        color: #333;
+    }
+    
+    .menuItem:hover  .icoo{
+        filter: invert(0);
+    }
+    
+    .icoo{
+        filter: invert(0);
+        width: 25px;
+        margin-right:10px;
+        height: 25px;
+    }
+    
+    #content {
+        padding: 20px;
+    }
+    
+    .ac-frame {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-image:url("/static/images/home.jpg");
+    }
+    
+    .bdo {
+        background-color: #000;
+        padding-top: 60px;
+    }
+    
+    .bd {
+        display: grid;
+        background-color: #abb0bb;
+        border: 1.5px solid #000;
+        padding: 5px;
+        border-radius: 5px;
+        box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
+    }
+    
+    .header {
+        justify-self: center;
+        text-align: center;
+        width: 85%;
+        background-color: #abb0bb;
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 30px;
+        margin: 0;
+    }
+    
+    .main-frame {
+        background-color: #abb0bb;
+        padding: 5px 20px;
+    }
+    
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        justify-content: space-between;
+    }
+    
+    label {
+        font-size: 17px;
+        margin-right: 5px;
+    }
+    
+    .form-input {
+        width: 175px;
+        padding: 5px;
+        line-height: 1.5;
+        font-size: 13px;
+        outline: none;
+        border: 1px solid #000;
+        border-radius: 2.5px;
+    }
+    
+    
+    .add-patient-btn {
+        justify-self: center;
+        background-color: #000;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 4.5px;
+        font-size: 15px;
+        cursor: pointer;
+        color: rgb(255, 255, 255);
+        margin-bottom: 10px;
+    }
+    
+    a.menuItem {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 35px;
+    }
+    
+    h6 {
+        margin: 0px;
+    } 
+    
+    .menu__btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        width: 26px;
+        height: 26px;
+        cursor: pointer;
+        z-index: 1;
+    }
+    
+    .menu__btn > span,
+    .menu__btn > span::before,
+    .menu__btn > span::after {
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background-color: #616161;
+        transition-duration: .25s;
+    }
+    
+    .menu__btn > span::before {
+        content: '';
+        top: -8px;
+    }
+    
+    .menu__btn > span::after {
+        content: '';
+        top: 8px;
+    }
+    
+    .menu__box {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 250px;
+        height: 100%;
+        margin: 0;
+        padding: 80px 0;
+        list-style: none;
+        background-color: #ECEFF1;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
+        transition-duration: .25s;
+    }
+    
+    .menu__item {
+        display: flex;
+        padding: 12px 24px;
+        color: #333;
+        font-family: 'Roboto', sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        align-items: center;
+        text-decoration: none;
+        transition-duration: .25s;
+    }
+    
+    .menu__item:hover {
+        background-color: #CFD8DC;
+    }
+    
+    /* Spin transition when menu is active */
+    .menu-active .menu__btn > span {
+        transform: rotate(45deg);
+    }
+    
+    .menu-active .menu__btn > span::before {
+        top: 0;
+        transform: rotate(0deg);
+    }
+    
+    .menu-active .menu__btn > span::after {
+        top: 0;
+        transform: rotate(90deg);
+    }
+    
+    .menu-active .menu__box {
+        left: 0 !important;
+    }
+    
+    .hamburger-menu {
+        width: 60px;
+        cursor: pointer;
+    }
+    .menu__div{
+        height:25px;
+    }
+    </style>
+    <title>Binder Medical</title>
+</head>
+<body>
+    <div id="menuBar">
+        <div class="hamburger-menu">
+            <label class="menu__btn" for="menu__toggle">
+            <span></span>
+            </label>
+    
+            <ul class="menu__box">
+                <li>
+                    <a class="menu__item" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
+                </li>
+                <li><div class="menu__div"></div></li>
+                <li><div class="menu__div"></div></li>
+                <li>
+                    <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>support</h6></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="ac-frame">
+
+        <div class="background">
+            <!-- Background image -->
+        </div>
+            <div class="bd">
+                <div class="header">
+                    <h1> Add A Patient</h1>
+                </div>
+                <div class="main-frame">
+                    <!-- Patient form fields go here -->
+                    <div class="form-group">
+                        <label >Patient Name:</label>
+                        <input id="PName" type="text" placeholder="" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label >ID Number:</label>
+                        <input id="idnum" type="text" placeholder="" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label >Phone Number:</label>
+                        <input id="PNum" type="text" placeholder="" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label >Location:</label>
+                        <input id="loc" type="text" placeholder="" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label >Medical History:</label>
+                        <input id="medh" type="text" placeholder="" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label >Allergies:</label>
+                        <input id="allergies" type="text" placeholder="" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label >Blood Type:</label>
+                        <input id="btype" type="text" placeholder="" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label >Sex:</label>
+                        <input id="sex" type="text" placeholder="" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label >Age:</label>
+                        <input id="age" type="text" placeholder="" class="form-input" />
+                    </div>
+                </div>
+                <button class="add-patient-btn" onclick="add_btn()">Add</button>
+        </div>
+    </div>
+
+    <script> 
+        const entryWidgets = {};
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize entryWidgets with references to input elements
+            entryWidgets["PName"] = document.getElementById("PName");
+            entryWidgets["idnum"] = document.getElementById("idnum");
+            entryWidgets["PNum"] = document.getElementById("PNum");
+            entryWidgets["loc"] = document.getElementById("loc");
+            entryWidgets["medh"] = document.getElementById("medh");
+            entryWidgets["allergies"] = document.getElementById("allergies");
+            entryWidgets["btype"] = document.getElementById("btype");
+            entryWidgets["sex"] = document.getElementById("sex");
+            entryWidgets["age"] = document.getElementById("age");
+
+            const menuBtn = document.querySelector('.hamburger-menu');
+            const menuBox = document.querySelector('.menu__box');
+            const menuBar = document.getElementById('menuBar');
+            
+            // Toggle menu and spin transition
+            menuBtn.addEventListener('click', () => {
+                menuBar.classList.toggle('menu-active');
+            });
+            
+            // Set up event listeners for input elements
+            Object.values(entryWidgets).forEach(widget => {
+                widget.addEventListener("keydown", function(event) {
+                    if (event.key === "Enter") {
+                        nextEntry(event, widget);
+                    }
+                });
+            });
+        });
+
+        function formatt() {
+            const today = new Date().toISOString().split('T')[0];
+            const d = new Date(today);
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            const year = d.getFullYear()+1;
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+        // Function to get patient information from the input fields
+        function get_info() {
+            const PatientName = document.getElementById("PName");
+            const idnum = document.getElementById("idnum");
+            const PhoneNumber = document.getElementById("PNum");
+            const loc = document.getElementById("loc");
+            const medh = document.getElementById("medh");
+            const age = document.getElementById("age");
+            const btype = document.getElementById("btype");
+            const sex = document.getElementById("sex");
+            const allergies = document.getElementById("allergies");
+
+            const fields = [
+                PatientName,
+                idnum,
+                PhoneNumber,
+                loc,
+                medh,
+                allergies,
+                sex,
+                btype,
+                age
+            ];
+
+            var info = {
+                "no":1,
+                "name": PatientName.value,
+                "id": idnum.value,
+                "phone": PhoneNumber.value,
+                "location": loc.value,
+                "pmh": medh.value,
+                "allergies":allergies.value,
+                "payed": 0,
+                "debit": 0,
+                "age": age.value,
+                'sex': sex.value,
+                'div':'aha',
+                "btype":btype.value,
+                "visits": [
+                    {
+                        "coast": 0,
+                        "debit": 0,
+                        "details": "",
+                        "diagnosis": " ",
+                        "lab": "",
+                        "payed": 0,
+                        "treatment": "",
+                        "visit_date": formatt(),
+                        "vno": 1
+                    }
+                ]
+            };
+
+            for (let i = 0, len = fields.length; i < len; i++) {
+                fields[i].value = "";
+            }
+
+            return info;
+        }
+
+        // Function to add patient information to the backend
+        async function addPatient(data) {
+            try {
+                const response = await fetch('/addPatient', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }else{
+                    const result = await response.json();
+                    console.log(result.message);
+                    window.location.href = `/meddata`;
+                }
+
+            } catch (error) {
+                console.error('Error adding patient:', error);
+            }
+        }
+
+        // Button click handler to add patient
+        function add_btn() {
+            var info = get_info();
+            var data = {
+                google_id: "{{ user_data.google_id }}",  // Ensure the actual Google ID is used
+                patient_info: info
+            };
+            if (info.name){
+                addPatient(data);
+            }else{
+                alert(`Please provide a patient name` );
+            }
+        }
+
+        function nextEntry(event, entryWidget) {
+            try {
+                if (!['visit_date', 'search'].includes(Object.keys(entryWidgets).find(k => entryWidgets[k] === entryWidget))) {
+                    if (entryWidget === entryWidgets["search"]) {
+                        search();
+                    } else if (entryWidget.id === "details") {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                            entryWidget.value += "\n";
+                            event.preventDefault(); // Prevent adding a new line in the textarea
+                        } 
+                    }else if (entryWidget.id === "diagnosis") {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                            entryWidget.value += "\n";
+                            event.preventDefault(); // Prevent adding a new line in the textarea
+                        }  
+                    }else if (entryWidget.id === "treatment") {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                            entryWidget.value += "\n";
+                            event.preventDefault(); // Prevent adding a new line in the textarea
+                        } 
+                    }else if (entryWidget.id === "lab") {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                            entryWidget.value += "\n";
+                            event.preventDefault(); // Prevent adding a new line in the textarea
+                        }  
+                    } else {
+                        const nextWidget = getNextWidget(entryWidget);
+                        if (nextWidget) {
+                            nextWidget.focus();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error in nextEntry function:', error);
+            }
+        }
+
+        function getNextWidget(currentWidget) {
+            const keys = Object.keys(entryWidgets);
+            const currentKey = keys.find(k => entryWidgets[k] === currentWidget);
+            const currentIndex = keys.indexOf(currentKey);
+
+            if (currentIndex >= 0 && currentIndex < keys.length - 1) {
+                return entryWidgets[keys[currentIndex + 1]];
+            }
+            return null;
+        }
+    </script>
+</body>
+</html>

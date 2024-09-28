@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
+    <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+    <style>
+
+        body {
+                font-family: 'Arial', sans-serif;
+                background-color: #8b8c8e;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                height: 100vh;
+                width: 100%;
+                justify-content: center;
+            }
+
+        #idFrame {
+            display: flex;
+            margin-top: 20px;
+            width: 100%;
+            align-items: center;
+        }
+
+        #menuBar {
+            display: flex;
+            background-color: #000;
+            border-bottom: 2px solid #000;
+            position: fixed;
+            width: 105%;
+        }
+
+        .menuItem {
+            font-size: 16px;
+            color: #8b8c8e;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .menuItem:hover {
+            background-color: #fff;
+            color: #333;
+        }
+
+        .menuItem:hover  .icoo{
+            filter: invert(0);
+        }
+
+        .icoo{
+            filter: invert(1);
+            width: 25px;
+            height: 25px;
+        }
+
+        .f {
+            margin-top: 35px;
+            display: flex;
+            height: 90%;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+        }
+
+        .aha {
+            width: 50%;
+        }
+
+        .frame {
+            display: flex;
+            padding: 15px;
+            margin-top: 0px;
+            border-radius: 10px;
+            margin-bottom: 0px;
+            padding-top: 2px;
+            flex-direction: column;
+            width: 89%;
+            overflow-x: none;
+            justify-content: space-between;
+        }
+
+        .entry {
+            width: 50%;
+            font-size: 13px;
+            padding: 5px;
+        }
+
+        .button {
+            width: 150px;
+            background-color: #000;
+            border: none;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 4.5px;
+            font-size: 15px;
+            cursor: pointer;
+            color: rgb(255, 255, 255);
+            margin-top: 10px;
+        }
+
+        .result {
+            background-image: url(/static/images/ad.jpg);
+            background-repeat: no-repeat;
+            background-size: cover;
+            BACKGROUND-POSITION: center;
+            display: flex;
+            border: 1px black solid;
+            min-width: 70%;
+            min-height: 64%;
+            max-height: 70%;
+            overflow-y: auto;
+            margin: 15px;
+            width: 105%;
+            margin-top: 0px;
+            background-color: #abb0bb;
+            border-radius: 5px;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .potato {
+            display: flex;
+            justify-content: center;
+        }
+
+        input {
+            outline: none;
+            border: 1px solid #000;
+            line-height: 1.5;
+            border-radius: 2.5px;
+        }
+
+        label {
+            font-size: 16.57px;
+            padding: 5px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        input {
+            padding: 5px;
+        }
+
+        .inpuu {
+            display: flex;
+            margin-bottom: 10px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .patient-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #idEntry {
+            width: 300px;
+        }
+
+        .columnr {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: -15px;
+            justify-content: center;
+        }
+        .ssrch {
+            width: 51%;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .essrch {
+            width: 100%;
+            height: 100%;
+        }
+
+        .column {
+            box-sizing: border-box;
+            padding: 5px;
+        }
+
+        .lll {
+            margin-left: 20px;
+        }
+
+    @media (max-width:750px) {
+        .column {
+            box-sizing: border-box;
+            padding: 5px;
+            width: 100%;
+        }
+        .result {
+            min-height: 219.38px;
+        }
+    }
+    @media (min-width:750px) {
+        .result {
+            width: 70%;
+        }
+        .lll {
+            margin-left: 50px;
+        }
+    }
+
+
+    .result::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .result::-webkit-scrollbar-track {
+        border-radius: 5px;
+        background-color: #e7e7e7;
+        border: 1px solid #abb0bb;
+        box-shadow: inset 0 0 6px rgb(50 51 55 / 41%);
+    }
+
+    .result::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: #000000;
+    }
+
+    .result video, .result img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    a.menuItem {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 35px;
+    }
+
+    h6 {
+        margin: 0px;
+    }
+    </style>
+    <title>Binder Medical</title>
+</head>
+<body>
+    <div id="menuBar">
+        <a class="menuItem lll" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
+        <a class="menuItem" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
+        <a class="menuItem" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
+        <a class="menuItem" title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
+        <a class="menuItem" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
+        <a class="menuItem" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>support</h6></a>
+    </div>
+    <div id="srchFrame" class="f">
+        <!-- Search by ID Section -->
+        <div id="idFrame" class="frame">
+            <input type="text" id="idEntry" class="entry" placeholder="Enter ID">
+            <div class="potato">
+                <button id="searchNameBtn" class="button" onclick="searchByName()">Search by Name</button>
+                <button id="searchNumberBtn" class="button" >Search by Number</button>
+            </div>
+        </div>
+        <div id="srchMain" class="result"></div>
+    </div>
+
+    <script>
+
+        const PLAN ='{{plan}}';
+        document.addEventListener("DOMContentLoaded", function() {
+            const nono = '{{nono}}';
+            const pats = '{{pats}}';
+
+            if (nono === 'yup'){
+                autoSearchByNumber(PLAN)
+            }
+
+
+            console.log(pats)
+            if (pats !== 'nope'){
+                console.log('bruhhhhh')
+                console.log(pats)
+                searchStats()
+            }
+
+            document.getElementById("searchNumberBtn").addEventListener("click", function(event) {
+                searchByNumber(PLAN)
+            });
+
+            showNextMedia()
+        })
+
+        function searchByName() {
+            const nameEntry = document.getElementById('idEntry').value;
+            const srchMain = document.getElementById('srchMain');
+
+            fetch('/search_by_name', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: nameEntry }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('data:', data);
+                if (Array.isArray(data)) {
+                    renderSearchResult(data, srchMain);
+                    srchMain.style.justifyContent="space-around";
+                    srchMain.style.backgroundImage="none";
+                } else {
+                    srchMain.innerHTML = `Error: ${data.error || 'Unexpected error'}`;
+                    srchMain.style.backgroundImage="none";
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+                srchMain.innerHTML = 'Error fetching data. Please try again.';
+                srchMain.style.backgroundImage="none";
+            });
+        }
+
+        function searchStats() {
+            const srchMain = document.getElementById('srchMain');
+            fetch('/searchh_stats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`Network response was not ok: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    console.log(data)
+                    renderSearchResult(data, srchMain);
+                    srchMain.style.justifyContent = "space-around";
+                    srchMain.style.backgroundImage = "none";
+                } else {
+                    srchMain.innerHTML = `Error: ${data.error || 'Unexpected error'}`;
+                    srchMain.style.backgroundImage = "none";
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+                srchMain.innerHTML = 'Error fetching data. Please try again.';
+                srchMain.style.backgroundImage = "none";
+            });
+
+        }
+
+        function searchByNumber(PLAN) {
+            const numberEntry = document.getElementById('idEntry').value;
+            const srchMain = document.getElementById('srchMain');
+
+
+            fetch('/search_by_number', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ number: numberEntry }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`Network response was not ok: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    srchMain.innerHTML = `Error: ${data.error}`;
+                } else {
+                    console.log('data:', data);  // Log the data to see its structure
+                    if (Object.keys(data).length === 0) {
+                        srchMain.innerHTML = 'No patient found.';
+                    } else {
+                        renderPatientInfo(data, srchMain,PLAN);
+                    }
+                    srchMain.style.backgroundImage="none";
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+                srchMain.innerHTML = 'Error fetching data. Please try again.';
+                srchMain.style.backgroundImage="none";
+            });
+        }
+
+        function renderSearchResult(patients, srchMain) {
+            srchMain.innerHTML = '';
+            const s = document.getElementById('idFrame');
+            s.classList.add('aha');
+
+            if (patients.length === 0) {
+                const message = document.createElement('label');
+                message.textContent = 'The name is not registered';
+                message.classList.add('label');
+                srchMain.appendChild(message);
+
+            } else {
+                patients.forEach((patient) => {
+                    const patientDiv = createPatientDiv(patient);
+                    srchMain.appendChild(patientDiv);
+                });
+            }
+        }
+
+        function renderPatientInfo(patient, srchMain,PLAN) {
+            srchMain.innerHTML = '';
+
+            if (patient) {
+                const infoDiv = createPatientInfoDiv(patient ,PLAN);
+                srchMain.appendChild(infoDiv);
+                maxwidth = document.documentElement.clientWidth;
+                if (maxwidth>750){
+                    srchMain.style.justifyContent="center";
+                }
+            } else {
+                const message = document.createElement('label');
+                message.textContent = 'The number is not registered';
+                message.classList.add('label');
+                srchMain.appendChild(message);
+            }
+        }
+
+        function createPatientDiv(patient) {
+            const patientDiv = document.createElement('div');
+            patientDiv.classList.add('frame');
+
+            const inpuu = document.createElement('div');
+            inpuu.classList.add('inpuu');
+
+            const bruhh = document.createElement('div');
+            bruhh.classList.add('ssrch');
+
+            const idLabel = document.createElement('label');
+            idLabel.textContent = 'Patient Number:';
+            const idEntry = document.createElement('input');
+            idEntry.type = 'text';
+            idEntry.classList.add('essrch');
+            idEntry.classList.add('entry');
+            idEntry.value = patient.no;
+
+            // Search button
+            const searchBtn = document.createElement('button');
+            searchBtn.textContent = 'Search';
+            searchBtn.classList.add('button');
+            searchBtn.onclick = function() {
+                searchById(patient.no);  // Call searchById with the patient number
+            };
+
+            // Append elements to div
+            inpuu.appendChild(idLabel);
+            bruhh.appendChild(idEntry);
+            bruhh.appendChild(searchBtn);
+            inpuu.appendChild(bruhh);
+            patientDiv.appendChild(inpuu);
+
+            const inpuun = document.createElement('div');
+            inpuun.classList.add('inpuu');
+            const nameLabel = createLabel('Patient Name:');
+            const nameEntry = createEntry(patient.name);
+            inpuun.appendChild(nameLabel);
+            inpuun.appendChild(nameEntry);
+            patientDiv.appendChild(inpuun);
+
+            const inpuud = document.createElement('div');
+            inpuud.classList.add('inpuu');
+            const debitLabel = createLabel('Location:');
+            const debitEntry = createEntry(patient.location);
+            inpuud.appendChild(debitLabel);
+            inpuud.appendChild(debitEntry);
+            patientDiv.appendChild(inpuud);
+
+            const inpuua = document.createElement('div');
+            inpuua.classList.add('inpuu');
+            const a = createLabel('Age:');
+            const aa = createEntry(patient.age);
+            inpuua.appendChild(a);
+            inpuua.appendChild(aa);
+            patientDiv.appendChild(inpuua);
+
+            if ( PLAN !== 'sec'){
+                const inpuuas = document.createElement('div');
+                inpuuas.classList.add('inpuu');
+                const ad = createLabel('Debit:');
+                const aad = createEntry(patient.debit);
+                inpuuas.appendChild(ad);
+                inpuuas.appendChild(aad);
+                patientDiv.appendChild(inpuuas);
+            }
+
+            return patientDiv;
+        }
+
+        function createPatientInfoDiv(patient,PLAN) {
+            const infoDiv = document.createElement('div');
+            infoDiv.classList.add('frame');
+            infoDiv.setAttribute('data-patient-no', patient.no);  // Add data-patient-no attribute
+
+            const labels = [
+                { key: 'name', text: 'Patient Name' },
+                { key: 'id', text: 'ID Number' },
+                { key: 'phone', text: 'Phone Number' },
+                { key: 'location', text: 'Location' },
+                { key: 'pmh', text: 'Medical History' },
+                { key: 'allergies', text: 'Allergies' },
+                { key: 'age', text: 'Age' },
+                { key: 'next', text: 'Next visit' },
+                { key: 'btype', text: 'Blood Type' },
+                { key: 'sex', text: 'Sex' },
+                { key: 'payed', text: 'Paid' },
+                { key: 'debit', text: 'Debit' }
+            ];
+
+            const patientInfo = document.createElement('div');
+            patientInfo.classList.add('patient-info');
+
+            const column1 = document.createElement('div');
+            column1.classList.add('column');
+            column1.classList.add('columnr');
+
+            const column2 = document.createElement('div');
+            column2.classList.add('column');
+
+            labels.forEach((label, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.classList.add('inpuu');
+
+                if (label.key === "next" && !patient[label.key]){
+                    const entryLabel = createLabel(`${label.text}:`);
+                    const entryValue = createDEntry(formatyear());
+
+                    entryDiv.appendChild(entryLabel);
+                    entryDiv.appendChild(entryValue);
+                }else if (label.key === "next"){
+                    const entryLabel = createLabel(`${label.text}:`);
+                    const entryValue = createDEntry(patient[label.key]);
+
+                    entryDiv.appendChild(entryLabel);
+                    entryDiv.appendChild(entryValue);
+                }else if (label.key === "btype"){
+                    if (patient[label.key] !== undefined){
+
+                        const entryLabel = createLabel(`${label.text}:`);
+                        const entryValue = createEntry(patient[label.key]);
+
+                        entryDiv.appendChild(entryLabel);
+                        entryDiv.appendChild(entryValue);
+                    }else{
+                        const entryLabel = createLabel(`${label.text}:`);
+                        const entryValue = createEntry('');
+
+                        entryDiv.appendChild(entryLabel);
+                        entryDiv.appendChild(entryValue);
+                    }
+                }else if (label.key === "payed" && PLAN === 'sec'){
+                    console.log('lmao')
+                }else if (label.key === "debit" && PLAN === 'sec'){
+                    console.log('lmao')
+                }else if (label.key === "payed"){
+                    if (patient[label.key] !== undefined){
+
+                        const entryLabel = createLabel(`${label.text}:`);
+                        const entryValue = createEntry(patient[label.key]);
+
+                        entryDiv.appendChild(entryLabel);
+                        entryDiv.appendChild(entryValue);
+                    }else{
+                        const entryLabel = createLabel(`${label.text}:`);
+                        const entryValue = createEntry(0);
+
+                        entryDiv.appendChild(entryLabel);
+                        entryDiv.appendChild(entryValue);
+                    }
+                }else if (label.key === "debit"){
+                    if (patient[label.key] !== undefined){
+
+                        const entryLabel = createLabel(`${label.text}:`);
+                        const entryValue = createEntry(patient[label.key]);
+
+                        entryDiv.appendChild(entryLabel);
+                        entryDiv.appendChild(entryValue);
+                    }else{
+                        const entryLabel = createLabel(`${label.text}:`);
+                        const entryValue = createEntry(0);
+
+                        entryDiv.appendChild(entryLabel);
+                        entryDiv.appendChild(entryValue);
+                    }
+                }else if (label.key === "sex"){
+                    if (patient[label.key] === undefined){
+                        const entryLabel = createLabel(`${label.text}:`);
+                        const entryValue = createEntry('');
+
+                        entryDiv.appendChild(entryLabel);
+                        entryDiv.appendChild(entryValue);
+                    }else{
+                        const entryLabel = createLabel(`${label.text}:`);
+                        const entryValue = createEntry(patient[label.key]);
+
+                        entryDiv.appendChild(entryLabel);
+                        entryDiv.appendChild(entryValue);
+                    }
+                }else{
+                    const entryLabel = createLabel(`${label.text}:`);
+                    const entryValue = createEntry(patient[label.key]);
+
+                    entryDiv.appendChild(entryLabel);
+                    entryDiv.appendChild(entryValue);
+                }
+
+                if (index === 7|| index % 2 === 0 && index !== 8  ) {
+                    column1.appendChild(entryDiv);
+                } else {
+                    column2.appendChild(entryDiv);
+                    if (index === 1){
+                        entryDiv.style.marginTop = "10px";
+                    }
+                }
+            });
+
+            const btnsDiv = document.createElement('div');
+            btnsDiv.classList.add('potato');
+
+            patientInfo.appendChild(column1);
+            patientInfo.appendChild(column2);
+            infoDiv.appendChild(patientInfo);
+
+
+
+            const saveButton = createButton('Save', () => savePatientInfo(patient.no));
+            const kprint = createButton('Print', () => showPage('kprint'));
+            const openButton = createButton('Open', () => showPage('meddata'));
+
+            btnsDiv.appendChild(saveButton);
+            btnsDiv.appendChild(kprint);
+            if (PLAN !== 'sec'){
+                btnsDiv.appendChild(openButton);
+            }
+
+            infoDiv.appendChild(btnsDiv);
+
+            return infoDiv;
+        }
+
+        function createLabel(text) {
+            const label = document.createElement('label');
+            label.textContent = text;
+            label.classList.add('label');
+            return label;
+        }
+
+        function createEntry(value) {
+            const entry = document.createElement('input');
+            entry.classList.add('entry');
+            entry.type = 'text';
+            entry.readOnly = false;
+            entry.value = value;
+            return entry;
+        }
+
+        function formatyear() {
+            const today = new Date().toISOString().split('T')[0];
+            const d = new Date(today);
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            const year = d.getFullYear()+1;
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return today//[year, "01", "01"].join('-');
+        }
+
+        function createDEntry(value) {
+            const entry = document.createElement('input');
+            entry.classList.add('entry');
+            entry.type = 'date';
+            entry.value = value;
+            return entry;
+        }
+
+        function createButton(text, clickHandler) {
+            const button = document.createElement('button');
+            button.textContent = text;
+            button.classList.add('button');
+            button.addEventListener('click', clickHandler);
+            return button;
+        }
+
+        function savePatientInfo(patientNo) {
+            const indxx = {
+                'Patient Name': 'name',
+                'ID Number': 'id',
+                'Phone Number': 'phone',
+                'Location': 'location',
+                'Medical History': 'pmh',
+                'Allergies': 'allergies',
+                'Age': 'age',
+                "Next visit":"next",
+                'Blood Type': 'btype',
+                'Sex': 'sex',
+                'Paid': 'payed',
+                'Debit': 'debit'
+            };
+
+            const patientDiv = document.querySelector(`.frame[data-patient-no="${patientNo}"]`);
+
+            if (!patientDiv) {
+                console.error('Patient div not found for patientNo:', patientNo);
+                alert('Error: Patient information could not be found.');
+                return;
+            }
+
+            // Gather patient data from input fields
+            const inputs = patientDiv.querySelectorAll('input');
+            const patientData = {};
+
+            inputs.forEach(input => {
+                const label = input.previousElementSibling ? input.previousElementSibling.textContent.replace(':', '').trim() : 'Unknown';
+                patientData[label] = input.value;
+            });
+
+            const correctedPatientData = {};
+            Object.keys(patientData).forEach(key => {
+                const correctedKey = indxx[key];
+                if (correctedKey) {
+                    correctedPatientData[correctedKey] = patientData[key];
+                }
+            });
+
+            // Log data to check what's being sent
+            console.log('Original patient data:', patientData);
+            console.log('Corrected patient data:', correctedPatientData);
+
+            // Make the fetch request to save patient data
+            fetch('/updatePatientData', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ patientNo: patientNo, ...correctedPatientData })
+            })
+            .then(data => {
+                console.log('Save response:', data);
+                alert('Patient data saved successfully.');
+            })
+            .catch(error => {
+                console.error('Error saving patient data:', error);
+                alert('Error saving patient data.');
+            });
+        }
+
+        function autoSearchByNumber(PLAN) {
+            const numberEntry = document.getElementById('idEntry').value;
+            const srchMain = document.getElementById('srchMain');
+
+
+            fetch('/auto_search_by_number', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ number: 'ya' }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`Network response was not ok: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    srchMain.innerHTML = `Error: ${data.error}`;
+                    srchMain.style.backgroundImage="none";
+                } else {
+                    console.log('data:', data);  // Log the data to see its structure
+                    if (Object.keys(data).length === 0) {
+                        srchMain.innerHTML = 'No patient found.';
+                    } else {
+                        document.getElementById('idEntry').value=data.no;
+                        renderPatientInfo(data, srchMain,PLAN);
+                    }
+                    srchMain.style.backgroundImage="none";
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+                srchMain.innerHTML = 'Error fetching data. Please try again.';
+                srchMain.style.backgroundImage="none";
+            });
+        }
+
+        function searchById(patientNumber) {
+            const srchMain = document.getElementById('srchMain');
+
+            fetch('/search_by_number', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ number: patientNumber }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`Network response was not ok: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    srchMain.innerHTML = `Error: ${data.error}`;
+                } else {
+                    console.log('data:', data);
+                    if (Object.keys(data).length === 0) {
+                        srchMain.innerHTML = 'No patient found.';
+                    } else {
+                        document.getElementById('idEntry').value=data.no;
+                        renderPatientInfo(data, srchMain,PLAN);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+                srchMain.innerHTML = 'Error fetching data. Please try again.';
+            });
+        }
+
+        // Array of media sources (images and videos)
+        const mediaSources = [
+            { type: 'image', src: '/static/images/ad.jpg' },  // Image
+            //{ type: 'video', src: '/static/videos/video1.mp4' },  // Video
+            { type: 'image', src: 'https://firebasestorage.googleapis.com/v0/b/monydb-f2cdb.appspot.com/o/ad1.jpg?alt=media&token=dc248e7d-3806-4364-ba9c-d575736d6253' },  // Another image
+            //{ type: 'video', src: '/static/videos/video2.mp4' }   // Another video
+        ];
+
+        let currentIndex = 0;
+        const resultDiv = document.getElementById('srchMain');
+
+        function showNextMedia() {
+            if (resultDiv.style.backgroundImage !=="none") {
+                // Get the current media
+                const media = mediaSources[currentIndex];
+
+                // Create media element (img or video)
+                let mediaElement;
+                if (media.type === 'image') {
+                    resultDiv.style.backgroundImage = `url(${media.src})`;
+
+                    // Set timer to switch to the next media after 15 seconds
+                    setTimeout(showNextMedia, 15000);
+                } else if (media.type === 'video') {
+                    mediaElement = document.createElement('video');
+                    mediaElement.src = media.src;
+                    mediaElement.autoplay = true;
+                    mediaElement.controls = false;
+
+                    // Move to the next media when the video ends
+                    mediaElement.onended = showNextMedia;
+                    // Add the media element to the result div
+                    resultDiv.appendChild(mediaElement);
+                }
+                console.log(media.src)
+
+
+                // Update the current index to rotate
+                currentIndex = (currentIndex + 1) % mediaSources.length;
+            }
+        }
+
+        function showPage(page) {
+            window.location.href = `/${page}`;
+        }
+    </script>
+</body>
+</html>

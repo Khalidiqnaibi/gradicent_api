@@ -1,0 +1,510 @@
+       
+    def update_entries(self, data):
+        self.is_user_input=False
+        for key, value in data.items():
+            if key in self.entry_widgets:
+                if key in ["date",'visit_date']:  # Check if the key corresponds to the 'date' field
+                    self.vd.set_date(datetime.strptime(value, '%Y-%m-%d')) 
+                elif key in ["details"]:
+                    self.entry_widgets[key].delete('1.0', tk.END)
+                    self.entry_widgets[key].insert('1.0', str(value))
+                elif key in ["search"]:
+                    self.entry_widgets[key].delete(0, tk.END)
+                elif key in ["no"]:
+                    self.entry_widgets[key].configure(state="normal")
+                    self.entry_widgets[key].delete(0, tk.END)
+                    self.entry_widgets[key].insert(0, self.pno)
+                    self.entry_widgets[key].configure(state="disabled")
+                else:
+                    self.entry_widgets[key].delete(0, tk.END)
+                    self.entry_widgets[key].insert(0, str(value))
+
+        patient_folder_path = self.create_date_folder(data['visit_date'])
+        self.is_user_input=True
+
+    def create_pat_folder(self,fname):
+        c=os.path.join(os.path.expanduser("~"), "Desktop")
+        script_dir = os.path.join(c,"patient_files")
+        if not os.path.exists(script_dir):
+            os.makedirs(script_dir)
+        patient_folder_path = os.path.join(script_dir, fname)
+        if not os.path.exists(patient_folder_path):
+            os.makedirs(patient_folder_path)
+        self.pat_folder_path=patient_folder_path
+        return patient_folder_path
+    
+    def create_date_folder(self,fname):
+        fname=str(fname)
+        c=os.path.join(os.path.expanduser("~"), "Desktop")
+        script_dir = os.path.join(c,"patient_files")
+        script_dirs = os.path.join(script_dir,f"{self.pno}")
+        if not os.path.exists(script_dirs):
+            os.makedirs(script_dirs)
+        date_folder_path = os.path.join(script_dirs, fname)
+        if not os.path.exists(date_folder_path):
+            os.makedirs(date_folder_path)
+        self.pat_folder_path=date_folder_path
+        return date_folder_path
+
+    def search(self):
+        # Get the date from the search widget text box
+        date_to_search = self.entry_widgets["search"].get().strip()
+        self.entry_widgets["search"].delete(0, tk.END)
+
+        # Parse the date into a standardized format
+        formatted_date = self.parse_date(date_to_search)
+
+        if not formatted_date:
+            print("Invalid date format.")
+            return
+        
+        result = self.get_visit_by_date(formatted_date,self.pno)
+
+        if result:
+            jk=0
+            for i in self.visits:
+                if i['no'] == result['no']:
+                    self.current_value=jk 
+                    break
+                jk+=1
+            self.update_entries(result)
+            self.entry_widgets["search"].insert(0, f"{datetime.now().date()}")
+        else:
+            self.entry_widgets["search"].insert(0, f"{datetime.now().date()}")
+            print( "Data not found for the entered date.")
+
+    def next_entry(self,event, entry_widget):
+        if not entry_widget in [self.entry_widgets[i] for i in ['visit_date',"date"]]:
+            if entry_widget in [self.entry_widgets["search"], ]:
+                self.search()
+            elif isinstance(entry_widget, tk.Text) and "details" in self.entry_widgets:
+                entry_widget.insert(tk.END, "\n")  # Insert a newline in the "details" text widget
+            else:
+                self.tacc(event)
+                            
+                next_widget = event.widget.tk_focusNext()
+                if isinstance(next_widget, tk.Button):
+                    next_widget = next_widget.tk_focusNext()  # Skip the button and move to the next widget
+                next_widget.focus()
+    
+    def last(self):
+        ch = len(self.visits) - 1
+        new_p = self.up_last()
+        date = datetime.now().date().isoformat()
+        if not new_p['visit_date'] == date:
+            nn = {
+            "vno": ch,
+            "visit_date": date,
+            "treatment": "No Change",
+            "payed": 0,
+            "diagnosis": "No Change",
+            "debit": 0,
+            "lab": "No Change",
+            "details": "",
+            "patient_no": self.pno
+            }
+            self.insert_or_update_data_to_visits(nn)
+            self.update_entries(nn)
+            new_p = nn
+        if new_p:
+            folder_path = self.create_date_folder(new_p['visit_date'])
+            self.current_value = ch
+            self.update_entries(new_p)
+        else:
+            print(f"Data with no {ch} not found for the search entry.")
+        
+    def Blank(self):
+        for key in self.entry_widgets:
+            if key in ["details"]:
+                self.entry_widgets[key].delete('1.0', tk.END)
+            elif key in ["chkup"]:
+                nxdate=date(2000, 6, 1)
+                self.nxt_chkup.set_date(nxdate)
+            elif key in ["no"]:
+                self.entry_widgets[key].configure(state="normal")
+                self.entry_widgets[key].delete(0, tk.END)
+                self.entry_widgets[key].insert(0, self.pno)
+                self.entry_widgets[key].configure(state="disabled")
+            elif key in ["visit_date"]:
+                nxdate=date(2000, 1, 1)
+                self.vd.set_date(nxdate)
+            elif key in ["search"]:
+                pass
+            else:
+                self.entry_widgets[key].delete(0, tk.END)
+                self.entry_widgets[key].insert(0, str(0))
+
+    def first(self):
+        no=1
+        new_p = self.get_v_by_no(no,self.pno)
+        if new_p:
+            folder_path =self.create_date_folder(new_p['visit_date'])
+            self.current_value=no
+            self.update_entries(new_p)
+        else:
+            print("Data not found for the search entry.")  
+                
+    def nextt(self):
+        current_value = self.current_value
+        new_value = current_value + 1
+        new_p = self.get_v_by_no(new_value, self.pno)
+        if new_p:
+            folder_path = self.create_date_folder(new_p['visit_date'])
+            self.update_entries(new_p)
+            self.current_value = new_value
+        else:
+            date = datetime.now().date().isoformat()
+            z = self.get_visit_by_date(date, self.pno)
+            if not z:
+                nn = {
+                "visit_date": date,
+                "treatment": "",
+                "payed": 0,
+                "diagnosis": "",
+                "debit": 0,
+                "coast": 0,
+                "lab": "",
+                "details": "",
+                "patient_no": self.pno
+                }
+                self.insert_or_update_data_to_visits(nn)
+                self.update_entries(nn)
+                self.current_value = new_value
+            else:
+                no = self.current_value
+                nn = self.visits
+                if not new_value > len(nn) + 1:
+                    self.current_value = new_value
+                
+                self.Blank()
+               
+    def pervv(self):
+        current_value = self.current_value
+        new_value = current_value - 1
+        if new_value<0:
+            print("This is the first entry")
+        else:
+            new_p = self.get_v_by_no(new_value,self.pno)
+            if new_p:
+                self.update_entries(new_p)
+                self.current_value=new_value
+    
+    def up_all_dbt(self):
+        payed=0
+        debit=0
+        for i in self.visits:
+            if not i['debit'] in ['',' ']:
+                debit+=i['debit']
+            if i['payed'] in [' ','']:
+                payed+=i['payed']
+        self.update_patient_debit(payed,debit)
+        
+    def update_patient_debit(self,payed, debit):
+        query = "SELECT payed, debit FROM patients WHERE no = ?"
+        result = self.fetch_data(query, (self.pno,))
+
+        if result:
+            current_payed = result[0][0]
+            current_debit = result[0][1]
+            payed += current_payed
+            debit += current_debit
+
+            conn = self.create_connection()
+            update_query = "UPDATE patients SET payed = ?, debit = ? WHERE no = ?"
+            self.execute_query(conn, update_query, (payed, debit, self.pno))
+            conn.close()  
+    
+    def create_dc_page(self,parent,user_data):
+        self.C_frame = tk.Frame(parent, bg=self.rgb_to_hex(139,140,142))
+
+        main_frame = tk.Frame(self.C_frame, bg=self.rgb_to_hex(139,140,142))
+        main_frame.pack(expand=True, fill="both")
+        
+        header_label = tk.Label(main_frame, text=" ", font=("Arial", 30), bg=f"{self.rgb_to_hex(139,140,142)}")
+        header_label.pack(pady=(0, 1))
+        
+        lfields = [
+            ("no", "Patient Number"),
+            ("treatment", "Treatment"),
+            ("diagnosis", "Diagnosis"),
+        ]
+        
+        rdfields = [
+            ("lab", "Lab"),
+            ("coast", "Total Coast"),
+            ("payed", "Amount Paid"),
+            ("debit", "Debit"),
+        ]
+
+        left_frame = tk.Frame(main_frame, bg=self.rgb_to_hex(139,140,142))
+        left_frame.pack(side="left", padx=10, anchor="n")
+
+        right_frame = tk.Frame(main_frame, bg=self.rgb_to_hex(139,140,142))
+        right_frame.pack(side="right", padx=10,  anchor="n")
+
+        entry_widgets = {}
+        label = tk.Label(left_frame, text="Visit Date", font=("Arial", 15), bg=self.rgb_to_hex(139,140,142))
+        label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
+        self.vd = DateEntry(left_frame)
+        self.vd.set_date(datetime.now().date())
+        self.vd.config(width=15)
+        self.vd.grid(row=0, column=1,sticky="e", padx=5, pady=5)
+        
+        entry_widgets['visit_date'] = self.vd
+        
+        for i, (key, label_text) in enumerate(lfields):
+            label = tk.Label(left_frame, text=label_text, font=("Arial", 15), bg=self.rgb_to_hex(139,140,142))
+            label.grid(row=i+1, column=0, sticky="w", padx=5, pady=5)
+
+            entry = ttk.Entry(left_frame, width=15, font=("Arial", 10))
+            entry.grid(row=i+1, column=1, padx=5, pady=5)
+            entry_widgets[key] = entry
+            entry_widgets[key].bind("<KeyRelease>", self.tacc)
+            entry_widgets[key].bind("<Return>", lambda event, ew=entry_widgets[key]: self.next_entry(event, ew))
+        
+        for i, (key, label_text) in enumerate(rdfields):
+            label = tk.Label(right_frame, text=label_text, font=("Arial", 15), bg=self.rgb_to_hex(139,140,142))
+            label.grid(row=i, column=0, sticky="w", padx=5, pady=5)
+
+            entry = ttk.Entry(right_frame, width=15, font=("Arial", 10))
+            entry.grid(row=i, column=1, padx=5, pady=5)
+            entry_widgets[key] = entry
+            entry_widgets[key].bind("<KeyRelease>", self.tacc)
+            entry_widgets[key].bind("<Return>", lambda event, ew=entry_widgets[key]: self.next_entry(event, ew))
+
+        dtls = tk.Frame(self.C_frame, bg=self.rgb_to_hex(139,140,142))  # New frame for buttons
+        dtls.pack()
+
+        entrydetails = tk.Text(dtls, width=80, font=("Arial", 10))
+        entrydetails.grid(row=0, column=0, padx=5)
+        entrydetails.configure(height=8)
+        entry_widgets['details'] = entrydetails
+        entry_widgets['details'].bind("<KeyRelease>", self.tacc)
+        
+
+        ctrs = tk.Frame(self.C_frame, bg=self.rgb_to_hex(139,140,142))
+        ctrs.pack(pady=10)
+
+        button_frame = tk.Frame(ctrs, bg=self.rgb_to_hex(139,140,142))
+        button_frame.grid(row=0, column=0)
+
+        button = tk.Button(button_frame, text="Patient Folder", font=("Arial", 10), command=self.open_file)
+        button.grid(row=0, column=0, padx=5, pady=5)
+
+        buttonp = tk.Button(button_frame, text= "Prev", font=("Arial", 10), width=5 ,command=self.pervv)
+        buttonp.grid(row=0, column=1, padx=5, pady=5)
+
+        buttonn = tk.Button(button_frame, text= "Next", font=("Arial", 10), width=5,command=self.nextt)
+        buttonn.grid(row=0, column=2, padx=5, pady=5)
+
+        buttonf = tk.Button(button_frame, text="First", font=("Arial", 10), width=5,command=self.first)
+        buttonf.grid(row=0, column=3, padx=5, pady=5)
+
+        buttonll = tk.Button(button_frame, text="Last", font=("Arial", 10), width=5,command=self.last)
+        buttonll.grid(row=0, column=4, padx=5, pady=5)
+
+        buttonnow = tk.Label(button_frame, text='      ', font=("Arial", 15), bg=self.rgb_to_hex(139,140,142))
+        buttonnow.grid(row=0, column=5, padx=5, pady=5)
+
+        b_frame = tk.Frame(ctrs, bg=f"{self.rgb_to_hex(139,140,142)}")  # New frame for buttons
+        b_frame.grid(row=0, column=1)
+
+        button = tk.Button(b_frame, text="Search", font=("Arial", 10), width=5,command=self.search)
+        button.grid(row=1, column=1, padx=5, pady=5)
+
+        self.sc = ttk.Entry(b_frame,width=15, font=("Arial", 10))
+        self.sc.grid(row=1, column=2, padx=5, pady=5)
+        entry_widgets["search"] = self.sc
+        entry_widgets["search"].insert(0, f"{datetime.now().date()}")
+        
+
+        self.entry_widgets = entry_widgets
+        date = datetime.now().date().isoformat()
+        z = self.get_visit_by_date(date, self.pno)
+        if not z:
+            nn = {
+                "visit_date": date,
+                "treatment": "",
+                "payed": 0,
+                "diagnosis": "",
+                "debit": 0,
+                "coast": 0,
+                "lab": "",
+                "details": "",
+                "patient_no": self.pno
+            }
+            self.insert_or_update_data_to_visits(nn)
+            self.update_entries(nn)
+        self.last()
+        return self.C_frame
+        
+    def toggle_date_entries(self):
+        if self.show_date_checkbox_var.get() and self.show_v_checkbox_var.get():
+            self.result_frame.pack_forget()
+            self.search_button.pack_forget()
+            self.dropp_frame.pack_forget()
+            self.se_frame.pack_forget()
+            self.se_frame.pack()
+            self.dropp_frame.pack(pady=5)
+            self.result_frame.pack(pady=10)# Move button to the bottom
+            self.search_button.pack(padx=(55,0),pady=15)
+        elif self.show_date_checkbox_var.get():
+            self.result_frame.pack_forget()
+            self.search_button.pack_forget()
+            self.dropp_frame.pack_forget()
+            self.se_frame.pack(pady=5)
+            self.result_frame.pack(pady=5)# Move button to the bottom
+            self.search_button.pack(padx=(55,0),pady=15) 
+        elif self.show_v_checkbox_var.get():
+            self.result_frame.pack_forget()
+            self.search_button.pack_forget()
+            self.se_frame.pack_forget()
+            self.dropp_frame.pack(pady=5)
+            self.result_frame.pack(pady=10)# Move button to the bottom
+            self.search_button.pack(padx=(55,0),pady=15) 
+        else:
+            self.result_frame.pack_forget()
+            self.search_button.pack_forget()
+            self.dropp_frame.pack_forget()
+            self.se_frame.pack_forget()
+            self.result_frame.pack(pady=10)# Reset button position
+            self.search_button.pack(padx=(55,0),pady=15) 
+
+    def ssearch(self):
+        start_date = self.start_date_entry.get_date().isoformat()
+        end_date = self.end_date_entry.get_date().isoformat()
+        details = self.details_entry.get()
+
+        # Connect to the database
+        conn = self.create_connection()
+        cursor = conn.cursor()
+
+        # Construct the base query
+        query = """
+        SELECT COUNT(DISTINCT p.no) AS total_customers, 
+               SUM(p.debit) AS total_debit, 
+               SUM(p.payed) AS total_payed
+        FROM patients AS p
+        JOIN visits AS v ON p.no = v.patient_no
+        """
+
+
+        # Construct the WHERE clause based on the input
+
+        # Initialize the params list
+        params = []
+        conditions = []
+
+        if self.show_date_checkbox_var.get():
+            if start_date:
+                conditions.append("visit_date >= ?")
+                params.append(start_date)
+            if end_date:
+                conditions.append("visit_date <= ?")
+                params.append(end_date)
+        if details:
+            conditions.append("details LIKE ?")
+            params.append(f'%{details}%')
+
+        if self.show_v_checkbox_var.get():
+            # Add conditions for non-blank and "No Change" stat_widgets
+            for key in ["p.no", "treatment", "diagnosis", "lab"]:
+                value = self.stat_widgets[key].get()
+                if value not in ["", "No Change", ' ']:
+                    conditions.append(f"{key} = ?")
+                    params.append(value)
+
+        # Add conditions to the query if any are present
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        # Execute the query with parameters
+        cursor.execute(query, params)
+        result = cursor.fetchone()
+
+        if conditions:
+            query += " AND p.debit > 0"
+        else:
+            query += " WHERE p.debit > 0"
+        cursor.execute(query, params)
+        unpaid_customers_result = cursor.fetchone()
+
+        total_customers = result[0]
+        total_debit = result[1] if result[1] else 0
+        total_payed = result[2] if result[2] else 0
+
+        unpaid_customers = unpaid_customers_result[0] if unpaid_customers_result else 0
+
+        self.total_customers_text.delete(0, tk.END)
+        self.total_customers_text.insert(0, str(total_customers))
+
+        self.unpaid_customers_text.delete(0, tk.END)
+        self.unpaid_customers_text.insert(0, str(unpaid_customers))
+
+        self.total_debit_text.delete(0, tk.END)
+        self.total_debit_text.insert(0, str(total_debit))
+
+        self.total_payed_text.delete(0, tk.END)
+        self.total_payed_text.insert(0, str(total_payed))
+
+        # Close the connection
+        conn.close()
+
+    def tacc(self, event):
+        # Get the widget that triggered the event
+        entry_widget = event.widget
+
+        # Get the widget's key (e.g., "name", "id No.", etc.)
+        key = next((k for k, v in self.entry_widgets.items() if v == entry_widget), None)
+
+        if key:
+            # Update the data in the database based on the key and the new value in the Entry widget
+            no = self.current_value
+
+            if self.modo == 'v':
+                nn = self.visits
+                if len(nn) < no:
+                    nn = {
+                        "no": no,
+                        "visit_date": self.vd.get_date().isoformat(),
+                        "patient_no": self.pno,  # Adjusted to use patient_no in the new database
+                        "treatment": '',
+                        "diagnosis": '',
+                        "lab": '',
+                        "coast": 0,
+                        "payed": 0,
+                        "debit": 0,
+                        'details': '',
+                    }
+                else:
+                    nn = nn[no - 1]
+
+            elif self.modo == 'k':
+                nn = self.get_all_visits_for_patient(self.pno)
+                if len(nn) - 1 > no:
+                    nn = {
+                        "no": no,
+                        "visit_date": self.vd.get_date().isoformat(),
+                        "patient_no": self.pno,  # Adjusted to use patient_no in the new database
+                        "treatment": '',
+                        "diagnosis": '',
+                        "lab": '',
+                        "coast": 0,
+                        "payed": 0,
+                        "debit": 0,
+                        'details': '',
+                    }
+                else:
+                    nn = nn[no - 1]
+
+            if key == "details":
+                nn[key] = entry_widget.get("1.0", tk.END)
+            elif key == "search":
+                pass
+            elif key == "payed":
+                nn[key] = entry_widget.get().strip()
+                self.payed_var_changed()
+            else:
+                nn[key] = entry_widget.get().strip()
+
+            self.insert_or_update_data_to_visits(nn)

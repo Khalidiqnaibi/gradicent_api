@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+    <style>
+        @media (max-width:750px) {
+            body {
+                display: flex;
+                width: 100%;
+                height: 105%;
+                font-family: Arial, sans-serif;
+                background-color: #8b8c8e;
+                margin: 0;
+                padding: 0;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            html {
+                width: 100%;
+                height: 125%;
+            }
+
+            #chart-frame {
+                display: flex;
+                margin-top: 5px;
+                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+                width: 90%;
+            }
+            canvas {
+                background-color: #abb0bb;
+                border-radius: 5px;
+                padding: 10px;
+                width: 95%;
+                margin-top: 5px;
+                display: flex;
+                margin-right: 5px;
+                border: 1px black solid;
+                height: 100%;
+            }
+
+            div#search-entries {
+                flex-direction: column;
+            }
+
+            #leftl-frame,#rightr-frame{
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+            }
+
+            #mm-frame {
+                display: flex;
+                width: 100%;
+                max-width: 770px;
+                background-color: #8b8c8e;
+                padding-top: 10px;
+                margin-bottom: 0px;
+                padding-bottom: 0px;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            input{
+                outline: none;
+                border: 1px solid #000;
+                line-height: 1.5;
+                border-radius: 2.5px;
+                width: 100px;
+            }
+
+            .right-frame,.left-frame{
+                display: flex;
+                flex-direction: column;
+            }
+
+            #topp-frame .ree{
+                display: flex;
+                align-items: baseline;
+                flex-direction: column;
+            }
+
+            #topp-frame .inpuu{
+                margin-bottom: 0px;
+            }
+
+            #topp-frame #ll label{
+                margin-right: 5px;
+            }
+
+            #menuBar {
+                display: flex;
+                background-color: #000;
+                border-bottom: 2px solid #000;
+                position: fixed;
+                width: 107%;
+            }
+
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .menuItem {
+                font-size: 16px;
+                color: #8b8c8e;
+                padding: 5px;
+                cursor: pointer;
+                border-radius: 5px;
+                margin-left: 15px;
+            }
+
+            .menuItem:hover {
+                background-color: #fff;
+                color: #333;
+            }
+
+            .menuItem:hover  .icoo{
+                filter: invert(0);
+            }
+
+            .icoo{
+                filter: invert(1);
+                width: 25px;
+                height: 25px;
+            }
+
+            #ll{
+                display: flex;
+                flex-direction: row;
+                margin-top: 5px;
+                margin-right: 0px;
+            }
+
+            #topp-frame {
+                margin-top: 70px;
+                background-color: #8b8c8e;
+                display: flex;
+                margin-bottom: 20px;
+                border-radius: 5px;
+                justify-content: space-between;
+                align-items: center;
+                flex-direction: column;
+            }
+
+            .checkbox {
+                margin-right: 5px;
+            }
+
+            .checkbox-label {
+                font-size: 13px;
+            }
+
+            #search-entries {
+                width: 85%;
+                display: none;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+
+            label{
+                margin-right: 5px;
+            }
+
+            .ree{
+                display: flex;
+                flex-direction: column;
+            }
+
+            .inpuu{
+                display: flex;
+                align-items: baseline;
+                margin-bottom: 10px;
+                justify-content: space-between;
+            }
+
+            #dropp-frame {
+                display: none;
+                width: 85%;
+                flex-direction: column;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+
+            .entry {
+                width: 100px;
+            }
+
+            #searchButton {
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4.5px;
+                font-size: 15px;
+                cursor: pointer;
+                color: rgb(255, 255, 255);
+                margin-bottom: 20px;
+                margin-top: 10px;
+            }
+
+            #result-frame {
+                display: flex;
+                border-radius: 5px;
+                border: 1px black solid;
+                flex-direction: column;
+                padding: 15px;
+                background-color: #abb0bb;
+                justify-content: space-between;
+                max-width: 618px;
+                margin-top: 20px;
+                width: 85%;
+            }
+
+            .result-entry {
+                width: 100px;
+            }
+
+            .checkbox-wrapper-3 input[type="checkbox"] {
+                visibility: hidden;
+                display: none;
+            }
+
+            .button{
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4.5px;
+                font-size: 15px;
+                cursor: pointer;
+                color: rgb(255, 255, 255);
+                margin-bottom: 20px;
+                margin-top: 10px;
+            }
+
+            .checkbox-wrapper-3 .toggle {
+              position: relative;
+              display: block;
+              width: 40px;
+              height: 20px;
+              cursor: pointer;
+              -webkit-tap-highlight-color: transparent;
+              transform: translate3d(0, 0, 0);
+            }
+            .checkbox-wrapper-3 .toggle:before {
+                content: "";
+                position: relative;
+                top: 3px;
+                left: 3px;
+                width: 34px;
+                height: 14px;
+                display: block;
+                background: #9A9999;
+                border-radius: 8px;
+                transition: background 0.2s ease;
+            }
+            .checkbox-wrapper-3 .toggle span {
+              position: absolute;
+              top: 0px;
+              left: 0px;
+              width: 20px;
+              height: 20px;
+              display: block;
+              background: white;
+                border-radius: 10px;
+                box-shadow: 0 3px 8px rgba(154, 153, 153, 0.5);
+                transition: all 0.2s ease;
+            }
+
+            .checkbox-wrapper-3 {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 5px;
+            }
+
+            .checkbox-wrapper-3 .toggle span:before {
+              content: "";
+              position: absolute;
+              display: block;
+              margin: -18px;
+              width: 56px;
+              height: 56px;
+              background: rgb(0 0 0 / 78%);
+              border-radius: 50%;
+              transform: scale(0);
+              opacity: 1;
+              pointer-events: none;
+            }
+
+            .checkbox-wrapper-3 #show-visit-info:checked + .toggle:before {
+              background: #575757;
+            }
+            .checkbox-wrapper-3 #show-visit-info:checked + .toggle span {
+              background: #000;
+              transform: translateX(20px);
+              transition: all 0.2s cubic-bezier(0.8, 0.4, 0.3, 1.25), background 0.15s ease;
+              box-shadow: 0 3px 8px rgba(79, 46, 220, 0.2);
+            }
+            .checkbox-wrapper-3 #show-visit-info:checked + .toggle span:before {
+              transform: scale(1);
+              opacity: 0;
+              transition: all 0.4s ease;
+            }
+
+            .checkbox-wrapper-3 #show-date:checked + .toggle:before {
+                background: #575757;
+            }
+            .checkbox-wrapper-3 #show-date:checked + .toggle span {
+                background: #000;
+                transform: translateX(20px);
+                transition: all 0.2s cubic-bezier(0.8, 0.4, 0.3, 1.25), background 0.15s ease;
+                box-shadow: 0 3px 8px rgba(79, 46, 220, 0.2);
+            }
+            .checkbox-wrapper-3 #show-date:checked + .toggle span:before {
+                transform: scale(1);
+                opacity: 0;
+                transition: all 0.4s ease;
+            }
+
+            #patients {
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4.5px;
+                font-size: 15px;
+                cursor: pointer;
+                color: rgb(255, 255, 255);
+            }
+
+            .lmaooo {
+                margin-top: 5px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-direction: column;
+            }
+        }
+        @media (min-width:750px) {
+            body {
+                display: flex;
+                width: 100%;
+                height: 100%;
+                font-family: Arial, sans-serif;
+                background-color: #8b8c8e;
+                margin: 0;
+                padding: 0;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            html{
+                width: 100%;
+                height: 100%;
+            }
+
+            #mm-frame {
+                display: flex;
+                width: 100%;
+                max-width: 770px;
+                background-color: #8b8c8e;
+                padding-top: 10px;
+                margin-bottom: 0px;
+                padding-bottom: 0px;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            input{
+                outline: none;
+                border: 1px solid #000;
+                line-height: 1.5;
+                border-radius: 2.5px;
+            }
+
+            #leftl-frame, #rightr-frame {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+            }
+
+            .right-frame,.left-frame{
+                display: flex;
+                flex-direction: column;
+            }
+
+            #topp-frame .ree{
+                display: flex;
+                align-items: baseline;
+                flex-direction: column;
+            }
+
+            #topp-frame .inpuu{
+                margin-bottom: 0px;
+            }
+
+            #topp-frame #ll label{
+                margin-right: 5px;
+            }
+
+            #menuBar {
+                display: flex;
+                background-color: #000;
+                border-bottom: 2px solid #000;
+                position: fixed;
+                width: 100%;
+            }
+
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .menuItem {
+                font-size: 16px;
+                color: #8b8c8e;
+                padding: 5px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-left: 15px;
+            }
+
+            .menuItem:hover {
+                background-color: #fff;
+                color: #333;
+            }
+
+            .menuItem:hover  .icoo{
+                filter: invert(0);
+            }
+
+            .icoo{
+                filter: invert(1);
+                width: 25px;
+                height: 25px;
+            }
+
+            #ll{
+                display: flex;
+                flex-direction: row;
+                margin-top: 5px;
+                margin-right: 0px;
+            }
+
+            .right-frame .inpuu label{
+                margin-right: 34px;
+            }
+
+            .left-frame .inpuu label{
+                margin-right: 68px;
+            }
+
+            #topp-frame label{
+                margin-right: 0px;
+            }
+
+            #topp-frame {
+                background-color: #8b8c8e;
+                display: flex;
+                min-width: 620px;
+                flex-direction: column;
+                /* margin-bottom: 20px; */
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 55px;
+            }
+
+            .checkbox {
+                margin-right: 5px;
+            }
+
+            .checkbox-label {
+                font-size: 13px;
+            }
+
+            #search-entries {
+                width: 80%;
+                display: none;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+
+            .date-entry {
+                width: 171px;
+            }
+
+            #start-date-label {
+                margin-right: 64px;
+            }
+
+            #end-date-label {
+                margin-right: 35px;
+            }
+
+            label{
+                margin-right: 5px;
+            }
+
+            .ree{
+                display: flex;
+                flex-direction: column;
+            }
+
+            .inpuu{
+                display: flex;
+                align-items: baseline;
+                margin-bottom: 10px;
+                justify-content: space-between;
+            }
+
+            #dropp-frame {
+                display: none;
+                width: 80%;
+                justify-content: space-between;
+                margin-top: 5px;
+            }
+
+            .entry {
+                width: 150px;
+            }
+
+            #searchButton {
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4.5px;
+                font-size: 15px;
+                cursor: pointer;
+                margin-top: 5px;
+                color: rgb(255, 255, 255);
+            }
+
+            #result-frame {
+                display: flex;
+                justify-content: space-between;
+                max-width: 618px;
+                width: 85%;
+                border-radius: 5px;
+                padding: 15px;
+                background-color: #abb0bb;
+                border: 1px black solid;
+            }
+
+            .result-entry {
+                width: 150px;
+            }
+
+            .checkbox-wrapper-3 input[type="checkbox"] {
+                visibility: hidden;
+                display: none;
+            }
+
+            .checkbox-wrapper-3 .toggle {
+              position: relative;
+              display: block;
+              width: 40px;
+              height: 20px;
+              cursor: pointer;
+              -webkit-tap-highlight-color: transparent;
+              transform: translate3d(0, 0, 0);
+            }
+            .checkbox-wrapper-3 .toggle:before {
+                content: "";
+                position: relative;
+                top: 3px;
+                left: 3px;
+                width: 34px;
+                height: 14px;
+                display: block;
+                background: #9A9999;
+                border-radius: 8px;
+                transition: background 0.2s ease;
+            }
+            .checkbox-wrapper-3 .toggle span {
+              position: absolute;
+              top: 0px;
+              left: 0px;
+              width: 20px;
+              height: 20px;
+              display: block;
+              background: white;
+                border-radius: 10px;
+                box-shadow: 0 3px 8px rgba(154, 153, 153, 0.5);
+                transition: all 0.2s ease;
+            }
+
+            .checkbox-wrapper-3 {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 5px;
+            }
+
+            .checkbox-wrapper-3 .toggle span:before {
+              content: "";
+              position: absolute;
+              display: block;
+              margin: -18px;
+              width: 56px;
+              height: 56px;
+              background: rgb(0 0 0 / 78%);
+              border-radius: 50%;
+              transform: scale(0);
+              opacity: 1;
+              pointer-events: none;
+            }
+
+            .checkbox-wrapper-3 #show-visit-info:checked + .toggle:before {
+              background: #575757;
+            }
+            .checkbox-wrapper-3 #show-visit-info:checked + .toggle span {
+              background: #000;
+              transform: translateX(20px);
+              transition: all 0.2s cubic-bezier(0.8, 0.4, 0.3, 1.25), background 0.15s ease;
+              box-shadow: 0 3px 8px rgba(79, 46, 220, 0.2);
+            }
+            .checkbox-wrapper-3 #show-visit-info:checked + .toggle span:before {
+              transform: scale(1);
+              opacity: 0;
+              transition: all 0.4s ease;
+            }
+
+            .checkbox-wrapper-3 #show-date:checked + .toggle:before {
+                background: #575757;
+            }
+            .checkbox-wrapper-3 #show-date:checked + .toggle span {
+                background: #000;
+                transform: translateX(20px);
+                transition: all 0.2s cubic-bezier(0.8, 0.4, 0.3, 1.25), background 0.15s ease;
+                box-shadow: 0 3px 8px rgba(79, 46, 220, 0.2);
+            }
+            .checkbox-wrapper-3 #show-date:checked + .toggle span:before {
+                transform: scale(1);
+                opacity: 0;
+                transition: all 0.4s ease;
+            }
+            #patients {
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4.5px;
+                font-size: 15px;
+                cursor: pointer;
+                margin: 5px;
+                color: rgb(255, 255, 255);
+                margin-bottom: 0px;
+            }
+
+            body {
+                display: flex;
+                width: 100%;
+                height: 100%;
+                font-family: Arial, sans-serif;
+                background-color: #8b8c8e;
+                margin: 0;
+                padding: 0;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            div#leftl-frame {
+                margin-right: 8%;
+            }
+
+            div#left-frame {
+                margin-right: 45px;
+            }
+
+            div#dropp-frame {
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            div#search-entries {
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            #chart-frame {
+                display: flex;
+                margin-top: 5px;
+                justify-content: center;
+                flex-direction: row;
+                height: 300px;
+                width: 50%;
+            }
+            .lmaooo {
+                /*margin-top: 35px;*/
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+        }
+
+        .menuItem {
+            font-size: 16px;
+            color: #8b8c8e;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .menuItem:hover {
+            background-color: #fff;
+            color: #333;
+        }
+
+        .icoo {
+            filter: invert(1);
+            width: 25px;
+            height: 25px;
+        }
+
+        input, select {
+            outline: none;
+            border: 1px solid #000;
+            line-height: 1.5;
+            border-radius: 2.5px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            margin-right: 5px;
+            color: #000000;
+        }
+
+        button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        canvas {
+            background-color: #abb0bb;
+            border-radius: 5px;
+            padding: 10px;
+            border: 1px black solid;
+            width: 97%;
+            margin-right: 5px;
+            height: 100%;
+        }
+
+        #menuBar {
+            display: flex;
+            background-color: #000;
+            border-bottom: 2px solid #000;
+            position: fixed;
+            width: 100%;
+            z-index: 2;
+            justify-content: flex-start;
+        }
+
+        a.menuItem {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 35px;
+        }
+
+        h6 {
+            margin: 0px;
+        }
+
+    </style>
+    <title>Binder Medical</title>
+</head>
+<body>
+    <div id="menuBar">
+        <a class="menuItem lll" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
+        <a class="menuItem" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
+        <a class="menuItem" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
+        <a class="menuItem" title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
+        <a class="menuItem" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
+        <a class="menuItem" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>support</h6></a>
+    </div>
+
+    <div id="topp-frame">
+        <div class="ree">
+            <div class="inpuu">
+                <label for="details-entry">Visit Details:</label>
+                <input type="text" id="details-entry" class="details-entry">
+            </div>
+        </div>
+        <div class="ll" id="ll">
+            <div class="checkbox-wrapper-3">
+                <label for="show-date" class="checkbox-label">Date</label>
+                <input type="checkbox" id="show-date" onclick="toggleDateEntries()" />
+                <label for="show-date" class="toggle"><span></span></label>
+            </div>
+            <div class="checkbox-wrapper-3">
+                <label for="show-visit-info" class="checkbox-label">Visit Info</label>
+                <input type="checkbox" id="show-visit-info" onclick="toggleDateEntries()" />
+                <label for="show-visit-info" class="toggle"><span></span></label>
+            </div>
+        </div>
+    </div>
+
+    <div id="mm-frame">
+        <div id="search-entries">
+            <div id="leftl-frame">
+                <label for="start-date-entry">Start Date:</label>
+                <input type="date" id="start-date-entry" class="date-entry">
+            </div>
+            <div id="rightr-frame">
+                <label for="end-date-entry">End Date:</label>
+                <input type="date" id="end-date-entry" class="date-entry">
+            </div>
+        </div>
+
+        <div id="dropp-frame">
+            <div id="left-frame">
+                <div class="inpuu">
+                    <label for="loc">Location:</label>
+                    <input type="text" id="loc" class="input-field">
+                </div>
+                <div class="inpuu">
+                    <label for="treatment">Treatment:</label>
+                    <input type="text" id="treatment" class="input-field">
+                </div>
+            </div>
+
+            <div id="right-frame">
+                <div class="inpuu">
+                    <label for="diagnosis">Diagnosis:</label>
+                    <input type="text" id="diagnosis" class="input-field">
+                </div>
+                <div class="inpuu">
+                    <label for="lab">Lab:</label>
+                    <input type="text" id="lab" class="input-field">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-frame">
+        <div class="ree">
+            <div class="inpuu">
+                <label for="totalPatients">Total Patients:</label>
+                <input type="text" id="totalPatients" class="result-field">
+            </div>
+            <div class="inpuu">
+                <label for="patientsWithDebit">Patients With Debit:</label>
+                <input type="text" id="patientsWithDebit" class="result-field">
+            </div>
+        </div>
+        <div class="ree" id="mo">
+            <div class="inpuu">
+                <label for="totalDebit">Total Debit:</label>
+                <input type="text" id="totalDebit" class="result-field">
+            </div>
+            <div class="inpuu">
+                <label for="totalPayed">Total Revenue :</label>
+                <input type="text" id="totalPayed" class="result-field">
+            </div>
+        </div>
+    </div>
+
+    <div id="chart-frame">
+        <canvas id="myChart"></canvas>
+        <canvas id="mymyChart"></canvas>
+    </div>
+
+    <div class="lmaooo">
+        <button id="patients" class="result-field button">See patients</button>
+        <button id="searchButton">Search</button>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const plan = '{{plan}}';
+        let patss = [];
+
+        function toggleDateEntries() {
+            const showDateCheckbox = document.getElementById("show-date");
+            const showVisitInfoCheckbox = document.getElementById("show-visit-info");
+            const droppFrame = document.getElementById("dropp-frame");
+            const dateFrame = document.getElementById("search-entries");
+            const resultFrame = document.getElementById("result-frame");
+            const searchButton = document.getElementById("searchButton");
+
+            if (showDateCheckbox.checked && showVisitInfoCheckbox.checked) {
+                resultFrame.style.display = "none";
+                searchButton.style.display = "none";
+                dateFrame.style.display = "none";
+                droppFrame.style.display = "none";
+                dateFrame.style.display = "flex";
+                droppFrame.style.display = "flex";
+                resultFrame.style.display = "flex";
+                searchButton.style.display = "block";
+            } else if (showDateCheckbox.checked) {
+                resultFrame.style.display = "none";
+                searchButton.style.display = "none";
+                droppFrame.style.display = "none";
+                dateFrame.style.display = "flex";
+                resultFrame.style.display = "flex";
+                searchButton.style.display = "block";
+            } else if (showVisitInfoCheckbox.checked) {
+                resultFrame.style.display = "none";
+                searchButton.style.display = "none";
+                dateFrame.style.display = "none";
+                droppFrame.style.display = "flex";
+                resultFrame.style.display = "flex";
+                searchButton.style.display = "block";
+            } else {
+                resultFrame.style.display = "none";
+                searchButton.style.display = "none";
+                droppFrame.style.display = "none";
+                dateFrame.style.display = "none";
+                resultFrame.style.display = "flex";
+                searchButton.style.display = "block";
+            }
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+            if (plan === 'sec') {
+                document.getElementById('mo').style.display = 'none';
+                document.getElementById('mymyChart').style.display = 'none';
+                document.getElementById('result-frame').style.justifyContent = 'center';
+            }
+
+            document.getElementById("patients").style.display = 'none';
+
+            document.getElementById("patients").addEventListener("click", function () {
+                if (patss.length > 0) {
+                    showpats();
+                }
+            });
+
+            document.getElementById("searchButton").addEventListener("click", function () {
+                ssearch();
+            });
+
+
+            const showDateCheckbox = document.getElementById("show-date");
+            const showVisitInfoCheckbox = document.getElementById("show-visit-info");
+            const droppFrame = document.getElementById("dropp-frame");
+            const dateFrame = document.getElementById("search-entries");
+            const resultFrame = document.getElementById("result-frame");
+            const searchButton = document.getElementById("searchButton");
+
+
+            resultFrame.style.display = "none";
+            searchButton.style.display = "none";
+            droppFrame.style.display = "none";
+            dateFrame.style.display = "none";
+            resultFrame.style.display = "flex";
+            searchButton.style.display = "block";
+
+            // Chart.js initialization for financial data
+            const cctx = document.getElementById('mymyChart').getContext('2d');
+            const mycChart = new Chart(cctx, {
+                type: 'line',  // Changed to line chart
+                data: {
+                    labels: [],  // Empty initially, will be filled with dates
+                    datasets: [{
+                        label: 'Total Debit',
+                        data: [],
+                        borderColor: 'rgb(203 163 64)',
+                        backgroundColor: 'rgb(255 182 0)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Total Revenue ',
+                        data: [],
+                        borderColor: 'rgb(96 56 196)',
+                        backgroundColor: 'rgb(99 46 234)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            function updatecChart(patients, searchParams) {
+                const visitsData = [];
+                const startDate = showDateCheckbox.checked && searchParams.startDate ? new Date(searchParams.startDate) : null;
+                const endDate = showDateCheckbox.checked && searchParams.endDate ? new Date(searchParams.endDate) : null;
+
+                patients.forEach(patient => {
+                    patient.visits.forEach(visit => {
+                        const visitDate = new Date(visit.visit_date);
+
+                        // Check if the visit is within the date range, if provided
+                        const isWithinDateRange = (!startDate || visitDate >= startDate) && (!endDate || visitDate <= endDate);
+
+                        // Check if additional search parameters are matched
+                        const isDetailsMatched = !searchParams.details || visit.details.includes(searchParams.details);
+                        const isLocationMatched = !searchParams.location || patient.location.includes(searchParams.location);
+                        const isTreatmentMatched = !searchParams.treatment || visit.treatment.includes(searchParams.treatment);
+                        const isDiagnosisMatched = !searchParams.diagnosis || visit.diagnosis.includes(searchParams.diagnosis);
+                        const isLabMatched = !searchParams.lab || visit.lab.includes(searchParams.lab);
+
+                        // Add the visit data to the visitsData array if all criteria are met
+                        if ((!showDateCheckbox.checked || isWithinDateRange) &&
+                            isDetailsMatched &&
+                            (!showVisitInfoCheckbox.checked || (isLocationMatched && isTreatmentMatched && isDiagnosisMatched && isLabMatched))) {
+                            visitsData.push({
+                                visitDate: visitDate.toISOString().split('T')[0]  ,  // Use ISO date string for consistency
+                                debit: visit.debit,
+                                payed: visit.payed
+                            });
+                        }
+                    });
+                });
+
+                // Aggregate data by date
+                const aggregatedData = visitsData.reduce((acc, curr) => {
+                    if (!acc[curr.visitDate]) {
+                        acc[curr.visitDate] = { debit: 0, payed: 0 };
+                    }
+                    acc[curr.visitDate].debit += parseFloat(curr.debit);
+                    acc[curr.visitDate].payed += parseFloat(curr.payed);
+                    return acc;
+                }, {});
+
+                // Convert aggregated data to arrays for Chart.js
+                const labels = Object.keys(aggregatedData);
+                const debitData = labels.map(date => aggregatedData[date].debit);
+                const payedData = labels.map(date => aggregatedData[date].payed);
+
+                // Sort the dates and associated data
+                const sortedData = labels.map(date => ({
+                    date: new Date(date),
+                    debit: aggregatedData[date].debit,
+                    payed: aggregatedData[date].payed
+                })).sort((a, b) => a.date - b.date);
+
+                // Extract sorted data
+                const sortedLabels = sortedData.map(data => data.date.toISOString().split('T')[0]);
+                const sortedDebitData = sortedData.map(data => data.debit);
+                const sortedPayedData = sortedData.map(data => data.payed);
+
+                // Update the chart with sorted data
+                mycChart.data.labels = sortedLabels;
+                mycChart.data.datasets[0].data = sortedDebitData;
+                mycChart.data.datasets[1].data = sortedPayedData;
+                mycChart.update();
+            }
+
+            // Chart.js initialization for patients data
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',  // Changed to line chart
+                data: {
+                    labels: [],  // Empty initially, will be filled with dates
+                    datasets: [{
+                        label: 'Total Patients',
+                        data: [],
+                        borderColor: 'rgb(52 160 196)',
+                        backgroundColor: 'rgb(0 191 255)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Patients with Debit',
+                        data: [],
+                        borderColor: 'rgb(194 56 132)',
+                        backgroundColor: 'rgb(252 4 140)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            function updateChart(patients, searchParams) {
+                const datePatientCount = {};
+                const datePatientWithDebitCount = {};
+                const { startDate, endDate, details, location, treatment, diagnosis, lab } = searchParams;
+
+                // Convert date strings to Date objects for comparison
+                const start = showDateCheckbox.checked && startDate ? new Date(startDate) : null;
+                const end = showDateCheckbox.checked && endDate ? new Date(endDate) : null;
+
+                // Loop through patients and visits to count the number of patients per date
+                patients.forEach(patient => {
+                    patient.visits.forEach(visit => {
+                        const visitDate = new Date(visit.visit_date);
+
+                        const isWithinDateRange = (!start || visitDate >= start) && (!end || visitDate <= end);
+
+                        // Check if visit date is within the specified time period
+                        if (!showDateCheckbox.checked || isWithinDateRange) {
+                            // Check if the other search parameters match (if filled)
+                            if ((!details || visit.details.includes(details)) &&
+                                (!showVisitInfoCheckbox.checked || (!location || patient.location.includes(location)) &&
+                                (!treatment || visit.treatment.includes(treatment)) &&
+                                (!diagnosis || visit.diagnosis.includes(diagnosis)) &&
+                                (!lab || visit.lab.includes(lab)))) {
+
+                                const dateString = visitDate.toISOString().split('T')[0];
+
+                                // Initialize counters if date is not already present
+                                if (!datePatientCount[dateString]) {
+                                    datePatientCount[dateString] = 0;
+                                    datePatientWithDebitCount[dateString] = 0;
+                                }
+
+                                // Count total patients per date
+                                datePatientCount[dateString]++;
+
+                                // Count patients with debit per date
+                                if (visit.debit > 0) {
+                                    datePatientWithDebitCount[dateString]++;
+                                }
+                            }
+                        }
+                    });
+                });
+
+                // Convert counts object to arrays and sort by date
+                const sortedDates = Object.keys(datePatientCount).map(date => ({
+                    date: new Date(date),
+                    totalPatients: datePatientCount[date],
+                    patientsWithDebit: datePatientWithDebitCount[date]
+                })).sort((a, b) => a.date - b.date);
+
+                // Extract sorted data
+                const labels = sortedDates.map(data => data.date.toISOString().split('T')[0]);
+                const totalPatientsData = sortedDates.map(data => data.totalPatients);
+                const patientsWithDebitData = sortedDates.map(data => data.patientsWithDebit);
+
+                // Update the chart with the sorted data
+                myChart.data.labels = labels;
+                myChart.data.datasets[0].data = totalPatientsData;
+                myChart.data.datasets[1].data = patientsWithDebitData;
+                myChart.update();
+            }
+
+            function getSearchParams() {
+                return {
+                    startDate: document.getElementById("start-date-entry").value,
+                    endDate: document.getElementById("end-date-entry").value,
+                    details: document.getElementById("details-entry").value,
+                    location: document.getElementById("loc").value,
+                    treatment: document.getElementById("treatment").value,
+                    diagnosis: document.getElementById("diagnosis").value,
+                    lab: document.getElementById("lab").value,
+                    showDate: showDateCheckbox.checked,
+                    showVisitInfo: showVisitInfoCheckbox.checked
+                };
+            }
+
+            function showpats() {
+                window.location.href = `/search_stats`;
+            }
+            // Search functionality
+            function ssearch() {
+                const searchParams = getSearchParams();
+
+                fetch('/ssearch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(searchParams)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    document.getElementById('totalPatients').value = data.total_customers;
+                    document.getElementById('patientsWithDebit').value = data.unpaid_customers;
+                    document.getElementById('totalDebit').value = data.total_debit;
+                    document.getElementById('totalPayed').value = data.total_payed;
+                    document.getElementById("patients").style.display = 'block';
+                    patss = data.patients;
+
+                    // Update charts with only the patients returned from the search
+                    updateChart(data.patients, getSearchParams());
+                    updatecChart(data.patients, getSearchParams());
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+        });
+
+    </script>
+
+</body>
+</html>

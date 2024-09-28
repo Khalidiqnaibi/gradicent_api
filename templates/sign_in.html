@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/static/icn/icon.ico">
+    <title>Sign in</title>
+    <!-- Add your CSS styles or link external stylesheets here if needed -->
+    <style>
+        html{
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+            width: 100%;
+        }
+
+        .plans-container {
+            margin: 0;
+            display: flex;
+            height: 100%;
+            justify-items: center;
+            align-items: center;
+        }
+
+        .plan {
+            background: #abb0bb;
+            padding: 20px;
+            margin: 20px; 
+            height: 69%;
+            margin-top: 5px;
+            text-align: center;
+
+            box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
+            border-color: #000;
+            border-radius: 5px;
+            background-color: #abb0bb;
+            padding: 25px;
+            border: 1px solid #000;
+        }
+
+        .plan h2 {
+            color: #000000;
+        }
+
+        p {
+            color: #000000;
+        }
+
+        .button {
+            background-color: #000;
+            border: none;
+            padding: 5px 10px;
+            margin-top:5px;
+            border-radius: 4.5px;
+            font-size: 15px;
+            cursor: pointer;
+            color: rgb(255, 255, 255);
+        }
+
+        .plns{
+            display:grid;
+            justify-items: center;
+            background: #8b8c8e;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #titel{
+            height: 5%;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .plan ul {
+            list-style: none;
+            padding: 20px;
+        }
+
+        .plan li {
+            color: #000000;
+        }
+
+        .subscribe-button {
+            margin-top: 20px;
+            padding: 10px;
+            background: #FFFFFF;
+            cursor: pointer;
+            border: 2px;
+            border-radius: 5px;
+        }
+
+        .actvbox{
+            justify-items: center;
+            margin-top: 10px;
+        }
+
+        input{
+            height: 20px;
+        }
+
+        .uppln {
+            height: 75%;
+        }
+
+        .dropbtn {
+            background-color: #abb0bb;
+            color: white;
+            padding: 5px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+          
+        .dropbtn:hover {
+            background-color: #abb0bb;
+        }
+        
+        .dropbtn:focus {
+            background-color: #abb0bb;
+        }
+          
+        #myInput {
+            box-sizing: border-box;
+            font-size: 16px;
+            border-radius: 5px;
+            width: 100%;
+            padding: 14px 20px 12px 15px;
+            border: none;
+            border-bottom: 1px solid #ddd;
+        }
+          
+        #myInput:focus {
+            outline: 0px solid #000000;
+        }
+        
+        input:focus {
+            outline: 0px solid #000000;
+        }
+
+        input {
+            border: 1px solid #000;
+            border-radius: 2.5px;
+            font-size: 18px;
+            width:80%;
+            background-color: #ffffff;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+          
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            width: 206px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            margin-left: 28px;
+            background-color: #ffffff;
+            z-index: 1;
+        }
+          
+        .dropdown-content a {
+            color: black;
+            text-align: start;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            border-radius: 2.5px;
+        }
+          
+        .dropdown a:hover {
+            background-color: #ddd;
+        }
+
+        #oh {
+            border: 1px solid #000;
+            border-radius: 2.5px;
+            font-size: 18px;
+            width: 69%;
+            background-color: #ffffff;
+        }
+          
+        .show {
+            display: block;
+        }
+
+        .button {
+            background-color: #000;
+            border: none;
+            padding: 5px 10px;
+            margin-top:5px;
+            border-radius: 4.5px;
+            font-size: 15px;
+            cursor: pointer;
+            color: rgb(255, 255, 255);
+        }
+
+        .btnss {
+            display: flex;
+            margin-top: 50%;
+            flex-direction: column;
+        }
+
+        h4 {
+            margin-top: 50%;
+        }
+
+        #droppp {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info {
+            max-height: 325px;
+            overflow-y: scroll;
+        }
+
+        .info::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .info::-webkit-scrollbar-track {
+            border-radius: 5px;
+            background-color: #e7e7e7;
+            border: 1px solid #cacaca;
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+        }
+        
+        .info::-webkit-scrollbar-thumb {
+            border-radius: 5px;
+            background-color: #000000;
+        }
+
+        button.dropbtn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mgg {
+            height: 20px;
+            width: 20px;
+        }
+
+        a{
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+  <div id="oho" class="plns">
+    <div id="panlss" class="plans-container">
+        <div id="pln" class="plan">
+            <h2>Dr name:</h2>
+            <input type="text" value="" id="drname" required>
+            <h2>Specialty:</h2>
+            <div class="dropdown">
+                <div id="droppp">
+                    <button onclick="drop()" class="dropbtn"><img class="mgg" alt="down" src="/static/images/down.png"></button>
+                    <input type="text" id="oh" onclick="drop()" value="Family and General Medicine" disabled>
+                </div>
+                <div id="myDropdown" class="dropdown-content">
+                    <input type="text" placeholder="Search" id="myInput" onkeyup="filterFunction()">
+                    <div class="info">
+                        <a onclick="clickk('Accident and emergency medicine')">Accident and emergency medicine</a>
+                        <a onclick="clickk('Allergist')">Allergist</a>
+                        <a onclick="clickk('Anaesthetics')">Anaesthetics</a>
+                        <a onclick="clickk('Cardiology')">Cardiology</a>
+                        <a onclick="clickk('Child psychiatry')">Child psychiatry</a>
+                        <a onclick="clickk('Clinical biology')">Clinical biology</a>
+                        <a onclick="clickk('Clinical chemistry')">Clinical chemistry</a>
+                        <a onclick="clickk('Clinical microbiology')">Clinical microbiology</a>
+                        <a onclick="clickk('Clinical neurophysiology')">Clinical neurophysiology</a>
+                        <a onclick="clickk('Craniofacial surgery')">Craniofacial surgery</a>
+                        <a onclick="clickk('Dermatology')">Dermatology</a>
+                        <a onclick="clickk('Endocrinology')">Endocrinology</a>
+                        <a onclick="clickk('Family and General Medicine')">Family and General Medicine</a>
+                        <a onclick="clickk('Gastroenterologic surgery')">Gastroenterologic surgery</a>
+                        <a onclick="clickk('Gastroenterology')">Gastroenterology</a>
+                        <a onclick="clickk('General Practice')">General Practice</a>
+                        <a onclick="clickk('General surgery')">General surgery</a>
+                        <a onclick="clickk('Geriatrics')">Geriatrics</a>
+                        <a onclick="clickk('Hematology')">Hematology</a>
+                        <a onclick="clickk('Immunology')">Immunology</a>
+                        <a onclick="clickk('Infectious diseases')">Infectious diseases</a>
+                        <a onclick="clickk('Internal medicine')">Internal medicine</a>
+                        <a onclick="clickk('Laboratory medicine')">Laboratory medicine</a>
+                        <a onclick="clickk('Nephrology')">Nephrology</a>
+                        <a onclick="clickk('Neuropsychiatry')">Neuropsychiatry</a>
+                        <a onclick="clickk('Neurology')">Neurology</a>
+                        <a onclick="clickk('Neurosurgery')">Neurosurgery</a>
+                        <a onclick="clickk('Nuclear medicine')">Nuclear medicine</a>
+                        <a onclick="clickk('Obstetrics and gynaecology')">Obstetrics and gynaecology</a>
+                        <a onclick="clickk('Occupational medicine')">Occupational medicine</a>
+                        <a onclick="clickk('Oncology')">Oncology</a>
+                        <a onclick="clickk('Ophthalmology')">Ophthalmology</a>
+                        <a onclick="clickk('Oral and maxillofacial surgery')">Oral and maxillofacial surgery</a>
+                        <a onclick="clickk('Orthopaedics')">Orthopaedics</a>
+                        <a onclick="clickk('Otorhinolaryngology')">Otorhinolaryngology</a>
+                        <a onclick="clickk('Paediatric surgery')">Paediatric surgery</a>
+                        <a onclick="clickk('Paediatrics')">Paediatrics</a>
+                        <a onclick="clickk('Pathology')">Pathology</a>
+                        <a onclick="clickk('Pharmacology')">Pharmacology</a>
+                        <a onclick="clickk('Physical medicine and rehabilitation')">Physical medicine and rehabilitation</a>
+                        <a onclick="clickk('Plastic surgery')">Plastic surgery</a>
+                        <a onclick="clickk('Podiatric surgery')">Podiatric surgery</a>
+                        <a onclick="clickk('Preventive medicine')">Preventive medicine</a>
+                        <a onclick="clickk('Psychiatry')">Psychiatry</a>
+                        <a onclick="clickk('Public health')">Public health</a>
+                        <a onclick="clickk('Radiation Oncology')">Radiation Oncology</a>
+                        <a onclick="clickk('Radiology')">Radiology</a>
+                        <a onclick="clickk('Respiratory medicine')">Respiratory medicine</a>
+                        <a onclick="clickk('Rheumatology')">Rheumatology</a>
+                        <a onclick="clickk('Stomatology')">Stomatology</a>
+                        <a onclick="clickk('Thoracic surgery')">Thoracic surgery</a>
+                        <a onclick="clickk('Tropical medicine')">Tropical medicine</a>
+                        <a onclick="clickk('Urology')">Urology</a>
+                        <a onclick="clickk('Vascular surgery')">Vascular surgery</a>
+                        <a onclick="clickk('Venereology')">Venereology</a>
+                    </div>                    
+                </div>
+            </div>
+            <h2>Clinic location:</h2>
+            <input type="text" value="" id="location" required>
+            <h2>Phone:</h2>
+            <input type="tel" value="" id="phone" required>
+            <div id="btnss" class="btnss">
+                <button class="button" onclick="sign()"> sign in</button>
+            </div>
+        </div>
+    </div>
+  </div>
+  <script>
+    const bruh = document.getElementById("pln");
+    const aha = document.getElementById("panlss");
+    const mooow = document.getElementById("btnss");
+    const moow = document.getElementById("oho");
+
+    
+    const drname = document.getElementById("drname");
+    const noice = document.getElementById("oh");
+    const loc = document.getElementById("location");
+    const phone = document.getElementById("phone");
+
+    function sign(){
+        const c ={
+            "drname":drname.value,
+            "specialty": noice.value,
+            "location": loc.value,
+            "phone": phone.value,
+        }
+
+        const bb =[
+            "drname",
+            "specialty",
+            "location",
+            "phone",
+        ]
+
+        if (c['drname'] === ''){
+            alert( `Please enter valid Dr Name data.`);
+        }else if (c['specialty'] === ''){
+            alert( `Please enter specialty data.`);
+        }else if (c['location'] === ''){
+            alert( `Please enter valid location data.`);
+        }else if (c['phone'] === ''){
+            alert( `Please enter valid phone data.`);
+        }else{
+
+            fetch('/savesign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(c)
+            })
+            .then(data => {
+                console.log('Save response:', data);
+                window.location.href ='/acc';
+            })
+            .catch(error => {
+                console.error('Error saving patient data:', error);
+                alert('Error saving patient data.');
+            });
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target === bruh || event.target === aha || event.target === moow || event.target === mooow) {
+            document.getElementById("myDropdown").classList.remove("show");
+        }
+    }
+
+    function clickk(specialty) {
+        const input = document.getElementById("oh");
+        input.value = specialty
+        document.getElementById("myDropdown").classList.remove("show");
+    }
+
+    function drop() {
+        document.getElementById("myDropdown").classList.toggle("show");
+    }
+      
+    function filterFunction() {
+        const input = document.getElementById("myInput");
+        const filter = input.value.toUpperCase();
+        const div = document.getElementById("myDropdown");
+        const a = div.getElementsByTagName("a");
+        for (let i = 0; i < a.length; i++) {
+          txtValue = a[i].textContent || a[i].innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            a[i].style.display = "";
+          } else {
+            a[i].style.display = "none";
+          }
+        }
+    }
+
+    function checkActivationCode() {
+        var activationCode = document.getElementById('activationCodeInput').value;
+        console.log(activationCode);
+        // Use fetch to send a request to your Flask server to check the code
+        fetch('/chk_bcode', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code: activationCode }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // Check the response data and redirect accordingly
+                if (data.result === 'accepted') {
+                    // Redirect to /pay_accepted
+                    window.location.href = '/check_bcode';
+                } else {
+                    // Redirect to /pay_cancelled
+                    console.log(activationCode);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+</script>
+</body>
+</html>
