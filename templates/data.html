@@ -644,9 +644,28 @@
     }
 
     ul{
-        overflow-y: hidden;
+        overflow-y: auto;
+        list-style: none;
+        height: 99%;
+        width: 99%;
+        padding: 0;
     }
-    
+
+    ul::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ul::-webkit-scrollbar-track {
+        border-radius: 5px;
+        background-color: #e7e7e7;
+        border: 1px solid #abb0bb;
+        box-shadow: inset 0 0 6px rgb(50 51 55 / 41%);
+    }
+
+    ul::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: #000000;
+    }
     .menu__box {
         display: flex;
         flex-direction: column;
@@ -734,8 +753,8 @@
             <label class="menu__btn" for="menu__toggle">
             <span></span>
             </label>
-    
-            <ul class="menu__box">
+            <div class="menu__box">
+                <ul>
                 <li>
                     <a class="menu__item" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
                 </li>
@@ -762,10 +781,11 @@
                 <li>
                     <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
                 </li>
-                <li>
+                <li style="margin-bottom: 80px;">
                     <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
                 </li>
-            </ul>
+                </ul>
+            </div>
         </div>
         <div>
             <a class="menuItem lll" href="/back"><img class="icoo icoos" src="/static/images/back.png" alt=""><h6>Back</h6></a>
@@ -1523,6 +1543,55 @@
             }
             filePreview.appendChild(fileLink);
             return filePreview;
+        }
+
+        function printVisit() {
+            const isConfirmed = confirm("After printing you cant change this visits info , are you sure you want to print this visit? \n في حال الطباعة لا يمكن تغيير معلومات الزيارة ,هل تريد الطباعة؟");
+            if (!isConfirmed) {
+                return; // Exit the function if the user does not confirm
+            }
+            fetch('/kkprint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ vno: currentVisitIndex })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Extract the filename from the Content-Disposition header
+                    const disposition = response.headers.get('Content-Disposition');
+                    const filename = disposition ? disposition.split('filename=')[1].replace(/"/g, '') : 'visit.docx';
+
+                    return response.blob().then(blob => {
+                        // Create a link element to trigger the download
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'visit.docx';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    });
+
+                } else {
+                    throw new Error('Failed to download the visit document');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to print visit. Please try again.');
+            });
+
+            fetch(`/getPatientData`)
+            .then(response => response.json())
+            .then(data => {
+                visits = data.visits;
+                patientNumber = data.patientss_number+1; // Set patient number// Display patient number
+                populatePatientData(visits[currentVisitIndex]);
+
+
+
+            })
+            .catch(error => console.error('Error fetching patient data:', error));
         }
 
         

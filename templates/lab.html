@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
+    <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+    <style>
+        @media (max-width:750px) {
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background-color: #8b8c8e;
+            }
+    
+            .data-capture-page {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+            }
+    
+            .search-frame {
+                display: flex;
+                align-items: center;
+            }
+    
+            input[type=file]::file-selector-button {
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 2.5px;
+                font-size: 15px;
+                cursor: pointer;
+                color: rgb(255, 255, 255);
+                transition: .25s;
+            }
+    
+            .file-preview img {
+                height: 150px;
+            }
+    
+            span.delete-btn {
+                z-index: 2;
+                -webkit-text-stroke-width: 1px;
+                -webkit-text-stroke-color: rgb(0, 0, 0);
+                position: absolute;
+                color: white;
+                font-size: 30px;
+                margin-right: 6px;
+                cursor: pointer;
+            }
+    
+            .vidPerv{
+                max-height: 300px;
+            }
+    
+            .file-preview {
+                margin: 10px;
+                display: flex;
+                justify-content: flex-end;
+            }
+    
+            input[type=file]::file-selector-button:hover {
+              background-color: rgb(43, 43, 43);
+            }
+    
+            .button {
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4.5px;
+                font-size: 15px;
+                cursor: pointer;
+                color: rgb(255, 255, 255);
+            }
+    
+            .main-frame {
+                box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
+                border-color: #000;
+                border-radius: 5px;
+                background-color: #abb0bb;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #000;
+                width: 80%;
+                height: 80%;
+                overflow-y: scroll;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-direction: column;
+            }
+    
+            .header {
+                text-align: center;
+                padding: 30px 0;
+            }
+    
+            h1 {
+                font-size: 30px;
+                margin: 0;
+            }
+    
+            .left-frame,
+            .right-frame {
+                display: flex;
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: center;
+                padding: 0 10px;
+            }
+
+            .inright-frame, .inleft-frame {
+                width: 100%;
+            }
+    
+            .entry-details {
+                width: 100%;
+            }
+    
+            .controls {
+                display: flex;
+                padding: 10px;
+                width: 111%;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .button-frame {
+                justify-content: center;
+                display: flex;
+                align-items: stretch;
+                margin-bottom: 10px;
+                flex-wrap: wrap;
+            }
+
+            .inframe {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                flex-direction: column;
+                align-items: center;
+            }
+    
+            .button, .search {
+                padding: 8px;
+                margin-right: 5px;
+                margin-top: 5px;
+            }
+    
+            .outframe {
+                display: flex;
+                margin-top: 20px;
+                width: 85%;
+                flex-direction: column;
+                align-items: center;
+            }
+    
+            .input-field {
+                width: 50%;
+                padding: 8px;
+                margin-bottom: 10px;
+            }
+    
+            #menuBar {
+                display: flex;
+                background-color: #000;
+                border-bottom: 2px solid #000;
+                position: fixed;
+                width: 100%;
+                justify-content: space-between;
+            }
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+    
+            .menuItem {
+                font-size: 16px;
+                color: #8b8c8e;
+                padding: 5px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-left: 15px;
+            }
+    
+            .menuItem:hover {
+                background-color: #fff;
+                color: #333;
+            }
+            
+            .menuItem:hover  .icoo{
+                filter: invert(0);
+            }
+    
+            .icoo{
+                filter: invert(0);
+                margin-right:10px;
+                width: 25px;
+                height: 25px;
+            }
+    
+            input {
+                padding: 2px;
+                outline: none;
+                border: 1px solid #000;
+                border-radius: 2.5px;
+            }
+    
+            textarea {
+                outline: none;
+                border-color: #000;
+                border-radius: 5px;
+                resize: vertical;
+            }
+    
+            label {
+                font-size: 18px;
+            }
+    
+            .inpuu {
+                display: flex;
+                align-items: baseline;
+                margin-bottom: 10px;
+                justify-content: space-between;
+            }
+            /* File Manager Modal Styles */
+            div#filePreviews {
+                display: flex;
+                height: 80%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+    
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgb(0,0,0);
+                background-color: rgba(0,0,0,0.4);
+            }
+    
+            .modal-content {
+                box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
+                border-color: #000;
+                border-radius: 5px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                height: 70%;
+                background-color: #abb0bb;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #000;
+                width: 80%;
+            }
+    
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+    
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+    
+            .file-list {
+                list-style-type: none;
+            }
+
+            #menuBar div {
+                display: flex;
+                align-items: center;
+            }
+    
+            .file-list li {
+                margin: 5px 0;
+            }
+
+            .inpuu textarea {
+                height: 15px;
+                font-size: 15px;
+            }
+
+            .txtPrev {
+                border: 1px black solid;
+                border-radius: 4px;
+                margin: 0px;
+                display: flex;
+                font-weight: 900;
+                font-size: 75%;
+                width: 100px;
+                height: 145px;
+                justify-content: center;
+                align-items: flex-end;
+            }
+    
+        }
+        @media (min-width:750px) {
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background-color: #8b8c8e;
+            }
+    
+            .data-capture-page {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+            }
+    
+            .search-frame {
+                display: flex;
+                align-items: center;
+            }
+    
+            input[type=file]::file-selector-button {
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 2.5px;
+                font-size: 15px;
+                cursor: pointer;
+                color: rgb(255, 255, 255);
+                transition: .25s;
+            }
+    
+            .file-preview img {
+                height: 150px;
+            }
+    
+            span.delete-btn {
+                z-index: 2;
+                -webkit-text-stroke-width: 1px;
+                -webkit-text-stroke-color: rgb(0, 0, 0);
+                position: absolute;
+                color: white;
+                font-size: 30px;
+                margin-right: 6px;
+                cursor: pointer;
+            }
+    
+            .vidPerv{
+                max-height: 300px;
+            }
+    
+            .file-preview {
+                margin: 10px;
+                display: flex;
+                justify-content: flex-end;
+            }
+    
+            input[type=file]::file-selector-button:hover {
+              background-color: rgb(43, 43, 43);
+            }
+    
+            .button {
+                background-color: #000;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4.5px;
+                font-size: 15px;
+                cursor: pointer;
+                color: rgb(255, 255, 255);
+            }
+    
+            .main-frame {
+                box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
+                border-color: #000;
+                border-radius: 5px;
+                background-color: #abb0bb;
+                margin-top: 3%;
+                padding: 25px;
+                border: 1px solid #000;
+                width: 80%;
+                height: 80%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+            }
+    
+            .header {
+                text-align: center;
+                padding: 30px 0;
+            }
+    
+            h1 {
+                font-size: 30px;
+                margin: 0;
+            }
+    
+            .left-frame,
+            .right-frame {
+                margin-top: 15px;
+                display: flex;
+                width: 50%;
+                box-sizing: border-box;
+                justify-content: center;
+                padding: 0 10px;
+            }
+    
+            .entry-details {
+                width: 100%;
+            }
+    
+            .controls {
+                display: flex;
+                justify-content: center;
+                padding: 10px;
+                width: 111%;
+                align-items: center;
+            }
+    
+            .inframe {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+    
+            .button,
+            .search {
+                padding: 8px;
+                margin-right: 5px;
+            }
+    
+            .outframe {
+                display: flex;
+                width: 85%;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+            }
+    
+            .input-field {
+                width: 50%;
+                padding: 8px;
+                margin-bottom: 10px;
+            }
+    
+            #menuBar {
+                display: flex;
+                background-color: #000;
+                border-bottom: 2px solid #000;
+                position: fixed;
+                width: 100%;
+                justify-content: space-between;
+            }
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+    
+            .menuItem {
+                font-size: 16px;
+                border-radius: 5px;
+                color: #8b8c8e;
+                padding: 5px;
+                cursor: pointer;
+                margin-left: 15px;
+            }
+    
+            .menuItem:hover {
+                background-color: #fff;
+                color: #333;
+            }
+            
+            .menuItem:hover  .icoo{
+                filter: invert(0);
+            }
+    
+            .icoo{
+                filter: invert(0);
+                margin-right:10px;
+                width: 25px;
+                height: 25px;
+            }
+    
+            input {
+                padding: 2px;
+                outline: none;
+                font-size: 15px;
+                border: 1px solid #000;
+                border-radius: 2.5px;
+            }
+    
+            textarea {
+                outline: none;
+                border-color: #000;
+                border-radius: 5px;
+                font-size: 14px;
+                resize: vertical;
+            }
+    
+            label {
+                font-size: 18px;
+            }
+    
+            .inpuu {
+                display: flex;
+                align-items: baseline;
+                margin-bottom: 10px;
+                justify-content: space-between;
+            }
+            /* File Manager Modal Styles */
+            div#filePreviews {
+                display: flex;
+                height: 80%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+    
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgb(0,0,0);
+                background-color: rgba(0,0,0,0.4);
+            }
+    
+            .modal-content {
+                box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
+                border-color: #000;
+                border-radius: 5px;
+                height: 70%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background-color: #abb0bb;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #000;
+                width: 80%;
+            }
+
+            #menuBar div {
+                display: flex;
+                align-items: center;
+            }
+    
+            .close {
+                color: #000d13;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+
+            .inpuu textarea {
+                height: 23px;
+                font-size: 15px;
+            }
+    
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+    
+            .file-list {
+                list-style-type: none;
+            }
+    
+            .file-list li {
+                margin: 5px 0;
+            }
+    
+            .txtPrev {
+                border: 1px black solid;
+                border-radius: 4px;
+                margin: 0px;
+                display: flex;
+                font-weight: 900;
+                font-size: 75%;
+                width: 100px;
+                height: 145px;
+                justify-content: center;
+                align-items: flex-end;
+            }
+        }
+        @media (min-height: 650px) {
+            textarea {
+                outline: none;
+                border-color: #000;
+                border-radius: 5px;
+                resize: vertical;
+                font-size: 20px;
+            }
+        }
+        .menuItem {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 35px;
+        }
+
+        h6 {
+            margin: 0px;
+        }
+    
+    #menuBar{
+        height: 40px;
+    }
+
+    .menu__btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        width: 26px;
+        height: 26px;
+        cursor: pointer;
+        z-index: 1;
+    }
+    
+    .menu__btn > span,
+    .menu__btn > span::before,
+    .menu__btn > span::after {
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background-color: #ffffff;
+        transition-duration: .25s;
+    }
+    
+    .menu__btn > span::before {
+        content: '';
+        top: -8px;
+    }
+    
+    .menu__btn > span::after {
+        content: '';
+        top: 8px;
+    }
+
+    ul{
+        overflow-y: auto;
+        list-style: none;
+        height: 99%;
+        width: 99%;
+        padding: 0;
+    }
+
+    ul::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ul::-webkit-scrollbar-track {
+        border-radius: 5px;
+        background-color: #e7e7e7;
+        border: 1px solid #abb0bb;
+        box-shadow: inset 0 0 6px rgb(50 51 55 / 41%);
+    }
+
+    ul::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: #000000;
+    }
+    .menu__box {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 250px;
+        height: 100%;
+        margin: 0;
+        padding: 80px 0;
+        list-style: none;
+        background-color: #abb0bb;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
+        transition-duration: .25s;
+    }
+    
+    .menu__item {
+        display: flex;
+        padding: 12px 24px;
+        color: #333;
+        font-family: 'Roboto', sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        align-items: center;
+        text-decoration: none;
+        transition-duration: .25s;
+    }
+    
+    .menu__item:hover {
+        background-color: #CFD8DC;
+    }
+    
+    /* Spin transition when menu is active */
+    .menu-active .menu__btn > span {
+        transform: rotate(45deg);
+        background-color: #000000;
+    }
+    
+    .menu-active .menu__btn > span::before {
+        background-color: #000000;
+        top: 0;
+        transform: rotate(0deg);
+    }
+    
+    .menu-active .menu__btn > span::after {
+        background-color: #000000;
+        top: 0;
+        transform: rotate(90deg);
+    }
+    
+    .menu-active .menu__box {
+        left: 0 !important;
+    }
+    
+    .hamburger-menu {
+        width: 60px;
+        cursor: pointer;
+    }
+    .menu__div{
+        height:25px;
+    }
+
+    .icoos{
+        filter: invert(1);
+    }
+
+    .inputdiv{
+        display: flex;
+    }
+
+    .folders{
+        display: flex;
+        justify-content: center;
+    }
+
+    h2 , h3{
+        text-align: center;
+        width: 150px;
+    }
+
+    .dropbtn {
+        background-color: #abb0bb;
+        color: white;
+        padding: 5px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+    }
+      
+    .dropbtn:hover {
+        background-color: #abb0bb;
+    }
+    
+    .dropbtn:focus {
+        background-color: #abb0bb;
+    }
+      
+    #myInput {
+        box-sizing: border-box;
+        font-size: 16px;
+        border-radius: 5px;
+        width: 100%;
+        padding: 14px 20px 12px 15px;
+        border: none;
+        border-bottom: 1px solid #ddd;
+    }
+      
+    #myInput:focus {
+        outline: 0px solid #000000;
+    }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+      
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        width: 160px;
+        border: 1px solid #000;
+        border-radius: 5px;
+        margin-left: 31px;
+        background-color: #ffffff;
+        z-index: 1;
+    }
+      
+    .dropdown-content a {
+        color: black;
+        text-align: start;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        border-radius: 2.5px;
+    }
+      
+    .dropdown a:hover {
+        background-color: #ddd;
+    }
+
+    #oh {
+        border: 1px solid #000;
+        border-radius: 2.5px;
+        font-size: 18px;
+        width: 69%;
+        background-color: #ffffff;
+    }
+      
+    .show {
+        display: block;
+    }
+
+    .button {
+        background-color: #000;
+        border: none;
+        padding: 5px 10px;
+        margin-top:5px;
+        border-radius: 4.5px;
+        font-size: 15px;
+        cursor: pointer;
+        color: rgb(255, 255, 255);
+    }
+
+    .btnss {
+        display: flex;
+        margin-top: 50%;
+        flex-direction: column;
+    }
+
+    h4 {
+        margin-top: 50%;
+    }
+
+    #droppp {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .info {
+        max-height: 325px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .info::-webkit-scrollbar {
+        width: 10px;
+    }
+    
+    .info::-webkit-scrollbar-track {
+        border-radius: 5px;
+        background-color: #e7e7e7;
+        border: 1px solid #cacaca;
+        box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+    }
+    
+    .info::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: #000000;
+    }
+
+    .reqs {
+        height: 90%;
+        width: 100%;
+    }
+    </style>
+    <title>Binder Medical</title>
+</head>
+<body>
+    <div id="menuBar">
+        <div class="hamburger-menu">
+            <label class="menu__btn" for="menu__toggle">
+            <span></span>
+            </label>
+            <div class="menu__box">
+                <ul>
+                <li>
+                    <a class="menu__item" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
+                </li>
+                <li>
+                    <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
+                </li>
+                <li><div class="menu__div"></div></li>
+                <li>
+                    <a class="menu__item" title="back" href="/back"><img class="icoo" src="/static/images/back.png" title="back" alt="back"><h6>Go back</h6></a>
+                </li>
+                <li><div class="menu__div"></div></li>
+                <li>
+                    <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
+                </li>
+                <li style="margin-bottom: 80px;">
+                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
+                </li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            <a class="menuItem lll" href="/back"><img class="icoo icoos" src="/static/images/back.png" alt=""><h6>Back</h6></a>
+        </div>
+    </div>
+    <div class="data-capture-page">
+        <div class="main-frame">
+            <button class="button" id="newReq" onclick="openFile()">Make a lab request</button>
+            <div class="reqs">
+
+            </div>
+
+            <div id="fileManagerModal" class="modal">
+                <div class="modal-content">
+                    <div style="width: 100%;"><span class="close">&times;</span></div>
+                    <h2>Request Lab</h2>
+
+                    <!-- File Previews -->
+                    <div id="filePreviews" class="file-previews">
+                        <div class="potato">
+                            <div class="dropdown">
+                                <div id="droppp">
+                                    <input type="text" id="oh" onclick="opnn()" onkeyup="filterFunction()">
+                                </div>
+                                <div id="myDropdown" class="dropdown-content">
+                                <div class="info">
+                                    <a onclick="clickk('Accident and emergency medicine')">Accident and emergency medicine</a>
+                                    <a onclick="clickk('Allergist')">Allergist</a>
+                                    <a onclick="clickk('Anaesthetics')">Anaesthetics</a>
+                                    <a onclick="clickk('Cardiology')">Cardiology</a>
+                                    <a onclick="clickk('Child psychiatry')">Child psychiatry</a>
+                                    <a onclick="clickk('Clinical biology')">Clinical biology</a>
+                                    <a onclick="clickk('Clinical chemistry')">Clinical chemistry</a>
+                                    <a onclick="clickk('Clinical microbiology')">Clinical microbiology</a>
+                                    <a onclick="clickk('Clinical neurophysiology')">Clinical neurophysiology</a>
+                                    <a onclick="clickk('Craniofacial surgery')">Craniofacial surgery</a>
+                                    <a onclick="clickk('Dermatology')">Dermatology</a>
+                                    <a onclick="clickk('Endocrinology')">Endocrinology</a>
+                                    <a onclick="clickk('Family and General Medicine')">Family and General Medicine</a>
+                                    <a onclick="clickk('Gastroenterologic surgery')">Gastroenterologic surgery</a>
+                                    <a onclick="clickk('Gastroenterology')">Gastroenterology</a>
+                                    <a onclick="clickk('General Practice')">General Practice</a>
+                                    <a onclick="clickk('General surgery')">General surgery</a>
+                                    <a onclick="clickk('Geriatrics')">Geriatrics</a>
+                                    <a onclick="clickk('Hematology')">Hematology</a>
+                                    <a onclick="clickk('Immunology')">Immunology</a>
+                                    <a onclick="clickk('Infectious diseases')">Infectious diseases</a>
+                                    <a onclick="clickk('Internal medicine')">Internal medicine</a>
+                                    <a onclick="clickk('Laboratory medicine')">Laboratory medicine</a>
+                                    <a onclick="clickk('Nephrology')">Nephrology</a>
+                                    <a onclick="clickk('Neuropsychiatry')">Neuropsychiatry</a>
+                                    <a onclick="clickk('Neurology')">Neurology</a>
+                                    <a onclick="clickk('Neurosurgery')">Neurosurgery</a>
+                                    <a onclick="clickk('Nuclear medicine')">Nuclear medicine</a>
+                                    <a onclick="clickk('Obstetrics and gynaecology')">Obstetrics and gynaecology</a>
+                                    <a onclick="clickk('Occupational medicine')">Occupational medicine</a>
+                                    <a onclick="clickk('Oncology')">Oncology</a>
+                                    <a onclick="clickk('Ophthalmology')">Ophthalmology</a>
+                                    <a onclick="clickk('Oral and maxillofacial surgery')">Oral and maxillofacial surgery</a>
+                                    <a onclick="clickk('Orthopaedics')">Orthopaedics</a>
+                                    <a onclick="clickk('Otorhinolaryngology')">Otorhinolaryngology</a>
+                                    <a onclick="clickk('Paediatric surgery')">Paediatric surgery</a>
+                                    <a onclick="clickk('Paediatrics')">Paediatrics</a>
+                                    <a onclick="clickk('Pathology')">Pathology</a>
+                                    <a onclick="clickk('Pharmacology')">Pharmacology</a>
+                                    <a onclick="clickk('Physical medicine and rehabilitation')">Physical medicine and rehabilitation</a>
+                                    <a onclick="clickk('Plastic surgery')">Plastic surgery</a>
+                                    <a onclick="clickk('Podiatric surgery')">Podiatric surgery</a>
+                                    <a onclick="clickk('Preventive medicine')">Preventive medicine</a>
+                                    <a onclick="clickk('Psychiatry')">Psychiatry</a>
+                                    <a onclick="clickk('Public health')">Public health</a>
+                                    <a onclick="clickk('Radiation Oncology')">Radiation Oncology</a>
+                                    <a onclick="clickk('Radiology')">Radiology</a>
+                                    <a onclick="clickk('Respiratory medicine')">Respiratory medicine</a>
+                                    <a onclick="clickk('Rheumatology')">Rheumatology</a>
+                                    <a onclick="clickk('Stomatology')">Stomatology</a>
+                                    <a onclick="clickk('Thoracic surgery')">Thoracic surgery</a>
+                                    <a onclick="clickk('Tropical medicine')">Tropical medicine</a>
+                                    <a onclick="clickk('Urology')">Urology</a>
+                                    <a onclick="clickk('Vascular surgery')">Vascular surgery</a>
+                                    <a onclick="clickk('Venereology')">Venereology</a>
+                                </div>                    
+                                </div>
+                            </div>
+                        </div>
+            
+                        <div class="outframe">
+                            <div class="details">
+                                <textarea class="entry-details"  id="details" cols="80" rows="8"></textarea>
+                            </div>
+                            <div class="controls">
+                                <div class="button-frame">
+                                    <button class="button" id="prevButton">send the request</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function clickk(specialty) {
+            const input = document.getElementById("oh");
+            input.value = specialty
+            document.getElementById("myDropdown").classList.remove("show");
+        }
+
+        function opnn() {
+            document.getElementById("myDropdown").classList.remove("show");
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        function filterFunction() {
+            const input = document.getElementById("oh");
+            const filter = input.value.toUpperCase();
+            const div = document.getElementById("myDropdown");
+            const a = div.getElementsByTagName("a");
+            for (let i = 0; i < a.length; i++) {
+              txtValue = a[i].textContent || a[i].innerText;
+              if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                a[i].style.display = "";
+              } else {
+                a[i].style.display = "none";
+              }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const span = document.getElementsByClassName("close")[0];
+
+
+            span.onclick = function() {
+                document.getElementById("fileManagerModal").style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target !== document.getElementById("oh")) {
+                    document.getElementById("myDropdown").classList.remove("show");
+                }
+            }
+
+            document.getElementById("newReq").addEventListener("click", function() {
+                document.getElementById("fileManagerModal").style.display = "block";
+            });
+        })
+    </script>
+</body>
+</html>
