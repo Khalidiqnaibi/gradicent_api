@@ -751,6 +751,28 @@
     h2 {
         text-align: center;
     }
+
+    div#uploadProgressContainer {
+        display: flex;
+        align-items: center;
+    }
+
+    progress {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    /* WebKit-specific styling for the progress bar */
+    progress::-webkit-progress-bar {
+        border-radius: 8px;                 /* Rounded corners */
+    }
+
+    /* WebKit-specific styling for the progress value */
+    progress::-webkit-progress-value {
+        background-color: rgb(0, 195, 255); /* Customize the fill color */
+        border-bottom-left-radius: 8px;
+        border-top-left-radius: 8px;
+    }
     </style>
     <title>Binder Medical</title>
 </head>
@@ -1451,7 +1473,7 @@
             const progressBarContainer = document.getElementById('uploadProgressContainer');
             const progressBar = document.getElementById('fileUploadProgress');
             const progressText = document.getElementById('progressText');
-            progressBarContainer.style.display = 'block';
+            progressBarContainer.style.display = 'flex';
 
             // Function to upload each file one by one
             function uploadNextFile() {
