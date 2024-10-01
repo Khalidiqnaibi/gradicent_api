@@ -259,8 +259,10 @@
             }
 
             div#divvv {
+                display: flex;
                 margin-top: 15px;
-                align-items: flex-end;
+                flex-direction: column;
+                align-items: center;
             }
             
             .close {
@@ -887,8 +889,13 @@
     
             <!-- File Upload, only visible in the "drs" folder -->
             <div id="divvv" class="inputdiv">
-                <input type="file" id="fileInput" title="Patient Files" style="display:none;">
+                <input type="file" multiple id="fileInput" title="Patient Files" style="display:none;">
                 <button class="button" id="uploadButton" onclick="uploadFile()" style="display:none;">Upload</button>
+                <div id="uploadProgressContainer" style="display: none;">
+                    <label for="fileUploadProgress">Uploading:</label>
+                    <progress id="fileUploadProgress" value="0" max="100"></progress>
+                    <span id="progressText"></span>
+                </div>
             </div>
             
     
@@ -1422,42 +1429,83 @@
             fetchFiles();
         }
 
-        // Upload file, only works when the 'drs' folder is selected
+        // Modified to support multiple file uploads
         function uploadFile() {
             if (selectedFolder !== 'drs') {
                 alert("You can only upload files in the 'Doctors' folder.");
                 return;
             }
-        
-            const file = fileInput.files[0];
+
+            const files = fileInput.files;
+            if (files.length === 0) {
+                alert("No files selected for upload.");
+                return;
+            }
+
             const patientNo = patientNumber;
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('patient_no', patientNo);
-            formData.append('folder', selectedFolder); // Assign the current folder
-        
-            fetch('/uploadFile', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                fileInput.value = '';
-                if (!response.ok) {
-                    return response.json().then(errorData => { throw new Error(errorData.error); });
+            const totalFiles = files.length;
+            let currentFileIndex = 0;
+            let totalProgress = 0; // Track total progress across files
+
+            // Show progress bar
+            const progressBarContainer = document.getElementById('uploadProgressContainer');
+            const progressBar = document.getElementById('fileUploadProgress');
+            const progressText = document.getElementById('progressText');
+            progressBarContainer.style.display = 'block';
+
+            // Function to upload each file one by one
+            function uploadNextFile() {
+                if (currentFileIndex < totalFiles) {
+                    const file = files[currentFileIndex];
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('patient_no', patientNo);
+                    formData.append('folder', selectedFolder); // Assign the current folder
+
+                    // Create XMLHttpRequest to monitor upload progress for this file
+                    const xhr = new XMLHttpRequest();
+
+                    xhr.upload.onprogress = function(event) {
+                        if (event.lengthComputable) {
+                            const fileProgress = (event.loaded / event.total) * 100;
+                            const overallProgress = totalProgress + (fileProgress / totalFiles);
+                            progressBar.value = overallProgress;  // Update progress bar
+                            progressText.textContent = `Uploading file ${currentFileIndex + 1} of ${totalFiles}: ${Math.round(overallProgress)}%`;
+                        }
+                    };
+
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState == 4) {
+                            if (xhr.status == 200) {
+                                // Update total progress and move to the next file
+                                totalProgress += 100 / totalFiles;
+                                currentFileIndex++;
+
+                                // Start uploading the next file
+                                uploadNextFile();
+                            } else {
+                                alert('Error uploading file: ' + xhr.responseText);
+                            }
+                        }
+                    };
+
+                    // Set up request to POST the file
+                    xhr.open('POST', '/uploadFile', true);
+                    xhr.send(formData);
+                } else {
+                    // Hide progress bar and reset when all files are uploaded
+                    progressBarContainer.style.display = 'none';
+                    progressBar.value = 0;
+                    progressText.textContent = '';
+                    fileInput.value = '';
+                    fetchFiles();  // Refresh the file list after successful upload
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('File uploaded:', data);
-                fetchFiles(); // Refresh the file list
-            })
-            .catch(error => {
-                console.error('Error uploading file:', error);
-                alert('Error uploading file: ' + error.message);
-            });
+            }
+
+            // Start uploading the first file
+            uploadNextFile();
         }
 
-        // Fetch files based on the selected folder
         // Fetch files based on the selected folder
         function fetchFiles() {
             const patientNo = patientNumber;
