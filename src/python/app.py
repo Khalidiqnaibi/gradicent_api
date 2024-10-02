@@ -1722,6 +1722,234 @@ def meddata():
     else:
         return redirect("/fetchUserData")
 
+@app.route('/lab_page')
+def lab_page():
+    session["page"]='lab'
+
+    if "google_id" in session:
+        gid = session["google_id"]
+        user_data = get_userD(gid)
+
+        if 'PLAN' in session:
+            PLAN = 'sec'
+        else:
+            PLAN = user_data['plan']
+    else:
+        return redirect("/fetchUserData")
+
+    first_date_str = str(user_data.get("first"))
+    plan=str(user_data.get("plan"))
+    trial_status = calculate_trial_status(plan,first_date_str)
+
+    if trial_status == "bad":
+        session["page"]='acc'
+        return redirect("/fetchUserData")
+    else:
+        return redirect("/fetchUserData")
+    
+@app.route('/getlab')
+def getlab():
+    google_id = session["google_id"]
+    patient_id = session.get('patientno')
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if 'lab' in pat :
+        return jsonify(pat['lab'])
+    else:
+        return jsonify({'k':"bruh"})
+    
+@app.route('/addlabreq', methods=['POST'])
+def addlab():
+    data = request.get_json()
+    msg = data.get('msg')
+    test = data.get('test')
+
+    google_id = session["google_id"]
+    patient_id = session.get('patientno')
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if 'lab' in pat :
+        pat['lab'].append({
+            "test":test,
+            'msg':msg,
+            "date":datetime.now().isoformat()
+        })
+        drssref.set(pat)
+        return jsonify(pat['lab'])
+    else:
+        pat['lab']={
+                'msg':msg,
+                "test":test,
+                "date":datetime.now().isoformat()
+            }
+        drssref.set(pat)
+        
+    return jsonify({"message": "Patient added successfully"}), 200
+
+@app.route('/deletelabreq', methods=['DELETE'])
+def delete_lab_request():
+    data = request.json
+    index = data.get('index')
+
+    if index is None:
+        return jsonify({'error': 'Index not provided.'}), 400
+
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "Not authenticated"}), 403
+
+    patient_id = session.get("patientno")
+    if not patient_id:
+        return jsonify({"error": "Patient ID missing in session"}), 400
+
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if not pat or "lab" not in pat or index >= len(pat["lab"]):
+        return jsonify({'error': 'Lab request not found.'}), 404
+
+    # Remove the lab request from the list
+    del pat["lab"][index]
+
+    # Save the updated patient data
+    drssref.update(pat)
+
+    return jsonify({"success": "Lab request deleted."})
+
+
+@app.route('/radio_page')
+def radio_page():
+    session["page"]='radio'
+
+    if "google_id" in session:
+        gid = session["google_id"]
+        user_data = get_userD(gid)
+
+        if 'PLAN' in session:
+            PLAN = 'sec'
+        else:
+            PLAN = user_data['plan']
+    else:
+        return redirect("/fetchUserData")
+
+    first_date_str = str(user_data.get("first"))
+    plan=str(user_data.get("plan"))
+    trial_status = calculate_trial_status(plan,first_date_str)
+
+    if trial_status == "bad":
+        session["page"]='acc'
+        return redirect("/fetchUserData")
+    else:
+        return redirect("/fetchUserData")
+
+@app.route('/pharma_page')
+def pharma_page():
+    session["page"]='pharma'
+
+    if "google_id" in session:
+        gid = session["google_id"]
+        user_data = get_userD(gid)
+
+        if 'PLAN' in session:
+            PLAN = 'sec'
+        else:
+            PLAN = user_data['plan']
+    else:
+        return redirect("/fetchUserData")
+
+    first_date_str = str(user_data.get("first"))
+    plan=str(user_data.get("plan"))
+    trial_status = calculate_trial_status(plan,first_date_str)
+
+    if trial_status == "bad":
+        session["page"]='acc'
+        return redirect("/fetchUserData")
+    else:
+        return redirect("/fetchUserData")
+    
+@app.route('/getradio')
+def getradio():
+    google_id = session["google_id"]
+    patient_id = session.get('patientno')
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if 'radio' in pat :
+        return jsonify(pat['radio'])
+    else:
+        return jsonify({'k':"bruh"})
+    
+@app.route('/getpharma')
+def getpharma():
+    google_id = session["google_id"]
+    patient_id = session.get('patientno')
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if 'pharma' in pat :
+        return jsonify(pat['pharma'])
+    else:
+        return jsonify({'k':"bruh"})
+
+ 
+@app.route('/addradioreq', methods=['POST'])
+def addradio():
+    data = request.get_json()
+    msg = data.get('msg')
+    test = data.get('test')
+
+    google_id = session["google_id"]
+    patient_id = session.get('patientno')
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if 'radio' in pat :
+        pat['radio'].append({
+            'msg':msg,
+            "test":test,
+            "date":datetime.now().isoformat()
+        })
+        drssref.set(pat)
+    else:
+        pat['radio']={
+                'msg':msg,
+                "test":test,
+                "date":datetime.now().isoformat()
+            }
+        drssref.set(pat)
+        
+    return jsonify({"message": "Patient added successfully"}), 200
+    
+@app.route('/addpharmareq', methods=['POST'])
+def addpharma():
+    data = request.get_json()
+    msg = data.get('msg')
+    test = data.get('test')
+
+    google_id = session["google_id"]
+    patient_id = session.get('patientno')
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if 'pharma' in pat :
+        pat['pharma'].append({
+            'msg':msg,
+            "test":test,
+            "date":datetime.now().isoformat()
+        })
+        drssref.set(pat)
+    else:
+        pat['pharma']={
+                'msg':msg,
+                "test":test,
+                "date":datetime.now().isoformat()
+            }
+        drssref.set(pat)
+        
+    return jsonify({"message": "Patient added successfully"}), 200
+
 @app.route('/addPatient', methods=['POST'])
 def add_patient():
     data = request.get_json()

@@ -1009,7 +1009,7 @@
                             </div>
                             <div class="controls">
                                 <div class="button-frame">
-                                    <button class="button" id="prevButton">send the request</button>
+                                    <button class="button" id="prevButton" onclick="sendLabRequest()">send the request</button>
                                 </div>
                             </div>
                         </div>
@@ -1048,7 +1048,14 @@
         document.addEventListener("DOMContentLoaded", function() {
             const span = document.getElementsByClassName("close")[0];
 
-
+            const menuBtn = document.querySelector('.hamburger-menu');
+            const menuBox = document.querySelector('.menu__box');
+            const menuBar = document.getElementById('menuBar');
+            
+            // Toggle menu and spin transition
+            menuBtn.addEventListener('click', () => {
+                menuBar.classList.toggle('menu-active');
+            });
             span.onclick = function() {
                 document.getElementById("fileManagerModal").style.display = "none";
             }
@@ -1062,7 +1069,70 @@
             document.getElementById("newReq").addEventListener("click", function() {
                 document.getElementById("fileManagerModal").style.display = "block";
             });
-        })
+
+            // Fetch and display existing lab requests
+            fetchLabRequests();
+        });
+
+        function fetchLabRequests() {
+            fetch('/getlab')
+                .then(response => response.json())
+                .then(data => {
+                    const reqsDiv = document.getElementById("labRequests");
+                    if (data.k === "bruh") {
+                        reqsDiv.innerHTML = "<p>No lab requests found.</p>";
+                    } else {
+                        reqsDiv.innerHTML = data.map(req => `
+                            <div class="lab-request">
+                                <p>Test: ${req.test}</p>
+                                <p>Message: ${req.msg}</p>
+                                <p>Date: ${req.date}</p>
+                                <button class="delete-button" onclick="deleteLabRequest(${index})">Delete</button>
+                            </div>
+                        `).join('');
+                    }
+                })
+                .catch(error => console.error('Error fetching lab requests:', error));
+        }
+
+        function sendLabRequest() {
+            const test = document.getElementById("oh").value;
+            const msg = document.getElementById("details").value;
+
+            if (!test || !msg) {
+                alert("Please fill in both the test and the message.");
+                return;
+            }
+
+            const data = { test, msg };
+            fetch('/addlabreq', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("Lab request added:", result);
+                fetchLabRequests(); // Refresh the list of lab requests
+                document.getElementById("fileManagerModal").style.display = "none";
+            })
+            .catch(error => console.error('Error adding lab request:', error));
+        }
+
+        function deleteLabRequest(index) {
+            // Get the lab request to delete based on the index (this can be based on the test name, ID, etc.)
+            fetch('/deletelabreq', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index })
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("Lab request deleted:", result);
+                fetchLabRequests(); // Refresh the list of lab requests after deletion
+            })
+            .catch(error => console.error('Error deleting lab request:', error));
+        }
     </script>
 </body>
 </html>

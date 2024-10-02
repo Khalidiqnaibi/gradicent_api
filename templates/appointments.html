@@ -1019,32 +1019,6 @@
         </div>
     </div>
     <script>
-        function clickk(specialty) {
-            const input = document.getElementById("oh");
-            input.value = specialty
-            document.getElementById("myDropdown").classList.remove("show");
-        }
-
-        function opnn() {
-            document.getElementById("myDropdown").classList.remove("show");
-            document.getElementById("myDropdown").classList.toggle("show");
-        }
-
-        function filterFunction() {
-            const input = document.getElementById("oh");
-            const filter = input.value.toUpperCase();
-            const div = document.getElementById("myDropdown");
-            const a = div.getElementsByTagName("a");
-            for (let i = 0; i < a.length; i++) {
-              txtValue = a[i].textContent || a[i].innerText;
-              if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                a[i].style.display = "";
-              } else {
-                a[i].style.display = "none";
-              }
-            }
-        }
-
         document.addEventListener("DOMContentLoaded", function() {
             const menuBtn = document.querySelector('.hamburger-menu');
             const menuBox = document.querySelector('.menu__box');
@@ -1053,22 +1027,6 @@
             // Toggle menu and spin transition
             menuBtn.addEventListener('click', () => {
                 menuBar.classList.toggle('menu-active');
-            });
-            const span = document.getElementsByClassName("close")[0];
-
-
-            span.onclick = function() {
-                document.getElementById("fileManagerModal").style.display = "none";
-            }
-
-            window.onclick = function(event) {
-                if (event.target !== document.getElementById("oh")) {
-                    document.getElementById("myDropdown").classList.remove("show");
-                }
-            }
-
-            document.getElementById("newReq").addEventListener("click", function() {
-                document.getElementById("fileManagerModal").style.display = "block";
             });
         })
     </script>

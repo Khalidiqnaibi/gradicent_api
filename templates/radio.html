@@ -1048,6 +1048,14 @@
         document.addEventListener("DOMContentLoaded", function() {
             const span = document.getElementsByClassName("close")[0];
 
+            const menuBtn = document.querySelector('.hamburger-menu');
+            const menuBox = document.querySelector('.menu__box');
+            const menuBar = document.getElementById('menuBar');
+            
+            // Toggle menu and spin transition
+            menuBtn.addEventListener('click', () => {
+                menuBar.classList.toggle('menu-active');
+            });
 
             span.onclick = function() {
                 document.getElementById("fileManagerModal").style.display = "none";
