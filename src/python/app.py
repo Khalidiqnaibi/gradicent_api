@@ -1125,14 +1125,15 @@ def loginbb():
 
 @app.route("/callback")
 def callback():
-    #app.logger.info("Request URL: %s", request.url)
-    flow.fetch_token(authorization_response=request.url)
 
     if session["state"] != request.args["state"]:
         app.logger.info("session[state] == request.args[state]: %s", session["state"] == request.args["state"])
         app.logger.info("session[state]: %s", session["state"])
         app.logger.info("request.args[state]: %s", request.args["state"])
         abort(500)  # State does not match!
+
+    #app.logger.info("Request URL: %s", request.url)
+    flow.fetch_token(authorization_response=request.url)
 
     credentials = flow.credentials
     request_session = requests.session()
@@ -1144,6 +1145,7 @@ def callback():
         request=token_request,
         audience=GOOGLE_CLIENT_ID
     )
+    session.permanent = True
     session["google_id"] = id_info.get("sub")
     session["name"] = id_info.get("name")
     session["donee"]=True
