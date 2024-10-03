@@ -834,7 +834,7 @@
         padding: 5px 10px;
         margin-top:5px;
         border-radius: 4.5px;
-        font-size: 15px;
+        font-size: 24px;
         cursor: pointer;
         color: rgb(255, 255, 255);
     }
@@ -878,8 +878,43 @@
     }
 
     .reqs {
+        overflow-y: auto;
         height: 90%;
+        display: flex;
         width: 100%;
+        overflow-x: hidden;
+        flex-direction: column;
+    }
+
+    .reqs::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .reqs::-webkit-scrollbar-track {
+        border-radius: 5px;
+        background-color: #e7e7e7;
+        border: 1px solid #abb0bb;
+        box-shadow: inset 0 0 6px rgb(50 51 55 / 41%);
+    }
+
+    .reqs::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: #000000;
+    }
+
+    .lab-request {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .lab-request-item{
+        font-size: 24px;
+        margin: 5px;
+    }
+
+    .inforeq{
+        width: 400px;
     }
     </style>
     <title>Binder Medical</title>
@@ -906,33 +941,33 @@
                 </li>
                 <li><div class="menu__div"></div></li>
                 <li>
-                    <a class="menu__item" title="back" href="/back"><img class="icoo" src="/static/images/back.png" title="back" alt="back"><h6>Go back</h6></a>
+                    <a class="menu__item" title="back" href="/meddata"><img class="icoo" src="/static/images/back.png" title="Back" alt="back"><h6>Go back</h6></a>
                 </li>
                 <li><div class="menu__div"></div></li>
                 <li>
                     <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
                 </li>
                 <li style="margin-bottom: 80px;">
-                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
+                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="Support" alt="support"><h6>Support</h6></a>
                 </li>
                 </ul>
             </div>
         </div>
         <div>
-            <a class="menuItem lll" href="/back"><img class="icoo icoos" src="/static/images/back.png" alt=""><h6>Back</h6></a>
+            <a class="menuItem lll" title="Back" href="/meddata"><img class="icoo icoos" src="/static/images/back.png" alt=""><h6>Back</h6></a>
         </div>
     </div>
     <div class="data-capture-page">
         <div class="main-frame">
-            <button class="button" id="newReq" onclick="openFile()">Make a radiology request</button>
-            <div class="reqs">
+            <button class="button" id="newReq" onclick="openFile()">Make a radio request</button>
+            <div class="reqs" id="labRequests">
 
             </div>
 
             <div id="fileManagerModal" class="modal">
                 <div class="modal-content">
                     <div style="width: 100%;"><span class="close">&times;</span></div>
-                    <h2>Request radiology</h2>
+                    <h2>Request Radio</h2>
 
                     <!-- File Previews -->
                     <div id="filePreviews" class="file-previews">
@@ -942,63 +977,42 @@
                                     <input type="text" id="oh" onclick="opnn()" onkeyup="filterFunction()">
                                 </div>
                                 <div id="myDropdown" class="dropdown-content">
-                                <div class="info">
-                                    <a onclick="clickk('Accident and emergency medicine')">Accident and emergency medicine</a>
-                                    <a onclick="clickk('Allergist')">Allergist</a>
-                                    <a onclick="clickk('Anaesthetics')">Anaesthetics</a>
-                                    <a onclick="clickk('Cardiology')">Cardiology</a>
-                                    <a onclick="clickk('Child psychiatry')">Child psychiatry</a>
-                                    <a onclick="clickk('Clinical biology')">Clinical biology</a>
-                                    <a onclick="clickk('Clinical chemistry')">Clinical chemistry</a>
-                                    <a onclick="clickk('Clinical microbiology')">Clinical microbiology</a>
-                                    <a onclick="clickk('Clinical neurophysiology')">Clinical neurophysiology</a>
-                                    <a onclick="clickk('Craniofacial surgery')">Craniofacial surgery</a>
-                                    <a onclick="clickk('Dermatology')">Dermatology</a>
-                                    <a onclick="clickk('Endocrinology')">Endocrinology</a>
-                                    <a onclick="clickk('Family and General Medicine')">Family and General Medicine</a>
-                                    <a onclick="clickk('Gastroenterologic surgery')">Gastroenterologic surgery</a>
-                                    <a onclick="clickk('Gastroenterology')">Gastroenterology</a>
-                                    <a onclick="clickk('General Practice')">General Practice</a>
-                                    <a onclick="clickk('General surgery')">General surgery</a>
-                                    <a onclick="clickk('Geriatrics')">Geriatrics</a>
-                                    <a onclick="clickk('Hematology')">Hematology</a>
-                                    <a onclick="clickk('Immunology')">Immunology</a>
-                                    <a onclick="clickk('Infectious diseases')">Infectious diseases</a>
-                                    <a onclick="clickk('Internal medicine')">Internal medicine</a>
-                                    <a onclick="clickk('Laboratory medicine')">Laboratory medicine</a>
-                                    <a onclick="clickk('Nephrology')">Nephrology</a>
-                                    <a onclick="clickk('Neuropsychiatry')">Neuropsychiatry</a>
-                                    <a onclick="clickk('Neurology')">Neurology</a>
-                                    <a onclick="clickk('Neurosurgery')">Neurosurgery</a>
-                                    <a onclick="clickk('Nuclear medicine')">Nuclear medicine</a>
-                                    <a onclick="clickk('Obstetrics and gynaecology')">Obstetrics and gynaecology</a>
-                                    <a onclick="clickk('Occupational medicine')">Occupational medicine</a>
-                                    <a onclick="clickk('Oncology')">Oncology</a>
-                                    <a onclick="clickk('Ophthalmology')">Ophthalmology</a>
-                                    <a onclick="clickk('Oral and maxillofacial surgery')">Oral and maxillofacial surgery</a>
-                                    <a onclick="clickk('Orthopaedics')">Orthopaedics</a>
-                                    <a onclick="clickk('Otorhinolaryngology')">Otorhinolaryngology</a>
-                                    <a onclick="clickk('Paediatric surgery')">Paediatric surgery</a>
-                                    <a onclick="clickk('Paediatrics')">Paediatrics</a>
-                                    <a onclick="clickk('Pathology')">Pathology</a>
-                                    <a onclick="clickk('Pharmacology')">Pharmacology</a>
-                                    <a onclick="clickk('Physical medicine and rehabilitation')">Physical medicine and rehabilitation</a>
-                                    <a onclick="clickk('Plastic surgery')">Plastic surgery</a>
-                                    <a onclick="clickk('Podiatric surgery')">Podiatric surgery</a>
-                                    <a onclick="clickk('Preventive medicine')">Preventive medicine</a>
-                                    <a onclick="clickk('Psychiatry')">Psychiatry</a>
-                                    <a onclick="clickk('Public health')">Public health</a>
-                                    <a onclick="clickk('Radiation Oncology')">Radiation Oncology</a>
-                                    <a onclick="clickk('Radiology')">Radiology</a>
-                                    <a onclick="clickk('Respiratory medicine')">Respiratory medicine</a>
-                                    <a onclick="clickk('Rheumatology')">Rheumatology</a>
-                                    <a onclick="clickk('Stomatology')">Stomatology</a>
-                                    <a onclick="clickk('Thoracic surgery')">Thoracic surgery</a>
-                                    <a onclick="clickk('Tropical medicine')">Tropical medicine</a>
-                                    <a onclick="clickk('Urology')">Urology</a>
-                                    <a onclick="clickk('Vascular surgery')">Vascular surgery</a>
-                                    <a onclick="clickk('Venereology')">Venereology</a>
-                                </div>                    
+                                    <div class="info">
+                                        <a onclick="clickk('X-ray')">X-ray</a>
+                                        <a onclick="clickk('CT Scan (Computed Tomography)')">CT Scan (Computed Tomography)</a>
+                                        <a onclick="clickk('MRI (Magnetic Resonance Imaging)')">MRI (Magnetic Resonance Imaging)</a>
+                                        <a onclick="clickk('Ultrasound')">Ultrasound</a>
+                                        <a onclick="clickk('Mammography')">Mammography</a>
+                                        <a onclick="clickk('Fluoroscopy')">Fluoroscopy</a>
+                                        <a onclick="clickk('Bone Density Scan (DEXA)')">Bone Density Scan (DEXA)</a>
+                                        <a onclick="clickk('PET Scan (Positron Emission Tomography)')">PET Scan (Positron Emission Tomography)</a>
+                                        <a onclick="clickk('Nuclear Medicine Scan')">Nuclear Medicine Scan</a>
+                                        <a onclick="clickk('Angiography')">Angiography</a>
+                                        <a onclick="clickk('CT Angiography')">CT Angiography</a>
+                                        <a onclick="clickk('MRI Angiography')">MRI Angiography</a>
+                                        <a onclick="clickk('Abdominal Ultrasound')">Abdominal Ultrasound</a>
+                                        <a onclick="clickk('Pelvic Ultrasound')">Pelvic Ultrasound</a>
+                                        <a onclick="clickk('Transvaginal Ultrasound')">Transvaginal Ultrasound</a>
+                                        <a onclick="clickk('Carotid Ultrasound')">Carotid Ultrasound</a>
+                                        <a onclick="clickk('Echocardiogram')">Echocardiogram</a>
+                                        <a onclick="clickk('Chest X-ray')">Chest X-ray</a>
+                                        <a onclick="clickk('Barium Swallow')">Barium Swallow</a>
+                                        <a onclick="clickk('Barium Enema')">Barium Enema</a>
+                                        <a onclick="clickk('Hysterosalpingography')">Hysterosalpingography</a>
+                                        <a onclick="clickk('Thyroid Ultrasound')">Thyroid Ultrasound</a>
+                                        <a onclick="clickk('Breast Ultrasound')">Breast Ultrasound</a>
+                                        <a onclick="clickk('CT Colonography')">CT Colonography</a>
+                                        <a onclick="clickk('Upper Gastrointestinal Series (UGI)')">Upper Gastrointestinal Series (UGI)</a>
+                                        <a onclick="clickk('Head CT Scan')">Head CT Scan</a>
+                                        <a onclick="clickk('Spinal MRI')">Spinal MRI</a>
+                                        <a onclick="clickk('Brain MRI')">Brain MRI</a>
+                                        <a onclick="clickk('Abdominal CT Scan')">Abdominal CT Scan</a>
+                                        <a onclick="clickk('Pelvic CT Scan')">Pelvic CT Scan</a>
+                                        <a onclick="clickk('Cardiac MRI')">Cardiac MRI</a>
+                                        <a onclick="clickk('Cardiac CT Scan')">Cardiac CT Scan</a>
+                                        <a onclick="clickk('Scrotal Ultrasound')">Scrotal Ultrasound</a>
+                                        <a onclick="clickk('Arthrogram')">Arthrogram</a>
+                                    </div>          
                                 </div>
                             </div>
                         </div>
@@ -1009,7 +1023,7 @@
                             </div>
                             <div class="controls">
                                 <div class="button-frame">
-                                    <button class="button" id="prevButton">send the request</button>
+                                    <button class="button" id="prevButton" onclick="sendLabRequest()">send the request</button>
                                 </div>
                             </div>
                         </div>
@@ -1056,7 +1070,6 @@
             menuBtn.addEventListener('click', () => {
                 menuBar.classList.toggle('menu-active');
             });
-
             span.onclick = function() {
                 document.getElementById("fileManagerModal").style.display = "none";
             }
@@ -1070,7 +1083,89 @@
             document.getElementById("newReq").addEventListener("click", function() {
                 document.getElementById("fileManagerModal").style.display = "block";
             });
-        })
+
+            // Fetch and display existing lab requests
+            fetchLabRequests();
+        });
+
+        function fetchLabRequests() {
+            fetch('/getradio')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);  // Log the data to see its structure
+                    const reqsDiv = document.getElementById("labRequests");
+                
+                    // Check if data is an array
+                    if (Array.isArray(data)) {
+                        // If it's an array, render the lab requests
+                        if (data.length === 0) {
+                            reqsDiv.innerHTML = "<p>No radio requests found.</p>";
+                        } else {
+                            reqsDiv.innerHTML = data.map((req, index) => `
+                                <div class="lab-request">
+                                    <p class="lab-request-item inforeq">Test: ${req.test}</p>
+                                    ${req.msg ? `<p class="lab-request-item inforeq">${req.msg}</p>` : ''}
+                                    <p class="lab-request-item">Date: ${req.date}</p>
+                                    <p class="lab-request-item">Time: ${req.time}</p>
+                                    <button class="button delete-button" onclick="deleteLabRequest(${index})">Delete</button>
+                                </div>
+                            `).join('');
+                        }
+                    } else {
+                        // Handle the case when data is not an array
+                        reqsDiv.innerHTML = `
+                        <div class="lab-request">
+                            <p class="lab-request-item">No radio requests found.</p>
+                        </div>`;
+                    }
+                })
+                .catch(error => console.error('Error fetching radio requests:', error));
+        }
+
+
+        function sendLabRequest() {
+            const test = document.getElementById("oh").value;
+            const msg = document.getElementById("details").value || '';
+
+            if (!test) {
+                alert("Please fill in the test.");
+                return;
+            }
+
+            const data = { test, msg };
+            console.log("radio request:", data);
+
+            fetch('/addradioreq', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("radio request added:", result);
+                fetchLabRequests(); // Refresh the list of lab requests
+                document.getElementById("fileManagerModal").style.display = "none";
+                document.getElementById("details").value='';
+                document.getElementById("oh").value='';
+            })
+            .catch(error => console.error('Error adding radio request:', error));
+        }
+
+        function deleteLabRequest(index) {
+            // Get the lab request to delete based on the index (this can be based on the test name, ID, etc.)
+            console.log("radio request index:", index);
+            fetch('/deleteradioreq', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index })
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("radio request deleted:", result);
+                fetchLabRequests(); // Refresh the list of lab requests after deletion
+            })
+            .catch(error => console.error('Error deleting radio request:', error));
+        }
     </script>
 </body>
 </html>

@@ -834,7 +834,7 @@
         padding: 5px 10px;
         margin-top:5px;
         border-radius: 4.5px;
-        font-size: 15px;
+        font-size: 24px;
         cursor: pointer;
         color: rgb(255, 255, 255);
     }
@@ -878,8 +878,43 @@
     }
 
     .reqs {
+        overflow-y: auto;
         height: 90%;
+        display: flex;
         width: 100%;
+        overflow-x: hidden;
+        flex-direction: column;
+    }
+
+    .reqs::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .reqs::-webkit-scrollbar-track {
+        border-radius: 5px;
+        background-color: #e7e7e7;
+        border: 1px solid #abb0bb;
+        box-shadow: inset 0 0 6px rgb(50 51 55 / 41%);
+    }
+
+    .reqs::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: #000000;
+    }
+
+    .lab-request {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .lab-request-item{
+        font-size: 24px;
+        margin: 5px;
+    }
+
+    .inforeq{
+        width: 400px;
     }
     </style>
     <title>Binder Medical</title>
@@ -906,33 +941,33 @@
                 </li>
                 <li><div class="menu__div"></div></li>
                 <li>
-                    <a class="menu__item" title="back" href="/back"><img class="icoo" src="/static/images/back.png" title="back" alt="back"><h6>Go back</h6></a>
+                    <a class="menu__item" title="back" href="/meddata"><img class="icoo" src="/static/images/back.png" title="Back" alt="back"><h6>Go back</h6></a>
                 </li>
                 <li><div class="menu__div"></div></li>
                 <li>
                     <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
                 </li>
                 <li style="margin-bottom: 80px;">
-                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
+                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="Support" alt="support"><h6>Support</h6></a>
                 </li>
                 </ul>
             </div>
         </div>
         <div>
-            <a class="menuItem lll" href="/back"><img class="icoo icoos" src="/static/images/back.png" alt=""><h6>Back</h6></a>
+            <a class="menuItem lll" title="Back" href="/meddata"><img class="icoo icoos" src="/static/images/back.png" alt=""><h6>Back</h6></a>
         </div>
     </div>
     <div class="data-capture-page">
         <div class="main-frame">
-            <button class="button" id="newReq" onclick="openFile()">Make a pharmacy request</button>
-            <div class="reqs">
+            <button class="button" id="newReq" onclick="openFile()">Make a pharma request</button>
+            <div class="reqs" id="labRequests">
 
             </div>
 
             <div id="fileManagerModal" class="modal">
                 <div class="modal-content">
                     <div style="width: 100%;"><span class="close">&times;</span></div>
-                    <h2>Request pharmacy</h2>
+                    <h2>Request Pharma</h2>
 
                     <!-- File Previews -->
                     <div id="filePreviews" class="file-previews">
@@ -942,63 +977,57 @@
                                     <input type="text" id="oh" onclick="opnn()" onkeyup="filterFunction()">
                                 </div>
                                 <div id="myDropdown" class="dropdown-content">
-                                <div class="info">
-                                    <a onclick="clickk('Accident and emergency medicine')">Accident and emergency medicine</a>
-                                    <a onclick="clickk('Allergist')">Allergist</a>
-                                    <a onclick="clickk('Anaesthetics')">Anaesthetics</a>
-                                    <a onclick="clickk('Cardiology')">Cardiology</a>
-                                    <a onclick="clickk('Child psychiatry')">Child psychiatry</a>
-                                    <a onclick="clickk('Clinical biology')">Clinical biology</a>
-                                    <a onclick="clickk('Clinical chemistry')">Clinical chemistry</a>
-                                    <a onclick="clickk('Clinical microbiology')">Clinical microbiology</a>
-                                    <a onclick="clickk('Clinical neurophysiology')">Clinical neurophysiology</a>
-                                    <a onclick="clickk('Craniofacial surgery')">Craniofacial surgery</a>
-                                    <a onclick="clickk('Dermatology')">Dermatology</a>
-                                    <a onclick="clickk('Endocrinology')">Endocrinology</a>
-                                    <a onclick="clickk('Family and General Medicine')">Family and General Medicine</a>
-                                    <a onclick="clickk('Gastroenterologic surgery')">Gastroenterologic surgery</a>
-                                    <a onclick="clickk('Gastroenterology')">Gastroenterology</a>
-                                    <a onclick="clickk('General Practice')">General Practice</a>
-                                    <a onclick="clickk('General surgery')">General surgery</a>
-                                    <a onclick="clickk('Geriatrics')">Geriatrics</a>
-                                    <a onclick="clickk('Hematology')">Hematology</a>
-                                    <a onclick="clickk('Immunology')">Immunology</a>
-                                    <a onclick="clickk('Infectious diseases')">Infectious diseases</a>
-                                    <a onclick="clickk('Internal medicine')">Internal medicine</a>
-                                    <a onclick="clickk('Laboratory medicine')">Laboratory medicine</a>
-                                    <a onclick="clickk('Nephrology')">Nephrology</a>
-                                    <a onclick="clickk('Neuropsychiatry')">Neuropsychiatry</a>
-                                    <a onclick="clickk('Neurology')">Neurology</a>
-                                    <a onclick="clickk('Neurosurgery')">Neurosurgery</a>
-                                    <a onclick="clickk('Nuclear medicine')">Nuclear medicine</a>
-                                    <a onclick="clickk('Obstetrics and gynaecology')">Obstetrics and gynaecology</a>
-                                    <a onclick="clickk('Occupational medicine')">Occupational medicine</a>
-                                    <a onclick="clickk('Oncology')">Oncology</a>
-                                    <a onclick="clickk('Ophthalmology')">Ophthalmology</a>
-                                    <a onclick="clickk('Oral and maxillofacial surgery')">Oral and maxillofacial surgery</a>
-                                    <a onclick="clickk('Orthopaedics')">Orthopaedics</a>
-                                    <a onclick="clickk('Otorhinolaryngology')">Otorhinolaryngology</a>
-                                    <a onclick="clickk('Paediatric surgery')">Paediatric surgery</a>
-                                    <a onclick="clickk('Paediatrics')">Paediatrics</a>
-                                    <a onclick="clickk('Pathology')">Pathology</a>
-                                    <a onclick="clickk('Pharmacology')">Pharmacology</a>
-                                    <a onclick="clickk('Physical medicine and rehabilitation')">Physical medicine and rehabilitation</a>
-                                    <a onclick="clickk('Plastic surgery')">Plastic surgery</a>
-                                    <a onclick="clickk('Podiatric surgery')">Podiatric surgery</a>
-                                    <a onclick="clickk('Preventive medicine')">Preventive medicine</a>
-                                    <a onclick="clickk('Psychiatry')">Psychiatry</a>
-                                    <a onclick="clickk('Public health')">Public health</a>
-                                    <a onclick="clickk('Radiation Oncology')">Radiation Oncology</a>
-                                    <a onclick="clickk('Radiology')">Radiology</a>
-                                    <a onclick="clickk('Respiratory medicine')">Respiratory medicine</a>
-                                    <a onclick="clickk('Rheumatology')">Rheumatology</a>
-                                    <a onclick="clickk('Stomatology')">Stomatology</a>
-                                    <a onclick="clickk('Thoracic surgery')">Thoracic surgery</a>
-                                    <a onclick="clickk('Tropical medicine')">Tropical medicine</a>
-                                    <a onclick="clickk('Urology')">Urology</a>
-                                    <a onclick="clickk('Vascular surgery')">Vascular surgery</a>
-                                    <a onclick="clickk('Venereology')">Venereology</a>
-                                </div>                    
+                                    <div class="info">
+                                        <a onclick="clickk('Paracetamol')">Paracetamol</a>
+                                        <a onclick="clickk('Ibuprofen')">Ibuprofen</a>
+                                        <a onclick="clickk('Amoxicillin')">Amoxicillin</a>
+                                        <a onclick="clickk('Metformin')">Metformin</a>
+                                        <a onclick="clickk('Atorvastatin')">Atorvastatin</a>
+                                        <a onclick="clickk('Omeprazole')">Omeprazole</a>
+                                        <a onclick="clickk('Amlodipine')">Amlodipine</a>
+                                        <a onclick="clickk('Aspirin')">Aspirin</a>
+                                        <a onclick="clickk('Losartan')">Losartan</a>
+                                        <a onclick="clickk('Salbutamol')">Salbutamol</a>
+                                        <a onclick="clickk('Clopidogrel')">Clopidogrel</a>
+                                        <a onclick="clickk('Simvastatin')">Simvastatin</a>
+                                        <a onclick="clickk('Ciprofloxacin')">Ciprofloxacin</a>
+                                        <a onclick="clickk('Enalapril')">Enalapril</a>
+                                        <a onclick="clickk('Lisinopril')">Lisinopril</a>
+                                        <a onclick="clickk('Diclofenac')">Diclofenac</a>
+                                        <a onclick="clickk('Cetrizine')">Cetirizine</a>
+                                        <a onclick="clickk('Azithromycin')">Azithromycin</a>
+                                        <a onclick="clickk('Glimepiride')">Glimepiride</a>
+                                        <a onclick="clickk('Furosemide')">Furosemide</a>
+                                        <a onclick="clickk('Pantoprazole')">Pantoprazole</a>
+                                        <a onclick="clickk('Insulin')">Insulin</a>
+                                        <a onclick="clickk('Montelukast')">Montelukast</a>
+                                        <a onclick="clickk('Prednisolone')">Prednisolone</a>
+                                        <a onclick="clickk('Doxycycline')">Doxycycline</a>
+                                        <a onclick="clickk('Levofloxacin')">Levofloxacin</a>
+                                        <a onclick="clickk('Gliclazide')">Gliclazide</a>
+                                        <a onclick="clickk('Rosuvastatin')">Rosuvastatin</a>
+                                        <a onclick="clickk('Hydrochlorothiazide')">Hydrochlorothiazide</a>
+                                        <a onclick="clickk('Bisoprolol')">Bisoprolol</a>
+                                        <a onclick="clickk('Verapamil')">Verapamil</a>
+                                        <a onclick="clickk('Diltiazem')">Diltiazem</a>
+                                        <a onclick="clickk('Metoprolol')">Metoprolol</a>
+                                        <a onclick="clickk('Warfarin')">Warfarin</a>
+                                        <a onclick="clickk('Captopril')">Captopril</a>
+                                        <a onclick="clickk('Lorazepam')">Lorazepam</a>
+                                        <a onclick="clickk('Diazepam')">Diazepam</a>
+                                        <a onclick="clickk('Tramadol')">Tramadol</a>
+                                        <a onclick="clickk('Esomeprazole')">Esomeprazole</a>
+                                        <a onclick="clickk('Spironolactone')">Spironolactone</a>
+                                        <a onclick="clickk('Ranitidine')">Ranitidine</a>
+                                        <a onclick="clickk('Loratadine')">Loratadine</a>
+                                        <a onclick="clickk('Naproxen')">Naproxen</a>
+                                        <a onclick="clickk('Allopurinol')">Allopurinol</a>
+                                        <a onclick="clickk('Hydrocortisone')">Hydrocortisone</a>
+                                        <a onclick="clickk('Sulfasalazine')">Sulfasalazine</a>
+                                        <a onclick="clickk('Methylprednisolone')">Methylprednisolone</a>
+                                        <a onclick="clickk('Tamsulosin')">Tamsulosin</a>
+                                        <a onclick="clickk('Nitroglycerin')">Nitroglycerin</a>
+                                    </div>                                                     
                                 </div>
                             </div>
                         </div>
@@ -1009,7 +1038,7 @@
                             </div>
                             <div class="controls">
                                 <div class="button-frame">
-                                    <button class="button" id="prevButton">send the request</button>
+                                    <button class="button" id="prevButton" onclick="sendLabRequest()">send the request</button>
                                 </div>
                             </div>
                         </div>
@@ -1046,6 +1075,8 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            const span = document.getElementsByClassName("close")[0];
+
             const menuBtn = document.querySelector('.hamburger-menu');
             const menuBox = document.querySelector('.menu__box');
             const menuBar = document.getElementById('menuBar');
@@ -1054,9 +1085,6 @@
             menuBtn.addEventListener('click', () => {
                 menuBar.classList.toggle('menu-active');
             });
-            const span = document.getElementsByClassName("close")[0];
-
-
             span.onclick = function() {
                 document.getElementById("fileManagerModal").style.display = "none";
             }
@@ -1070,7 +1098,89 @@
             document.getElementById("newReq").addEventListener("click", function() {
                 document.getElementById("fileManagerModal").style.display = "block";
             });
-        })
+
+            // Fetch and display existing lab requests
+            fetchLabRequests();
+        });
+
+        function fetchLabRequests() {
+            fetch('/getpharma')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);  // Log the data to see its structure
+                    const reqsDiv = document.getElementById("labRequests");
+                
+                    // Check if data is an array
+                    if (Array.isArray(data)) {
+                        // If it's an array, render the lab requests
+                        if (data.length === 0) {
+                            reqsDiv.innerHTML = "<p>No pharma requests found.</p>";
+                        } else {
+                            reqsDiv.innerHTML = data.map((req, index) => `
+                                <div class="lab-request">
+                                    <p class="lab-request-item inforeq">Medicine: ${req.test}</p>
+                                    ${req.msg ? `<p class="lab-request-item inforeq">${req.msg}</p>` : ''}
+                                    <p class="lab-request-item">Date: ${req.date}</p>
+                                    <p class="lab-request-item">Time: ${req.time}</p>
+                                    <button class="button delete-button" onclick="deleteLabRequest(${index})">Delete</button>
+                                </div>
+                            `).join('');
+                        }
+                    } else {
+                        // Handle the case when data is not an array
+                        reqsDiv.innerHTML = `
+                        <div class="lab-request">
+                            <p class="lab-request-item">No pharma requests found.</p>
+                        </div>`;
+                    }
+                })
+                .catch(error => console.error('Error fetching pharma requests:', error));
+        }
+
+
+        function sendLabRequest() {
+            const test = document.getElementById("oh").value;
+            const msg = document.getElementById("details").value || '';
+
+            if (!test) {
+                alert("Please fill in the medicine.");
+                return;
+            }
+
+            const data = { test, msg };
+            console.log("pharma request:", data);
+
+            fetch('/addpharmareq', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("pharma request added:", result);
+                fetchLabRequests(); // Refresh the list of lab requests
+                document.getElementById("fileManagerModal").style.display = "none";
+                document.getElementById("details").value='';
+                document.getElementById("oh").value='';
+            })
+            .catch(error => console.error('Error adding pharma request:', error));
+        }
+
+        function deleteLabRequest(index) {
+            // Get the lab request to delete based on the index (this can be based on the test name, ID, etc.)
+            console.log("pharma request index:", index);
+            fetch('/deletepharmareq', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index })
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("pharma request deleted:", result);
+                fetchLabRequests(); // Refresh the list of lab requests after deletion
+            })
+            .catch(error => console.error('Error deleting pharma request:', error));
+        }
     </script>
 </body>
 </html>

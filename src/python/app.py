@@ -555,8 +555,8 @@ def contact():
 def fillters():
     return render_template("fillters.html")
 
-@app.route("/enas")
-def enas():
+@app.route("/siraj")
+def siraj():
     return render_template("madisyn.html")
 
 @app.route("/hmmm")
@@ -1774,21 +1774,23 @@ def addlab():
         pat['lab'].append({
             "test":test,
             'msg':msg,
-            "date":datetime.now().isoformat()
+            "date":datetime.now().date().isoformat(),
+            "time":datetime.now().strftime("%X")
         })
-        drssref.set(pat)
-        return jsonify(pat['lab'])
+        
+        drssref.update(pat)
     else:
-        pat['lab']={
+        pat['lab']=[{
                 'msg':msg,
                 "test":test,
-                "date":datetime.now().isoformat()
-            }
-        drssref.set(pat)
+                "date":datetime.now().date().isoformat(),
+                "time":datetime.now().strftime("%X")
+            }]
+        drssref.update(pat)
         
-    return jsonify({"message": "Patient added successfully"}), 200
+    return jsonify({"message": "lab request added successfully"}), 200
 
-@app.route('/deletelabreq', methods=['DELETE'])
+@app.route('/deletelabreq', methods=['POST'])
 def delete_lab_request():
     data = request.json
     index = data.get('index')
@@ -1801,8 +1803,6 @@ def delete_lab_request():
         return jsonify({"error": "Not authenticated"}), 403
 
     patient_id = session.get("patientno")
-    if not patient_id:
-        return jsonify({"error": "Patient ID missing in session"}), 400
 
     drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
     pat = drssref.get()
@@ -1817,7 +1817,6 @@ def delete_lab_request():
     drssref.update(pat)
 
     return jsonify({"success": "Lab request deleted."})
-
 
 @app.route('/radio_page')
 def radio_page():
@@ -1893,7 +1892,6 @@ def getpharma():
     else:
         return jsonify({'k':"bruh"})
 
- 
 @app.route('/addradioreq', methods=['POST'])
 def addradio():
     data = request.get_json()
@@ -1909,18 +1907,20 @@ def addradio():
         pat['radio'].append({
             'msg':msg,
             "test":test,
-            "date":datetime.now().isoformat()
+            "date":datetime.now().date().isoformat(),
+            "time":datetime.now().strftime("%X")
         })
-        drssref.set(pat)
+        drssref.update(pat)
     else:
-        pat['radio']={
+        pat['radio']=[{
                 'msg':msg,
                 "test":test,
-                "date":datetime.now().isoformat()
-            }
-        drssref.set(pat)
+                "date":datetime.now().date().isoformat(),
+                "time":datetime.now().strftime("%X")
+            }]
+        drssref.update(pat)
         
-    return jsonify({"message": "Patient added successfully"}), 200
+    return jsonify({"message": "radio request added successfully"}), 200
     
 @app.route('/addpharmareq', methods=['POST'])
 def addpharma():
@@ -1937,18 +1937,78 @@ def addpharma():
         pat['pharma'].append({
             'msg':msg,
             "test":test,
-            "date":datetime.now().isoformat()
+            "date":datetime.now().date().isoformat(),
+            "time":datetime.now().strftime("%X")
         })
-        drssref.set(pat)
+        drssref.update(pat)
     else:
-        pat['pharma']={
+        pat['pharma']=[{
                 'msg':msg,
                 "test":test,
-                "date":datetime.now().isoformat()
-            }
-        drssref.set(pat)
+                "date":datetime.now().date().isoformat(),
+                "time":datetime.now().strftime("%X")
+            }]
+        drssref.update(pat)
         
-    return jsonify({"message": "Patient added successfully"}), 200
+    return jsonify({"message": "pharma request added successfully"}), 200
+
+@app.route('/deletepharmareq', methods=['POST'])
+def delete_pharma_request():
+    data = request.json
+    index = data.get('index')
+
+
+    if index is None:
+        return jsonify({'error': 'Index not provided.'}), 400
+
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "Not authenticated"}), 403
+
+    patient_id = session.get("patientno")
+
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if not pat or "pharma" not in pat or index >= len(pat["pharma"]):
+        return jsonify({'error': 'pharma request not found.'}), 404
+
+    # Remove the lab request from the list
+    del pat["pharma"][index]
+
+    # Save the updated patient data
+    drssref.update(pat)
+
+    return jsonify({"success": "pharma request deleted."})
+
+@app.route('/deleteradioreq', methods=['POST'])
+def delete_radio_request():
+    data = request.json
+    index = data.get('index')
+
+
+    if index is None:
+        return jsonify({'error': 'Index not provided.'}), 400
+
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "Not authenticated"}), 403
+
+    patient_id = session.get("patientno")
+
+    drssref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+    pat = drssref.get()
+
+    if not pat or "radio" not in pat or index >= len(pat["radio"]):
+        return jsonify({'error': 'radio request not found.'}), 404
+
+    # Remove the lab request from the list
+    del pat["radio"][index]
+
+    # Save the updated patient data
+    drssref.update(pat)
+
+    return jsonify({"success": "radio request deleted."})
 
 @app.route('/addPatient', methods=['POST'])
 def add_patient():
