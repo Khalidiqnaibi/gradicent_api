@@ -881,6 +881,11 @@
         height: 90%;
         width: 100%;
     }
+
+    .lab-request {
+        display: flex;
+        justify-content: space-between;
+    }
     </style>
     <title>Binder Medical</title>
 </head>
@@ -924,101 +929,20 @@
     </div>
     <div class="data-capture-page">
         <div class="main-frame">
-            <button class="button" id="newReq" onclick="openFile()">Make a pharmacy request</button>
             <div class="reqs">
-
-            </div>
-
-            <div id="fileManagerModal" class="modal">
-                <div class="modal-content">
-                    <div style="width: 100%;"><span class="close">&times;</span></div>
-                    <h2>Request pharmacy</h2>
-
-                    <!-- File Previews -->
-                    <div id="filePreviews" class="file-previews">
-                        <div class="potato">
-                            <div class="dropdown">
-                                <div id="droppp">
-                                    <input type="text" id="oh" onclick="opnn()" onkeyup="filterFunction()">
-                                </div>
-                                <div id="myDropdown" class="dropdown-content">
-                                <div class="info">
-                                    <a onclick="clickk('Accident and emergency medicine')">Accident and emergency medicine</a>
-                                    <a onclick="clickk('Allergist')">Allergist</a>
-                                    <a onclick="clickk('Anaesthetics')">Anaesthetics</a>
-                                    <a onclick="clickk('Cardiology')">Cardiology</a>
-                                    <a onclick="clickk('Child psychiatry')">Child psychiatry</a>
-                                    <a onclick="clickk('Clinical biology')">Clinical biology</a>
-                                    <a onclick="clickk('Clinical chemistry')">Clinical chemistry</a>
-                                    <a onclick="clickk('Clinical microbiology')">Clinical microbiology</a>
-                                    <a onclick="clickk('Clinical neurophysiology')">Clinical neurophysiology</a>
-                                    <a onclick="clickk('Craniofacial surgery')">Craniofacial surgery</a>
-                                    <a onclick="clickk('Dermatology')">Dermatology</a>
-                                    <a onclick="clickk('Endocrinology')">Endocrinology</a>
-                                    <a onclick="clickk('Family and General Medicine')">Family and General Medicine</a>
-                                    <a onclick="clickk('Gastroenterologic surgery')">Gastroenterologic surgery</a>
-                                    <a onclick="clickk('Gastroenterology')">Gastroenterology</a>
-                                    <a onclick="clickk('General Practice')">General Practice</a>
-                                    <a onclick="clickk('General surgery')">General surgery</a>
-                                    <a onclick="clickk('Geriatrics')">Geriatrics</a>
-                                    <a onclick="clickk('Hematology')">Hematology</a>
-                                    <a onclick="clickk('Immunology')">Immunology</a>
-                                    <a onclick="clickk('Infectious diseases')">Infectious diseases</a>
-                                    <a onclick="clickk('Internal medicine')">Internal medicine</a>
-                                    <a onclick="clickk('Laboratory medicine')">Laboratory medicine</a>
-                                    <a onclick="clickk('Nephrology')">Nephrology</a>
-                                    <a onclick="clickk('Neuropsychiatry')">Neuropsychiatry</a>
-                                    <a onclick="clickk('Neurology')">Neurology</a>
-                                    <a onclick="clickk('Neurosurgery')">Neurosurgery</a>
-                                    <a onclick="clickk('Nuclear medicine')">Nuclear medicine</a>
-                                    <a onclick="clickk('Obstetrics and gynaecology')">Obstetrics and gynaecology</a>
-                                    <a onclick="clickk('Occupational medicine')">Occupational medicine</a>
-                                    <a onclick="clickk('Oncology')">Oncology</a>
-                                    <a onclick="clickk('Ophthalmology')">Ophthalmology</a>
-                                    <a onclick="clickk('Oral and maxillofacial surgery')">Oral and maxillofacial surgery</a>
-                                    <a onclick="clickk('Orthopaedics')">Orthopaedics</a>
-                                    <a onclick="clickk('Otorhinolaryngology')">Otorhinolaryngology</a>
-                                    <a onclick="clickk('Paediatric surgery')">Paediatric surgery</a>
-                                    <a onclick="clickk('Paediatrics')">Paediatrics</a>
-                                    <a onclick="clickk('Pathology')">Pathology</a>
-                                    <a onclick="clickk('Pharmacology')">Pharmacology</a>
-                                    <a onclick="clickk('Physical medicine and rehabilitation')">Physical medicine and rehabilitation</a>
-                                    <a onclick="clickk('Plastic surgery')">Plastic surgery</a>
-                                    <a onclick="clickk('Podiatric surgery')">Podiatric surgery</a>
-                                    <a onclick="clickk('Preventive medicine')">Preventive medicine</a>
-                                    <a onclick="clickk('Psychiatry')">Psychiatry</a>
-                                    <a onclick="clickk('Public health')">Public health</a>
-                                    <a onclick="clickk('Radiation Oncology')">Radiation Oncology</a>
-                                    <a onclick="clickk('Radiology')">Radiology</a>
-                                    <a onclick="clickk('Respiratory medicine')">Respiratory medicine</a>
-                                    <a onclick="clickk('Rheumatology')">Rheumatology</a>
-                                    <a onclick="clickk('Stomatology')">Stomatology</a>
-                                    <a onclick="clickk('Thoracic surgery')">Thoracic surgery</a>
-                                    <a onclick="clickk('Tropical medicine')">Tropical medicine</a>
-                                    <a onclick="clickk('Urology')">Urology</a>
-                                    <a onclick="clickk('Vascular surgery')">Vascular surgery</a>
-                                    <a onclick="clickk('Venereology')">Venereology</a>
-                                </div>                    
-                                </div>
-                            </div>
-                        </div>
-            
-                        <div class="outframe">
-                            <div class="details">
-                                <textarea class="entry-details"  id="details" cols="80" rows="8"></textarea>
-                            </div>
-                            <div class="controls">
-                                <div class="button-frame">
-                                    <button class="button" id="prevButton">send the request</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="lab-request">
+                    <h2 class="lab-request-item inforeq">Name</h2>
+                    <h2 class="lab-request-item">Number</h2>
+                    <h2 class="lab-request-item">Phone</h2>
+                    <h2 class="lab-request-item inforeq">Message</h2>
+                    <h2 class="lab-request-item inforeq"> </h2>
                 </div>
             </div>
+            <button class="button" onclick="save()">Save</button>
         </div>
     </div>
     <script>
+        let appointments = []; 
         document.addEventListener("DOMContentLoaded", function() {
             const menuBtn = document.querySelector('.hamburger-menu');
             const menuBox = document.querySelector('.menu__box');
@@ -1029,6 +953,76 @@
                 menuBar.classList.toggle('menu-active');
             });
         })
+
+        function get_appointments() {
+            fetch('/get_appointments')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);  // Log the data to see its structure
+                    const reqsDiv = document.getElementById("labRequests");
+                
+                    // Check if data is an array
+                    if (Array.isArray(data)) {
+                        // If it's an array, render the lab requests
+                        if (data.length === 0) {
+                            reqsDiv.innerHTML = "<p>No lab requests found.</p>";
+                        } else {
+                            reqsDiv.innerHTML = data.map((req, index) => `
+                                <div class="lab-request">
+                                    <p class="lab-request-item inforeq">${req.name}</p>
+                                    <p class="lab-request-item">${req.no}</p>
+                                    <p class="lab-request-item">${req.phone}</p>
+                                    <textarea onchange="updateAppointment(${index}, 'msg', this.value)" class="lab-request-item inforeq">${req.msg}</textarea>
+                                    <button class="button delete-button" onclick="show(${index})">Show</button>
+                                </div>
+                            `).join('');
+                        }
+                    } else {
+                        // Handle the case when data is not an array
+                        reqsDiv.innerHTML = `
+                        <div class="lab-request">
+                            <p class="lab-request-item">No lab requests found.</p>
+                        </div>`;
+                    }
+                })
+                .catch(error => console.error('Error fetching lab requests:', error));
+        }
+
+        function save() {
+            // Send the updated appointments to the server
+            const data = { appointments };
+            fetch('/save_appointments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("Saved successfully:", result);
+            })
+            .catch(error => console.error('Error saving:', error));
+        }
+
+        function updateAppointment(index, field, value) {
+            // Update the specific field in the corresponding appointment
+            appointments[index][field] = value;
+        }
+
+        function show(number) {
+
+            console.log(`num: ${appointments[number].no}`);
+
+            fetch('/show_search_by_number', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: appointments[number].no })
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("show:", result);
+            })
+            .catch(error => console.error('Error showing request:', error));
+        }
     </script>
 </body>
 </html>

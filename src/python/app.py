@@ -2427,6 +2427,15 @@ def auto_search_by_number():
     patient_id = session.get('patientno', None)
     return get_patient_by_number(patient_id+1)
 
+@app.route('/show_search_by_number', methods=['POST'])
+def show_search_by_number():
+    session["autoo"]='yup'
+    session["page"]='srch'
+    number = request.json.get('number')
+    session['patientno']=number-1
+    session["stat"]='nope'
+    return redirect("/fetchUserData")
+
 @app.route('/getPatientData', methods=['GET'])
 def get_patient_data():
     google_id = session["google_id"]
@@ -2585,13 +2594,13 @@ def update_patient_data():
 
         drs_ref.set(patient)
 
-        if 'next' in  data :
-            dr_ref = db.reference(f'/drs/{google_id}')
-            nn=dr_ref.get()
-            if "msg" in nn:
-                if data['next'] in nn["msg"] and data['phone'] in nn["msg"][data['next']]:
-                    nn["msg"][data['next']].remove(patient['phone'])
-                    dr_ref.update(nn)
+        #if 'next' in  data :
+        #    dr_ref = db.reference(f'/drs/{google_id}')
+        #    nn=dr_ref.get()
+        #    if "msg" in nn:
+        #        if data['next'] in nn["msg"] and data['phone'] in nn["msg"][data['next']]:
+        #            nn["msg"][data['next']].remove(patient['phone'])
+        #            dr_ref.update(nn)
 
         if 'next' in patient and  patient['phone']not in ['', ' ',0,'0'] and datetime.fromisoformat(patient['next'])>datetime.now() :
             dr_ref = db.reference(f'/drs/{google_id}')
@@ -2599,11 +2608,11 @@ def update_patient_data():
             if "msg" in nn:
                 if patient['next'] in nn["msg"]:
                     if not patient['phone']in nn["msg"][patient['next']]:
-                        nn["msg"][patient['next']].append(patient['phone'])
+                        nn["msg"][patient['next']].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""})
                 else:
-                    nn["msg"][patient['next']]=[patient['phone']]
+                    nn["msg"][patient['next']]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]
             else:
-                nn["msg"]={patient['next'] :[patient['phone']]}
+                nn["msg"]={patient['next'] :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]}
             dr_ref.update(nn)
 
 
@@ -2612,6 +2621,39 @@ def update_patient_data():
     except Exception as e:
         print(f"Error updating patient data: {e}")
         return jsonify({"message": f"Error updating patient data: {str(e)}"}), 500
+
+@app.route('/get_appointments')
+def getappointments():
+    google_id = session.get('google_id', None)
+
+    dr_ref = db.reference(f'/drs/{google_id}/msg')
+    nn=dr_ref.get()
+
+    today_key = datetime.now().isoformat()
+
+    return jsonify(nn.get(today_key, []))
+
+@app.route('/save_appointments', methods=['POST'])
+def saveappointments():
+    data = request.json
+    google_id = session.get('google_id', None)
+    appointments = data.get('appointments', None)
+
+    dr_ref = db.reference(f'/drs/{google_id}/msg')
+    nn=dr_ref.get()
+
+    nn[datetime.now().isoformat()] = appointments
+
+    dr_ref.update(nn)
+
+    # Save new appointments under the current timestamp
+    timestamp = datetime.now().isoformat()
+    nn[timestamp] = appointments
+
+    # Update the reference with the new data
+    dr_ref.update(nn)
+
+    return jsonify({timestamp: nn[timestamp]})
 
 @app.route('/updatesettings', methods=['POST'])
 def settingsssfs():
