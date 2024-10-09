@@ -2427,14 +2427,13 @@ def auto_search_by_number():
     patient_id = session.get('patientno', None)
     return get_patient_by_number(patient_id+1)
 
-@app.route('/show_search_by_number', methods=['POST'])
-def show_search_by_number():
+@app.route('/show_search_by_number/<number>')
+def show_search_by_number(number):
     session["autoo"]='yup'
     session["page"]='srch'
-    number = request.json.get('number')
-    session['patientno']=number-1
+    session['patientno']=int(number)-1
     session["stat"]='nope'
-    return redirect("/fetchUserData")
+    return redirect("/Binder_medical")
 
 @app.route('/getPatientData', methods=['GET'])
 def get_patient_data():
@@ -2566,6 +2565,8 @@ def update_patient_data():
         drs_ref = db.reference(f'/drs/{google_id}/patients/{int(patient_no)}')
 
         patient = drs_ref.get()
+
+        dateee=patient['next']
         
 
         if not patient:
@@ -2599,10 +2600,10 @@ def update_patient_data():
         #    nn=dr_ref.get()
         #    if "msg" in nn:
         #        if data['next'] in nn["msg"] and data['phone'] in nn["msg"][data['next']]:
-        #            nn["msg"][data['next']].remove(patient['phone'])
+        #            nn["msg"][dateee].remove(patient['phone'])
         #            dr_ref.update(nn)
 
-        if 'next' in patient and  patient['phone']not in ['', ' ',0,'0'] and datetime.fromisoformat(patient['next'])>datetime.now() :
+        if 'next' in patient and  patient['phone']not in ['', ' ',0,'0']:# and datetime.fromisoformat(patient['next'])>datetime.today() :
             dr_ref = db.reference(f'/drs/{google_id}')
             nn=dr_ref.get()
             if "msg" in nn:
@@ -2622,16 +2623,41 @@ def update_patient_data():
         print(f"Error updating patient data: {e}")
         return jsonify({"message": f"Error updating patient data: {str(e)}"}), 500
 
-@app.route('/get_appointments')
-def getappointments():
+@app.route('/appointments')
+def appointments():
+    session["page"]='appointments'
+
+    if "google_id" in session:
+        gid = session["google_id"]
+        user_data = get_userD(gid)
+
+        if 'PLAN' in session:
+            PLAN = 'sec'
+        else:
+            PLAN = user_data['plan']
+    else:
+        return redirect("/fetchUserData")
+
+    first_date_str = str(user_data.get("first"))
+    plan=str(user_data.get("plan"))
+    trial_status = calculate_trial_status(plan,first_date_str)
+
+    if trial_status == "bad":
+        session["page"]='acc'
+        return redirect("/fetchUserData")
+    else:
+        return redirect("/fetchUserData")
+
+@app.route('/get_appointments/<date>')
+def getappointments(date):
     google_id = session.get('google_id', None)
 
     dr_ref = db.reference(f'/drs/{google_id}/msg')
     nn=dr_ref.get()
 
-    today_key = datetime.now().isoformat()
-
-    return jsonify(nn.get(today_key, []))
+    #today_key = datetime.now().date().isoformat()
+    
+    return jsonify(nn.get(date, []))
 
 @app.route('/save_appointments', methods=['POST'])
 def saveappointments():
@@ -2642,15 +2668,9 @@ def saveappointments():
     dr_ref = db.reference(f'/drs/{google_id}/msg')
     nn=dr_ref.get()
 
-    nn[datetime.now().isoformat()] = appointments
-
-    dr_ref.update(nn)
-
     # Save new appointments under the current timestamp
-    timestamp = datetime.now().isoformat()
+    timestamp = datetime.now().date().isoformat()
     nn[timestamp] = appointments
-
-    # Update the reference with the new data
     dr_ref.update(nn)
 
     return jsonify({timestamp: nn[timestamp]})
@@ -2768,7 +2788,6 @@ def get_visit_by_date():
         visit_data['payed']=visit_data['payed']*10
         visit_data['debit']=visit_data['debit']*10
         visit_data['coast']=visit_data['coast']*10
-
     return jsonify(visit_data), 200
 
 @app.route('/insertVisit', methods=['POST'])

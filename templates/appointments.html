@@ -882,9 +882,26 @@
         width: 100%;
     }
 
+    #tags{
+        width: 100%;
+    }
+
     .lab-request {
         display: flex;
         justify-content: space-between;
+    }
+
+    .lab-request-item {
+        width: 150px;
+    }
+
+    .show-button,.inforeq{
+        width: 150px;
+    }
+
+    .savee{
+        width: 150px;
+        height: 40px;
     }
     </style>
     <title>Binder Medical</title>
@@ -909,10 +926,10 @@
                 <li>
                     <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
                 </li>
-                <li><div class="menu__div"></div></li>
                 <li>
-                    <a class="menu__item" title="back" href="/back"><img class="icoo" src="/static/images/back.png" title="back" alt="back"><h6>Go back</h6></a>
+                    <a class="menu__item"title="Appointments" href="/appointments"><img class="icoo" src="/static/images/appoint.png" title="Appointments" alt="Appointments"><h6>Appointments</h6></a>
                 </li>
+                <li><div class="menu__div"></div></li>
                 <li><div class="menu__div"></div></li>
                 <li>
                     <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
@@ -923,27 +940,34 @@
                 </ul>
             </div>
         </div>
-        <div>
-            <a class="menuItem lll" href="/back"><img class="icoo icoos" src="/static/images/back.png" alt=""><h6>Back</h6></a>
-        </div>
     </div>
     <div class="data-capture-page">
         <div class="main-frame">
-            <div class="reqs">
-                <div class="lab-request">
-                    <h2 class="lab-request-item inforeq">Name</h2>
-                    <h2 class="lab-request-item">Number</h2>
-                    <h2 class="lab-request-item">Phone</h2>
-                    <h2 class="lab-request-item inforeq">Message</h2>
-                    <h2 class="lab-request-item inforeq"> </h2>
-                </div>
+            <div>
+                <h1>Show Appointments For:</h1>
+                <input type="date" id="appointmentDate" class="date-picker" onchange="get_appointments()">
             </div>
-            <button class="button" onclick="save()">Save</button>
+            
+            <div id="tags" class="lab-request">
+                <h2 class="lab-request-item ">Name</h2>
+                <h2 class="lab-request-item">Number</h2>
+                <h2 class="lab-request-item">Phone</h2>
+                <h2 class="lab-request-item ">Message</h2>
+                <h2 class="lab-request-item "> </h2>
+                <h2 class="lab-request-item "> </h2>
+            </div>
+            <div id="labRequests" class="reqs">
+                
+            </div>
+            <button class="button savee" onclick="save()">Save</button>
         </div>
     </div>
     <script>
         let appointments = []; 
         document.addEventListener("DOMContentLoaded", function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("appointmentDate").value = today;
+
             const menuBtn = document.querySelector('.hamburger-menu');
             const menuBox = document.querySelector('.menu__box');
             const menuBar = document.getElementById('menuBar');
@@ -952,10 +976,18 @@
             menuBtn.addEventListener('click', () => {
                 menuBar.classList.toggle('menu-active');
             });
+
+            document.getElementById("appointmentDate").addEventListener("change", function() {
+                const selectedDate = this.value;
+                get_appointments(selectedDate);
+            });
+
+            get_appointments(today)
         })
 
-        function get_appointments() {
-            fetch('/get_appointments')
+        function get_appointments(date) {
+            console.log('hmm')
+            fetch(`/get_appointments/${date}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);  // Log the data to see its structure
@@ -965,23 +997,24 @@
                     if (Array.isArray(data)) {
                         // If it's an array, render the lab requests
                         if (data.length === 0) {
-                            reqsDiv.innerHTML = "<p>No lab requests found.</p>";
+                            console.log("<p>No lab requests found.</p>");
                         } else {
                             reqsDiv.innerHTML = data.map((req, index) => `
                                 <div class="lab-request">
-                                    <p class="lab-request-item inforeq">${req.name}</p>
-                                    <p class="lab-request-item">${req.no}</p>
-                                    <p class="lab-request-item">${req.phone}</p>
+                                    <h3 class="lab-request-item">${req.name}</h3>
+                                    <h3 class="lab-request-item">${req.no}</h3>
+                                    <h3 class="lab-request-item">${req.phone}</h3>
                                     <textarea onchange="updateAppointment(${index}, 'msg', this.value)" class="lab-request-item inforeq">${req.msg}</textarea>
-                                    <button class="button delete-button" onclick="show(${index})">Show</button>
+                                    <h2 class="lab-request-item "> </h2>
+                                    <button class="button show-button" onclick="show(${index})">Show</button>
                                 </div>
                             `).join('');
+                            appointments=data;
                         }
                     } else {
                         // Handle the case when data is not an array
                         reqsDiv.innerHTML = `
                         <div class="lab-request">
-                            <p class="lab-request-item">No lab requests found.</p>
                         </div>`;
                     }
                 })
@@ -989,8 +1022,9 @@
         }
 
         function save() {
+            console.log(`appointments :${appointments}`)
             // Send the updated appointments to the server
-            const data = { appointments };
+            const data = { appointments : appointments };
             fetch('/save_appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1005,23 +1039,15 @@
 
         function updateAppointment(index, field, value) {
             // Update the specific field in the corresponding appointment
-            appointments[index][field] = value;
+            appointments[index].msg = value;
         }
 
         function show(number) {
 
             console.log(`num: ${appointments[number].no}`);
-
-            fetch('/show_search_by_number', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ number: appointments[number].no })
-            })
-            .then(response => response.json())
-            .then(result => {
-                console.log("show:", result);
-            })
-            .catch(error => console.error('Error showing request:', error));
+            const pnoo=appointments[number].no
+            
+            window.location.href = `/show_search_by_number/${pnoo}`;
         }
     </script>
 </body>
