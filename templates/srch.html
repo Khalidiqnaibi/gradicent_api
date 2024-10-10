@@ -982,7 +982,17 @@
             { type: 'image', src: 'https://firebasestorage.googleapis.com/v0/b/monydb-f2cdb.appspot.com/o/ad1.jpg?alt=media&token=dc248e7d-3806-4364-ba9c-d575736d6253' }  // Another image
         ];
 
-        let currentIndex = 0;
+        // Calculate the starting media index based on the current time
+        function getStartIndexBasedOnTime() {
+            const currentTime = new Date();
+            const totalSeconds = currentTime.getHours() * 3600 + currentTime.getMinutes() * 60 + currentTime.getSeconds();
+
+            // Assuming each media lasts 15 seconds, calculate the current index
+            const mediaDuration = 15; // 15 seconds per media item
+            return Math.floor(totalSeconds / mediaDuration) % mediaSources.length;
+        }
+
+        let currentIndex = getStartIndexBasedOnTime()
         const resultDiv = document.getElementById('srchMain');
 
         function showNextMedia() {
