@@ -1448,6 +1448,8 @@ def get_last_page():
     else:
         return redirect("/fetchUserData")
     typee=session.get('wtype', 'drs')
+    if not "wtype" in session:
+        session['wtype']='drs'
     drss_ref = db.reference(f'/{typee}/{gid}')
     drrr=drss_ref.get()
 
@@ -2564,6 +2566,7 @@ def nnn():
 def update_patient_data():
     data = request.json
     typee=session.get('wtype', 'drs')
+    app.logger.info("typee: %s", typee)
     google_id = session.get('google_id', None)
     patient_no = data.get('patientNo', None)
 
@@ -2616,23 +2619,32 @@ def update_patient_data():
 
         if typee == 'drs':
             xx=0
-            for i in nn["msg"][dateee]:
-                if i['no'] == patient_no+1:
-                    nn["msg"][dateee].remove(nn["msg"][dateee][xx])
-                else:
-                    xx+=1
-
-            if 'next' in patient and  patient['phone']not in ['', ' ',0,'0']:# and datetime.fromisoformat(patient['next'])>datetime.today() :
-                dr_ref = db.reference(f'/drs/{google_id}')
-                nn=dr_ref.get()
-                if "msg" in nn:
-                    if patient['next'] in nn["msg"]:
-                        if not patient['phone']in nn["msg"][patient['next']]:
-                            nn["msg"][patient['next']].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""})
+            dr_ref = db.reference(f'/drs/{google_id}/msg')
+            nn=dr_ref.get()
+            
+            
+            if dateee in nn:
+                for i in nn[dateee]:
+                    if i['no'] == patient_no+1:
+                        nn[dateee].remove(nn[dateee][xx])
                     else:
-                        nn["msg"][patient['next']]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]
+                        xx+=1
+
+            if 'next' in patient :# and datetime.fromisoformat(patient['next'])>datetime.today() :
+                if nn:
+                    if patient['next'] in nn:
+                        add=True
+                        for i in nn[patient['next']] :
+                            if patient_no+1 == i["no"]:
+                                add=False
+                        if add:
+                            nn[patient['next']].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""})
+                    else:
+                        nn[patient['next']]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]
                 else:
-                    nn["msg"]={patient['next'] :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]}
+                    nn={patient['next'] :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]}
+                
+                
                 dr_ref.update(nn)
 
 
@@ -2640,6 +2652,7 @@ def update_patient_data():
 
     except Exception as e:
         print(f"Error updating patient data: {e}")
+        app.logger.info("Error updating patient data: %s", e)
         return jsonify({"message": f"Error updating patient data: {str(e)}"}), 500
 
 @app.route('/appointments')
@@ -3446,5 +3459,4 @@ def logouttttt():
 
 if __name__ == "__main__":
     app.run(debug=False)
-
-
+    
