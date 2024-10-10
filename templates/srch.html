@@ -440,7 +440,6 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('data:', data);
                 if (Array.isArray(data)) {
                     renderSearchResult(data, srchMain);
                     srchMain.style.justifyContent="space-around";
@@ -516,7 +515,6 @@
                 if (data.error) {
                     srchMain.innerHTML = `Error: ${data.error}`;
                 } else {
-                    console.log('data:', data);  // Log the data to see its structure
                     if (Object.keys(data).length === 0) {
                         srchMain.innerHTML = 'No patient found.';
                     } else {
@@ -923,7 +921,6 @@
                     srchMain.innerHTML = `Error: ${data.error}`;
                     srchMain.style.backgroundImage="none";
                 } else {
-                    console.log('data:', data);  // Log the data to see its structure
                     if (Object.keys(data).length === 0) {
                         srchMain.innerHTML = 'No patient found.';
                     } else {
@@ -962,7 +959,6 @@
                 if (data.error) {
                     srchMain.innerHTML = `Error: ${data.error}`;
                 } else {
-                    console.log('data:', data);
                     if (Object.keys(data).length === 0) {
                         srchMain.innerHTML = 'No patient found.';
                     } else {

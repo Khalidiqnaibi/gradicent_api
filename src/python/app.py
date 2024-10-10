@@ -2603,6 +2603,13 @@ def update_patient_data():
         #            nn["msg"][dateee].remove(patient['phone'])
         #            dr_ref.update(nn)
 
+        xx=0
+        for i in nn["msg"][dateee]:
+            if i['no'] == patient_no+1:
+                nn["msg"][dateee].remove(nn["msg"][dateee][xx])
+            else:
+                xx+=1
+
         if 'next' in patient and  patient['phone']not in ['', ' ',0,'0']:# and datetime.fromisoformat(patient['next'])>datetime.today() :
             dr_ref = db.reference(f'/drs/{google_id}')
             nn=dr_ref.get()
