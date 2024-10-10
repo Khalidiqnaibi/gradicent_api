@@ -226,8 +226,8 @@ def save_code(code,plan,gid=""):
 def save_seccode(code,gid=""):
 
     v= {"code":code,"date":datetime.now().date().isoformat(),'plan':'sec',"users":0,"google_id":gid}
-
-    dr_ref = db.reference(f'/drs/{gid}')
+    typee=session.get('wtype', 'drs')
+    dr_ref = db.reference(f'/{typee}/{gid}')
     nn=dr_ref.get()
     if 'settings' not in nn:
         nn["settings"]={'ac':v}
@@ -620,7 +620,8 @@ def codesec():
     if not code:
         return jsonify({'error': 'No code provided'}), 400
 
-    dr_ref = db.reference(f'/drs/{session["google_id"]}')
+    typee=session.get('wtype', 'drs')
+    dr_ref = db.reference(f'/{typee}/{session["google_id"]}')
     current_settings = dr_ref.child('settings').get()
     if current_settings and current_settings.get('ac', {}).get('code') == code:
         new_code = gencode()
@@ -630,7 +631,7 @@ def codesec():
         ref = db.reference(f'/codes/{code}')
         codes = ref.get()
 
-        refff = db.reference(f'/drs/{code}')
+        refff = db.reference(f'/{typee}/{code}')
         bshh = refff.get()
 
         if bshh:
@@ -654,9 +655,10 @@ def sess():
 def check_Bactivation_code():
     global bPay
     gid=session['google_id']
+    typee=session.get('wtype', 'drs')
 
 
-    if 'cod' in session:
+    if 'cod' in session :
         activation_code = session['cod']
         ref = db.reference(f'/codes/{activation_code}')
         codes = ref.get()
@@ -664,9 +666,9 @@ def check_Bactivation_code():
             closee=True
             bPay=True
             return redirect("/basic_success")
-        elif codes:
+        elif codes and typee == 'drs':###################
             gid=codes['google_id']
-            reff = db.reference(f'/drs/{gid}/settings')
+            reff = db.reference(f'/{typee}/{gid}/settings')
             bruh = reff.get()
             bruh['ac']['users']+=1
             reff.update(bruh)
@@ -1346,7 +1348,8 @@ def calculate_trial_status(plan,first_date_str):
             return "bad"
 
 def get_userD(google_id):
-        drssref = db.reference(f'/drs/{google_id}')
+        typee=session.get('wtype', 'drs')
+        drssref = db.reference(f'/{typee}/{google_id}')
         doc = drssref.get()
         name = session.get("name")
         year=datetime.now().year
@@ -1444,8 +1447,8 @@ def get_last_page():
             PLAN = user_data['plan']
     else:
         return redirect("/fetchUserData")
-
-    drss_ref = db.reference(f'/drs/{gid}')
+    typee=session.get('wtype', 'drs')
+    drss_ref = db.reference(f'/{typee}/{gid}')
     drrr=drss_ref.get()
 
     if 'settings' not in drrr:
@@ -1467,15 +1470,16 @@ def get_last_page():
     trial_status = calculate_trial_status(plan,first_date_str)
 
     if trial_status == "bad":
-        session["page"]='acc'
-        page=session["page"]
-        user_data['patients'] = []
-        return  render_template(f"{page}.html",user_data=user_data)
+        if typee == 'drs':
+            session["page"]='acc'
+            page=session["page"]
+            user_data['patients'] = []
+            return  render_template(f"{page}.html",user_data=user_data)
 
     if "page" in session:
         page=session["page"]
-    else:
-        if user_data["plan"] == "free":
+    elif typee=='drs':
+        if user_data["plan"]== "free"  :
             page="acc"
         else:
             page='home'
@@ -1595,15 +1599,17 @@ def settingssss():
             PLAN = user_data['plan']
     else:
         return redirect("/fetchUserData")
+    
+    typee=session.get('wtype', 'drs')
 
-    if not user_data['plan'] in ['sec']:
+    if not user_data['plan'] in ['sec'] and typee=='drs':
         session["page"]='settings'
 
     first_date_str = str(user_data.get("first"))
     plan=str(user_data.get("plan"))
     trial_status = calculate_trial_status(plan,first_date_str)
 
-    drs_ref = db.reference(f'/drs/{session["google_id"]}/settings')
+    drs_ref = db.reference(f'/{typee}/{session["google_id"]}/settings')
     sett=drs_ref.get()
     if not sett:
             settings={
@@ -2045,10 +2051,11 @@ def add_patient():
 
     return jsonify({"message": "Patient added successfully"}), 200
 
-@app.route('/ssearch', methods=['POST'])
+@app.route('/ssearch', methods=['POST']) #'''need place holder if the typee is not drs'''
 def ssearch():
     try:
         data = request.json
+        typee=session.get('wtype', 'drs')
         google_id = session.get("google_id")
         start_date = data.get('startDate')
         end_date = data.get('endDate')
@@ -2071,7 +2078,7 @@ def ssearch():
         session['show_visit_info'] = show_visit_info
 
         # Reference to the /drs path in Realtime Database
-        drs_ref = db.reference(f'/drs/{google_id}/patients')
+        drs_ref = db.reference(f'/{typee}/{google_id}/patients')
         patients = drs_ref.get()
 
         if not patients:
@@ -2173,6 +2180,7 @@ def ssearch():
 @app.route('/searchh_stats', methods=['POST'])
 def searchh_stats():
     try:
+        typee=session.get('wtype', 'drs')
         # Retrieve criteria from session
         data = {
             'startDate': session.get('startDate'),
@@ -2199,7 +2207,7 @@ def searchh_stats():
 
         
         # Reference to the /drs path in Realtime Database
-        drs_ref = db.reference(f'/drs/{google_id}/patients')
+        drs_ref = db.reference(f'/{typee}/{google_id}/patients')
         patients = drs_ref.get()
 
         if not patients:
@@ -2326,7 +2334,8 @@ def get_patients_by_name(name):
     else:
         return redirect("/fetchUserData")
     google_id = user_data['google_id']
-    drs_ref = db.reference(f'/drs/{google_id}')
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}/{google_id}')
     all_patients = []
     
     for i in all_patients:
@@ -2483,6 +2492,7 @@ def update_patient_totals():
     data = request.json
     google_id = session['google_id']
     patient_no = session['patientno']
+    typee=session.get('wtype', 'drs')
     total_payed = 0
     total_debit = 0
 
@@ -2490,7 +2500,7 @@ def update_patient_totals():
         return jsonify({"message": "Invalid session data"}), 400
 
     try:
-        drs_ref = db.reference(f'/drs/{google_id}/patients/{int(patient_no)}')
+        drs_ref = db.reference(f'/{typee}/{google_id}/patients/{int(patient_no)}')
         user_data = drs_ref.get()
 
         if not user_data:
@@ -2553,6 +2563,7 @@ def nnn():
 @app.route('/updatePatientData', methods=['POST'])
 def update_patient_data():
     data = request.json
+    typee=session.get('wtype', 'drs')
     google_id = session.get('google_id', None)
     patient_no = data.get('patientNo', None)
 
@@ -2562,7 +2573,7 @@ def update_patient_data():
     patient_no-=1
 
     try:
-        drs_ref = db.reference(f'/drs/{google_id}/patients/{int(patient_no)}')
+        drs_ref = db.reference(f'/{typee}/{google_id}/patients/{int(patient_no)}')
 
         patient = drs_ref.get()
 
@@ -2603,25 +2614,26 @@ def update_patient_data():
         #            nn["msg"][dateee].remove(patient['phone'])
         #            dr_ref.update(nn)
 
-        xx=0
-        for i in nn["msg"][dateee]:
-            if i['no'] == patient_no+1:
-                nn["msg"][dateee].remove(nn["msg"][dateee][xx])
-            else:
-                xx+=1
-
-        if 'next' in patient and  patient['phone']not in ['', ' ',0,'0']:# and datetime.fromisoformat(patient['next'])>datetime.today() :
-            dr_ref = db.reference(f'/drs/{google_id}')
-            nn=dr_ref.get()
-            if "msg" in nn:
-                if patient['next'] in nn["msg"]:
-                    if not patient['phone']in nn["msg"][patient['next']]:
-                        nn["msg"][patient['next']].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""})
+        if typee == 'drs':
+            xx=0
+            for i in nn["msg"][dateee]:
+                if i['no'] == patient_no+1:
+                    nn["msg"][dateee].remove(nn["msg"][dateee][xx])
                 else:
-                    nn["msg"][patient['next']]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]
-            else:
-                nn["msg"]={patient['next'] :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]}
-            dr_ref.update(nn)
+                    xx+=1
+
+            if 'next' in patient and  patient['phone']not in ['', ' ',0,'0']:# and datetime.fromisoformat(patient['next'])>datetime.today() :
+                dr_ref = db.reference(f'/drs/{google_id}')
+                nn=dr_ref.get()
+                if "msg" in nn:
+                    if patient['next'] in nn["msg"]:
+                        if not patient['phone']in nn["msg"][patient['next']]:
+                            nn["msg"][patient['next']].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""})
+                    else:
+                        nn["msg"][patient['next']]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]
+                else:
+                    nn["msg"]={patient['next'] :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]}
+                dr_ref.update(nn)
 
 
         return jsonify({"message": f"Patient data updated successfully"}), 200
@@ -2632,7 +2644,9 @@ def update_patient_data():
 
 @app.route('/appointments')
 def appointments():
-    session["page"]='appointments'
+    typee=session.get('wtype', 'drs')
+    if typee == 'drs':
+        session["page"]='appointments'
 
     if "google_id" in session:
         gid = session["google_id"]
@@ -2648,12 +2662,12 @@ def appointments():
     first_date_str = str(user_data.get("first"))
     plan=str(user_data.get("plan"))
     trial_status = calculate_trial_status(plan,first_date_str)
-
-    if trial_status == "bad":
-        session["page"]='acc'
-        return redirect("/fetchUserData")
-    else:
-        return redirect("/fetchUserData")
+    if typee == "drs":
+        if trial_status == "bad":
+            session["page"]='acc'
+            return redirect("/fetchUserData")
+        else:
+            return redirect("/fetchUserData")
 
 @app.route('/get_appointments/<date>')
 def getappointments(date):
@@ -2686,11 +2700,12 @@ def saveappointments():
 def settingsssfs():
     data = request.json
     google_id = session.get('google_id', None)
+    typee=session.get('wtype', 'drs')
 
     if not google_id:
         return jsonify({"message": "Invalid session data"}), 400
 
-    dr_ref = db.reference(f'/drs/{google_id}')
+    dr_ref = db.reference(f'/{typee}/{google_id}')
     nn=dr_ref.get()
     for key, value in data['correctedPatientData'].items():
         nn["settings"][key] = value
@@ -2701,7 +2716,8 @@ def settingsssfs():
 @app.route('/getsett')
 def getsett():
     google_id = session.get('google_id', None)
-    drs_ref = db.reference(f'/drs/{google_id}/settings')
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}/{google_id}/settings')
     nn=drs_ref.get()
 
     settings={
@@ -2731,6 +2747,7 @@ def update_visit_data():
     data = request.json
     patient_id = session.get('patientno', None)
     google_id = session.get('google_id', None)
+    typee=session.get('wtype', 'drs')
     
     data['payed']=data['payed']/10
     data['debit']=data['debit']/10
@@ -2738,7 +2755,7 @@ def update_visit_data():
     data['div']=''
 
     try:
-        drs_ref = db.reference(f'/drs/{google_id}/patients/{patient_id}')
+        drs_ref = db.reference(f'/{typee}/{google_id}/patients/{patient_id}')
         patient = drs_ref.get()
 
         if not patient:
