@@ -2566,7 +2566,6 @@ def nnn():
 def update_patient_data():
     data = request.json
     typee=session.get('wtype', 'drs')
-    app.logger.info("typee: %s", typee)
     google_id = session.get('google_id', None)
     patient_no = data.get('patientNo', None)
 
@@ -2580,7 +2579,8 @@ def update_patient_data():
 
         patient = drs_ref.get()
 
-        dateee=patient['next']
+        if 'next' in patient:   
+            dateee=patient['next']
         
 
         if not patient:
@@ -2621,9 +2621,8 @@ def update_patient_data():
             xx=0
             dr_ref = db.reference(f'/drs/{google_id}/msg')
             nn=dr_ref.get()
-            
-            
-            if dateee in nn:
+
+            if nn and dateee in nn:
                 for i in nn[dateee]:
                     if i['no'] == patient_no+1:
                         nn[dateee].remove(nn[dateee][xx])
@@ -2651,14 +2650,17 @@ def update_patient_data():
         return jsonify({"message": f"Patient data updated successfully"}), 200
 
     except Exception as e:
-        print(f"Error updating patient data: {e}")
         app.logger.info("Error updating patient data: %s", e)
+        app.logger.info("patient: %s", patient)
+        app.logger.info("patient['next']: %s", patient['next'])
         return jsonify({"message": f"Error updating patient data: {str(e)}"}), 500
 
 @app.route('/appointments')
 def appointments():
     typee=session.get('wtype', 'drs')
     if typee == 'drs':
+        session["page"]='appointments'
+    elif typee == 'lab':
         session["page"]='appointments'
 
     if "google_id" in session:
@@ -3459,4 +3461,5 @@ def logouttttt():
 
 if __name__ == "__main__":
     app.run(debug=False)
-    
+
+
