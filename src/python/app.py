@@ -1448,6 +1448,8 @@ def get_last_page():
     else:
         return redirect("/fetchUserData")
     typee=session.get('wtype', 'drs')
+    if not "wtype" in session:
+        session['wtype']='drs'
     drss_ref = db.reference(f'/{typee}/{gid}')
     drrr=drss_ref.get()
 
@@ -2577,19 +2579,16 @@ def update_patient_data():
 
         patient = drs_ref.get()
 
-        dateee=patient['next']
+        if 'next' in patient:   
+            dateee=patient['next']
         
-
         if not patient:
             return jsonify({"message": "Patient not found"}), 404
-
 
         # Update patient data
         for key, value in data.items():
             if key != 'patientNo':
                 patient[key] = value
-                
-        
                 
         if 'div' in patient:
             if 'payed' in patient:  
@@ -2606,46 +2605,50 @@ def update_patient_data():
 
         drs_ref.set(patient)
 
-        #if 'next' in  data :
-        #    dr_ref = db.reference(f'/drs/{google_id}')
-        #    nn=dr_ref.get()
-        #    if "msg" in nn:
-        #        if data['next'] in nn["msg"] and data['phone'] in nn["msg"][data['next']]:
-        #            nn["msg"][dateee].remove(patient['phone'])
-        #            dr_ref.update(nn)
-
         if typee == 'drs':
             xx=0
-            for i in nn["msg"][dateee]:
-                if i['no'] == patient_no+1:
-                    nn["msg"][dateee].remove(nn["msg"][dateee][xx])
-                else:
-                    xx+=1
+            dr_ref = db.reference(f'/drs/{google_id}/msg')
+            nn=dr_ref.get()
 
-            if 'next' in patient and  patient['phone']not in ['', ' ',0,'0']:# and datetime.fromisoformat(patient['next'])>datetime.today() :
-                dr_ref = db.reference(f'/drs/{google_id}')
-                nn=dr_ref.get()
-                if "msg" in nn:
-                    if patient['next'] in nn["msg"]:
-                        if not patient['phone']in nn["msg"][patient['next']]:
-                            nn["msg"][patient['next']].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""})
+            if nn and dateee in nn:
+                for i in nn[dateee]:
+                    if i['no'] == patient_no+1:
+                        nn[dateee].remove(nn[dateee][xx])
                     else:
-                        nn["msg"][patient['next']]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]
+                        xx+=1
+
+            if 'next' in patient :# and datetime.fromisoformat(patient['next'])>datetime.today() :
+                if nn:
+                    if patient['next'] in nn:
+                        add=True
+                        for i in nn[patient['next']] :
+                            if patient_no+1 == i["no"]:
+                                add=False
+                        if add:
+                            nn[patient['next']].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""})
+                    else:
+                        nn[patient['next']]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]
                 else:
-                    nn["msg"]={patient['next'] :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]}
+                    nn={patient['next'] :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]}
+                
+                
                 dr_ref.update(nn)
 
 
         return jsonify({"message": f"Patient data updated successfully"}), 200
 
     except Exception as e:
-        print(f"Error updating patient data: {e}")
+        app.logger.info("Error updating patient data: %s", e)
+        app.logger.info("patient: %s", patient)
+        app.logger.info("patient['next']: %s", patient['next'])
         return jsonify({"message": f"Error updating patient data: {str(e)}"}), 500
 
 @app.route('/appointments')
 def appointments():
     typee=session.get('wtype', 'drs')
     if typee == 'drs':
+        session["page"]='appointments'
+    elif typee == 'lab':
         session["page"]='appointments'
 
     if "google_id" in session:
