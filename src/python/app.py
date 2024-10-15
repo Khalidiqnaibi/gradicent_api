@@ -2606,6 +2606,8 @@ def update_patient_data():
         drs_ref.set(patient)
 
         if typee == 'drs':
+            dateti=f'{datetime.fromisoformat(patient["next"]).date()}'
+            timee=f'{datetime.fromisoformat(patient["next"]).time()}'
             xx=0
             dr_ref = db.reference(f'/drs/{google_id}/msg')
             nn=dr_ref.get()
@@ -2619,19 +2621,20 @@ def update_patient_data():
 
             if 'next' in patient :# and datetime.fromisoformat(patient['next'])>datetime.today() :
                 if nn:
-                    if patient['next'] in nn:
+                    if dateti in nn:
                         add=True
-                        for i in nn[patient['next']] :
+                        for i in nn[dateti] :
                             if patient_no+1 == i["no"]:
                                 add=False
                         if add:
-                            nn[patient['next']].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""})
+                            nn[dateti].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"})
                     else:
-                        nn[patient['next']]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]
+                        nn[dateti]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"}]
                 else:
-                    nn={patient['next'] :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':""}]}
+                    nn={dateti :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"}]}
                 
                 
+                app.logger.info("timee[:-3]: %s", timee[:-3])
                 dr_ref.update(nn)
 
 
