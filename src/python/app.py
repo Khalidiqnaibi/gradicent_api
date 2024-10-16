@@ -1763,9 +1763,9 @@ def getlab():
     pat = drssref.get()
 
     if 'lab' in pat :
-        return jsonify(pat['lab'])
+        return jsonify({'pat':pat['lab'],'numm':f"{google_id[:6]}-{patient_id+1}"})
     else:
-        return jsonify({'k':"bruh"})
+        return jsonify({'k':"bruh",'numm':f"{google_id[:6]}-{patient_id+1}"})
     
 @app.route('/addlabreq', methods=['POST'])
 def addlab():
@@ -1884,9 +1884,9 @@ def getradio():
     pat = drssref.get()
 
     if 'radio' in pat :
-        return jsonify(pat['radio'])
+        return jsonify({'pat':pat['radio'],'numm':f"{google_id[:6]}-{patient_id+1}"})
     else:
-        return jsonify({'k':"bruh"})
+        return jsonify({'k':"bruh",'numm':f"{google_id[:6]}-{patient_id+1}"})
     
 @app.route('/getpharma')
 def getpharma():
@@ -1896,9 +1896,9 @@ def getpharma():
     pat = drssref.get()
 
     if 'pharma' in pat :
-        return jsonify(pat['pharma'])
+        return jsonify({'pat':pat['pharma'],'numm':f"{google_id[:6]}-{patient_id+1}"})
     else:
-        return jsonify({'k':"bruh"})
+        return jsonify({'k':"bruh",'numm':f"{google_id[:6]}-{patient_id+1}"})
 
 @app.route('/addradioreq', methods=['POST'])
 def addradio():
@@ -2634,7 +2634,6 @@ def update_patient_data():
                     nn={dateti :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"}]}
                 
                 
-                app.logger.info("timee[:-3]: %s", timee[:-3])
                 dr_ref.update(nn)
 
 

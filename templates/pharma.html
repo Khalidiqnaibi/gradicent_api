@@ -913,8 +913,12 @@
         margin: 5px;
     }
 
-    .inforeq{
-        width: 400px;
+    .inforeq {
+        width: 300px;
+    }
+
+    .datee {
+        margin: 10px;
     }
     </style>
     <title>Binder Medical</title>
@@ -962,6 +966,9 @@
     </div>
     <div class="data-capture-page">
         <div class="main-frame">
+            <div class="datee">
+                <h1 id="appnum"></h1>
+            </div>
             <button class="button" id="newReq" onclick="openFile()">Make a pharma request</button>
             <div class="reqs" id="labRequests">
 
@@ -1109,10 +1116,15 @@
         function fetchLabRequests() {
             fetch('/getpharma')
                 .then(response => response.json())
-                .then(data => {
-                    console.log(data);  // Log the data to see its structure
+                .then(info => {
+                    console.log(info);  // Log the data to see its structure
                     const reqsDiv = document.getElementById("labRequests");
-                
+                    const data = info.pat;
+
+                    const nnum= info.numm;
+                    const appnumm = document.getElementById("appnum");
+                    appnumm.textContent = nnum;
+
                     // Check if data is an array
                     if (Array.isArray(data)) {
                         // If it's an array, render the lab requests
