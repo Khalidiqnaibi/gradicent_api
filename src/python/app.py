@@ -1755,6 +1755,31 @@ def lab_page():
     else:
         return redirect("/fetchUserData")
     
+@app.route('/srchlab')
+def srchlabbb():
+    session["page"]='lab_req'
+
+    if "google_id" in session:
+        gid = session["google_id"]
+        user_data = get_userD(gid)
+
+        if 'PLAN' in session:
+            PLAN = 'sec'
+        else:
+            PLAN = user_data['plan']
+    else:
+        return redirect("/fetchUserData")
+
+    first_date_str = str(user_data.get("first"))
+    plan=str(user_data.get("plan"))
+    trial_status = calculate_trial_status(plan,first_date_str)
+
+    if trial_status == "bad":
+        session["page"]='acc'
+        return redirect("/fetchUserData")
+    else:
+        return redirect("/fetchUserData")
+
 @app.route('/getlab')
 def getlab():
     google_id = session["google_id"]
@@ -2684,6 +2709,27 @@ def getappointments(date):
     #today_key = datetime.now().date().isoformat()
     
     return jsonify(nn.get(date, []))
+
+@app.route('/srchlab/<num>')
+def srchlab(num):
+    google_id = session.get('google_id', None)
+
+    dr_ref = db.reference(f'/drs/')
+    nn=dr_ref.get()
+
+    patnum=num.split('-')[1]
+    drnum=num.split('-')[0]
+
+    gid=''
+    for i in nn:
+        if drnum in i:
+            gid=i
+            break
+
+    app.logger.info("nn[gid]['patients'][int(patnum)]: %s", nn[gid]['patients'][int(patnum)-1])
+    labb=nn[gid]['patients'][int(patnum)-1]['lab']
+            
+    return jsonify(labb)
 
 @app.route('/save_appointments', methods=['POST'])
 def saveappointments():

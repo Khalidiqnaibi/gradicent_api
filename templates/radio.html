@@ -906,6 +906,7 @@
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
+        align-items: center;
     }
 
     .lab-request-item{
@@ -1117,10 +1118,10 @@
                         } else {
                             reqsDiv.innerHTML = data.map((req, index) => `
                                 <div class="lab-request">
-                                    <p class="lab-request-item inforeq">Test: ${req.test}</p>
+                                    <p class="lab-request-item inforeq">${req.test}</p>
                                     ${req.msg ? `<p class="lab-request-item inforeq">${req.msg}</p>` : ''}
-                                    <p class="lab-request-item">Date: ${req.date}</p>
-                                    <p class="lab-request-item">Time: ${req.time}</p>
+                                    <p class="lab-request-item">${req.date}</p>
+                                    <p class="lab-request-item">${req.time}</p>
                                     <button class="button delete-button" onclick="deleteLabRequest(${index})">Delete</button>
                                 </div>
                             `).join('');

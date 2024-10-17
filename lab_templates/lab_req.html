@@ -813,7 +813,16 @@
 
     .datee {
         display: flex;
+        justify-content: space-between;
         align-items: baseline;
+    }
+
+    #srchapp{
+        width: 210px;
+    }
+    
+    #appointmentDate{
+        width: 120px;
     }
 
     #appnum{
@@ -873,9 +882,9 @@
     </div>
     <div class="data-capture-page">
         <div class="main-frame">
-            <div class="datee">
-                <p>Show Appointments For:</p>
-                <input type="date" id="appointmentDate" class="date-picker">
+            <div id="srchapp" class="datee">
+                <input type="text" id="appointmentDate" class="date-picker">
+                <button id="srchh" class="button srch">Search</button>
             </div>
             <div class="datee">
                 <h4 id="appnum"></h4>
@@ -900,7 +909,6 @@
         let appointments = []; 
         document.addEventListener("DOMContentLoaded", function() {
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById("appointmentDate").value = today;
 
             const menuBtn = document.querySelector('.hamburger-menu');
             const menuBox = document.querySelector('.menu__box');
@@ -911,22 +919,21 @@
                 menuBar.classList.toggle('menu-active');
             });
 
-            document.getElementById("appointmentDate").addEventListener("change", function() {
-                const selectedDate = this.value;
+            document.getElementById("srchapp").addEventListener("click", function() {
+                const selectedDate = document.getElementById('appointmentDate').value;
                 get_appointments(selectedDate);
             });
-
-            get_appointments(today)
         })
 
         function get_appointments(date) {
             console.log('hmm')
-            fetch(`/get_appointments/${date}`)
+            fetch(`/srchlab/${date}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);  // Log the data to see its structure
                     const reqsDiv = document.getElementById("labRequests");
                     const appnumm = document.getElementById("appnum");
+                    console.log("<p>No appointments found.</p>");
                 
                     // Check if data is an array
                     if (Array.isArray(data)) {
