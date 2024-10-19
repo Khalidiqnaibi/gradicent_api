@@ -2726,8 +2726,8 @@ def srchlab(num):
             gid=i
             break
 
-    app.logger.info("nn[gid]['patients'][int(patnum)]: %s", nn[gid]['patients'][int(patnum)-1])
     labb=nn[gid]['patients'][int(patnum)-1]['lab']
+    app.logger.info("labb: %s", labb)
             
     return jsonify(labb)
 
