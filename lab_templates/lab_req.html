@@ -829,6 +829,41 @@
         margin-right: 10px;
     }
 
+    inputdiv{
+        display: flex;
+    }
+
+    .folders{
+        display: flex;
+        justify-content: center;
+    }
+
+    h2 {
+        text-align: center;
+    }
+
+    div#uploadProgressContainer {
+        display: flex;
+        align-items: center;
+    }
+
+    progress {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    /* WebKit-specific styling for the progress bar */
+    progress::-webkit-progress-bar {
+        border-radius: 8px;                 /* Rounded corners */
+    }
+
+    /* WebKit-specific styling for the progress value */
+    progress::-webkit-progress-value {
+        background-color: rgb(0, 195, 255); /* Customize the fill color */
+        border-bottom-left-radius: 8px;
+        border-top-left-radius: 8px;
+    }
+
     @media (max-width:750px) {
         .lab-request {
             margin-top: 5px;
@@ -912,18 +947,10 @@
             <span class="close">&times;</span>
             <h2>Patient Files</h2>
     
-            <!-- Folder Buttons -->
-            <div class="folders">
-                <button class="button folder-btn" onclick="selectFolder('drs')">Doctor</button>
-                <button class="button folder-btn" onclick="selectFolder('lab')">Lab</button>
-                <button class="button folder-btn" onclick="selectFolder('radiology')">Radiology</button>
-                <button class="button folder-btn" onclick="selectFolder('pharmacies')">Pharmacy</button>
-            </div>
-    
             <!-- File Upload, only visible in the "drs" folder -->
             <div id="divvv" class="inputdiv">
                 <input type="file" multiple id="fileInput" title="Patient Files" style="display:none;">
-                <button class="button" id="uploadButton" onclick="uploadFile()" style="display:none;">Upload</button>
+                <button class="button" id="uploadButton" onclick="uploadFile()" style="display:none; margin-top: 0px;">Upload</button>
                 <div id="uploadProgressContainer" style="display: none;">
                     <label for="fileUploadProgress">Uploading:</label>
                     <progress id="fileUploadProgress" value="0" max="100"></progress>
@@ -938,7 +965,34 @@
     </div>
     <script>
         let appointments = []; 
+        var patientNo=0;
+        var gid=0;
         document.addEventListener("DOMContentLoaded", function() {
+            const modal = document.getElementById("fileManagerModal");
+            const shw = document.getElementById('shw');
+            const span = document.getElementsByClassName("close")[0];
+            const fileInput = document.getElementById("fileInput");
+            const uploadButton = document.getElementById("uploadButton");
+            const divvv = document.getElementById("divvv");
+            let selectedFolder = '';
+            selectFolder('lab')
+
+            // Open the modal and fetch the initial files
+            shw.onclick = function() {
+                modal.style.display = "block";
+                divvv.style.display = "flex";
+                fetchFiles(); // Fetch files when opening the modal
+            }
+
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
 
             const menuBtn = document.querySelector('.hamburger-menu');
             const menuBox = document.querySelector('.menu__box');
@@ -957,6 +1011,8 @@
 
         function get_appointments(date) {
             console.log('hmm')
+            patientNo=document.getElementById('appointmentDate').value.split('-')[1];
+            gid=document.getElementById('appointmentDate').value.split('-')[0];
             fetch(`/srchlab/${date}`)
                 .then(response => response.json())
                 .then(data => {
@@ -999,32 +1055,6 @@
                 .catch(error => console.error('Error fetching appointments:', error));
         }
 
-        const modal = document.getElementById("fileManagerModal");
-        const shw = document.getElementById('shw');
-        const span = document.getElementsByClassName("close")[0];
-        const fileInput = document.getElementById("fileInput");
-        const uploadButton = document.getElementById("uploadButton");
-        const divvv = document.getElementById("divvv");
-        let selectedFolder = '';
-        selectFolder('lab')
-
-        // Open the modal and fetch the initial files
-        shw.onclick = function() {
-            modal.style.display = "block";
-            divvv.style.display = "flex";
-            fetchFiles(); // Fetch files when opening the modal
-        }
-
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-
         // Function to handle folder selection
         function selectFolder(folderName) {
             selectedFolder = folderName;
@@ -1054,7 +1084,6 @@
                 return;
             }
 
-            const patientNo = patientNumber;
             const totalFiles = files.length;
             let currentFileIndex = 0;
             let totalProgress = 0; // Track total progress across files
@@ -1102,7 +1131,7 @@
                     };
 
                     // Set up request to POST the file
-                    xhr.open('POST', '/uploadFile', true);
+                    xhr.open('POST', `/uploadFile/${gid}/${patientNo}`, true);
                     xhr.send(formData);
                 } else {
                     // Hide progress bar and reset when all files are uploaded
@@ -1120,10 +1149,9 @@
 
         // Fetch files based on the selected folder
         function fetchFiles() {
-            const patientNo = patientNumber;
             const folderQuery = selectedFolder === 'drs' ? 'drs' : selectedFolder; // Query for the current folder
 
-            let url = `/getFiles?patient_no=${patientNo}&folder=${folderQuery}`;  // Use query parameters
+            let url = `/${gid}/getFiles?patient_no=${patientNo}&folder=${folderQuery}`;  // Use query parameters
 
             //if (folderQuery === 'drs'){
             //    url = `/getFiles?patient_no=${patientNo}`;
@@ -1203,7 +1231,7 @@
             deleteBtn.onclick = () => deleteFile(file.data);
         
             fileLink.appendChild(previewElement);
-            if (selectedFolder === 'drs') {
+            if (selectedFolder === 'lab') {
                 filePreview.appendChild(deleteBtn);
             }
             filePreview.appendChild(fileLink);

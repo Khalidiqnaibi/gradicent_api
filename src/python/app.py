@@ -2727,7 +2727,7 @@ def srchlab(num):
             break
 
     labb=nn[gid]['patients'][int(patnum)-1]['lab']
-    app.logger.info("labb: %s", labb)
+    session['labpat']=patnum
             
     return jsonify(labb)
 
@@ -3092,6 +3092,102 @@ def upload_file():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/uploadFile/<gid>/<patient_no>', methods=['POST'])
+def gidupload_file(gid,patient_no):
+    pno=patient_no
+    if 'labpat'in session:
+        pno=session['labpat']
+    dr_ref = db.reference(f'/drs/')
+    nn=dr_ref.get()
+
+    google_id=''
+
+    for i in nn:
+        if gid in i:
+            google_id=i
+            break
+    
+    # Check if file exists in request
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    folder = request.form.get('folder', None)
+    
+    # Restrict uploads only to the 'drs' folder
+    if folder != 'lab':
+        return jsonify({"error": "Files can only be uploaded in the 'drs' folder"}), 403
+
+    try:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+
+        # Upload to Firebase Storage
+        file_url = upload_to_storage(open(file_path, 'rb'), filename)
+
+        file_info = {
+            'name': filename,
+            'upload_date': datetime.now().isoformat(),
+            'data': file_url,
+            'patient_no': pno,
+            "folder": folder,
+            "gid": google_id,
+            'file_type': file.content_type,
+        }
+        dbst.collection('files').add(file_info)
+        app.logger.info(f"file_info: {file_info}, Folder: {folder}, Google ID: {google_id}")
+
+        os.remove(file_path)  # Remove the local file
+
+        return jsonify({"message": "File uploaded successfully", "file_info": file_info}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/<gid>/getFiles', methods=['GET'])
+def gidget_files(gid):
+    patient_no = request.args.get('patient_no')
+    if 'labpat'in session:
+        patient_no=session['labpat']
+    folder = request.args.get('folder')
+
+    dr_ref = db.reference(f'/drs/')
+    nn=dr_ref.get()
+
+    google_id=''
+
+    for i in nn:
+        if gid in i:
+            google_id=i
+            break
+
+    app.logger.info(f"Patient No: {patient_no}, Folder: {folder}, Google ID: {google_id}")
+    
+    if not patient_no:
+        return jsonify({"error": "Patient number is required"}), 400
+    
+    files_ref = dbst.collection('files').where('patient_no', '==', patient_no).where('gid', '==', google_id)
+    
+    files = []
+    
+    if folder == 'drs':
+        # Fetch files where folder is either 'drs' or missing (None)
+        files_query = files_ref.stream()  # Get all files for this patient
+        for doc in files_query:
+            file_data = doc.to_dict()
+            if 'folder' not in file_data or file_data['folder'] == 'drs':
+                files.append(file_data)
+    elif folder:
+        # Fetch files only in the specified folder
+        files = [doc.to_dict() for doc in files_ref.where('folder', '==', folder).stream()]
+    
+    print(f"Files fetched: {files}")
+    return jsonify(files), 200
 
 @app.route('/getFiles', methods=['GET'])
 def get_files():
