@@ -1171,6 +1171,25 @@ def login():
     session.pop("google_id", None)
     session["lang"] = 'en'
     session["state"] = state
+    session["binder"] = 'med'
+    return redirect(authorization_url)
+
+@app.route("/login/BinderLab")
+def lablogin():
+    #session.clear()
+    authorization_url, state = flow.authorization_url()
+    if 'PLAN' in session and 'google_id' in session:
+        gid=session['google_id']
+        reff = db.reference(f'/drs/{gid}/settings')
+        bruh = reff.get()
+        bruh['ac']['users']-=1
+        reff.update(bruh)
+        
+    session.pop("PLAN", None)
+    session.pop("google_id", None)
+    session["lang"] = 'en'
+    session["binder"] = 'lab'
+    session["state"] = state
     return redirect(authorization_url)
 
 @app.route("/app_data_me")
@@ -1408,7 +1427,10 @@ def fetch_user_data():
     if logged_in:
         google_id = session.get("google_id")
     else:
-        return redirect("/logme")
+        if 'binder' in session and session["binder"] == 'med':
+            return redirect("/login")
+        elif 'binder' in session and session["binder"] == 'lab':
+            return redirect("/login/BinderLab")
 
     #session["user_data"]=user_data
     return redirect("/Binder_medical")
@@ -1486,9 +1508,18 @@ def get_last_page():
         else:
             page='home'
 
+    binder = 'med'
+    if "binder" in session: 
+        binder=session["binder"]
+        if binder == 'lab' and page  == 'stats':
+            session["page"]='lab_stats'
+        elif binder == 'lab' and page  == 'data':
+            session["page"]='lab_data'
+        page = session["page"]
+
     if page == 'acc':
         user_data['patients'] = []
-        return  render_template(f"{page}.html",user_data=user_data)
+        return  render_template(f"{page}.html",user_data=user_data,binder=binder)
     elif page == 'srch':
         
         pats='nope'
@@ -1504,7 +1535,7 @@ def get_last_page():
         stat=session["stat"]
         session["stat"]='nope'
     
-        return  render_template(f"{page}.html",plan=PLAN,nono=nono,pats=stat)
+        return  render_template(f"{page}.html",plan=PLAN,nono=nono,pats=stat,binder=binder)
     elif page == 'settings':
         if 'settings' not in user_data:
             drs_ref = db.reference(f'/drs/{session["google_id"]}/settings')
@@ -1524,14 +1555,14 @@ def get_last_page():
 
             user_data['patients'] = []
             user_data['settings']['ac']= []
-        return  render_template(f"{page}.html",plan=PLAN)
+        return  render_template(f"{page}.html",plan=PLAN,binder=binder)
     elif page == 'stats':
         return  render_template(f"{page}.html",plan=PLAN,user_data=user_data)
     elif page == 'data':
         patient=user_data['patients'][session["patientno"]]
         return  render_template(f"{page}.html",user_data=user_data)
     else:
-        return  render_template(f"{page}.html",user_data=user_data)
+        return  render_template(f"{page}.html",user_data=user_data,binder=binder)
 
 @app.route('/acc')
 def accc():

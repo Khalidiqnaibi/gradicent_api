@@ -256,7 +256,7 @@
                     <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
                 </li>
                 <li>
-                    <a class="menu__item"title="Appointments" href="/appointments"><img class="icoo" src="/static/images/appoint.png" title="Appointments" alt="Appointments"><h6>Appointments</h6></a>
+                    <a class="menu__item"title="Appointments" id="appa" href="/appointments"><img class="icoo" id="appimg" src="/static/images/appoint.png" title="Appointments" alt="Appointments"><h6 id="apph6">Appointments</h6></a>
                 </li>
                 <li><div class="menu__div"></div></li>
                 <li><div class="menu__div"></div></li>
@@ -335,6 +335,7 @@
             entryWidgets["sex"] = document.getElementById("sex");
             entryWidgets["age"] = document.getElementById("age");
 
+            
             const menuBtn = document.querySelector('.hamburger-menu');
             const menuBox = document.querySelector('.menu__box');
             const menuBar = document.getElementById('menuBar');
@@ -344,6 +345,18 @@
                 menuBar.classList.toggle('menu-active');
             });
             
+            const binder = JSON.parse('{{ binder }}');
+            const appa = document.getElementById('appa');
+            const appimg = document.getElementById('appimg');
+            const apph6 = document.getElementById('apph6');
+            
+            if (binder === 'lab'){
+                appa.title='Search Lab';
+                appa.href='/srchlab';
+                appimg.src='/static/images/srchlab.png';
+                apph6.textContent = 'Search Lab';
+            }
+
             // Set up event listeners for input elements
             Object.values(entryWidgets).forEach(widget => {
                 widget.addEventListener("keydown", function(event) {
