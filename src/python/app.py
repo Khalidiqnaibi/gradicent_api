@@ -1247,8 +1247,9 @@ def savesign():
 
     if not google_id:
         return jsonify({"message": "Invalid session data"}), 400
-
-    dr_ref = db.reference(f'/drs/{google_id}')
+    
+    typee=session.get('wtype', 'drs')
+    dr_ref = db.reference(f'/{typee}/{google_id}')
     nn=dr_ref.get()
     for i in data:
         if i != 'phone':
@@ -1511,6 +1512,8 @@ def get_last_page():
     binder = 'med'
     if "binder" in session: 
         binder=session["binder"]
+        if binder != 'med':
+            session['wtype']=session["binder"]
         if binder == 'lab' and page  == 'stats':
             session["page"]='lab_stats'
         elif binder == 'lab' and page  == 'data':
@@ -2082,8 +2085,9 @@ def add_patient():
 
     if not google_id or not patient_info:
         return jsonify({"message": "Invalid data"}), 400
-
-    drs_ref = db.reference('/drs')
+    
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}')
     doc_ref = drs_ref.order_by_child('google_id').equal_to(google_id).limit_to_first(1)
     doc = doc_ref.get()
     if not doc:
@@ -2431,7 +2435,8 @@ def get_patient_by_number(number):
     if not google_id:
         return jsonify({"message": "Invalid data"}), 400
 
-    drs_ref = db.reference('/drs')
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}')
     user_data = drs_ref.order_by_child('google_id').equal_to(google_id).get()
 
     if not user_data:
@@ -2511,7 +2516,8 @@ def get_patient_data():
     if not google_id:
         return jsonify({"message": "Invalid data"}), 400
 
-    drs_ref = db.reference('/drs')
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}')
     user_data = drs_ref.order_by_child('google_id').equal_to(google_id).get()
 
     if not user_data:
@@ -2873,7 +2879,8 @@ def get_visit_by_date():
     if not google_id or not date or not patient_no:
         return jsonify({"message": "Invalid data"}), 400
 
-    drs_ref = db.reference('/drs')
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}')
     user_data = drs_ref.order_by_child('google_id').equal_to(google_id).get()
 
     if not user_data:
@@ -2910,7 +2917,8 @@ def insert_visit():
     if not google_id or not visit_info or not patient_no:
         return jsonify({"message": "Invalid data"}), 400
 
-    drs_ref = db.reference('/drs')
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}')
     user_data = drs_ref.order_by_child('google_id').equal_to(google_id).get()
 
     if not user_data:
@@ -2945,7 +2953,8 @@ def update_visit():
     if not google_id or not visit_info or not patient_no:
         return jsonify({"message": "Invalid data"}), 400
 
-    drs_ref = db.reference('/drs')
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}')
     user_data = drs_ref.order_by_child('google_id').equal_to(google_id).get()
 
     if not user_data:
@@ -3624,5 +3633,4 @@ def logouttttt():
 
 if __name__ == "__main__":
     app.run(debug=False)
-
 
