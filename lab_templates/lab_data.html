@@ -914,10 +914,6 @@
             entryWidgets["visit_date"] = document.getElementById("visitDate");
             entryWidgets["drname"] = document.getElementById("drname");
             entryWidgets["diagnosis"] = document.getElementById("diagnosis");
-            entryWidgets["treatment"] = document.getElementById("treatment");
-            entryWidgets["lab"] = document.getElementById("lab");
-            entryWidgets["wight"] = document.getElementById("wight");
-            entryWidgets["height"] = document.getElementById("height");
             entryWidgets["coast"] = document.getElementById("coast");
             entryWidgets["payed"] = document.getElementById("payed");
             entryWidgets["debit"] = document.getElementById("debit");
@@ -993,15 +989,8 @@
             }else{
                 document.getElementById("drname").value = visit.drname;
             }
-            document.getElementById("treatment").value = visit.treatment;
             document.getElementById("diagnosis").value = visit.diagnosis;
-            document.getElementById("lab").value = visit.lab;
 
-            if (visit["wight"] !== undefined){
-                document.getElementById("wight").value = visit.wight;
-            }else{
-                document.getElementById("wight").value = '0';
-            }
 
             if (visit["coast"] !== undefined){
                 document.getElementById("coast").value = visit.coast;
@@ -1015,11 +1004,6 @@
                 document.getElementById("payed").value = 0;
             }
 
-            if (visit["height"] !== undefined){
-                document.getElementById("height").value = visit.height;
-            }else{
-                document.getElementById("height").value = '0';
-            }
             document.getElementById("debit").value = visit.debit;
             document.querySelector(".entry-details").value = visit.details;
 
@@ -1143,11 +1127,7 @@
             var visitData = {
                 visit_date: entryWidgets["visit_date"].value.trim(),
                 drname: entryWidgets["drname"].value.trim(),
-                treatment: entryWidgets["treatment"].value.trim(),
                 diagnosis: entryWidgets["diagnosis"].value.trim(),
-                lab: entryWidgets["lab"].value.trim(),
-                wight: entryWidgets["wight"].value,
-                height: entryWidgets["height"].value,
                 debit: parseFloat(entryWidgets["debit"].value) || 0,
                 payed: parseFloat(entryWidgets["payed"].value) || 0,
                 coast: parseFloat(entryWidgets["coast"].value) || 0,
@@ -1225,11 +1205,6 @@
                             entryWidget.value += "\n";
                             event.preventDefault(); // Prevent adding a new line in the textarea
                         }  
-                    }else if (entryWidget.id === "treatment") {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                            entryWidget.value += "\n";
-                            event.preventDefault(); // Prevent adding a new line in the textarea
-                        } 
                     }else if (entryWidget.id === "lab") {
                         if (event.key === "Enter" && !event.shiftKey) {
                             entryWidget.value += "\n";
@@ -1327,11 +1302,7 @@
                     const tempVisit = {
                         visit_date: formatyear(),
                         drname: "",
-                        treatment: "",
                         diagnosis: "",
-                        lab: "",
-                        wight: '0',
-                        height: '0',
                         coast: 0,
                         payed: 0,
                         debit: 0,
