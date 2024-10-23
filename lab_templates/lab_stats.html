@@ -870,6 +870,13 @@
         height:25px;
     }
 
+    ul {
+        padding: 0px;
+    }
+
+    li{
+        list-style: none;
+    }
     </style>
     <title>Binder Medical</title>
 </head>
@@ -1127,14 +1134,12 @@
                         // Check if additional search parameters are matched
                         const isDetailsMatched = !searchParams.details || visit.details.includes(searchParams.details);
                         const isLocationMatched = !searchParams.location || patient.location.includes(searchParams.location);
-                        const isTreatmentMatched = !searchParams.treatment || visit.treatment.includes(searchParams.treatment);
                         const isDiagnosisMatched = !searchParams.diagnosis || visit.diagnosis.includes(searchParams.diagnosis);
-                        const isLabMatched = !searchParams.lab || visit.lab.includes(searchParams.lab);
 
                         // Add the visit data to the visitsData array if all criteria are met
                         if ((!showDateCheckbox.checked || isWithinDateRange) &&
                             isDetailsMatched &&
-                            (!showVisitInfoCheckbox.checked || (isLocationMatched && isTreatmentMatched && isDiagnosisMatched && isLabMatched))) {
+                            (!showVisitInfoCheckbox.checked || (isLocationMatched && isDiagnosisMatched))) {
                             visitsData.push({
                                 visitDate: visitDate.toISOString().split('T')[0]  ,  // Use ISO date string for consistency
                                 debit: visit.debit,
@@ -1210,7 +1215,7 @@
             function updateChart(patients, searchParams) {
                 const datePatientCount = {};
                 const datePatientWithDebitCount = {};
-                const { startDate, endDate, details, location, treatment, diagnosis, lab } = searchParams;
+                const { startDate, endDate, details, location, diagnosis } = searchParams;
 
                 // Convert date strings to Date objects for comparison
                 const start = showDateCheckbox.checked && startDate ? new Date(startDate) : null;
@@ -1228,9 +1233,7 @@
                             // Check if the other search parameters match (if filled)
                             if ((!details || visit.details.includes(details)) &&
                                 (!showVisitInfoCheckbox.checked || (!location || patient.location.includes(location)) &&
-                                (!treatment || visit.treatment.includes(treatment)) &&
-                                (!diagnosis || visit.diagnosis.includes(diagnosis)) &&
-                                (!lab || visit.lab.includes(lab)))) {
+                                (!diagnosis || visit.diagnosis.includes(diagnosis)))) {
 
                                 const dateString = visitDate.toISOString().split('T')[0];
 
@@ -1277,9 +1280,7 @@
                     endDate: document.getElementById("end-date-entry").value,
                     details: document.getElementById("details-entry").value,
                     location: document.getElementById("loc").value,
-                    treatment: document.getElementById("treatment").value,
                     diagnosis: document.getElementById("diagnosis").value,
-                    lab: document.getElementById("lab").value,
                     showDate: showDateCheckbox.checked,
                     showVisitInfo: showVisitInfoCheckbox.checked
                 };

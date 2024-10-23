@@ -1368,6 +1368,9 @@ def calculate_trial_status(plan,first_date_str):
             return "bad"
 
 def get_userD(google_id):
+        if 'binder' in session and session['binder']== 'lab':
+            session['wtype']='lab'
+
         typee=session.get('wtype', 'drs')
         drssref = db.reference(f'/{typee}/{google_id}')
         doc = drssref.get()
@@ -1451,8 +1454,138 @@ def get_userDD():
 
     return  jsonify({"user_data": user_data}), 200
 
+@app.route('/Binder_labratory')
+def get_last_pagelab():
+
+    if "google_id" in session:
+        gid = session["google_id"]
+        user_data = get_userD(gid)
+
+        if 'PLAN' in session:
+            cc=session['cod']
+            ref = db.reference(f'/codes/{cc}')
+            codes = ref.get()
+            if codes:
+                PLAN = session['PLAN']
+            else:
+                session.clear()
+                return redirect("/fetchUserData")
+        else:
+            PLAN = user_data['plan']
+    else:
+        return redirect("/fetchUserData")
+    typee=session.get('wtype', 'lab')
+    if not "wtype" in session:
+        session['wtype']='lab'
+    drss_ref = db.reference(f'/{typee}/{gid}')
+    drrr=drss_ref.get()
+
+    if 'settings' not in drrr:
+        drrr['settings']={
+            'msg':'',
+            'pkey':"",
+            "send":False,
+            'drname':'',
+            "specialty": '',
+            "location": ''
+        }
+        drss_ref.set(drrr)
+        return redirect("/sign_in")
+    elif 'specialty' not in drrr['settings'] or 'location' not in drrr['settings']:
+        return redirect("/sign_in")
+
+    first_date_str = str(user_data.get("first"))
+    plan=str(user_data.get("plan"))
+    trial_status = calculate_trial_status(plan,first_date_str)
+
+    if trial_status == "bad":
+        if typee == 'drs':
+            session["page"]='acc'
+            page=session["page"]
+            user_data['patients'] = []
+            return  render_template(f"{page}.html",user_data=user_data)
+
+    if "page" in session:
+        page=session["page"]
+    elif typee=='drs':
+        if user_data["plan"]== "free"  :
+            page="acc"
+        else:
+            page='home'
+
+    binder = 'med'
+    if "binder" in session: 
+        binder=session["binder"]
+        if binder == 'lab' and page  == 'stats':
+            session["page"]='lab_stats'
+        elif binder == 'lab' and page  == 'data':
+            session["page"]='lab_data'
+        page = session["page"]
+
+    if page == 'acc':
+        user_data['patients'] = []
+        return  render_template(f"{page}.html",user_data=user_data,binder=binder)
+    elif page == 'srch':
+        
+        pats='nope'
+        if 'autoo' not in session :
+            session["autoo"]='nope'
+            
+        nono=session["autoo"]
+        session["autoo"]='nope'
+        
+        if 'stat' not in session :
+            session["stat"]='nope'
+            
+        stat=session["stat"]
+        session["stat"]='nope'
+    
+        return  render_template(f"{page}.html",plan=PLAN,nono=nono,pats=stat,binder=binder)
+    elif page == 'settings':
+        if 'settings' not in user_data:
+            drs_ref = db.reference(f'/drs/{session["google_id"]}/settings')
+            settings={
+                'msg':'',
+                'pkey':"",
+                "send":False,
+                'drname':''
+            }
+            drs_ref.set(settings)
+        if PLAN not in ['sec']:
+            if 'ac' not in user_data['settings']:
+                code = gencode()
+                save_code(code, "sec", session["google_id"])
+                save_seccode(code,session['google_id'])
+            user_data = get_userD(gid)
+
+            user_data['patients'] = []
+            user_data['settings']['ac']= []
+        return  render_template(f"{page}.html",plan=PLAN,binder=binder)
+    elif page == 'stats':
+        return  render_template(f"{page}.html",plan=PLAN,user_data=user_data)
+    elif page == 'data':
+        patient=user_data['patients'][session["patientno"]]
+        return  render_template(f"{page}.html",user_data=user_data)
+    else:
+        return  render_template(f"{page}.html",user_data=user_data,binder=binder)
+
 @app.route('/Binder_medical')
 def get_last_page():
+    if "page" in session:
+        page=session["page"]
+    elif typee=='drs':
+        if user_data["plan"]== "free"  :
+            page="acc"
+        else:
+            page='home'
+
+    binder = 'med'
+    if "binder" in session: 
+        binder=session["binder"]
+        if binder == 'lab' :
+            session['wtype']='lab'
+            return redirect('/Binder_labratory')
+
     if "google_id" in session:
         gid = session["google_id"]
         user_data = get_userD(gid)
