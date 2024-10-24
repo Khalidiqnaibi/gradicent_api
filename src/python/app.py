@@ -1158,11 +1158,19 @@ def callback():
 
 @app.route("/login")
 def login():
+    if "binder" in session and session["binder"] == 'med':
+        return redirect("/login/BinderMedical")
+    elif "binder" in session and session["binder"] == 'lab':
+        return redirect("/login/BinderLab")
+
+@app.route("/login/BinderMedical")
+def loginmedical():
     #session.clear()
     authorization_url, state = flow.authorization_url()
     if 'PLAN' in session and 'google_id' in session:
         gid=session['google_id']
-        reff = db.reference(f'/drs/{gid}/settings')
+        typee=session.get('wtype', 'drs')
+        reff = db.reference(f'/{typee}/{gid}/settings')
         bruh = reff.get()
         bruh['ac']['users']-=1
         reff.update(bruh)
@@ -1180,7 +1188,8 @@ def lablogin():
     authorization_url, state = flow.authorization_url()
     if 'PLAN' in session and 'google_id' in session:
         gid=session['google_id']
-        reff = db.reference(f'/drs/{gid}/settings')
+        typee=session.get('wtype', 'drs')
+        reff = db.reference(f'/{typee}/{gid}/settings')
         bruh = reff.get()
         bruh['ac']['users']-=1
         reff.update(bruh)
@@ -1224,8 +1233,12 @@ def dbmeplzz():
 
 @app.route("/logout")
 def logout():
+    BB='med'
+    if 'binder' in session:
+        BB=session["binder"]
     session.clear()
     session["donee"]=False
+    session["binder"]=BB
     return redirect("/logme")
 
 @app.route("/logme")
@@ -1238,6 +1251,10 @@ def indexar():
 
 @app.route("/sign_in")
 def sign_in():
+    if "binder" in session and session["binder"] == 'med':
+        return render_template("sign_in.html")
+    elif "binder" in session and session["binder"] == 'lab':
+        return render_template("lab_sign_in.html")
     return render_template("sign_in.html")
 
 @app.route("/savesign" , methods=['POST'])
@@ -1431,10 +1448,7 @@ def fetch_user_data():
     if logged_in:
         google_id = session.get("google_id")
     else:
-        if 'binder' in session and session["binder"] == 'med':
-            return redirect("/login")
-        elif 'binder' in session and session["binder"] == 'lab':
-            return redirect("/login/BinderLab")
+        return redirect("/logme")
 
     #session["user_data"]=user_data
     return redirect("/Binder_medical")
@@ -1513,14 +1527,15 @@ def get_last_pagelab():
         else:
             page='home'
 
-    binder = 'med'
-    if "binder" in session: 
-        binder=session["binder"]
-        if binder == 'lab' and page  == 'stats':
-            session["page"]='lab_stats'
-        elif binder == 'lab' and page  == 'data':
-            session["page"]='lab_data'
-        page = session["page"]
+    session["binder"]='lab'
+    binder='lab'
+    if binder == 'lab' and page  == 'stats':
+        session["page"]='lab_stats'
+    elif binder == 'lab' and page  == 'data':
+        session["page"]='lab_data'
+    elif binder == 'lab' and page  == 'sign_in':
+        session["page"]='lab_data'
+    page = session["page"]
 
     if page == 'acc':
         user_data['patients'] = []
@@ -1579,7 +1594,7 @@ def get_last_page():
         else:
             page='home'
 
-    binder = 'med'
+    session["binder"]= 'med'
     if "binder" in session: 
         binder=session["binder"]
         if binder == 'lab' :
@@ -1652,6 +1667,9 @@ def get_last_page():
         elif binder == 'lab' and page  == 'data':
             session["page"]='lab_data'
         page = session["page"]
+    else:
+        session["binder"]='med'
+        return redirect("/fetchUserData")
 
     if page == 'acc':
         user_data['patients'] = []

@@ -349,11 +349,14 @@
             const appa = document.getElementById('appa');
             const appimg = document.getElementById('appimg');
             const apph6 = document.getElementById('apph6');
+            var link = document.querySelector("link[rel~='icon']");
             
             if (binder === 'lab'){
                 appa.title='Search Lab';
                 appa.href='/srchlab';
                 appimg.src='/static/images/srchlab.png';
+                document.title= 'Binder Labratory'
+                link.href = '/static/images/binderlab.jpg';
                 apph6.textContent = 'Search Lab';
             }
 
