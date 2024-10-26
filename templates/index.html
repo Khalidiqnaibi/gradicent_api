@@ -1,13 +1,942 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binder Medical</title>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+
+  <!-- bootstrap core css -->
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css" />
+  <!--owl slider stylesheet -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+
+  <!-- font awesome style -->
+  <link href="/static/css/font-awesome.min.css" rel="stylesheet" />
+
+  <!-- Custom styles for this template -->
+  <link href="/static/css/style.css" rel="stylesheet" />
+  <!-- responsive style -->
+  <link href="/static/css/responsive.css" rel="stylesheet" />
+  <meta name="author" content="" /><link rel="shortcut icon" href="/static/icn/B.ico" type="image/x-icon">
+  <style>
+
+    img {
+      vertical-align: middle;
+      border-style: none;
+      border-radius: 5px;
+      border: 1.5px solid #ffaf0f;
+    }
+
+    #main_loo {
+      height: 45px;
+      width: 115px;
+      border: 0px solid #ffaf0f;
+    }
+
+    .slider_section .carousel-indicators li.active {
+      width: 23px;
+      height: 23px;
+      background-color: #ffaf0f;
+    }
+
+    .slider_section .detail-box .btn-box .btn1 {
+      display: inline-block;
+      padding: 12px 15px;
+      background-color: #ffaf0f;
+      color: #1b427a;
+      border-radius: 5px;
+      -webkit-transition: all 0.3s;
+      transition: all 0.3s;
+      border: 1px solid #ffaf0f;
+    }
+
+    .slider_section {
+      -webkit-box-flex: 1;
+      -ms-flex: 1;
+      flex: 1;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      padding: 45px 0;
+      background-color: #ffaf0f;
+      border-radius: 0 0 0 250px;
+      background: #1b427a;
+    }
+
+    .hero_area .hero_social a {
+      color: #1b427a;
+      margin: 5px 0;
+    }
+
+    .shop_section .box .new {
+      padding: 7px 15px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: #ffaf0f;
+      color: #ffffff;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-pack: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      font-size: 15px;
+    }
+
+    .about_section {
+      background-color: #1b427a;
+      color: #ffffff;
+    }
+
+    .about_section .detail-box a {
+      display: inline-block;
+      padding: 10px 45px;
+      background-color: #ffaf0f;
+      color: #1b427a;
+      border-radius: 5px;
+      -webkit-transition: all 0.3s;
+      transition: all 0.3s;
+      border: 1px solid #ffaf0f;
+      margin-top: 15px;
+    }
+
+    .feature_section .box:hover {
+      background-color: #1b427a;
+      color: #ffffff;
+    }
+
+    .feature_section .box:hover {
+      background-color: #1b427a;
+      color: #ffffff;
+    }
+
+    .client_section .box {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+      flex-direction: column;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      margin: 45px 0;
+      text-align: center;
+      background-color: #1b427a;
+      color: #ffffff;
+      border-radius: 15px;
+      padding: 25px;
+    }
+
+    .client_section .box .client_info .client_name h6 {
+      color: #ffaf0f;
+      font-weight: normal;
+      font-size: 15px;
+      text-transform: uppercase;
+    }
+
+    .client_section .box .client_info .client_name h6 {
+      color: #ffaf0f;
+      font-weight: normal;
+      font-size: 15px;
+      text-transform: uppercase;
+    }
+
+    .contact_section button {
+      font-family: "Poppins", sans-serif;
+      display: inline-block;
+      padding: 10px 65px;
+      background-color: #ffaf0f;
+      color: #ffffff;
+      border-radius: 3px;
+      -webkit-transition: all 0.3s;
+      transition: all 0.3s;
+      border: 1px solid #ffaf0f;
+      color: #1b427a;
+      margin-top: 10px;
+    }
+
+    .client_section .box .img-box {
+      width: 125px;
+      height: 125px;
+      min-width: 125px;
+      position: relative;
+      border: 2px dashed #ffaf0f;
+      border-radius: 100%;
+      padding: 5px;
+      margin-bottom: 15px;
+    }
+
+    .footer_section form button {
+      width: 100%;
+      text-align: center;
+      display: inline-block;
+      padding: 10px 55px;
+      background-color: #ffaf0f;
+      color: #ffffff;
+      border-radius: 5px;
+      -webkit-transition: all 0.3s;
+      transition: all 0.3s;
+      border: 1px solid #ffaf0f;
+      margin-top: 15px;
+    }
+
+    .client_section .owl-carousel .owl-nav .owl-prev, .client_section .owl-carousel .owl-nav .owl-next {
+      width: 45px;
+      height: 45px;
+      background-color: #ffaf0f;
+      color: #ffffff;
+      outline: none;
+      bottom: 0px;
+      font-size: 24px;
+      margin: 0 5px;
+    }
+
+    .footer_section {
+      background-color: #1b427a;
+      color: #ffffff;
+      padding-top: 60px;
+    }
+
+    a:hover {
+      color: #ffaf0f;
+      text-decoration: underline;
+    }
+
+    .footer_section .footer_contact .contact_link_box a:hover {
+      color: #ffaf0f;
+    }
+
+    .footer_section .footer_social a:hover {
+      color: #ffaf0f;
+    }
+
+    .footer_section .footer-info p a {
+      color: #ffaf0f;
+    }
+
+    .footer_section .footer_contact .contact_link_box a {
+      margin: 5px 0;
+      color: #ffffff;
+      display: flex;
+      align-items: baseline;
+    }
+    .footer_section .footer_social a {
+      color: #1b427a;
+    }
+  </style>
+
+  <title>Binder Software</title>
+
+
 </head>
 <body>
-    <h1 id="hput">output</h1>
-    <button type="submit" id="out"><h5>output</h5></button>
-    <script src="renderer.js"></script>
+
+  <div class="hero_area">
+    <div class="hero_social">
+      <a  target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/share/AqfHc9bC87HPo9Hb/?mibextid=qi2Omg">
+        <i class="fa fa-facebook" aria-hidden="true"></i>
+      </a>
+      <a  target="_blank" rel="noopener noreferrer" href="https://x.com/Binder_software">
+        <i class="fa fa-twitter" aria-hidden="true"></i>
+      </a>
+      <a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/@bindersoftware">
+        <i class="fa fa-youtube" aria-hidden="true"></i>
+      </a>
+      <a target="_blank" rel="noopener noreferrer" href="mailto:bindersoftware.com@gmail.com">
+        <i class="fa fa-envelope-o" aria-hidden="true"></i>
+      </a>
+    </div>
+    <!-- header section strats -->
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container ">
+          <a class="navbar-brand" href="/">
+            <img id="main_loo" src="/static/images/logoo.png" alt="">
+          </a>
+
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class=""> </span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav">
+              <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/products"> Products </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/about"> About </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/contact">Contact Us</a>
+              </li>
+            </ul>
+            <div class="user_option-box">
+              <div class="fa okk"></div>
+            </div>
+          </div>
+          <!-- end header section
+          <div id="ahh">
+          </div>-->
+        </nav>
+      </div>
+    </header>
+    <!-- end header section -->
+    <!-- slider section -->
+    <section class="slider_section ">
+      <div id="customCarousel1" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="container-fluid ">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-box">
+                    <h1>
+                      Available Now!
+                    </h1>
+                    <p>
+                      Now you can try our new Binder Medical for free.
+                    </p>
+                    <div class="btn-box">
+                      <a href="/med" class="btn1">
+                        Try Now!
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-3">
+                  <div class="img-box">
+                    <img id="bii1" src="/static/images/w3.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="container-fluid ">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-box">
+                    <h1>
+                      Available Now!
+                    </h1>
+                    <p>
+                      Now you can try our new Binder Labratory for free.
+                    </p>
+                    <div class="btn-box">
+                      <a href="/lab" class="btn1">
+                        Try Now!
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-3">
+                  <div class="img-box">
+                    <img id="bii1" src="/static/images/binderlab.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item ">
+            <div class="container-fluid ">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-box">
+                    <h1>
+                      Give Us Your Feedback
+                    </h1>
+                    <p>
+                      Tell us your review of our products and about your experience.
+                    </p>
+                    <div class="btn-box">
+                      <a href="" class="btn1">
+                        Contact Us
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="img-box">
+                    <img id="bii3" src="/static/images/feedback.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item ">
+            <div class="container-fluid ">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-box">
+                    <h1>
+                      Catch New Deals
+                    </h1>
+                    <p>
+                      Sign up with your email to our Email list so you catch evrey new deal available.
+                    </p>
+                    <div class="btn-box">
+                      <a href="" class="btn1">
+                        Join
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="img-box">
+                    <img id="bii2" src="/static/images/join.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ol class="carousel-indicators">
+          <li data-target="#customCarousel1" data-slide-to="0" class="active"></li>
+          <li data-target="#customCarousel1" data-slide-to="1"></li>
+          <li data-target="#customCarousel1" data-slide-to="2"></li>
+          <li data-target="#customCarousel1" data-slide-to="3"></li>
+        </ol>
+      </div>
+
+    </section>
+    <!-- end slider section -->
+  </div>
+
+  <!-- shop section -->
+
+  <section class="shop_section layout_padding">
+    <div class="container">
+      <div class="heading_container heading_center">
+        <h2>
+          Binder
+        </h2>
+      </div>
+      <div class="row">
+        <div class="col-md-6 ">
+          <div class="box">
+            <a href="/med">
+              <div class="img-box">
+                <img src="/static/images/w3.jpg" alt="">
+              </div>
+              <div class="detail-box">
+                <h6>
+                  Medical
+                </h6>
+                <h6>
+                  Price:
+                  <span>
+                    Free!
+                  </span>
+                </h6>
+              </div>
+              <div class="new">
+                <span>
+                  Available now!
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
+        <div class="col-md-6 ">
+            <div class="box">
+              <a href="/lab">
+                <div class="img-box">
+                  <img src="/static/images/binderlab.jpg" alt="">
+                </div>
+                <div class="detail-box">
+                  <h6>
+                    Labratory
+                  </h6>
+                  <h6>
+                    Price:
+                    <span>
+                        Free!
+                    </span>
+                  </h6>
+                </div>
+                <div class="new">
+                  <span>
+                    Available now!
+                  </span>
+                </div>
+              </a>
+            </div>
+        </div>
+        <div class="col-md-6 ">
+          <div class="box">
+            <a href="/fillters">
+              <div class="img-box">
+                <img src="/static/images/w2.jpg" alt="">
+              </div>
+              <div class="detail-box">
+                <h6>
+                  Filters and Oil
+                </h6>
+                <h6>
+                  Price:
+                  <span>
+                    $20 per month
+                  </span>
+                </h6>
+              </div>
+              <div class="new">
+                <span>
+                  Comming soon
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
+        <div class="col-md-6 ">
+          <div class="box">
+            <a href="">
+              <div class="img-box">
+                <img src="/static/images/w5.jpg" alt="">
+              </div>
+              <div class="detail-box">
+                <h6>
+                  Real Estate
+                </h6>
+                <h6>
+                  Price:
+                  <span>
+                    $30 per month
+                  </span>
+                </h6>
+              </div>
+              <div class="new">
+                <span>
+                  Comming soon
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
+      <!-- end shop section
+      <div class="btn-box">
+        <a href="">
+          View All
+        </a>
+      </div> -->
+    </div>
+  </section>
+
+  <!-- end shop section -->
+
+  <!-- about section -->
+
+  <section class="about_section layout_padding">
+    <div class="container  ">
+      <div class="row">
+        <div class="col-md-6 col-lg-5 ">
+          <div class="img-box">
+            <img src="/static/images/fav.png" alt="">
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-7">
+          <div class="detail-box">
+            <div class="heading_container">
+              <h2>
+                About Us
+              </h2>
+            </div>
+            <p>
+              Welcome to Binder Software, your partner in streamlined digital solutions.
+              Our flagship product, designed exclusively for accountants, ensures precision and efficiency in various job roles.
+              As we continue our vision expands.
+              Stay tuned for upcoming innovations,as we embark on a journey to redefine digital interactions.
+              At Binder Software, we're not just creating software;
+              we're shaping the future of seamless connectivity.
+              Sign up with your Email so you join us on this exciting venture!
+
+            </p>
+            <a href="">
+              Sign Up
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- end about section -->
+
+  <!-- feature section -->
+
+  <section class="feature_section layout_padding">
+    <div class="container">
+      <div class="heading_container">
+        <h2>
+          Features Of Our Programs
+        </h2>
+        <p>
+           we aim to be the go-to choice for individuals and businesses seeking cutting-edge, tailored software solutions.
+        </p>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 col-lg-3">
+          <div class="box">
+            <!--
+            <div class="img-box">
+              <img src="images/f1.png" alt="">
+            </div>-->
+            <div class="detail-box">
+              <h5>
+                User-Friendly Design
+              </h5>
+              <p>
+                Easily manage your finances with our software's easy-to-use interface.
+                We've designed it to be simple,
+                so whether you're new to accounting or an expert,
+                you can navigate effortlessly and get things done quickly.
+              </p>
+              <a href="">
+                <span>
+                  Read More
+                </span>
+                <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="box">
+            <!--
+            <div class="img-box">
+              <img src="images/f2.png" alt="">
+            </div>-->
+            <div class="detail-box">
+              <h5>
+                Time-Saving
+              </h5>
+              <p>
+                Say goodbye to repetitive tasks.
+                Our software made to save you time and effort.
+                From data entry to routine calculations,
+                let our tools handle the mundane,
+                so you can focus on what matters most.
+              </p>
+              <a href="">
+                <span>
+                  Read More
+                </span>
+                <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="box">
+            <!--
+            <div class="img-box">
+              <img src="images/f3.png" alt="">
+            </div> -->
+            <div class="detail-box">
+              <h5>
+                Feature Requests
+              </h5>
+              <p>
+                Your input matters.
+                We actively encourage and consider user feedback.
+                Have a feature request? Let us know,
+                and we'll work to incorporate user-driven improvements on our software.
+              </p>
+              <a href="">
+                <span>
+                  Read More
+                </span>
+                <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="box">
+            <!--
+            <div class="img-box">
+              <img src="images/f4.png" alt="">
+            </div>-->
+            <div class="detail-box">
+              <h5>
+                Responsive Customer Support
+              </h5>
+              <p>
+                Need assistance?
+                Our customer support team is here for you.
+                Whether you have a question about a feature or need help,
+                our responsive support ensures you get the help you need.
+              </p>
+              <a href="">
+                <span>
+                  Read More
+                </span>
+                <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--
+      <div class="btn-box">
+        <a href="">
+          View More
+        </a>
+      </div>-->
+    </div>
+  </section>
+
+  <!-- end feature section -->
+
+  <!-- contact section -->
+
+  <section class="contact_section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form_container">
+            <div class="heading_container">
+              <h2>
+                Contact Us
+              </h2>
+            </div>
+            <form action="">
+              <div>
+                <input type="text" placeholder="Full Name " />
+              </div>
+              <div>
+                <input type="email" placeholder="Email" />
+              </div>
+              <div>
+                <input type="text" placeholder="Phone number" />
+              </div>
+              <div>
+                <input type="text" class="message-box" placeholder="Message" />
+              </div>
+              <div class="d-flex ">
+                <button>
+                  SEND
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="img-box">
+            <img src="/static/images/cuss.JPG" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- end contact section -->
+
+  <!-- client section -->
+  <section class="client_section layout_padding">
+    <div class="container">
+      <div class="heading_container heading_center">
+        <h2>
+          Testimonial
+        </h2>
+      </div>
+      <div class="carousel-wrap ">
+        <div class="owl-carousel client_owl-carousel">
+          <div class="item">
+            <div class="box">
+              <div class="img-box">
+                <img src="/static/images/c1.jpg" alt="">
+              </div>
+              <div class="detail-box">
+                <div class="client_info">
+                  <div class="client_name">
+                    <h5>
+                      Mark Thomas
+                    </h5>
+                    <h6>
+                      Customer
+                    </h6>
+                  </div>
+                  <i class="fa fa-quote-left" aria-hidden="true"></i>
+                </div>
+                <p>
+                  I've been using Binder for my accounting needs,
+                  and it has truly transformed the way I manage my finances.
+                  The user-friendly design makes it easy for me to navigate,
+                  even as someone who's not a finance expert.
+                  The time-saving features have been a game-changer –
+                  automating routine tasks,
+                  leaving me with more time to focus on strategic aspects of my business.
+                  What sets Binder apart is their commitment to user feedback;
+                  I suggested a feature, and they actually implemented it!
+                  Plus, their customer support is incredibly responsive.
+                  Binder is more than just accounting software;
+                  it's a partner in my business success
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="item">
+            <div class="box">
+              <div class="img-box">
+                <img src="/static/images/c2.jpg" alt="">
+              </div>
+              <div class="detail-box">
+                <div class="client_info">
+                  <div class="client_name">
+                    <h5>
+                      Alina Hans
+                    </h5>
+                    <h6>
+                      Customer
+                    </h6>
+                  </div>
+                  <i class="fa fa-quote-left" aria-hidden="true"></i>
+                </div>
+                <p>
+                  As a seasoned accountant,
+                  finding the right software that aligns with my workflow was crucial.
+                  Binder not only met but exceeded my expectations.
+                  The feature-rich platform caters to my specific needs,
+                  and the customizable options allow me to tailor it to my preferences.
+                  What I appreciate most is the responsive customer support –
+                  whenever I've had a question or needed assistance,
+                  they were quick to provide solutions.
+                  Binder's commitment to continuous improvement and innovation sets it apart from other accounting software.
+                  It's a tool that grows with me and adds tremendous value to my professional life.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end client section -->
+
+  <!-- footer section -->
+  <footer class="footer_section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-lg-3 footer-col">
+          <div class="footer_detail">
+            <h4>
+              About
+            </h4>
+            <p>
+              Welcome to Binder Software, your partner in streamlined digital solutions.
+              At Binder Software, we're not just creating software;
+              we're shaping the future of seamless connectivity.
+            </p>
+
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 footer-col">
+          <div class="footer_contact">
+            <h4>
+              Reach at..
+            </h4>
+            <div class="contact_link_box">
+              <!-- <a class="sofot" href="">
+                <i class="fa fa-map-marker" aria-hidden="true"></i>
+                <span>
+                  Location
+                </span>
+              </a>-->
+              <!-- <a class="sofot" href="">
+                <i class="fa fa-phone" aria-hidden="true"></i>
+                <span>
+                  Call +01 1234567890
+                </span>
+              </a>-->
+              <a class="sofot" href="mailto:bindersoftware.com@gmail.com">
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+                <span>
+                  bindersoftware.com@gmail.com
+                </span>
+              </a>
+            </div>
+            <div class="footer_social">
+              <a  target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/share/AqfHc9bC87HPo9Hb/?mibextid=qi2Omg">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+              </a>
+              <a  target="_blank" rel="noopener noreferrer" href="https://x.com/Binder_software">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+              </a>
+              <a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/@bindersoftware">
+                <i class="fa fa-youtube" aria-hidden="true"></i>
+              </a>
+              <a target="_blank" rel="noopener noreferrer" href="mailto:bindersoftware.com@gmail.com">
+                <i class="fa fa-envelope-o" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 footer-col">
+          <!--<div class="map_container">
+             footer section
+            <div class="map">
+              <div id="googleMap"></div>
+            </div>
+          </div>-->
+        </div>
+        <div class="col-md-6 col-lg-3 footer-col">
+          <div class="footer_contact">
+            <h4>
+              Subscribe
+            </h4>
+            <form action="#">
+              <input type="text" placeholder="Enter email" />
+              <button type="submit">
+                Subscribe
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="footer-info">
+        <p id="rights">
+          &copy; <span id="displayYear"></span> All Rights Reserved By
+          <a class="link" href="/">Binder Software</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+  <!-- footer section -->
+
+  <!-- jQery -->
+  <script src="/static/js/jquery-3.4.1.min.js"></script>
+  <!-- popper js -->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+  </script>
+  <!-- bootstrap js -->
+  <script src="/static/js/bootstrap.js"></script>
+  <!-- owl slider -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
+  </script>
+  <!-- custom js -->
+  <script src="/static/js/custom.js"></script>
+  <!-- Google Map -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh39n5U-4IoWpsVGUHWdqB6puEkhRLdmI&callback=myMap"></script>
+  <!-- End Google Map -->
+
 </body>
+
 </html>

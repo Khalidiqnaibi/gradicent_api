@@ -41,6 +41,10 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
+##############
+#~ Immortal ~#
+##############
+
 appname='Binder'
 cname='RiaSoftware'
 app = Flask(f"{cname} Api",static_url_path='/home/RiaSoftware/s/static',template_folder='/home/RiaSoftware/s/templates')
@@ -1451,8 +1455,11 @@ def fetch_user_data():
         return redirect("/logme")
 
     #session["user_data"]=user_data
-    return redirect("/Binder_medical")
-
+    if "binder" in session and session["binder"] == 'med':
+        return redirect('/Binder_medical')
+    elif "binder" in session and session["binder"] == 'lab':
+        return redirect('/Binder_labratory')
+    
 @app.route('/get_userD')
 def get_userDD():
     if "google_id" in session:
@@ -1489,8 +1496,8 @@ def get_last_pagelab():
     else:
         return redirect("/fetchUserData")
     typee=session.get('wtype', 'lab')
-    if not "wtype" in session:
-        session['wtype']='lab'
+    if typee == 'lab':
+        session['binder']='lab'
     drss_ref = db.reference(f'/{typee}/{gid}')
     drrr=drss_ref.get()
 
@@ -1527,7 +1534,6 @@ def get_last_pagelab():
         else:
             page='home'
 
-    session["binder"]='lab'
     binder='lab'
     if binder == 'lab' and page  == 'stats':
         session["page"]='lab_stats'
@@ -1789,7 +1795,7 @@ def settingssss():
     
     typee=session.get('wtype', 'drs')
 
-    if not user_data['plan'] in ['sec'] and typee=='drs':
+    if not user_data['plan'] in ['sec']:
         session["page"]='settings'
 
     first_date_str = str(user_data.get("first"))
@@ -1914,6 +1920,10 @@ def meddata():
         return redirect("/fetchUserData")
     else:
         return redirect("/fetchUserData")
+
+@app.route('/lab')
+def lab():
+    return render_template("Labratory.html")
 
 @app.route('/lab_page')
 def lab_page():
@@ -2517,7 +2527,10 @@ def searchh_stats():
 def search_stats():
     session["page"]='srch'
     session["stat"]='yup'
-    return redirect("/Binder_medical")
+    if "binder" in session and session["binder"] == 'med':
+        return redirect('/Binder_medical')
+    elif "binder" in session and session["binder"] == 'lab':
+        return redirect('/Binder_labratory')
 
 @app.route('/search_by_name', methods=['POST'])
 def search_by_name():
@@ -2656,7 +2669,11 @@ def show_search_by_number(number):
     session["page"]='srch'
     session['patientno']=int(number)-1
     session["stat"]='nope'
-    return redirect("/Binder_medical")
+    if "binder" in session and session["binder"] == 'med':
+        return redirect('/Binder_medical')
+    elif "binder" in session and session["binder"] == 'lab':
+        return redirect('/Binder_labratory')
+    
 
 @app.route('/getPatientData', methods=['GET'])
 def get_patient_data():
@@ -3461,7 +3478,10 @@ def giiid(google_id):
     session["google_id"] = google_id
     session["lang"] = 'en'
     session["donee"]=True
-    return redirect("/Binder_medical")
+    if "binder" in session and session["binder"] == 'med':
+        return redirect('/Binder_medical')
+    elif "binder" in session and session["binder"] == 'lab':
+        return redirect('/Binder_labratory')
 
 @app.route('/pgiid/<google_id>/<name>')
 def pgiiid(google_id, name):
@@ -3469,7 +3489,11 @@ def pgiiid(google_id, name):
     session["name"] = name
     session["lang"] = 'en'
     session["donee"]=True
-    return redirect("/Binder_medical")
+    if "binder" in session and session["binder"] == 'med':
+        return redirect('/Binder_medical')
+    elif "binder" in session and session["binder"] == 'lab':
+        return redirect('/Binder_labratory')
+    
 
 @app.route('/editFile', methods=['POST'])
 def edit_file():
