@@ -443,7 +443,7 @@
             <div class="frame" data-patient-no="1"><div class="patient-info">
                 <div class="column columnr">
                     <div class="inpuu">
-                        <label class="label">Clinic name:</label>
+                        <label id="namee" class="label">Clinic name:</label>
                         <input class="entry" id="drname" type="text">
                     </div>
                     <div class="inpuu">
@@ -495,6 +495,7 @@
             const appa = document.getElementById('appa');
             const appimg = document.getElementById('appimg');
             const apph6 = document.getElementById('apph6');
+            const namee = document.getElementById('namee');
             var link = document.querySelector("link[rel~='icon']");
             
             if (binder === 'lab'){
@@ -504,6 +505,7 @@
                 document.title= 'Binder Labratory'
                 link.href = '/static/images/binderlab.jpg';
                 apph6.textContent = 'Search Lab';
+                namee.textContent= 'Lab name:'
             }
 
             if (plan === 'sec') {
