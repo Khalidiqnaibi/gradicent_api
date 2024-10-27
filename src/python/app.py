@@ -1540,7 +1540,7 @@ def get_last_pagelab():
     elif binder == 'lab' and page  == 'data':
         session["page"]='lab_data'
     elif binder == 'lab' and page  == 'sign_in':
-        session["page"]='lab_data'
+        session["page"]='lab_sign_in'
     page = session["page"]
 
     if page == 'acc':

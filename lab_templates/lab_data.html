@@ -862,6 +862,7 @@
                         <button class="button" id="firstButton">First</button>
                         <button class="button" id="lastButton">Last</button>
                         <button class="button" id="kp">Print visit</button>
+                        <button id="shw" class="button savee">Patient Folder</button>
                         <label class="button-now"></label>
                         <button class="button" id="savee">Save</button>
                     </div>
@@ -878,18 +879,10 @@
             <span class="close">&times;</span>
             <h2>Patient Files</h2>
     
-            <!-- Folder Buttons -->
-            <div class="folders">
-                <button class="button folder-btn" onclick="selectFolder('drs')">Doctor</button>
-                <button class="button folder-btn" onclick="selectFolder('lab')">Lab</button>
-                <button class="button folder-btn" onclick="selectFolder('radiology')">Radiology</button>
-                <button class="button folder-btn" onclick="selectFolder('pharmacies')">Pharmacy</button>
-            </div>
-    
             <!-- File Upload, only visible in the "drs" folder -->
             <div id="divvv" class="inputdiv">
                 <input type="file" multiple id="fileInput" title="Patient Files" style="display:none;">
-                <button class="button" id="uploadButton" onclick="uploadFile()" style="display:none;">Upload</button>
+                <button class="button" id="uploadButton" onclick="uploadFile()" style="display:none; margin-top: 0px;">Upload</button>
                 <div id="uploadProgressContainer" style="display: none;">
                     <label for="fileUploadProgress">Uploading:</label>
                     <progress id="fileUploadProgress" value="0" max="100"></progress>
@@ -1353,13 +1346,13 @@
         }
 
         const modal = document.getElementById("fileManagerModal");
-        const btn = document.querySelector(".button[onclick='openFile()']");
+        const btn = document.getElementById('shw');
         const span = document.getElementsByClassName("close")[0];
         const fileInput = document.getElementById("fileInput");
         const uploadButton = document.getElementById("uploadButton");
         const divvv = document.getElementById("divvv");
         let selectedFolder = '';
-        selectFolder('drs')
+        selectFolder('lab')
 
         // Open the modal and fetch the initial files
         btn.onclick = function() {
@@ -1383,7 +1376,7 @@
             selectedFolder = folderName;
         
             // Show upload input only for the 'drs' folder
-            if (folderName === 'drs') {
+            if (folderName === 'lab') {
                 divvv.style.display= 'flex';
                 divvv.style.marginTop= '15px';
                 fileInput.style.display = 'block';
@@ -1401,7 +1394,7 @@
 
         // Modified to support multiple file uploads
         function uploadFile() {
-            if (selectedFolder !== 'drs') {
+            if (selectedFolder !== 'lab') {
                 alert("You can only upload files in the 'Doctors' folder.");
                 return;
             }
@@ -1479,7 +1472,7 @@
         // Fetch files based on the selected folder
         function fetchFiles() {
             const patientNo = patientNumber;
-            const folderQuery = selectedFolder === 'drs' ? 'drs' : selectedFolder; // Query for the current folder
+            const folderQuery = selectedFolder === 'lab' ? 'lab' : selectedFolder; // Query for the current folder
 
             let url = `/getFiles?patient_no=${patientNo}&folder=${folderQuery}`;  // Use query parameters
 
@@ -1561,7 +1554,7 @@
             deleteBtn.onclick = () => deleteFile(file.data);
         
             fileLink.appendChild(previewElement);
-            if (selectedFolder === 'drs') {
+            if (selectedFolder === 'lab') {
                 filePreview.appendChild(deleteBtn);
             }
             filePreview.appendChild(fileLink);
