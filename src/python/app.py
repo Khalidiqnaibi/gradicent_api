@@ -40,6 +40,7 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+import uuid
 
 ##############
 #~ Immortal ~#
@@ -1129,16 +1130,26 @@ def loginbb():
     session["sec"] =True
     return redirect(authorization_url)
 
+@app.route("/logout")
+def logout():
+    BB='med'
+    if 'binder' in session:
+        BB=session["binder"]
+    session.clear()
+    session["donee"]=False
+    session["binder"]=BB
+    return redirect("/logme")
+
 @app.route("/callback")
 def callback():
 
-    if session["state"] != request.args["state"]:
-        app.logger.info("session[state] == request.args[state]: %s", session["state"] == request.args["state"])
-        app.logger.info("session[state]: %s", session["state"])
-        app.logger.info("request.args[state]: %s", request.args["state"])
-        abort(500)  # State does not match!
+    #if session["state"] != request.args["state"]:
+    app.logger.info("session[state] == request.args[state]: %s", session["state"] == request.args["state"])
+    app.logger.info("session[state]: %s", session["state"])
+    app.logger.info("request.args[state]: %s", request.args["state"])
+        #abort(500)  # State does not match!
 
-    #app.logger.info("Request URL: %s", request.url)
+    app.logger.info("Request URL: %s", request.url)
     flow.fetch_token(authorization_response=request.url)
 
     credentials = flow.credentials
@@ -1170,7 +1181,9 @@ def login():
 @app.route("/login/BinderMedical")
 def loginmedical():
     #session.clear()
-    authorization_url, state = flow.authorization_url()
+    new_state = str(uuid.uuid4())
+    session["state"] = new_state 
+    authorization_url, state = flow.authorization_url(include_granted_scopes='true',state=new_state)
     if 'PLAN' in session and 'google_id' in session:
         gid=session['google_id']
         typee=session.get('wtype', 'drs')
@@ -1189,7 +1202,9 @@ def loginmedical():
 @app.route("/login/BinderLab")
 def lablogin():
     #session.clear()
-    authorization_url, state = flow.authorization_url()
+    new_state = str(uuid.uuid4())
+    session["state"] = new_state 
+    authorization_url, state = flow.authorization_url(include_granted_scopes='true',state=new_state)
     if 'PLAN' in session and 'google_id' in session:
         gid=session['google_id']
         typee=session.get('wtype', 'drs')
@@ -1234,16 +1249,6 @@ def dbmeplzz():
     else:
         c=get_user_db_plz()
     return c
-
-@app.route("/logout")
-def logout():
-    BB='med'
-    if 'binder' in session:
-        BB=session["binder"]
-    session.clear()
-    session["donee"]=False
-    session["binder"]=BB
-    return redirect("/logme")
 
 @app.route("/logme")
 def index():
@@ -1592,14 +1597,6 @@ def get_last_pagelab():
 
 @app.route('/Binder_medical')
 def get_last_page():
-    if "page" in session:
-        page=session["page"]
-    elif typee=='drs':
-        if user_data["plan"]== "free"  :
-            page="acc"
-        else:
-            page='home'
-
     session["binder"]= 'med'
     if "binder" in session: 
         binder=session["binder"]
