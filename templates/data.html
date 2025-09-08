@@ -1,1679 +1,602 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
-    <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
-    <style>
-        @media (max-width:750px) {
-            body {
-                margin: 0;
-                font-family: Arial, sans-serif;
-                background-color: #8b8c8e;
-            }
-    
-            .data-capture-page {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-            }
-    
-            .search-frame {
-                display: flex;
-                align-items: center;
-            }
-    
-            input[type=file]::file-selector-button {
-                background-color: #000;
-                border: none;
-                padding: 5px 10px;
-                border-radius: 2.5px;
-                font-size: 15px;
-                cursor: pointer;
-                color: rgb(255, 255, 255);
-                transition: .25s;
-            }
-    
-            .file-preview img {
-                height: 150px;
-            }
-    
-            span.delete-btn {
-                z-index: 2;
-                -webkit-text-stroke-width: 1px;
-                -webkit-text-stroke-color: rgb(0, 0, 0);
-                position: absolute;
-                color: white;
-                font-size: 30px;
-                margin-right: 6px;
-                cursor: pointer;
-            }
-    
-            .vidPerv{
-                max-height: 300px;
-            }
-    
-            .file-preview {
-                margin: 10px;
-                display: flex;
-                justify-content: flex-end;
-            }
-    
-            input[type=file]::file-selector-button:hover {
-              background-color: rgb(43, 43, 43);
-            }
-    
-            .button {
-                background-color: #000;
-                border: none;
-                padding: 5px 10px;
-                border-radius: 4.5px;
-                font-size: 15px;
-                cursor: pointer;
-                color: rgb(255, 255, 255);
-            }
-    
-            .main-frame {
-                box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
-                border-color: #000;
-                border-radius: 5px;
-                background-color: #abb0bb;
-                margin: 5% auto;
-                padding: 20px;
-                border: 1px solid #000;
-                width: 80%;
-                height: 80%;
-                overflow-y: scroll;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-direction: column;
-            }
-    
-            .header {
-                text-align: center;
-                padding: 30px 0;
-            }
-    
-            h1 {
-                font-size: 30px;
-                margin: 0;
-            }
-    
-            .left-frame,
-            .right-frame {
-                display: flex;
-                width: 100%;
-                box-sizing: border-box;
-                justify-content: center;
-                padding: 0 10px;
-            }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
+  <link rel="icon" href="/static/images/w3.jpg" />
+  <title>Binder Medical</title>
 
-            .inright-frame, .inleft-frame {
-                width: 100%;
-            }
-    
-            .entry-details {
-                width: 100%;
-            }
-    
-            .controls {
-                display: flex;
-                padding: 10px;
-                width: 111%;
-                flex-direction: column;
-                justify-content: space-between;
-                align-items: center;
-            }
+  <script src="https://cdn.tailwindcss.com"></script>
 
-            .button-frame {
-                display: flex;
-                align-items: stretch;
-                margin-bottom: 10px;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .inframe {
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-                flex-direction: column;
-                align-items: center;
-            }
-    
-            .button, .search {
-                padding: 8px;
-                margin-right: 5px;
-                margin-top: 5px;
-            }
-    
-            .outframe {
-                display: flex;
-                margin-top: 20px;
-                width: 85%;
-                flex-direction: column;
-                align-items: center;
-            }
-    
-            .input-field {
-                width: 50%;
-                padding: 8px;
-                margin-bottom: 10px;
-            }
-    
-            #menuBar {
-                display: flex;
-                background-color: #000;
-                border-bottom: 2px solid #000;
-                position: fixed;
-                width: 100%;
-                justify-content: space-between;
-            }
-            a {
-                text-decoration: none;
-                color: inherit;
-            }
-    
-            .menuItem {
-                font-size: 16px;
-                color: #8b8c8e;
-                padding: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-                margin-left: 15px;
-            }
-    
-            .menuItem:hover {
-                background-color: #fff;
-                color: #333;
-            }
-            
-            .menuItem:hover  .icoo{
-                filter: invert(0);
-            }
-    
-            .icoo{
-                filter: invert(0);
-                margin-right:10px;
-                width: 25px;
-                height: 25px;
-            }
-    
-            input {
-                padding: 2px;
-                outline: none;
-                border: 1px solid #000;
-                border-radius: 2.5px;
-            }
-    
-            textarea {
-                outline: none;
-                border-color: #000;
-                border-radius: 5px;
-                resize: vertical;
-            }
-    
-            label {
-                font-size: 18px;
-            }
-    
-            .inpuu {
-                display: flex;
-                align-items: baseline;
-                margin-bottom: 10px;
-                justify-content: space-between;
-            }
-            /* File Manager Modal Styles */
-            div#filePreviews {
-                display: flex;
-                justify-content: space-between;
-                flex-wrap: wrap;
-            }
-    
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgb(0,0,0);
-                background-color: rgba(0,0,0,0.4);
-            }
-    
-            .modal-content {
-                box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
-                border-color: #000;
-                border-radius: 5px;
-                background-color: #fefefe;
-                margin: 5% auto;
-                padding: 30px;
-                border: 1px solid #000;
-                width: 80%;
-            }
-
-            div#divvv {
-                display: flex;
-                margin-top: 15px;
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .close {
-                color: #aaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-            }
-    
-            .close:hover,
-            .close:focus {
-                color: black;
-                text-decoration: none;
-                cursor: pointer;
-            }
-    
-            .file-list {
-                list-style-type: none;
-            }
-
-            #menuBar div {
-                display: flex;
-                align-items: center;
-            }
-    
-            .file-list li {
-                margin: 5px 0;
-            }
-
-            .inpuu textarea {
-                height: 15px;
-                font-size: 15px;
-            }
-
-            .txtPrev {
-                border: 1px black solid;
-                border-radius: 4px;
-                margin: 0px;
-                display: flex;
-                font-weight: 900;
-                font-size: 75%;
-                width: 100px;
-                height: 145px;
-                justify-content: center;
-                align-items: flex-end;
-            }
-    
-        }
-        @media (min-width:750px) {
-            body {
-                margin: 0;
-                font-family: Arial, sans-serif;
-                background-color: #8b8c8e;
-            }
-    
-            .data-capture-page {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-            }
-    
-            .search-frame {
-                display: flex;
-                align-items: center;
-            }
-    
-            input[type=file]::file-selector-button {
-                background-color: #000;
-                border: none;
-                padding: 5px 10px;
-                border-radius: 2.5px;
-                font-size: 15px;
-                cursor: pointer;
-                color: rgb(255, 255, 255);
-                transition: .25s;
-            }
-    
-            .file-preview img {
-                height: 150px;
-            }
-    
-            span.delete-btn {
-                z-index: 2;
-                -webkit-text-stroke-width: 1px;
-                -webkit-text-stroke-color: rgb(0, 0, 0);
-                position: absolute;
-                color: white;
-                font-size: 30px;
-                margin-right: 6px;
-                cursor: pointer;
-            }
-    
-            .vidPerv{
-                max-height: 300px;
-            }
-    
-            .file-preview {
-                margin: 10px;
-                display: flex;
-                justify-content: flex-end;
-            }
-    
-            input[type=file]::file-selector-button:hover {
-              background-color: rgb(43, 43, 43);
-            }
-    
-            .button {
-                background-color: #000;
-                border: none;
-                padding: 5px 10px;
-                border-radius: 4.5px;
-                font-size: 15px;
-                cursor: pointer;
-                color: rgb(255, 255, 255);
-            }
-    
-            .main-frame {
-                box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
-                border-color: #000;
-                border-radius: 5px;
-                background-color: #abb0bb;
-                margin-top: 3%;
-                padding: 25px;
-                border: 1px solid #000;
-                width: 80%;
-                height: 80%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: space-between;
-            }
-    
-            .header {
-                text-align: center;
-                padding: 30px 0;
-            }
-    
-            h1 {
-                font-size: 30px;
-                margin: 0;
-            }
-    
-            .left-frame,
-            .right-frame {
-                margin-top: 15px;
-                display: flex;
-                width: 50%;
-                box-sizing: border-box;
-                justify-content: center;
-                padding: 0 10px;
-            }
-    
-            .entry-details {
-                width: 100%;
-            }
-    
-            .controls {
-                display: flex;
-                justify-content: space-between;
-                padding: 10px;
-                width: 111%;
-                align-items: center;
-            }
-    
-            .inframe {
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-            }
-    
-            .button,
-            .search {
-                padding: 8px;
-                margin-right: 5px;
-            }
-    
-            .outframe {
-                display: flex;
-                width: 85%;
-                flex-direction: column;
-                align-items: center;
-                justify-content: space-between;
-            }
-    
-            .input-field {
-                width: 50%;
-                padding: 8px;
-                margin-bottom: 10px;
-            }
-    
-            #menuBar {
-                display: flex;
-                background-color: #000;
-                border-bottom: 2px solid #000;
-                position: fixed;
-                width: 100%;
-                justify-content: space-between;
-            }
-            a {
-                text-decoration: none;
-                color: inherit;
-            }
-    
-            .menuItem {
-                font-size: 16px;
-                border-radius: 5px;
-                color: #8b8c8e;
-                padding: 5px;
-                cursor: pointer;
-                margin-left: 15px;
-            }
-    
-            .menuItem:hover {
-                background-color: #fff;
-                color: #333;
-            }
-            
-            .menuItem:hover  .icoo{
-                filter: invert(0);
-            }
-    
-            .icoo{
-                filter: invert(0);
-                margin-right:10px;
-                width: 25px;
-                height: 25px;
-            }
-    
-            input {
-                padding: 2px;
-                outline: none;
-                font-size: 15px;
-                border: 1px solid #000;
-                border-radius: 2.5px;
-            }
-    
-            textarea {
-                outline: none;
-                border-color: #000;
-                border-radius: 5px;
-                font-size: 14px;
-                resize: vertical;
-            }
-    
-            label {
-                font-size: 18px;
-            }
-    
-            .inpuu {
-                display: flex;
-                align-items: baseline;
-                margin-bottom: 10px;
-                justify-content: space-between;
-            }
-            /* File Manager Modal Styles */
-            div#filePreviews {
-                display: flex;
-                justify-content: space-between;
-                flex-wrap: wrap;
-            }
-    
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgb(0,0,0);
-                background-color: rgba(0,0,0,0.4);
-            }
-    
-            .modal-content {
-                box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
-                border-color: #000;
-                border-radius: 5px;
-                background-color: #fefefe;
-                margin: 5% auto;
-                padding: 20px;
-                border: 1px solid #000;
-                width: 80%;
-            }
-
-            #menuBar div {
-                display: flex;
-                align-items: center;
-            }
-    
-            .close {
-                color: #aaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-            }
-
-            .inpuu textarea {
-                height: 23px;
-                font-size: 15px;
-            }
-    
-            .close:hover,
-            .close:focus {
-                color: black;
-                text-decoration: none;
-                cursor: pointer;
-            }
-    
-            .file-list {
-                list-style-type: none;
-            }
-    
-            .file-list li {
-                margin: 5px 0;
-            }
-    
-            .txtPrev {
-                border: 1px black solid;
-                border-radius: 4px;
-                margin: 0px;
-                display: flex;
-                font-weight: 900;
-                font-size: 75%;
-                width: 100px;
-                height: 145px;
-                justify-content: center;
-                align-items: flex-end;
-            }
-        }
-        @media (min-height: 650px) {
-            textarea {
-                outline: none;
-                border-color: #000;
-                border-radius: 5px;
-                resize: vertical;
-                font-size: 20px;
-            }
-        }
-        .menuItem {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            width: 35px;
-        }
-
-        h6 {
-            margin: 0px;
-        }
-    
-    #menuBar{
-        height: 40px;
+  <style>
+    :root {
+      --bg-main: #D9C4B0;    /* background */
+      --accent:  #ce7a35;    /* accent */
+      --secondary:#78cee6;   /* secondary */
+      --card: rgba(255,255,255,0.96);
+      --muted: #6b6b6b;
+      --text: #1f2937;
     }
 
-    .menu__btn {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        width: 26px;
-        height: 26px;
-        cursor: pointer;
-        z-index: 1;
-    }
-    
-    .menu__btn > span,
-    .menu__btn > span::before,
-    .menu__btn > span::after {
-        display: block;
-        position: absolute;
-        width: 100%;
-        height: 2px;
-        background-color: #ffffff;
-        transition-duration: .25s;
-    }
-    
-    .menu__btn > span::before {
-        content: '';
-        top: -8px;
-    }
-    
-    .menu__btn > span::after {
-        content: '';
-        top: 8px;
+    html,body { height: 100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: linear-gradient(180deg, var(--bg-main), #f6efe6 65%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
 
-    ul{
-        overflow-y: auto;
-        list-style: none;
-        height: 99%;
-        width: 99%;
-        padding: 0;
+    /* ----------------------
+       MENU (unchanged style requested)
+       ---------------------- */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background-color: var(--accent);
+      position: relative;
+      border-radius: 6px;
+      transition: 0.3s ease;
+    }
+    .menu__btn span::before,
+    .menu__btn span::after {
+      content: "";
+      position: absolute;
+      left: 0;
+    }
+    .menu__btn span::before { top: -8px; }
+    .menu__btn span::after { top: 8px; }
+    .menu-active .menu__btn span { transform: rotate(45deg); background-color: var(--accent); }
+    .menu-active .menu__btn span::before { transform: rotate(90deg); top:0; }
+    .menu-active .menu__btn span::after { opacity:0; }
+    .menu__box { transition: transform 0.3s ease, opacity 0.3s ease; transform: translateX(-100%); opacity: 0; }
+    .menu-active .menu__box { transform: translateX(0); opacity: 1; }
+    .menu__item { display:flex; gap:10px; align-items:center; padding:12px 18px; border-radius:10px; color:var(--text); }
+    .menu__item:hover { background: rgba(255,255,255,0.6); }
+
+    /* PAGE LAYOUT */
+    .page-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:3.5rem 1rem; }
+    .card {
+      width:100%; max-width:1100px;
+      background: var(--card);
+      border-radius:18px;
+      padding:1.5rem;
+      box-shadow: 0 14px 40px rgba(12,12,14,0.06);
+      border: 1px solid rgba(0,0,0,0.04);
     }
 
-    ul::-webkit-scrollbar {
-        width: 10px;
+    /* INPUT STYLING: gradient border effect + padding for all inputs and textareas */
+    .input-control {
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 12px;
+      padding: 0.75rem 0.95rem;
+      font-size: 0.98rem;
+      line-height: 1.2;
+      background: linear-gradient(180deg,#fff,#fbfbfb);
+      border: 2px solid transparent; /* transparent because we use background-clip trick */
+      background-image:
+        linear-gradient(#fff,#fff),
+        linear-gradient(90deg, rgba(187,220,229,0.9), rgba(207,171,141,0.65));
+      background-origin: padding-box, border-box;
+      background-clip: padding-box, border-box;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.03);
+      transition: box-shadow .14s ease, transform .06s ease, filter .12s ease;
+      color: var(--text);
+      width:100%;
+      box-sizing:border-box;
+      outline: none;
     }
 
-    ul::-webkit-scrollbar-track {
-        border-radius: 5px;
-        background-color: #e7e7e7;
-        border: 1px solid #abb0bb;
-        box-shadow: inset 0 0 6px rgb(50 51 55 / 41%);
+    /* textarea same visual style */
+    textarea.input-control { min-height: 98px; resize: vertical; padding-top:0.85rem; padding-bottom:0.85rem; }
+
+    /* focus */
+    .input-control:focus {
+      transform: translateY(-1px);
+      box-shadow:
+        0 10px 30px rgba(11,20,23,0.06),
+        0 0 0 6px rgba(187,220,229,0.18); /* soft halo using accent */
     }
 
-    ul::-webkit-scrollbar-thumb {
-        border-radius: 5px;
-        background-color: #000000;
-    }
-    .menu__box {
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        top: 0;
-        left: -100%;
-        width: 250px;
-        height: 100%;
-        margin: 0;
-        padding: 80px 0;
-        list-style: none;
-        background-color: #abb0bb;
-        box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
-        transition-duration: .25s;
-    }
-    
-    .menu__item {
-        display: flex;
-        padding: 12px 24px;
-        color: #333;
-        font-family: 'Roboto', sans-serif;
-        font-size: 20px;
-        font-weight: 600;
-        align-items: center;
-        text-decoration: none;
-        transition-duration: .25s;
-    }
-    
-    .menu__item:hover {
-        background-color: #CFD8DC;
-    }
-    
-    /* Spin transition when menu is active */
-    .menu-active .menu__btn > span {
-        transform: rotate(45deg);
-        background-color: #000000;
-    }
-    
-    .menu-active .menu__btn > span::before {
-        background-color: #000000;
-        top: 0;
-        transform: rotate(0deg);
-    }
-    
-    .menu-active .menu__btn > span::after {
-        background-color: #000000;
-        top: 0;
-        transform: rotate(90deg);
-    }
-    
-    .menu-active .menu__box {
-        left: 0 !important;
-    }
-    
-    .hamburger-menu {
-        width: 60px;
-        cursor: pointer;
-    }
-    .menu__div{
-        height:25px;
-    }
+    .field-label { font-weight: 600; color: #111827; margin-bottom: 6px; display:block; }
 
-    .icoos{
-        filter: invert(1);
+    /* white (ghost) buttons: clearer, bordered, hover */
+    .ghost-btn {
+      background: linear-gradient(180deg, var(--secondary), rgba(131, 207, 226, 0.98));
+      border: 1px solid rgba(16,24,40,0.06);
+      color: #111827;
+      padding: 0.6rem 0.9rem;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+      transition: transform .08s ease, box-shadow .12s ease, background .12s;
+      font-weight: 600;
     }
+    .ghost-btn:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(16,24,40,0.09); }
 
-    .inputdiv{
-        display: flex;
+    /* primary/colored btns */
+    .primary-btn {
+      background: linear-gradient(90deg, var(--secondary), rgba(187,220,229,0.9));
+      color: #072024;
+      padding: 0.68rem 1rem;
+      border-radius: 12px;
+      border: none;
+      font-weight:700;
+      box-shadow: 0 10px 30px rgba(11,20,23,0.06);
+      cursor: pointer;
+      transition: transform .08s ease;
     }
+    .primary-btn:hover { transform: translateY(-3px); }
 
-    .folders{
-        display: flex;
-        justify-content: center;
-    }
+    .muted { color: var(--muted); font-size: .95rem; }
+    .grid-cols-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; }
+    @media (max-width:860px){ .grid-cols-2{ grid-template-columns: 1fr; } }
 
-    h2 {
-        text-align: center;
-    }
-
-    div#uploadProgressContainer {
-        display: flex;
-        align-items: center;
-    }
-
-    progress {
-        -webkit-appearance: none;
-        appearance: none;
-    }
-
-    /* WebKit-specific styling for the progress bar */
-    progress::-webkit-progress-bar {
-        border-radius: 8px;                 /* Rounded corners */
-    }
-
-    /* WebKit-specific styling for the progress value */
-    progress::-webkit-progress-value {
-        background-color: rgb(0, 195, 255); /* Customize the fill color */
-        border-bottom-left-radius: 8px;
-        border-top-left-radius: 8px;
-    }
-    </style>
-    <title>Binder Medical</title>
+    .file-preview { position: relative; display:inline-block; margin:.5rem; }
+    .file-preview img, .file-preview video { height: 110px; border-radius:8px; display:block; }
+    .file-remove { position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6); color:white; width:28px; height:28px; border-radius:999px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; z-index:80; }
+    .modal-card { width:95%; max-width:1000px; background:white; border-radius:12px; padding:1rem; box-shadow:0 18px 50px rgba(0,0,0,0.28); }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 90; display:flex; flex-direction:column; gap:.5rem; }
+    .toast .item { background:#111827; color:#fff; padding:.65rem 1rem; border-radius:8px; box-shadow:0 8px 20px rgba(2,6,23,0.4); }
+  </style>
 </head>
 <body>
-    <div id="menuBar">
-        <div class="hamburger-menu">
-            <label class="menu__btn" for="menu__toggle">
-            <span></span>
-            </label>
-            <div class="menu__box">
-                <ul>
-                <li>
-                    <a class="menu__item" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item"title="Appointments" href="/appointments"><img class="icoo" src="/static/images/appoint.png" title="Appointments" alt="Appointments"><h6>Appointments</h6></a>
-                </li>
-                <li><div class="menu__div"></div></li>
-                <li>
-                    <a class="menu__item" title="lab" href="/lab_page"><img class="icoo" src="/static/images/lab.png" title="lab" alt="lab"><h6>Lab</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="radiology" href="/radio_page"><img class="icoo" src="/static/images/radio.png" title="radiology" alt="radiology"><h6>Radiology</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="pharmacy" href="/pharma_page"><img class="icoo" src="/static/images/pharma.png" title="pharmacy" alt="pharmacy"><h6>Pharmacy</h6></a>
-                </li>
-                <li><div class="menu__div"></div></li>
-                <li>
-                    <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
-                </li>
-                <li style="margin-bottom: 80px;">
-                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
-                </li>
-                </ul>
-            </div>
-        </div>
-        <div>
-            <a class="menuItem lll" href="/back"><img class="icoo icoos" src="/static/images/back.png" alt=""><h6>Back</h6></a>
-        </div>
+
+  <!-- MENU -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li><a class="menu__item" href="/acc"><img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account"/><span>Account</span></a></li>
+        <li><a class="menu__item" href="/home_page"><img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add"/><span>Add</span></a></li>
+        <li><a class="menu__item" href="/srch"><img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search"/><span>Search</span></a></li>
+        <li><a class="menu__item" href="/stats"><img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats"/><span>Stats</span></a></li>
+        <li><a id="appa" class="menu__item" href="/appointments"><img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments"/><span id="apph6">Appointments</span></a></li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+        <li><a class="menu__item" href="/back"><img class="icoo w-6 h-6" src="/static/images/back.png" alt="Back"/><span>Back</span></a></li>
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li><a class="menu__item" href="/lab_page"><img class="icoo w-6 h-6" src="/static/images/lab.png" alt="Lab"/><span>Lab</span></a></li>
+        <li><a class="menu__item" href="/radio_page"><img class="icoo w-6 h-6" src="/static/images/radio.png" alt="Radiology"/><span>Radiology</span></a></li>
+        <li><a class="menu__item" href="/pharma_page"><img class="icoo w-6 h-6" src="/static/images/pharma.png" alt="Pharmacy"/><span>Pharmacy</span></a></li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li><a class="menu__item" href="/settings"><img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings"/><span>Settings</span></a></li>
+        <li><a class="menu__item" href="/support"><img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support"/><span>Support</span></a></li>
+      </ul>
     </div>
-    <div class="data-capture-page">
-        <div class="main-frame">
-            <div class="inframe">
-                <div class="left-frame">
-                    <div class="inleft-frame">
-                        <div class="inpuu">
-                            <label for="visitDate">Visit Date:</label>
-                            <input type="date" id="visitDate" class="input-field" value="">
-                        </div>
-                        <div class="inpuu">
-                            <label for="drname">Dr. Name:</label>
-                            <input type="text" id="drname" class="input-field" value="" disabled>
-                        </div>
-                        <div class="inpuu">
-                            <label for="diagnosis">Diagnosis:</label>
-                            <textarea id="diagnosis" class="input-field" value=""></textarea>
-                        </div>
-                        <div class="inpuu">
-                            <label for="treatment">Treatment:</label>
-                            <textarea id="treatment" class="input-field" value=""></textarea>
-                        </div>
-                        <div class="inpuu">
-                            <label for="lab">Lab:</label>
-                            <textarea id="lab" class="input-field" value=""></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="right-frame">
-                    <div class="inright-frame">
-                        <div class="inpuu">
-                            <label for="wight">Weight:</label>
-                            <input type="text" id="wight" class="input-field" value="">
-                        </div>
-                        <div class="inpuu">
-                            <label for="height">Height:</label>
-                            <input type="text" id="height" class="input-field" value="">
-                        </div>
-                        <div class="inpuu">
-                            <label for="coast">Cost:</label>
-                            <input type="text" id="coast" class="input-field" value="">
-                        </div>
-                        <div class="inpuu">
-                            <label for="payed">Paid:</label>
-                            <input type="text" id="payed" class="input-field" value="">
-                        </div>
-                        <div class="inpuu">
-                            <label for="debit">Debit:</label>
-                            <input type="text" id="debit" class="input-field" value="">
-                        </div>
-                    </div>
-                </div>
-            </div>
+  </div>
 
-            <div class="outframe">
-                <div class="details">
-                    <textarea class="entry-details"  id="details" cols="80" rows="8">Details</textarea>
-                </div>
-                <div class="controls">
-                    <div class="button-frame">
-                        <button class="button" id="prevButton">Prev</button>
-                        <button class="button" id="nextButton">Next</button>
-                        <button class="button" id="firstButton">First</button>
-                        <button class="button" id="lastButton">Last</button>
-                        <button class="button" onclick="openFile()">Patient Folder</button>
-                        <button class="button" id="kp">Print visit</button>
-                        <label class="button-now"></label>
-                        <button class="button" id="savee">Save</button>
-                    </div>
-                    <div class="search-frame">
-                        <button class="button" id="searchButton">Search</button>
-                        <input type="date" class="search" id="search" value="">
-                    </div>
-                </div>
-            </div>
+  <!-- MAIN -->
+  <div class="page-wrap">
+    <div class="card">
+
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+          <img src="/static/images/w3.jpg" class="w-14 h-14 rounded-full shadow-sm" alt="logo"/>
+          <div>
+            <h2 class="text-2xl font-semibold">Patient Visit</h2>
+            <p class="muted text-sm">Create or edit visit entries, attach files, print and lock visits.</p>
+          </div>
         </div>
-    </div>
-    <div id="fileManagerModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Patient Files</h2>
-    
-            <!-- Folder Buttons -->
-            <div class="folders">
-                <button class="button folder-btn" onclick="selectFolder('drs')">Doctor</button>
-                <button class="button folder-btn" onclick="selectFolder('lab')">Lab</button>
-                <button class="button folder-btn" onclick="selectFolder('radiology')">Radiology</button>
-                <button class="button folder-btn" onclick="selectFolder('pharmacies')">Pharmacy</button>
-            </div>
-    
-            <!-- File Upload, only visible in the "drs" folder -->
-            <div id="divvv" class="inputdiv">
-                <input type="file" multiple id="fileInput" title="Patient Files" style="display:none;">
-                <button class="button" id="uploadButton" onclick="uploadFile()" style="display:none;">Upload</button>
-                <div id="uploadProgressContainer" style="display: none;">
-                    <label for="fileUploadProgress">Uploading:</label>
-                    <progress id="fileUploadProgress" value="0" max="100"></progress>
-                    <span id="progressText"></span>
-                </div>
-            </div>
-            
-    
-            <!-- File Previews -->
-            <div id="filePreviews" class="file-previews"></div>
+
+        <div class="space-x-3">
+          <button id="openFolderBtn" class="primary-btn">Patient Folder</button>
+          <button id="printBtn" class="primary-btn">Print visit</button>
+          <button id="saveBtn" class="ghost-btn">Save</button>
         </div>
+      </div>
+
+      <form id="visitForm" class="grid-cols-2">
+        <div class="space-y-4">
+          <label class="field-label">Visit Date</label>
+          <input id="visitDate" type="date" class="input-control" />
+
+          <label class="field-label">Dr. name</label>
+          <input id="drname" type="text" class="input-control" />
+
+          <label class="field-label">Diagnosis</label>
+          <textarea id="diagnosis" class="input-control" placeholder="Enter diagnosis..."></textarea>
+
+          <label class="field-label">Treatment</label>
+          <textarea id="treatment" class="input-control" placeholder="Enter treatment..."></textarea>
+
+          <label class="field-label">Lab</label>
+          <textarea id="lab" class="input-control" placeholder="Lab requests, notes..."></textarea>
+        </div>
+
+        <div class="space-y-4">
+          <label class="field-label">Weight</label>
+          <input id="wight" type="text" placeholder="kg" class="input-control" />
+
+          <label class="field-label">Height</label>
+          <input id="height" type="text" placeholder="cm" class="input-control" />
+
+          <label class="field-label">Cost</label>
+          <input id="coast" type="text" class="input-control" />
+
+          <label class="field-label">Paid</label>
+          <input id="payed" type="text" class="input-control" />
+
+          <label class="field-label">Debit</label>
+          <input id="debit" type="text" class="input-control" />
+        </div>
+
+        <div style="grid-column:1/ -1;">
+          <label class="field-label">Details</label>
+          <textarea id="details" class="input-control" rows="6">Details</textarea>
+        </div>
+      </form>
+
+      <div class="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex flex-wrap gap-2">
+          <button id="firstButton" class="ghost-btn">First</button>
+          <button id="prevButton" class="ghost-btn">Prev</button>
+          <button id="nextButton" class="ghost-btn">Next</button>
+          <button id="lastButton" class="ghost-btn">Last</button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <input id="search" type="date" class="input-control" style="width:200px;" />
+          <button id="searchButton" class="ghost-btn">Search</button>
+        </div>
+      </div>
+
     </div>
-    
-    <script>
-        let currentVisitIndex = 0;
-        let visits = []; // Array to hold visit data
-        let patientNumber = ""; // Patient number
-        const entryWidgets = {}; // Object to hold references to input elements
+  </div>
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // Initialize entryWidgets with references to input elements
-            entryWidgets["visit_date"] = document.getElementById("visitDate");
-            entryWidgets["drname"] = document.getElementById("drname");
-            entryWidgets["diagnosis"] = document.getElementById("diagnosis");
-            entryWidgets["treatment"] = document.getElementById("treatment");
-            entryWidgets["lab"] = document.getElementById("lab");
-            entryWidgets["wight"] = document.getElementById("wight");
-            entryWidgets["height"] = document.getElementById("height");
-            entryWidgets["coast"] = document.getElementById("coast");
-            entryWidgets["payed"] = document.getElementById("payed");
-            entryWidgets["debit"] = document.getElementById("debit");
-            entryWidgets["details"] = document.querySelector(".entry-details");
-            entryWidgets["search"] = document.getElementById("search");
+  <!-- File modal -->
+  <div id="fileModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Patient Files</h3>
+        <button id="closeModal" class="text-gray-600 hover:text-gray-900">&times;</button>
+      </div>
 
-            document.getElementById("drname").disabled  = false;
+      <div class="mb-4 flex gap-3">
+        <button class="folder-btn px-3 py-2 rounded bg-[var(--accent)]/10" data-folder="drs">Doctor</button>
+        <button class="folder-btn px-3 py-2 rounded" data-folder="lab">Lab</button>
+        <button class="folder-btn px-3 py-2 rounded" data-folder="radiology">Radiology</button>
+        <button class="folder-btn px-3 py-2 rounded" data-folder="pharmacies">Pharmacy</button>
+      </div>
 
-            const menuBtn = document.querySelector('.hamburger-menu');
-            const menuBox = document.querySelector('.menu__box');
-            const menuBar = document.getElementById('menuBar');
-            
-            // Toggle menu and spin transition
-            menuBtn.addEventListener('click', () => {
-                menuBar.classList.toggle('menu-active');
-            });
+      <!-- uploadControls: we will show/hide this depending on selected folder -->
+      <div id="uploadControls" class="flex items-center gap-3 mb-4">
+        <input id="fileInput" type="file" multiple class="hidden" />
+        <button id="chooseFile" class="px-3 py-2 rounded bg-gray-800 text-white">Choose files</button>
+        <button id="uploadFiles" class="px-3 py-2 rounded bg-[var(--secondary)] text-white">Upload</button>
 
-            // Fetch patient data
-            fetch(`/getPatientData`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data)
-                    visits = data.visits;
-                    patientNumber = data.patientss_number+1; // Set patient number
-                    if (visits.length > 0) {
-                        populatePatientData(visits[0]);
-                        currentVisitIndex = 0;
-                        
-                        
-                    }
-                })
-                .catch(error => console.error('Error fetching patient data:', error));
+        <div id="uploadProgressContainer" class="ml-auto hidden items-center gap-2">
+          <label class="text-sm">Uploading</label>
+          <progress id="fileUploadProgress" value="0" max="100" class="w-56 h-3"></progress>
+          <span id="progressText" class="text-sm"></span>
+        </div>
+      </div>
 
-            // Set up event listeners for input elements
-            Object.values(entryWidgets).forEach(widget => {
-                widget.addEventListener("keydown", function(event) {
-                    if (event.key === "Enter") {
-                        nextEntry(event, widget);
-                    }
-                });
-            });
+      <div id="filePreviews" class="grid grid-cols-3 gap-3"></div>
+    </div>
+  </div>
 
-            document.querySelector(".entry-details").addEventListener("focus", function(event) {
-                if (document.querySelector(".entry-details").value === 'Details'){
-                    document.querySelector(".entry-details").value= ''
-                }
-            });
+  <div id="toastContainer" class="toast"></div>
 
-            document.querySelector(".entry-details").addEventListener("focusout", function(event) {
-                if (document.querySelector(".entry-details").value === ''){
-                    document.querySelector(".entry-details").value= 'Details'
-                }
-            });
+  <script>
+    // small helpers
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-            // Set up event listeners for buttons
-            document.getElementById("searchButton").addEventListener("click", search);
-            document.getElementById("prevButton").addEventListener("click", prev);
-            document.getElementById("nextButton").addEventListener("click", next);
-            document.getElementById("firstButton").addEventListener("click", first);
-            document.getElementById("lastButton").addEventListener("click", last);
-            document.getElementById("savee").addEventListener("click", tacc);
-            
-            document.getElementById("kp").addEventListener("click", function() {
-                tacc();
-                printVisit();
-            });
+    function showToast(text, type = 'info') {
+      const c = $('#toastContainer');
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.textContent = text;
+      if (type === 'error') el.style.background = '#B91C1C';
+      if (type === 'success') el.style.background = '#059669';
+      c.appendChild(el);
+      setTimeout(()=> { el.style.opacity = '0'; setTimeout(()=> el.remove(), 400); }, 3000);
+    }
+
+    // menu toggle + bindings
+    document.addEventListener('DOMContentLoaded', () => {
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
+      menuBtn.addEventListener('click', () => menuBar.classList.toggle('menu-active'));
+
+      // buttons
+      $('#searchButton').addEventListener('click', search);
+      $('#prevButton').addEventListener('click', prev);
+      $('#nextButton').addEventListener('click', next);
+      $('#firstButton').addEventListener('click', first);
+      $('#lastButton').addEventListener('click', last);
+      $('#saveBtn').addEventListener('click', tacc);
+      $('#openFolderBtn').addEventListener('click', () => openFile());
+      $('#printBtn').addEventListener('click', () => { tacc(); printVisit(); });
+
+      // file modal
+      $('#closeModal').addEventListener('click', closeFileModal);
+      $('#chooseFile').addEventListener('click', () => $('#fileInput').click());
+      $('#fileInput').addEventListener('change', onFilesSelected);
+      $('#uploadFiles').addEventListener('click', uploadFile);
+
+      $$('.folder-btn').forEach(b => b.addEventListener('click', (e) => {
+        $$('.folder-btn').forEach(x => x.classList.remove('bg-[var(--accent)]/20'));
+        e.currentTarget.classList.add('bg-[var(--accent)]/20');
+        selectFolder(e.currentTarget.dataset.folder || 'drs');
+      }));
+
+      // keyboard focus flow
+      const entryWidgets = {
+        visit_date: $('#visitDate'),
+        drname: $('#drname'),
+        diagnosis: $('#diagnosis'),
+        treatment: $('#treatment'),
+        lab: $('#lab'),
+        wight: $('#wight'),
+        height: $('#height'),
+        coast: $('#coast'),
+        payed: $('#payed'),
+        debit: $('#debit'),
+        details: $('#details'),
+        search: $('#search')
+      };
+      Object.values(entryWidgets).forEach(widget => {
+        if (!widget) return;
+        widget.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const fields = Object.values(entryWidgets).filter(Boolean);
+            const idx = fields.indexOf(widget);
+            if (idx >= 0 && idx < fields.length - 1) fields[idx + 1].focus();
+          }
         });
+      });
 
-        function populatePatientData(visit) {
-            document.getElementById("visitDate").value = visit.visit_date;
-            if (visit["drname"] === undefined || visit["drname"] === ''|| visit["drname"] === ' '){
-                document.getElementById("drname").value = '';
-            }else{
-                document.getElementById("drname").value = visit.drname;
-            }
-            document.getElementById("treatment").value = visit.treatment;
-            document.getElementById("diagnosis").value = visit.diagnosis;
-            document.getElementById("lab").value = visit.lab;
+      fetchPatientData();
+    });
 
-            if (visit["wight"] !== undefined){
-                document.getElementById("wight").value = visit.wight;
-            }else{
-                document.getElementById("wight").value = '0';
-            }
+    // state
+    let visits = [];
+    let currentVisitIndex = 0;
+    let patientNumber = '';
+    let selectedFolder = 'drs';
 
-            if (visit["coast"] !== undefined){
-                document.getElementById("coast").value = visit.coast;
-            }else{
-                document.getElementById("coast").value = 0;
-            }
+    function fetchPatientData() {
+      fetch('/getPatientData')
+        .then(r => r.json())
+        .then(data => {
+          visits = data.visits || [];
+          patientNumber = (data.patientss_number || 0) + 1;
+          if (visits.length) { currentVisitIndex = 0; populatePatientData(visits[0]); showToast('Patient data loaded', 'success'); }
+          else { const t = { visit_date: '', drname:'', diagnosis:'', treatment:'', lab:'', wight: '0', height: '0', coast:0, payed:0, debit:0, details:'', vno:1 }; visits=[t]; currentVisitIndex=0; populatePatientData(t); }
+        })
+        .catch(err => { console.error(err); showToast('Failed to load patient data', 'error'); });
+    }
 
-            if (visit["payed"] !== undefined){
-                document.getElementById("payed").value = visit.payed;
-            }else{
-                document.getElementById("payed").value = 0;
-            }
+    function populatePatientData(visit) {
+      $('#visitDate').value = visit.visit_date || '';
+      $('#drname').value = visit.drname || '';
+      $('#diagnosis').value = visit.diagnosis || '';
+      $('#treatment').value = visit.treatment || '';
+      $('#lab').value = visit.lab || '';
+      $('#wight').value = visit.wight ?? '0';
+      $('#height').value = visit.height ?? '0';
+      $('#coast').value = visit.coast ?? '0';
+      $('#payed').value = visit.payed ?? '0';
+      $('#debit').value = visit.debit ?? '0';
+      $('#details').value = visit.details || 'Details';
 
-            if (visit["height"] !== undefined){
-                document.getElementById("height").value = visit.height;
-            }else{
-                document.getElementById("height").value = '0';
-            }
-            document.getElementById("debit").value = visit.debit;
-            document.querySelector(".entry-details").value = visit.details;
+      const printed = !!visit.printed;
+      if (printed) {
+        $$('#visitForm input, #visitForm textarea').forEach(el => el.disabled = true);
+        $('#search').disabled = false;
+        showToast('This visit is locked (printed).', 'info');
+      } else {
+        $$('#visitForm input, #visitForm textarea').forEach(el => el.disabled = false);
+      }
+      if (!visit.drname || visit.drname.trim() === '') $('#drname').disabled = false;
+      else $('#drname').disabled = true;
+    }
 
-            if (visit['printed'] === undefined){
-                Object.values(entryWidgets).forEach(widget => {
-                    widget.disabled  = false;
-                });
-            }else if (visit.printed){
-                Object.values(entryWidgets).forEach(widget => {
-                    if (widget !== entryWidgets["search"]){
-                        widget.disabled  = true;
-                    }
-                });
-            }else {
-                Object.values(entryWidgets).forEach(widget => {
-                    widget.disabled  = false;
-                });
-            }
+    // navigation
+    function first() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (visits.length){ currentVisitIndex = 0; populatePatientData(visits[0]); } }); }
+    function prev() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (currentVisitIndex > 0){ currentVisitIndex--; populatePatientData(visits[currentVisitIndex]); } }); }
+    function next() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; const newIdx = currentVisitIndex + 1; if (visits[newIdx]){ currentVisitIndex = newIdx; populatePatientData(visits[newIdx]); } else { const t = { visit_date:'', drname:'', treatment:'', diagnosis:'', lab:'', wight:'0', height:'0', coast:0, payed:0, debit:0, details:'', vno:visits.length+1 }; visits.push(t); currentVisitIndex = visits.length-1; populatePatientData(t); } }); }
+    function last() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (visits.length) { currentVisitIndex = visits.length - 1; populatePatientData(visits[currentVisitIndex]); } }); }
 
-            if (visit["drname"] === undefined || visit["drname"] === ''|| visit["drname"] === ' '){
-                document.getElementById("drname").disabled  = false;
-            }else{
-                document.getElementById("drname").disabled  = true;
-            }
+    function search() {
+      const dateToSearch = $('#search').value;
+      fetch('/getPatientData').then(r=>r.json()).then(data => {
+        visits = data.visits || [];
+        const found = visits.find(v => v.visit_date === dateToSearch);
+        if (found) { currentVisitIndex = visits.indexOf(found); populatePatientData(found); showToast('Visit found', 'success'); }
+        else showToast('No visit for that date', 'info');
+      });
+    }
+
+    // save
+    function tacc() {
+      const visitData = {
+        visit_date: $('#visitDate').value.trim(),
+        drname: $('#drname').value.trim(),
+        treatment: $('#treatment').value.trim(),
+        diagnosis: $('#diagnosis').value.trim(),
+        lab: $('#lab').value.trim(),
+        wight: $('#wight').value || '0',
+        height: $('#height').value || '0',
+        debit: parseFloat($('#debit').value) || 0,
+        payed: parseFloat($('#payed').value) || 0,
+        coast: parseFloat($('#coast').value) || 0,
+        details: ($('#details').value === 'Details' ? '' : $('#details').value.trim()),
+        vno: (visits[currentVisitIndex] && visits[currentVisitIndex].vno) || (currentVisitIndex + 1)
+      };
+      if (!visitData.visit_date) { showToast('Visit date is required', 'error'); return; }
+      totald(visitData);
+      fetch('/updateVisitData', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(visitData) })
+        .then(r=>r.json().catch(()=>({})))
+        .then(()=> fetch('/updatePatientTotals', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ totalDebit: visitData.debit }) }))
+        .then(()=> { showToast('Visit saved', 'success'); fetchPatientData(); })
+        .catch(err => { console.error(err); showToast('Error saving visit', 'error'); });
+    }
+
+    function totald(visitData) {
+      try {
+        if (parseFloat(visitData.payed) > 0 && parseFloat(visitData.coast) > 0) {
+          const res = parseFloat(visitData.coast) - parseFloat(visitData.payed);
+          $('#debit').value = res; visitData.debit = res;
+        } else if (parseFloat(visitData.debit) !== 0 && parseFloat(visitData.coast) > 0) {
+          if (parseFloat(visitData.debit) > 0) {
+            const res = parseFloat(visitData.coast) - parseFloat(visitData.debit);
+            $('#payed').value = res; visitData.payed = res;
+          } else {
+            const res = parseFloat(visitData.coast) + parseFloat(visitData.debit);
+            $('#payed').value = res; visitData.payed = res;
+          }
+        } else if (parseFloat(visitData.debit) !== 0 && parseFloat(visitData.payed) > 0) {
+          const res = parseFloat(visitData.payed) + parseFloat(visitData.debit);
+          $('#coast').value = res; visitData.coast = res;
+        } else if (parseFloat(visitData.coast) > 0) {
+          const res = parseFloat(visitData.coast);
+          $('#debit').value = res; visitData.debit = res;
         }
+      } catch(e) { console.error('totald error', e); }
+      return visitData;
+    }
 
-        function formatDate(date) {
-            const d = new Date(date);
-            let month = '' + (d.getMonth() + 1);
-            let day = '' + d.getDate();
-            const year = d.getFullYear();
+    function printVisit() {
+      if (!confirm("After printing you can't change this visit's info. Continue?")) return;
+      fetch('/kkprint', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ vno: currentVisitIndex }) })
+      .then(resp => { if (!resp.ok) throw new Error('Print failed'); return resp.blob(); })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'visit.docx'; document.body.appendChild(a); a.click();
+        url && window.URL.revokeObjectURL(url);
+        showToast('Visit printed and locked', 'success');
+        fetchPatientData();
+      })
+      .catch(err => { console.error(err); showToast('Print failed', 'error'); });
+    }
 
-            if (month.length < 2)
-                month = '0' + month;
-            if (day.length < 2)
-                day = '0' + day;
+    // FILE MANAGER: implemented selectFolder behavior to show upload controls only for 'drs'
+    function openFile() {
+      $('#fileModal').style.display = 'flex';
+      $('#fileModal').style.alignItems = 'center';
+      $('#fileModal').style.justifyContent = 'center';
+      selectFolder('drs'); // default open doctor folder
+    }
+    function closeFileModal() {
+      $('#fileModal').style.display = 'none';
+      $('#filePreviews').innerHTML = '';
+    }
 
-            return [year,day ,month ].join('-');
+    function selectFolder(folder) {
+      selectedFolder = folder || 'drs';
+      const uploadControls = $('#uploadControls');
+      const fileInput = $('#fileInput');
+      const uploadButton = $('#uploadFiles');
+      // Show upload input only for the 'drs' folder
+      if (selectedFolder === 'drs') {
+        // make upload controls visible and interactive
+        uploadControls.style.display = 'flex';
+        // ensure choose/upload are visible (fileInput stays hidden but triggered by chooseFile)
+        if (fileInput) fileInput.disabled = false;
+        if (uploadButton) uploadButton.disabled = false;
+      } else {
+        // hide upload controls for other folders
+        uploadControls.style.display = 'none';
+        if (fileInput) fileInput.disabled = true;
+        if (uploadButton) uploadButton.disabled = true;
+      }
+      fetchFiles();
+    }
+
+    function onFilesSelected(e) {
+      if ($('#fileInput').files.length) {
+        showToast(`${$('#fileInput').files.length} files selected`, 'info');
+      }
+    }
+
+    function uploadFile() {
+      const files = $('#fileInput').files;
+      if (!files || files.length === 0) { showToast('No files selected', 'error'); return; }
+      if (selectedFolder !== 'drs') { showToast("Uploads allowed only in Doctor folder", 'error'); return; }
+
+      const patientNo = patientNumber;
+      const totalFiles = files.length;
+      let currentIndex = 0;
+      $('#uploadProgressContainer').classList.remove('hidden');
+
+      function uploadNext() {
+        if (currentIndex >= totalFiles) {
+          $('#uploadProgressContainer').classList.add('hidden');
+          $('#fileInput').value = '';
+          showToast('All files uploaded', 'success');
+          fetchFiles();
+          return;
         }
+        const file = files[currentIndex];
+        const form = new FormData();
+        form.append('file', file);
+        form.append('patient_no', patientNo);
+        form.append('folder', selectedFolder);
 
-        function formatyear() {
-            const today = new Date().toISOString().split('T')[0];
-            const d = new Date(today);
-            let month = '' + (d.getMonth() + 1);
-            let day = '' + d.getDate();
-            const year = d.getFullYear()+1;
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/uploadFile', true);
+        xhr.upload.onprogress = function (ev) {
+          if (!ev.lengthComputable) return;
+          const filePercent = (ev.loaded / ev.total) * 100;
+          const overall = Math.round(( (currentIndex / totalFiles) * 100) + (filePercent / totalFiles));
+          $('#fileUploadProgress').value = overall;
+          $('#progressText').textContent = `${overall}%`;
+        };
+        xhr.onload = function () {
+          if (xhr.status === 200) { currentIndex++; uploadNext(); }
+          else { showToast('Upload failed: ' + xhr.statusText, 'error'); $('#uploadProgressContainer').classList.add('hidden'); }
+        };
+        xhr.onerror = function () { showToast('Upload error', 'error'); $('#uploadProgressContainer').classList.add('hidden'); };
+        xhr.send(form);
+      }
+      uploadNext();
+    }
 
-            if (month.length < 2)
-                month = '0' + month;
-            if (day.length < 2)
-                day = '0' + day;
+    function fetchFiles() {
+      const patientNo = patientNumber || '';
+      const folder = encodeURIComponent(selectedFolder || 'drs');
+      fetch(`/getFiles?patient_no=${patientNo}&folder=${folder}`).then(r=>r.json()).then(files => renderFiles(files || [])).catch(err => { console.error(err); showToast('Failed to fetch files', 'error'); });
+    }
 
-            return [year, "01", "01"].join('-');
+    function renderFiles(files) {
+      const container = $('#filePreviews'); container.innerHTML = '';
+      if (!files || !files.length) { container.innerHTML = '<div class="text-gray-500">No files</div>'; return; }
+      files.forEach(file => {
+        const div = document.createElement('div'); div.className = 'file-preview';
+        const link = document.createElement('a'); link.href = file.data; link.target = '_blank';
+        if (file.file_type.includes('image')) { const img = document.createElement('img'); img.src = file.data; link.appendChild(img); }
+        else if (file.file_type.includes('video')) { const v = document.createElement('video'); v.src = file.data; v.controls = true; v.className = 'rounded'; link.appendChild(v); }
+        else { const txt = document.createElement('div'); txt.className='p-3 border rounded txtPrev'; txt.textContent = file.name || 'file'; link.appendChild(txt); }
+        if (selectedFolder === 'drs') {
+          const rem = document.createElement('div'); rem.className = 'file-remove'; rem.innerHTML = '&times;';
+          rem.addEventListener('click', (e) => { e.preventDefault(); if (!confirm('Delete this file?')) return; deleteFile(file.data); });
+          div.appendChild(rem);
         }
+        div.appendChild(link); container.appendChild(div);
+      });
+    }
 
-        function saveVisitData(visitData) {
-            return fetch('/updateVisitData', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(visitData)
-            })
-            .then(data => {
-                console.log('Save response:', data);
-                
-                return data;
-            })
-            .catch(error => {
-                console.error('Error saving visit data:', error);
-            });
-        }
+    function deleteFile(url) { fetch(`/deleteFile?url=${encodeURIComponent(url)}`, { method:'DELETE' }).then(r=>r.json()).then(()=>{ showToast('File deleted', 'success'); fetchFiles(); }).catch(e=>{ console.error(e); showToast('Delete failed', 'error'); }); }
 
-        function savetoatls(totalDebit) {
-
-            datas ={
-                totalDebit : totalDebit
-            };
-
-            return fetch('/updatePatientTotals', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(datas)
-            })
-            .then(data => {
-                console.log('Save response:', data);
-                return data;
-            })
-            .catch(error => {
-                console.error('Error saving totals data:', error);
-            });
-        }
-
-        function totald(visitData){
-
-            if (parseFloat(visitData.payed)>0 && parseFloat(visitData.coast)>0){
-                res= parseFloat(visitData.coast) - parseFloat(visitData.payed);
-                document.getElementById("debit").value = res;
-                visitData.debit = res;
-            }else if (parseFloat(visitData.debit)!==0 && parseFloat(visitData.coast)>0){
-                if (parseFloat(visitData.debit)>0){
-                    res= parseFloat(visitData.coast) - parseFloat(visitData.debit);
-                    document.getElementById("payed").value =res;
-                    visitData.payed = res;
-                }else{
-                    res= parseFloat(visitData.coast) + parseFloat(visitData.debit);
-                    document.getElementById("payed").value =res;
-                    visitData.payed = res;
-                }
-            }else if (parseFloat(visitData.debit)!==0 && parseFloat(visitData.payed)>0){
-                res=parseFloat(visitData.payed) + parseFloat(visitData.debit);
-                document.getElementById("coast").value = res;
-                visitData.coast = res;
-            }else if (parseFloat(visitData.coast)>0){
-                res=parseFloat(visitData.coast);
-                document.getElementById("debit").value = res;
-                visitData.coast = res;
-            }
-            return visitData;
-        }
-
-        function tacc() {
-            var visitData = {
-                visit_date: entryWidgets["visit_date"].value.trim(),
-                drname: entryWidgets["drname"].value.trim(),
-                treatment: entryWidgets["treatment"].value.trim(),
-                diagnosis: entryWidgets["diagnosis"].value.trim(),
-                lab: entryWidgets["lab"].value.trim(),
-                wight: entryWidgets["wight"].value,
-                height: entryWidgets["height"].value,
-                debit: parseFloat(entryWidgets["debit"].value) || 0,
-                payed: parseFloat(entryWidgets["payed"].value) || 0,
-                coast: parseFloat(entryWidgets["coast"].value) || 0,
-                details: entryWidgets["details"].value.trim(),
-                vno: visits[currentVisitIndex] ? visits[currentVisitIndex].vno : currentVisitIndex + 1
-            };
-
-                try {
-                    let no = currentVisitIndex;
-
-                    // Ensure visit date is set
-                    const visitDate = entryWidgets["visit_date"].value;
-                    if (visitDate === "" || visitDate === formatyear()) {
-                        alert("Please set a valid visit date.");
-                        return;
-                    } else {
-                        visitData.visit_date = visitDate;
-                    }
-
-                    // Save the visit data when Enter key is pressed
-                    if (!visitData.visit_date) {
-                        alert("Visit date is required!");
-                        return;
-                    }
-
-                    const existingVisit = visits.find(visit => visit.visit_date === visitData.visit_date && visit.vno !== visitData.vno);
-                    if (existingVisit) {
-                        alert("Visit date already exists. Please enter a unique visit date.");
-                    } else {
-                        // Save the visit data
-                        visitData = totald(visitData);
-                        if (visitData.details === 'Details'){
-                            visitData.details = ''
-                        }
-                        saveVisitData(visitData).then(data => {
-                            console.log('Visit data saved successfully:', data);
-                            savetoatls(visitData.debit).then(data => {
-                                console.log('toatls data saved successfully:', data);
-                                alert('Patient data saved successfully.');
-                                if (entryWidgets["drname"] === undefined || entryWidgets["drname"] === ''|| entryWidgets["drname"] === ' '){
-                                    document.getElementById("drname").disabled  = false;
-                                }else{
-                                    document.getElementById("drname").disabled  = true;
-                                }
-
-                            }).catch(error => {
-                                console.error('Error updating toatls data:', error);
-                                alert(`Error updating visit data:${error}` );
-                            });
-                            
-                            
-                        }).catch(error => {
-                            console.error('Error updating visit data:', error);
-                            alert(`Error updating visit data:${error}` );
-                        });
-                        
-                    }
-                } catch (error) {
-                    console.error('Error in tacc function:', error);
-                }
-        }
-        
-        function nextEntry(event, entryWidget) {
-            try {
-                if (!['visit_date', 'search'].includes(Object.keys(entryWidgets).find(k => entryWidgets[k] === entryWidget))) {
-                    if (entryWidget === entryWidgets["search"]) {
-                        search();
-                    } else if (entryWidget.id === "details") {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                            entryWidget.value += "\n";
-                            event.preventDefault(); // Prevent adding a new line in the textarea
-                        } 
-                    }else if (entryWidget.id === "diagnosis") {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                            entryWidget.value += "\n";
-                            event.preventDefault(); // Prevent adding a new line in the textarea
-                        }  
-                    }else if (entryWidget.id === "treatment") {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                            entryWidget.value += "\n";
-                            event.preventDefault(); // Prevent adding a new line in the textarea
-                        } 
-                    }else if (entryWidget.id === "lab") {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                            entryWidget.value += "\n";
-                            event.preventDefault(); // Prevent adding a new line in the textarea
-                        }  
-                    } else {
-                        const nextWidget = getNextWidget(entryWidget);
-                        if (nextWidget) {
-                            nextWidget.focus();
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error in nextEntry function:', error);
-            }
-        }
-
-        function getNextWidget(currentWidget) {
-            const keys = Object.keys(entryWidgets);
-            const currentKey = keys.find(k => entryWidgets[k] === currentWidget);
-            const currentIndex = keys.indexOf(currentKey);
-
-            if (currentIndex >= 0 && currentIndex < keys.length - 1) {
-                return entryWidgets[keys[currentIndex + 1]];
-            }
-            return null;
-        }
-
-        function search() {
-            fetch(`/getPatientData`)
-                .then(response => response.json())
-                .then(data => {
-                    visits = data.visits;
-                    patientNumber = data.patientss_number+1; // Set patient number // Display patient number
-                    
-                })
-                .catch(error => console.error('Error fetching patient data:', error));
-            // Get the date from the search input
-            const dateToSearch = entryWidgets["search"].value.trim();
-            entryWidgets["search"].value = ""; // Clear the search input
-
-            // Find visit by date
-            const result = visits.find(visit => visit.visit_date === dateToSearch);
-
-            if (result) {
-                // Update the current visit index based on the search result
-                const visitIndex = visits.findIndex(visit => visit.visit_date === result.visit_date && visit.patient_no === result.patient_no);
-                if (visitIndex !== -1) {
-                    currentVisitIndex = visitIndex;
-                    populatePatientData(visits[currentVisitIndex]);
-                
-                }
-                entryWidgets["search"].value = dateToSearch;
-                
-            } else {
-                entryWidgets["search"].value = dateToSearch;
-                console.log("Data not found for the entered date.");
-            }
-        }
-
-        function prev() {
-            fetch(`/getPatientData`)
-                .then(response => response.json())
-                .then(data => {
-                    visits = data.visits;
-                    patientNumber = data.patientss_number+1; // Set patient number// Display patient number
-                })
-                .catch(error => console.error('Error fetching patient data:', error));
-            if (currentVisitIndex > 0) {
-                currentVisitIndex--;
-                populatePatientData(visits[currentVisitIndex]);
-                
-            }
-        }
-
-        function next() {
-            fetch(`/getPatientData`)
-                .then(response => response.json())
-                .then(data => {
-                    visits = data.visits;
-                    patientNumber = data.patientss_number+1; // Set patient number 
-                })
-                .catch(error => console.error('Error fetching patient data:', error));
-            const newValue = currentVisitIndex + 1;
-            const newVisit = visits[newValue];
-
-            if (newVisit) {
-                populatePatientData(newVisit);
-                currentVisitIndex = newValue;
-                
-                
-            } else {
-                document.getElementById("drname").disabled  = false;
-                if (visits[currentVisitIndex].visit_date !== formatyear()){
-                    const tempVisit = {
-                        visit_date: formatyear(),
-                        drname: "",
-                        treatment: "",
-                        diagnosis: "",
-                        lab: "",
-                        wight: '0',
-                        height: '0',
-                        coast: 0,
-                        payed: 0,
-                        debit: 0,
-                        details: "",
-                        vno: currentVisitIndex + 2
-                    };
-                    visits.push(tempVisit);
-                    currentVisitIndex = visits.length - 1;
-                    populatePatientData(tempVisit);
-                    document.getElementById("drname").disabled  = false;
-                
-                    
-                }
-            }
-        }
-
-        function first() {
-            fetch(`/getPatientData`)
-                .then(response => response.json())
-                .then(data => {
-                    visits = data.visits;
-                    patientNumber = data.patientss_number+1; // Set patient number
-                })
-                .catch(error => console.error('Error fetching patient data:', error));
-            if (visits.length > 0) {
-                currentVisitIndex = 0;
-                populatePatientData(visits[currentVisitIndex]);
-                
-                
-                
-            }
-        }
-
-        function last() {
-            fetch(`/getPatientData`)
-                .then(response => response.json())
-                .then(data => {
-                    visits = data.visits;
-                    patientNumber = data.patientss_number+1; // Set patient number
-                })
-                .catch(error => console.error('Error fetching patient data:', error));
-            if (visits.length > 0 && visits[visits.length - 1].visit_date !== formatyear()) {
-                currentVisitIndex = visits.length - 1;
-                populatePatientData(visits[currentVisitIndex]);
-                
-                
-            }
-        }
-
-        const modal = document.getElementById("fileManagerModal");
-        const btn = document.querySelector(".button[onclick='openFile()']");
-        const span = document.getElementsByClassName("close")[0];
-        const fileInput = document.getElementById("fileInput");
-        const uploadButton = document.getElementById("uploadButton");
-        const divvv = document.getElementById("divvv");
-        let selectedFolder = '';
-        selectFolder('drs')
-
-        // Open the modal and fetch the initial files
-        btn.onclick = function() {
-            modal.style.display = "block";
-            divvv.style.display = "flex";
-            fetchFiles(); // Fetch files when opening the modal
-        }
-
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-
-        // Function to handle folder selection
-        function selectFolder(folderName) {
-            selectedFolder = folderName;
-        
-            // Show upload input only for the 'drs' folder
-            if (folderName === 'drs') {
-                divvv.style.display= 'flex';
-                divvv.style.marginTop= '15px';
-                fileInput.style.display = 'block';
-                fileInput.style.marginRight = '5px';
-                uploadButton.style.display = 'block';
-            } else {
-                divvv.style.display= 'none';
-                fileInput.style.display = 'none';
-                uploadButton.style.display = 'none';
-            }
-        
-            // Fetch files for the selected folder
-            fetchFiles();
-        }
-
-        // Modified to support multiple file uploads
-        function uploadFile() {
-            if (selectedFolder !== 'drs') {
-                alert("You can only upload files in the 'Doctors' folder.");
-                return;
-            }
-
-            const files = fileInput.files;
-            if (files.length === 0) {
-                alert("No files selected for upload.");
-                return;
-            }
-
-            const patientNo = patientNumber;
-            const totalFiles = files.length;
-            let currentFileIndex = 0;
-            let totalProgress = 0; // Track total progress across files
-
-            // Show progress bar
-            const progressBarContainer = document.getElementById('uploadProgressContainer');
-            const progressBar = document.getElementById('fileUploadProgress');
-            const progressText = document.getElementById('progressText');
-            progressBarContainer.style.display = 'flex';
-
-            // Function to upload each file one by one
-            function uploadNextFile() {
-                if (currentFileIndex < totalFiles) {
-                    const file = files[currentFileIndex];
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('patient_no', patientNo);
-                    formData.append('folder', selectedFolder); // Assign the current folder
-
-                    // Create XMLHttpRequest to monitor upload progress for this file
-                    const xhr = new XMLHttpRequest();
-
-                    xhr.upload.onprogress = function(event) {
-                        if (event.lengthComputable) {
-                            const fileProgress = (event.loaded / event.total) * 100;
-                            const overallProgress = totalProgress + (fileProgress / totalFiles);
-                            progressBar.value = overallProgress;  // Update progress bar
-                            progressText.textContent = `Uploading file ${currentFileIndex + 1} of ${totalFiles}: ${Math.round(overallProgress)}%`;
-                        }
-                    };
-
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState == 4) {
-                            if (xhr.status == 200) {
-                                // Update total progress and move to the next file
-                                totalProgress += 100 / totalFiles;
-                                currentFileIndex++;
-
-                                // Start uploading the next file
-                                uploadNextFile();
-                            } else {
-                                alert('Error uploading file: ' + xhr.responseText);
-                            }
-                        }
-                    };
-
-                    // Set up request to POST the file
-                    xhr.open('POST', '/uploadFile', true);
-                    xhr.send(formData);
-                } else {
-                    // Hide progress bar and reset when all files are uploaded
-                    progressBarContainer.style.display = 'none';
-                    progressBar.value = 0;
-                    progressText.textContent = '';
-                    fileInput.value = '';
-                    fetchFiles();  // Refresh the file list after successful upload
-                }
-            }
-
-            // Start uploading the first file
-            uploadNextFile();
-        }
-
-        // Fetch files based on the selected folder
-        function fetchFiles() {
-            const patientNo = patientNumber;
-            const folderQuery = selectedFolder === 'drs' ? 'drs' : selectedFolder; // Query for the current folder
-
-            let url = `/getFiles?patient_no=${patientNo}&folder=${folderQuery}`;  // Use query parameters
-
-            //if (folderQuery === 'drs'){
-            //    url = `/getFiles?patient_no=${patientNo}`;
-            //}
-
-            fetch(url, {
-                method: 'GET'
-            })
-            .then(response => response.json())
-            .then(files => {
-                document.getElementById("filePreviews").innerHTML = '';
-                renderFiles(files);
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Render file previews
-        function renderFiles(files) {
-            files.forEach(file => {
-                const fileElement = createFilePreviewElement(file);
-                document.getElementById("filePreviews").appendChild(fileElement);
-            });
-        }
-
-        // Delete file function (same as before)
-        function deleteFile(fileUrl) {
-            const isConfirmed = confirm("Are you sure you want to delete this file?");
-            if (!isConfirmed) return;
-        
-            fetch(`/deleteFile?url=${encodeURIComponent(fileUrl)}`, { method: 'DELETE' })
-            .then(response => {
-                if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
-                return response.json();
-            })
-            .then(data => {
-                console.log('File deleted successfully:', data);
-                fetchFiles(); // Refresh the file list
-            })
-            .catch(error => console.error('Error deleting file:', error));
-        }
-
-        // Create a file preview element (same as before)
-        function createFilePreviewElement(file) {
-            const filePreview = document.createElement("div");
-            filePreview.classList.add("file-preview");
-        
-            const fileLink = document.createElement("a");
-            fileLink.href = file.data;
-            fileLink.target = "_blank";
-        
-            let previewElement;
-            if (file.file_type.includes('image')){
-                previewElement = document.createElement("img");
-                previewElement.src = file.data; // Use file URL
-            }else if(file.file_type.includes('video')) {
-                previewElement = document.createElement("video");
-                previewElement.controls = true;
-                previewElement.classList.add("vidPerv");
-                previewElement.src = file.data; // Use file URL
-            }else if (file.file_type.includes('text')) {
-                previewElement = document.createElement("h3");
-                previewElement.classList.add("txtPrev");
-                previewElement.innerText = file.name; // Use file URL
-            }else if (file.file_type.includes('pdf')) {
-                previewElement = document.createElement("h3");
-                previewElement.classList.add("txtPrev");
-                previewElement.innerText = file.name; // Use file URL
-            }else{
-                previewElement = document.createElement("h3");
-                previewElement.classList.add("txtPrev");
-                previewElement.innerText = file.name; // Use file URL
-            }
-        
-            const deleteBtn = document.createElement('span');
-            deleteBtn.className = 'delete-btn';
-            deleteBtn.innerHTML = '&times;';
-            deleteBtn.onclick = () => deleteFile(file.data);
-        
-            fileLink.appendChild(previewElement);
-            if (selectedFolder === 'drs') {
-                filePreview.appendChild(deleteBtn);
-            }
-            filePreview.appendChild(fileLink);
-            return filePreview;
-        }
-
-        function printVisit() {
-            const isConfirmed = confirm("After printing you cant change this visits info , are you sure you want to print this visit? \n في حال الطباعة لا يمكن تغيير معلومات الزيارة ,هل تريد الطباعة؟");
-            if (!isConfirmed) {
-                return; // Exit the function if the user does not confirm
-            }
-            fetch('/kkprint', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ vno: currentVisitIndex })
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Extract the filename from the Content-Disposition header
-                    const disposition = response.headers.get('Content-Disposition');
-                    const filename = disposition ? disposition.split('filename=')[1].replace(/"/g, '') : 'visit.docx';
-
-                    return response.blob().then(blob => {
-                        // Create a link element to trigger the download
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'visit.docx';
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    });
-
-                } else {
-                    throw new Error('Failed to download the visit document');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to print visit. Please try again.');
-            });
-
-            fetch(`/getPatientData`)
-            .then(response => response.json())
-            .then(data => {
-                visits = data.visits;
-                patientNumber = data.patientss_number+1; // Set patient number// Display patient number
-                populatePatientData(visits[currentVisitIndex]);
-
-
-
-            })
-            .catch(error => console.error('Error fetching patient data:', error));
-        }
-
-        
-    </script>
-
+    window.openFile = openFile;
+    window.printVisit = printVisit;
+  </script>
 </body>
 </html>

@@ -1,641 +1,251 @@
-<html lang="en"><head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
-    <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
-    <style>
-        
-        body {
-                font-family: 'Arial', sans-serif;
-                background-color: #8b8c8e;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                height: 100vh;
-                width: 100%;
-                justify-content: center;
-            }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settings — Binder Medical</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        #idFrame {
-            display: flex;
-            margin-top: 20px;
-            width: 100%;
-            align-items: center;
-        }
-
-        #menuBar {
-            display: flex;
-            background-color: #000;
-            border-bottom: 2px solid #000;
-            position: fixed;
-            width: 105%;
-        }
-
-        .menuItem {
-            font-size: 16px;
-            color: #8b8c8e;
-            padding: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 15px;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .menuItem:hover {
-            background-color: #fff;
-            color: #333;
-        }
-        
-        .menuItem:hover  .icoo{
-            filter: invert(0);
-        }
-
-        .icoo{
-            filter: invert(0);
-            margin-right:10px;
-            width: 25px;
-            height: 25px;
-        }
-
-        .f {
-            margin-top: 35px;
-            display: flex;
-            height: 90%;
-            flex-direction: column;
-            align-items: center;
-            width: 90%;
-            justify-content: center;
-        }
-
-        .aha {
-            width: 50%;
-        }
-
-        .frame {
-            display: flex;
-            padding: 20px;
-            margin: 20px;
-            margin-top: 0px;
-            border-radius: 10px;
-            margin-bottom: 0px;
-            padding-top: 2px;
-            flex-direction: column;
-            width: 85%;
-            align-items: stretch;
-        }
-
-        .entry {
-            width: 35%;
-            font-size: 13px;
-            padding: 5px;
-        }
-
-        .button {
-            width: 150px;
-            background-color: #000;
-            border: none;
-            padding: 5px 10px;
-            margin: 5px;
-            border-radius: 4.5px;
-            font-size: 15px;
-            cursor: pointer;
-            color: rgb(255, 255, 255);
-            margin-top: 10px;
-        }
-
-        .result {
-            display: flex;
-            border: 1px black solid;
-            min-width: 70%;
-            min-height: 400px;
-            max-height: 70%;
-            overflow-y: auto;
-            margin: 15px;
-            margin-top: 0px;
-            background-color: #abb0bb;
-            border-radius: 5px;
-            flex-direction: column;
-            align-items: center;        
-        }
-
-        .potato {
-            display: flex;
-            justify-content: center;
-        }
-
-        input {
-            outline: none;
-            border: 1px solid #000;
-            line-height: 1.5;
-            border-radius: 2.5px;
-        }
-
-        label {
-            font-size: 16.57px;
-            padding: 5px;
-            margin-right: 10px;
-        }
-
-        input {
-            padding: 5px;
-        }
-
-        .inpuu {
-            display: flex;
-            margin-bottom: 10px;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .patient-info {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        #idEntry {
-            width: 300px;
-        }
-        
-        .columnr {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: -15px;
-            justify-content: center;
-        }
-        
-        .column {
-            box-sizing: border-box;
-            padding: 5px;
-            width: 100%;
-        }
-        
-        .lll {
-    margin-left: 20px;
-}
-
-    .checkbox-wrapper-3 input[type="checkbox"] {
-      visibility: hidden;
-      display: none;
+  <style>
+    :root {
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --w: #e6ded9;
+      --text: #2b2b2b;
     }
-  
-    .checkbox-wrapper-3 .toggle {
-      position: relative;
+    body {
+      background: linear-gradient(180deg, var(--bg-main), #f4e9df 65%);
+      font-family: Inter, system-ui, sans-serif;
+    }
+    /* Hamburger lines */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
       display: block;
-      width: 40px;
-      height: 20px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transform: translate3d(0, 0, 0);
-    }
-    .checkbox-wrapper-3 .toggle:before {
-      content: "";
+      width: 25px;
+      height: 3px;
+      background-color: var(--accent);
       position: relative;
-      top: 3px;
-      left: 3px;
-      width: 34px;
-      height: 14px;
-      display: block;
-      background: #9A9999;
-      border-radius: 8px;
-      transition: background 0.2s ease;
+      border-radius: 6px;
+      transition: 0.3s ease;
     }
-    .checkbox-wrapper-3 .toggle span {
-        position: absolute;
-        top: 5px;
-        left: 5px;
-        width: 20px;
-        height: 20px;
-        display: block;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 3px 8px rgba(154, 153, 153, 0.5);
-        transition: all 0.2s ease;
-    }
-    .checkbox-wrapper-3 {
-        display: flex;
-        width: 100%;
-        justify-content: center;
-    }
-    .checkbox-wrapper-3 .toggle span:before {
+    .menu__btn span::before,
+    .menu__btn span::after {
       content: "";
       position: absolute;
-      display: block;
-      margin: -18px;
-      width: 56px;
-      height: 56px;
-      background: rgb(0 0 0 / 78%);
-      border-radius: 50%;
-      transform: scale(0);
-      opacity: 1;
-      pointer-events: none;
+      left: 0;
     }
-  
-    .checkbox-wrapper-3 #cbx-3:checked + .toggle:before {
-      background: #575757;
+    .menu__btn span::before { top: -8px; }
+    .menu__btn span::after { top: 8px; }
+
+    /* Toggle open */
+    .menu-active .menu__btn span {
+      transform: rotate(45deg);
+      background-color: var(--accent);
     }
-    .checkbox-wrapper-3 #cbx-3:checked + .toggle span {
-      background: #000;
-      transform: translateX(20px);
-      transition: all 0.2s cubic-bezier(0.8, 0.4, 0.3, 1.25), background 0.15s ease;
-      box-shadow: 0 3px 8px rgba(79, 46, 220, 0.2);
+    .menu-active .menu__btn span::before {
+      transform: rotate(90deg);
+      top: 0;
     }
-    .checkbox-wrapper-3 #cbx-3:checked + .toggle span:before {
-      transform: scale(1);
+    .menu-active .menu__btn span::after {
       opacity: 0;
-      transition: all 0.4s ease;
-    }
-    
-    .coo {
-        height: 25px;
     }
 
-    .btns {
-        display: flex;
-        width: 35%;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    #code {
-        width: 70%;
-    }
-
-    #pcl{
-        display: block;
-    }
-
-    @media (max-width:750px) {    
-        .column {
-            box-sizing: border-box;
-            padding: 5px;
-            width: 100%;
-        }
-
-        #ccc{
-            display: flex;
-            justify-content: center;
-        }
-
-        .btns {
-            width: 100%;
-        }
-
-        #pcl{
-            display: none;
-        }
-    }
-    @media (min-width:750px) {
-        .lll {
-            margin-left: 50px;
-        }
-    }
-    .menuItem {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 35px;
-    }
-
-    h6 {
-        margin: 0px;
-    }
-        
-    #menuBar{
-        height: 40px;
-    }
-
-    .menu__btn {
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        width: 16px;
-        height: 26px;
-        cursor: pointer;
-        z-index: 1;
-    }
-    
-    .menu__btn > span,
-    .menu__btn > span::before,
-    .menu__btn > span::after {
-        display: block;
-        position: absolute;
-        width: 100%;
-        height: 2px;
-        background-color: #ffffff;
-        transition-duration: .25s;
-    }
-    
-    .menu__btn > span::before {
-        content: '';
-        top: -8px;
-    }
-    
-    .menu__btn > span::after {
-        content: '';
-        top: 8px;
-    }
-    
+    /* Menu transitions */
     .menu__box {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: -100%;
-        width: 250px;
-        height: 100%;
-        margin: 0;
-        padding: 80px 0;
-        list-style: none;
-        background-color: #abb0bb;
-        box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
-        transition-duration: .25s;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform: translateX(-100%);
+      opacity: 0;
     }
-    
-    .menu__item {
-        display: flex;
-        padding: 12px 24px;
-        color: #333;
-        font-family: 'Roboto', sans-serif;
-        font-size: 20px;
-        font-weight: 600;
-        align-items: center;
-        text-decoration: none;
-        transition-duration: .25s;
-    }
-    
-    .menu__item:hover {
-        background-color: #CFD8DC;
-    }
-    
-    /* Spin transition when menu is active */
-    .menu-active .menu__btn > span {
-        background-color: #000;
-        transform: rotate(45deg);
-    }
-    
-    .menu-active .menu__btn > span::before {
-        background-color: #000;
-        top: 0;
-        transform: rotate(0deg);
-    }
-    
-    .menu-active .menu__btn > span::after {
-        background-color: #000;
-        top: 0;
-        transform: rotate(90deg);
-    }
-    
     .menu-active .menu__box {
-        left: 0 !important;
+      transform: translateX(0);
+      opacity: 1;
     }
-    
-    .hamburger-menu {
-        width: 100px;
-        cursor: pointer;
+
+    /* Toggle styles tuned to palette */
+    .checkbox-wrapper-3 .toggle:before {
+      background: #9A9999;
     }
-    .menu__div{
-        height:25px;
+    .checkbox-wrapper-3 #show-date:checked + .toggle:before,
+    .checkbox-wrapper-3 #show-visit-info:checked + .toggle:before {
+      background: var(--secondary);
     }
-    </style>
-    <title>Binder Medical</title>
-<style type="text/css" id="operaUserStyle"></style></head>
-<body>
-    <div id="menuBar">
-        <div class="hamburger-menu">
-            <label class="menu__btn" for="menu__toggle">
-            <span></span>
-            </label>
-    
-            <ul class="menu__box">
-                <li>
-                    <a class="menu__item" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item"title="Appointments" id="appa" href="/appointments"><img class="icoo" id="appimg" src="/static/images/appoint.png" title="Appointments" alt="Appointments"><h6 id="apph6">Appointments</h6></a>
-                </li>
-                <li><div class="menu__div"></div></li>
-                <li><div class="menu__div"></div></li>
-                <li>
-                    <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
-                </li>
-            </ul>
+    .checkbox-wrapper-3 #show-date:checked + .toggle span,
+    .checkbox-wrapper-3 #show-visit-info:checked + .toggle span {
+      background: #fff;
+      transform: translateX(20px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Settings Card -->
+  <div class="flex items-center justify-center min-h-screen px-6">
+    <div class="max-w-2xl w-full bg-white/85 backdrop-blur-md shadow-xl rounded-3xl p-8 border border-[var(--secondary)] space-y-6">
+      <h1 class="text-3xl font-bold text-center text-gray-900">Settings</h1>
+
+      <div class="space-y-4">
+        <!-- Clinic Name -->
+        <div class="flex items-center justify-between">
+          <label class="font-medium">Clinic name:</label>
+          <input id="drname" type="text" class="w-2/3 px-3 py-2 border rounded-lg">
         </div>
-    </div>
-    <div id="srchFrame" class="f">
-        <!-- Search by ID Section -->
-        <div id="srchMain" class="result" style="justify-content: center;">
-            <div class="frame" data-patient-no="1"><div class="patient-info">
-                <div class="column columnr">
-                    <div class="inpuu">
-                        <label id="namee" class="label">Clinic name:</label>
-                        <input class="entry" id="drname" type="text">
-                    </div>
-                    <div class="inpuu">
-                        <label class="label">Reminder message:</label>
-                        <input class="entry" id="msg" type="text">
-                    </div>
-                    <div class="inpuu">
-                        <label class="label">Country key:</label>
-                        <input class="entry" id="pkey" type="text">
-                    </div>
-                    <div class="inpuu" id="ccc">
-                        
-                        <label class="label" id="pcl">Permission code:</label>
-                        <div class="btns">
-                            <input class="entry" id="code" type="password">
-                            <div class="acoo"  id="toggle-visibility"><img id="visibility-icon" class="coo" src="/static/images/see.png" alt=""></div>
-                            <div class="acoo" id="refresh-code"><img class="coo" src="/static/images/re.png" alt=""></div>
-                        </div>         
-                    </div>
-                    <div class="inpuu">
-                        <div class="checkbox-wrapper-3">
-                            <label class="label">Send auto reminder message:</label>
-                            <input type="checkbox" id="cbx-3" />
-                            <label for="cbx-3" class="toggle"><span></span></label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="potato">
-                <button class="button" onclick="savePatientInfo()">Save changes</button>
-            </div>
+
+        <!-- Reminder Message -->
+        <div class="flex items-center justify-between">
+          <label class="font-medium">Reminder message:</label>
+          <input id="msg" type="text" class="w-2/3 px-3 py-2 border rounded-lg">
         </div>
-    </div>
-    </div>
 
-    <script>
-        const plan = '{{plan}}';
-        document.addEventListener("DOMContentLoaded", function() {
-            const menuBtn = document.querySelector('.hamburger-menu');
-            const menuBox = document.querySelector('.menu__box');
-            const menuBar = document.getElementById('menuBar');
-            
-            // Toggle menu and spin transition
-            menuBtn.addEventListener('click', () => {
-                menuBar.classList.toggle('menu-active');
-            });
+        <!-- Country Key -->
+        <div class="flex items-center justify-between">
+          <label class="font-medium">Country key:</label>
+          <input id="pkey" type="text" class="w-2/3 px-3 py-2 border rounded-lg">
+        </div>
 
-            const binder = '{{ binder }}';
-            const appa = document.getElementById('appa');
-            const appimg = document.getElementById('appimg');
-            const apph6 = document.getElementById('apph6');
-            const namee = document.getElementById('namee');
-            var link = document.querySelector("link[rel~='icon']");
-            
-            if (binder === 'lab'){
-                appa.title='Search Lab';
-                appa.href='/srchlab';
-                appimg.src='/static/images/srchlab.png';
-                document.title= 'Binder Labratory'
-                link.href = '/static/images/binderlab.jpg';
-                apph6.textContent = 'Search Lab';
-                namee.textContent= 'Lab name:'
-            }
+        <!-- Permission Code -->
+        <div id="ccc" class="space-y-2">
+          <label class="font-medium">Permission code:</label>
+          <div class="flex items-center gap-2">
+            <input id="code" type="password" class="flex-1 px-3 py-2 border rounded-lg">
+            <button id="toggle-visibility" class="p-2 bg-[var(--secondary)]/80 rounded-lg"><img id="visibility-icon" src="/static/images/see.png" class="w-5"></button>
+            <button id="refresh-code" class="p-2 bg-[var(--accent)]/80 rounded-lg"><img src="/static/images/re.png" class="w-5"></button>
+          </div>
+        </div>
 
-            if (plan === 'sec') {
-                document.getElementById("ccc").style.display='none';
-                console.log('ya')
-            }
-            console.log(plan)
-
-            fetch(`/getsett`)
-                .then(response => response.json())
-                .then(sett => {
-                    console.log(sett)
-                    populatesettingsData(sett);
-                })
-                .catch(error => console.error('Error fetching settings data:', error));
-
-            // Initialize code visibility
-            let isVisible = false;
-
-            // Toggle visibility
-            document.getElementById("toggle-visibility").addEventListener("click", function(event) {
-                event.preventDefault();
-                isVisible = !isVisible;
-                const codeInput = document.getElementById("code");
-                const visibilityIcon = document.getElementById("visibility-icon");
-
-                if (isVisible) {
-                    visibilityIcon.src = "/static/images/blind.png";
-                    codeInput.type = "text";
-                } else {
-                    visibilityIcon.src = "/static/images/see.png";
-                    codeInput.type = "password";
-                }
-            });
-
-            // Make the code input read-only
-            document.getElementById("code").readOnly = true;
-                
-            // Fetch new code and place it in the input
-            document.getElementById("refresh-code").addEventListener("click", function(event) {
-                event.preventDefault();
-                fetchNewCode();
-            });
+        <!-- Auto Reminder -->
+        <div class="flex items-center gap-3">
+        <label class="font-medium">Send auto reminder message:</label>
         
-            function fetchNewCode() {
-                const currentCode = document.getElementById("code").value;
-            
-                fetch('/codesec', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ code: currentCode })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code) {
-                        document.getElementById("code").value = data.code;
-                    } else {
-                        console.error('Error fetching new code:', data.error);
-                    }
-                })
-                .catch(error => console.error('Error fetching new code:', error));
-            }
-        });
+        <!-- Toggle -->
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="cbx-3" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-400 rounded-full peer peer-checked:bg-[var(--secondary)] transition-colors"></div>
+            <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full shadow-md transition-transform peer-checked:translate-x-5"></div>
+        </label>
+        </div>
+ 
+      </div>
 
-        function populatesettingsData(sett) {
-            document.getElementById("cbx-3").checked = sett.send;
-            document.getElementById("pkey").value = sett.pkey;
-            document.getElementById("drname").value = sett.drname;
-            document.getElementById("msg").value = sett.msg;
-            document.getElementById("code").value = sett.ac.code;
-        }
+      <!-- Save Button -->
+      <div class="pt-4 text-center">
+        <button onclick="savePatientInfo()" class="px-6 py-2 bg-[var(--accent)] text-white font-semibold rounded-xl shadow hover:scale-105 transition">Save changes</button>
+      </div>
+    </div>
+  </div>
 
-        function savePatientInfo() {
-            const indxx = {
-                'Clinic name': 'drname',
-                'Reminder message': 'msg',
-                'Country key': 'pkey',
-                'Permission code': 'code',
-                'Send auto reminder message': 'send'
-            };
+  <script>
+    const plan = '{{plan}}';
+    const menuBtn=document.querySelector('.hamburger-menu');
+    const menuBar=document.getElementById('menuBar');
+    menuBtn.addEventListener('click',()=>menuBar.classList.toggle('menu-active'));
 
-            const patientDiv = document.querySelector(`.frame`);
-            const toggell = document.getElementById("cbx-3");
+    const binder='{{ binder }}';
+    if(binder==='lab'){
+      const appa=document.getElementById('appa');
+      const appimg=document.getElementById('appimg');
+      const apph6=document.getElementById('apph6');
+      const link=document.querySelector("link[rel~='icon']");
+      appa.title='Search Lab';appa.href='/srchlab';appimg.src='/static/images/srchlab.png';
+      apph6.textContent='Search Lab';document.title='Binder Laboratory';
+      link.href='/static/images/binderlab.jpg';
+      document.getElementById("namee").textContent="Lab name:";
+    }
 
-            if (!patientDiv) {
-                console.error('Patient div not found for patientNo:', patientNo);
-                alert('Error: Patient information could not be found.');
-                return;
-            }
+    if(plan==='sec'){document.getElementById("code").parentElement.style.display="none";}
 
-            // Gather patient data from input fields
-            const inputs = patientDiv.querySelectorAll('input');
-            const patientData = {};
+    fetch(`/getsett`).then(r=>r.json()).then(sett=>{
+      document.getElementById("cbx-3").checked=sett.send;
+      document.getElementById("pkey").value=sett.pkey;
+      document.getElementById("drname").value=sett.drname;
+      document.getElementById("msg").value=sett.msg;
+      document.getElementById("code").value=sett.ac.code;
+    });
 
-            inputs.forEach(input => {
-                const label = input.previousElementSibling ? input.previousElementSibling.textContent.replace(':', '').trim() : 'Unknown';
-                if (label === "Send auto reminder message") {
-                    patientData[label] = input.checked;
-                }
-                if (label !== "Permission code") {
-                    patientData[label] = input.value;
-                }
-            });
+    let isVisible=false;
+    document.getElementById("toggle-visibility").addEventListener("click",()=>{
+      const codeInput=document.getElementById("code");
+      const visibilityIcon=document.getElementById("visibility-icon");
+      isVisible=!isVisible;
+      codeInput.type=isVisible?"text":"password";
+      visibilityIcon.src=isVisible?"/static/images/blind.png":"/static/images/see.png";
+    });
+    document.getElementById("refresh-code").addEventListener("click",()=>{
+      fetch('/codesec',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:document.getElementById("code").value})})
+        .then(r=>r.json()).then(d=>{if(d.code){document.getElementById("code").value=d.code}})
+    });
 
-            const correctedPatientData = {};
-            Object.keys(patientData).forEach(key => {
-                const correctedKey = indxx[key];
-                correctedPatientData[correctedKey] = patientData[key];
-            });
-
-            // Log data to check what's being sent
-            console.log('Corrected patient data:', correctedPatientData);
-
-            // Make the fetch request to save patient data
-            fetch('/updatesettings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ correctedPatientData })
-            })
-                .then(data => {
-                    console.log('Save response:', data);
-                    alert('new settings saved successfully.');
-                })
-                .catch(error => {
-                    console.error('Error saving patient data:', error);
-                    alert('Error saving new settings.');
-                });
-        }
-    </script>
-
-</body></html>
+    function savePatientInfo(){
+      const data={
+        drname:document.getElementById("drname").value,
+        msg:document.getElementById("msg").value,
+        pkey:document.getElementById("pkey").value,
+        code:document.getElementById("code").value,
+        send:document.getElementById("cbx-3").checked
+      };
+      fetch('/updatesettings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correctedPatientData:data})})
+        .then(r=>r.json()).then(()=>alert('Settings saved successfully.'));
+    }
+  </script>
+</body>
+</html>

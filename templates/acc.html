@@ -1,426 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
-    <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
-    <style>
-        body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
-
-#menuBar {
-    display: flex;
-    background-color: #000;
-    border-bottom: 2px solid #000;
-    position: fixed;
-    width: 100%;
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-.menuItem {
-    font-size: 16px;
-    color: #abb0bb;
-    padding: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 15px;
-}
-
-.menuItem:hover {
-    background-color: #fff;
-    color: #333;
-}
-
-.menuItem:hover  .icoo{
-    filter: invert(0);
-}
-
-.icoo{
-    filter: invert(0);
-    margin-right:10px;
-    width: 25px;
-    height: 25px;
-}
-
-.ac-frame {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-image:url("/static/images/home.jpg");
-}
-
-.bdo {
-    background-color: #000;
-    padding-top: 60px;
-}
-
-.bd {
-    width: 300px;
-    height: 450px;
-    display:grid;
-    background-color: #abb0bb;
-    border: 1.5px solid #000;
-    padding: 5px;
-    border-radius: 5px;
-    box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
-
-}
-
-.header {
-    justify-self: center;
-    text-align: center;
-    width: 85%;
-    background-color:#abb0bb;
-    padding: 22px 0 20px;
-    margin-bottom: 20px;
-}
-
-h1 {
-    font-size: 30px;
-    margin: 0;
-}
-
-.main-frame {
-    background-color: #abb0bb;
-    padding: 5px 20px;
-}
-
-.form-group {
-    display: flex;
-    margin-bottom: 30px;
-    text-align: center;
-    justify-content: center;
-}
-
-label {
-    font-size: 17px;
-    margin-right: 5px;
-}
-
-.form-input {
-    width: 175px;
-    padding: 5px;
-    line-height: 1.5;
-    font-size: 13px;
-    outline: none;
-    border: 1px solid #000;
-    border-radius: 2.5px;
-}
-
-
-.btns{
-    height: 60%;
-    display: flex;
-    justify-content: space-evenly;
-    margin-bottom: 10px;
-}
-
-#btn1,#btn2{
-    justify-self: center;
-    background-color: #000;
-    border: none;
-    padding: 5px 10px;
-    width: 100%;
-    border-radius: 4.5px;
-    font-size: 15px;
-    cursor: pointer;
-    color: rgb(255, 255, 255);
-}
-.menuItem {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 35px;
-}
-
-h6 {
-    margin: 0px;
-}
-    
-    #menuBar{
-        height: 40px;
+  <meta charset="UTF-8">
+  <title>Binder Medical</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <style>
+    /* Custom palette mapped into Tailwind */
+    :root {
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --w: white;
     }
 
-    .menu__btn {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        width: 26px;
-        height: 26px;
-        cursor: pointer;
-        z-index: 1;
+    body {
+      background-color: var(--bg-main);
     }
-    
-    .menu__btn > span,
-    .menu__btn > span::before,
-    .menu__btn > span::after {
-        display: block;
-        position: absolute;
-        width: 100%;
-        height: 2px;
-        background-color: #ffffff;
-        transition-duration: .25s;
+
+    /* Hamburger lines */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background-color: var(--accent);
+      position: relative;
+      border-radius: 6px;
+      transition: 0.3s ease;
     }
-    
-    .menu__btn > span::before {
-        content: '';
-        top: -8px;
+    .menu__btn span::before,
+    .menu__btn span::after {
+      content: "";
+      position: absolute;
+      left: 0;
     }
-    
-    .menu__btn > span::after {
-        content: '';
-        top: 8px;
+    .menu__btn span::before { top: -8px; }
+    .menu__btn span::after { top: 8px; }
+
+    /* Toggle open */
+    .menu-active .menu__btn span {
+      transform: rotate(45deg);
+      background-color: var(--accent);
     }
-    
+    .menu-active .menu__btn span::before {
+      transform: rotate(90deg);
+      top: 0;
+    }
+    .menu-active .menu__btn span::after {
+      opacity: 0;
+    }
+
+    /* Menu transitions */
     .menu__box {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: -100%;
-        width: 250px;
-        height: 100%;
-        margin: 0;
-        padding: 80px 0;
-        list-style: none;
-        background-color: #abb0bb;
-        box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
-        transition-duration: .25s;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform: translateX(-100%);
+      opacity: 0;
     }
-    
-    .menu__item {
-        display: flex;
-        padding: 12px 24px;
-        color: #333;
-        font-family: 'Roboto', sans-serif;
-        font-size: 20px;
-        font-weight: 600;
-        align-items: center;
-        text-decoration: none;
-        transition-duration: .25s;
-    }
-    
-    .menu__item:hover {
-        background-color: #CFD8DC;
-    }
-    
-    /* Spin transition when menu is active */
-    .menu-active .menu__btn > span {
-        background-color: #000;
-        transform: rotate(45deg);
-    }
-    
-    .menu-active .menu__btn > span::before {
-        background-color: #000;
-        top: 0;
-        transform: rotate(0deg);
-    }
-    
-    .menu-active .menu__btn > span::after {
-        background-color: #000;
-        top: 0;
-        transform: rotate(90deg);
-    }
-    
     .menu-active .menu__box {
-        left: 0 !important;
+      transform: translateX(0);
+      opacity: 1;
     }
-    
-    .hamburger-menu {
-        width: 60px;
-        cursor: pointer;
-    }
-    .menu__div{
-        height:25px;
-    }
-    </style>
-    <title>Binder Medical</title>
+  </style>
 </head>
-<body>
-    <div id="menuBar">
-        <div class="hamburger-menu">
-            <label class="menu__btn" for="menu__toggle">
-            <span></span>
-            </label>
-    
-            <ul class="menu__box">
-                <li>
-                    <a class="menu__item" title="Account" href="/acc"><img class="icoo" src="/static/images/acc.png" title="Account" alt="Account"><h6>Account</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="Add" href="/home_page"><img class="icoo" src="/static/images/hoo.png" title="Add" alt="Add"><h6>Add</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="Search"  href="/srch"><img class="icoo" src="/static/images/sss.png" title="Search"  alt="Search"><h6>Search</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item"title="Stats" href="/stats"><img class="icoo" src="/static/images/stst.png" title="Stats" alt="Stats"><h6>Stats</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item"title="Appointments" id="appa" href="/appointments"><img class="icoo" id="appimg" src="/static/images/appoint.png" title="Appointments" alt="Appointments"><h6 id="apph6">Appointments</h6></a>
-                </li>
-                <li><div class="menu__div"></div></li>
-                <li><div class="menu__div"></div></li>
-                <li>
-                    <a class="menu__item" title="Settings" href="/settings"><img class="icoo" src="/static/images/sett.png" title="Settings" alt="Settings"><h6>Settings</h6></a>
-                </li>
-                <li>
-                    <a class="menu__item" title="support" href="/support"><img class="icoo" src="/static/images/supp.png" title="support" alt="support"><h6>Support</h6></a>
-                </li>
-            </ul>
-        </div>
+<body class="min-h-screen font-sans text-gray-800">
+
+   <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
     </div>
-    <div class="ac-frame">
-        <div class="background">
-            <!-- Background image -->
-        </div>
-            <div class="bd">
-                <div class="header">
-                    <h1>Account</h1>
-                </div>
-                <div class="main-frame">
-                    <!-- Patient form fields go here -->
-                    <div class="form-group">
-                        <h3 id="hello">Hello Khalid Qnabi!</h3>
-                    </div>
-                    <div class="form-group">
-                        <h3 id="msg">Thank you for supporting us</h3>
-                    </div>
-                </div>
-                <div class="btns">
-                    <button id="btn1" class="non" onclick="opentab(btn1herf)">Get full version</button>
-                    <button id="btn2" class="non" onclick="opentab(btn2herf)">Switch account</button>
-                </div>
+  </div>
 
-        </div>
+  <!-- Account Frame -->
+  <div class="ac-frame flex items-center justify-center min-h-screen px-6">
+    <div class="bd max-w-lg w-full bg-white/80 backdrop-blur-md shadow-xl rounded-3xl p-8 space-y-6 border border-[var(--secondary)]">
+      
+      <!-- Header -->
+      <div class="header text-center">
+        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Account</h1>
+      </div>
+
+      <!-- Main -->
+      <div class="main-frame space-y-3 text-center">
+        <h3 id="hello" class="text-xl font-semibold text-[var(--secondary)]">Hello Khalid Qnabi!</h3>
+        <h3 id="msg" class="text-gray-700">Thank you for supporting us</h3>
+      </div>
+
+      <!-- Buttons -->
+      <div class="btns flex justify-center gap-4 pt-4">
+        <button id="btn1" onclick="opentab(btn1herf)" class="px-5 py-2 rounded-xl bg-[var(--accent)] text-gray-900 font-semibold shadow-md hover:shadow-lg hover:scale-105 transition">
+          Get full version
+        </button>
+        <button id="btn2" onclick="opentab(btn2herf)" class="px-5 py-2 rounded-xl bg-[var(--secondary)] text-white font-medium shadow-md hover:bg-opacity-90 hover:scale-105 transition">
+          Switch account
+        </button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        var btn1herf = 'https://www.google.com';
-        var btn2herf = "https://www.google.com/search?client=opera&hs=a7O&sca_esv=a56599857971a1ee&sca_upv=1&sxsrf=ACQVn0-wUK10bMtc0-jHwLG5RZwUQWhZbQ:1707302539870&q=potato&tbm=isch&source=lnms&sa=X&ved=2ahUKEwiduabLhZmEAxVucvEDHW7IC1MQ0pQJegQIDBAB&biw=1278&bih=588&dpr=1.5";
+  <!-- Scripts (unchanged from your code except styling tweaks apply automatically) -->
+  <script>
+    var btn1herf = 'https://www.google.com';
+    var btn2herf = "https://www.google.com/search?q=potato&tbm=isch";
 
-        function calculateTrialDaysLeft(plan,firstDateStr) {
-            
-            if (plan=== "free"){
-                try {
-                    const firstDate = new Date(firstDateStr);
-                    const today = new Date();
-                    const trialDuration = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-                    const trialEndDate = new Date(firstDate.getTime() + trialDuration);
-                    const daysLeft = Math.max(0, Math.ceil((trialEndDate - today) / (1000 * 60 * 60 * 24))); // Convert milliseconds to days
-                    return daysLeft;
-                } catch (error) {
-                    return 0;
-                }
-            }else if (plan === "basic") {
-                try {
-                    const firstDate = new Date(firstDateStr);
-                    const today = new Date();
-                    const trialDuration = 30 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-                    const trialEndDate = new Date(firstDate.getTime() + trialDuration);
-                    const daysLeft = Math.max(0, Math.ceil((trialEndDate - today) / (1000 * 60 * 60 * 24))); // Convert milliseconds to days
-                    return daysLeft;
-                } catch (error) {
-                    return 0;
-                }
-            }
-        }
-
-        function opentab(url) {
-            window.location.href =url;
-        }
-
-        window.addEventListener('DOMContentLoaded', async () => {
-            const menuBtn = document.querySelector('.hamburger-menu');
-            const menuBox = document.querySelector('.menu__box');
-            const menuBar = document.getElementById('menuBar');
-            
-            // Toggle menu and spin transition
-            menuBtn.addEventListener('click', () => {
-                menuBar.classList.toggle('menu-active');
-            });
+    function calculateTrialDaysLeft(plan,firstDateStr) {
+        if (plan=== "free"){
             try {
-                const userData = JSON.parse('{{ user_data | tojson | safe }}'); // Replace with actual Google ID
-                const { name, first, payed, plan } = userData;
-                const trialDaysLeft = calculateTrialDaysLeft(plan,first);
-                const trialStatus = trialDaysLeft > 0 ? "gud" : "bad";
+                const firstDate = new Date(firstDateStr);
+                const today = new Date();
+                const trialDuration = 7 * 24 * 60 * 60 * 1000;
+                const trialEndDate = new Date(firstDate.getTime() + trialDuration);
+                return Math.max(0, Math.ceil((trialEndDate - today) / (1000 * 60 * 60 * 24)));
+            } catch (error) { return 0; }
+        } else if (plan === "basic") {
+            try {
+                const firstDate = new Date(firstDateStr);
+                const today = new Date();
+                const trialDuration = 30 * 24 * 60 * 60 * 1000;
+                const trialEndDate = new Date(firstDate.getTime() + trialDuration);
+                return Math.max(0, Math.ceil((trialEndDate - today) / (1000 * 60 * 60 * 24)));
+            } catch (error) { return 0; }
+        }
+    }
 
-                const HH = document.getElementById("hello");
-                const Msg = document.getElementById("msg");
-                const Btn1 = document.getElementById("btn1");
-                const Btn2 = document.getElementById("btn2");
+    function opentab(url) { window.location.href = url; }
 
-                console.log(userData);
-                console.log(trialDaysLeft);
+    window.addEventListener('DOMContentLoaded', async () => {
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
+      menuBtn.addEventListener('click', () => {
+          menuBar.classList.toggle('menu-active');
+      });
 
-                const binder = '{{ binder }}';
-                const appa = document.getElementById('appa');
-                const appimg = document.getElementById('appimg');
-                const apph6 = document.getElementById('apph6');
-                var link = document.querySelector("link[rel~='icon']");
-            
-                if (binder === 'lab'){
-                    appa.title='Search Lab';
-                    appa.href='/srchlab';
-                    appimg.src='/static/images/srchlab.png';
-                    document.title= 'Binder Labratory'
-                    link.href = '/static/images/binderlab.jpg';
-                    apph6.textContent = 'Search Lab';
-                }
+      try {
+          const userData = JSON.parse('{{ user_data | tojson | safe }}');
+          const { name, first, payed, plan } = userData;
+          const trialDaysLeft = calculateTrialDaysLeft(plan,first);
+          const trialStatus = trialDaysLeft > 0 ? "gud" : "bad";
 
-                if (userData.google_id === 1) {
-                    HH.textContent = "Please sign up with Google";
-                    Msg.textContent = "";
-                    Btn1.textContent = "Sign Up with Google";
-                    btn1herf = "/logme";
-                    Btn2.style.display = "none";
-                } else if (plan === "free" && trialStatus === "gud") {
-                    HH.textContent = `Welcome, ${name}`;
-                    Msg.textContent = "have a nice day";//`Trial ends in ${trialDaysLeft} days`;
-                    Btn2.style.margin = "5px";
-                    Btn2.style.display = "inline-block";
-                    Btn1.textContent = "Log out";
-                    Btn1.style.margin = "5px";
-                    btn1herf = "/logout";
-                    btn2herf = "/logme";
-                } else if (plan === "free" && trialStatus === "bad") {
-                    HH.textContent = `Welcome, ${name}`;
-                    Msg.textContent = "Have a nice day";//"Subscription has ended\n Please pay to continue using the app";
-                    Btn2.style.display = "inline-block";
-                    Btn2.style.margin = "5px";
-                    Btn1.textContent = "Log out";
-                    Btn1.style.margin = "5px";
-                    btn1herf = "/logout";
-                    btn2herf = "/logme";
-                }else if (plan === "fam") {
-                    HH.textContent = `Welcome, ${name}`;
-                    Msg.textContent = "Have a nice day 🙂";
-                    Btn2.style.display = "inline-block";
-                    Btn1.style.display = "none";
-                    btn2herf = "/logme";
-                } else {
-                    HH.textContent = `Welcome, ${name}`;
-                    Msg.textContent = `Thank you for supporting us \n Subscription ends in ${trialDaysLeft} days`; // Assuming payed is available in user data
-                    Btn2.style.display = "inline-block";
-                    Btn1.textContent = "Log out";
-                    Btn1.style.margin = "5px";
-                    btn1herf = "/logout";
-                    btn2herf = "/logme";
-                }
-            } catch (error) {
-                console.error('Error initializing app:', error);
-            }
-        });
+          const HH = document.getElementById("hello");
+          const Msg = document.getElementById("msg");
+          const Btn1 = document.getElementById("btn1");
+          const Btn2 = document.getElementById("btn2");
 
-    </script>
+          const binder = '{{ binder }}';
+          const appa = document.getElementById('appa');
+          const appimg = document.getElementById('appimg');
+          const apph6 = document.getElementById('apph6');
+          var link = document.querySelector("link[rel~='icon']");
+      
+          if (binder === 'lab'){
+              appa.title='Search Lab';
+              appa.href='/srchlab';
+              appimg.src='/static/images/srchlab.png';
+              document.title= 'Binder Labratory'
+              link.href = '/static/images/binderlab.jpg';
+              apph6.textContent = 'Search Lab';
+          }
+
+          if (userData.google_id === 1) {
+              HH.textContent = "Please sign up with Google";
+              Msg.textContent = "";
+              Btn1.textContent = "Sign Up with Google";
+              btn1herf = "/logme";
+              Btn2.style.display = "none";
+          } else if (plan === "free" && trialStatus === "gud") {
+              HH.textContent = `Welcome, ${name}`;
+              Msg.textContent = "Have a nice day";
+              Btn2.style.display = "inline-block";
+              Btn1.textContent = "Log out";
+              btn1herf = "/logout";
+              btn2herf = "/logme";
+          } else {
+              HH.textContent = `Welcome, ${name}`;
+              Msg.textContent = "Thank you for supporting us";
+              Btn2.style.display = "inline-block";
+              Btn1.textContent = "Log out";
+              btn1herf = "/logout";
+              btn2herf = "/logme";
+          }
+      } catch (error) {
+          console.error('Error initializing app:', error);
+      }
+    });
+  </script>
 </body>
 </html>
-

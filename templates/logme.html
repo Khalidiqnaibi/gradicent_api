@@ -1,189 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
-    <title>Log in</title>
-    <!-- Add your CSS styles or link external stylesheets here if needed -->
-    <style>
-        html{
-            margin: 0;
-            font-family: Arial, sans-serif;
-            height: 100%;
-            width: 100%;
-        }
-        #t{
-            font-weight: 400;
-            margin-top:50px;
-        }
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            height: 100%;
-            width: 100%;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <title>Login — Binder Medical</title>
 
-        .plans-container {
-            justify-items: center;
-            justify-self: center;
-            margin: 0;
-            margin-top: 20px;
-            display:grid;
-            background: #8b8c8e;
-            width: 75%;
-            padding: 10px;
-            grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
-            height: 75%;
-        }
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        .plan {
-            background: #abb0bb;
-            padding: 20px;
-            margin: 20px;
-            height: 100%;
-            width: 300px;
-            text-align: center;
-            border-radius: 10px;
-            border: 1.5px solid #000;
-            box-shadow: -5px 7px 7px 0px rgb(0, 0, 0);
-        }
-
-        .plan h2 {
-            color: #000000;
-        }
-
-        p {
-            color: #000000;
-        }
-
-        .plns{
-            display:grid;
-            justify-items: center;
-            background: #8b8c8e;
-            margin: 0;
-            height: 100%;
-            width: 100%;
-        }
-
-        #titel{
-            height: 5%;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .plan ul {
-            list-style: none;
-            padding: 20px;
-        }
-
-        .plan li {
-            color: #000000;
-        }
-
-        .subscribe-button {
-            margin-top:100px;
-            padding: 10px;
-            width:150px;
-            background: black;
-            color:white;
-            cursor: pointer;
-            border: 2px;
-            border-radius: 5px;
-        }
-
-        input{
-            height: 20px;
-        }
-
-        
-        .bruh {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #actvbtn{
-            height: 25px;
-            width: 50px;
-            padding-top: 5px;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .uppln {
-            display: flex;
-            height: 90%;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .button {
-            background-color: #000;
-            border: none;
-            padding: 12px;
-            margin-top:5px;
-            border-radius: 4.5px;
-            font-size: 15px;
-            cursor: pointer;
-            color: rgb(255, 255, 255);
-            width: 150px;
-        }
-    </style>
+  <style>
+    :root {
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --w: #e6ded9;
+      --text: #2b2b2b;
+    }
+    body {
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: linear-gradient(180deg, var(--bg-main), #f8f1ea 60%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .decorative-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.94), rgba(255,255,255,0.86));
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 10px 30px rgba(18,18,18,0.08);
+      border-radius: 20px;
+      animation: fadeIn 0.6s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, var(--accent), rgb(207, 161, 117));
+      color: #142022;
+    }
+    .btn-secondary {
+      background: var(--secondary);
+      color: #fff;
+    }
+    input {
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      padding: 0.65rem 0.9rem;
+      width: 100%;
+      background: #fff;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(187,220,229,0.35);
+    }
+  </style>
 </head>
 <body>
-  <div class="plns">
-   <!--h2 id="titel">sub plans</h2-->
-    <div class="plans-container">
-        <!-- pay optins -->
-        <div class="plan">
-            <div class="uppln">
-            <div></div>
-            <h2 id='t'>Log in Using Google:</h2>
-            <div class="bruh ">
-                <input id="tr" type="checkbox">
-                <label for="tr">I have read the <a href="/terms">TERMS AND CONDITIONS</a> and the <a href="/privacy"> PRIVACY NOTICE </a>
-                     and agree to all what was stated there</label>
-            </div>
-            <button id="login-btn" class="subscribe-button">Log in</button>
-            <div class="sec">
-                <h4>Or use secretary Code:</h4>
-                <button class="button"  onclick="sec()">Secretary Code</button>
-            </div>
-            </div>
-        </div>
+  <div class="decorative-card max-w-md w-full p-8 space-y-6 text-center">
+    <!-- Logo / Illustration -->
+    <div class="flex justify-center">
+      <img src="/static/images/w3.jpg" alt="Binder Logo" class="h-16 w-16 rounded-full shadow-md" />
+    </div>
+
+    <h1 class="text-2xl font-bold text-[var(--text)]">Welcome to Binder Medical</h1>
+    <p class="text-sm text-gray-600">Your secure medical records assistant</p>
+
+    <!-- Terms -->
+    <div class="flex items-start gap-3 text-sm text-left p-3 rounded-lg bg-[var(--accent)]/15">
+      <input id="tr" type="checkbox" class="mt-1 h-4 w-4 border-gray-300 rounded" />
+      <label for="tr" class="leading-snug text-[var(--text)]">
+        I agree to the
+        <a href="/terms" class="text-[var(--secondary)] underline hover:opacity-80">Terms & Conditions</a>
+        and
+        <a href="/privacy" class="text-[var(--secondary)] underline hover:opacity-80">Privacy Notice</a>.
+      </label>
+    </div>
+
+    <!-- Login with Google -->
+    <button id="login-btn" class="w-full py-3 rounded-xl btn-primary font-medium shadow disabled:opacity-50 disabled:cursor-not-allowed">
+      Log in with Google
+    </button>
+
+    <!-- Divider -->
+    <div class="relative my-4">
+      <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-gray-300"></div>
+      </div>
+      <div class="relative flex justify-center text-sm">
+        <span class="bg-white/90 px-2 text-gray-500">Or</span>
+      </div>
+    </div>
+
+    <!-- Secretary code -->
+    <div class="text-left space-y-2">
+      <label for="activationCodeInput" class="block text-sm font-semibold text-[var(--text)]">Secretary Code</label>
+      <div class="flex gap-2">
+        <input id="activationCodeInput"
+       placeholder="XXXX-XXXX-XXXX"
+       class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[var(--accent)]" />
+        <button id="actvbtn" class="px-4 rounded-xl btn-secondary font-medium shadow" onclick="checkActivationCode()">Activate</button>
+      </div>
     </div>
   </div>
-</body>
-<script>
+
+  <script>
     const termsCheckbox = document.getElementById('tr');
     const loginButton = document.getElementById('login-btn');
 
-    function sec(){
-        if (termsCheckbox.checked){
-            window.location.href ='/loginb'
-        } else{
-            alert('Please read the terms and conditions and the privacy notice and check agree if you do to continue.');
-        }
+    function checkActivationCode() {
+      if (termsCheckbox.checked) {
+        var activationCode = document.getElementById('activationCodeInput').value;
+        fetch('/chk_bcode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: activationCode }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === 'accepted') {
+            window.location.href = '/check_bcode';
+          } else {
+            alert('Invalid code. Please try again.');
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      } else {
+        alert('Please agree to the Terms and Privacy Notice before continuing.');
+      }
     }
 
-    document.getElementById("login-btn").addEventListener("click", function(event) {
-        if (termsCheckbox.checked){
-            window.location.href ='/login'
-        }else{
-            alert('Please read the terms and conditions and the privacy notice and check agree if you do to continue.');
-        }
+    loginButton.addEventListener("click", function() {
+      if (termsCheckbox.checked) {
+        window.location.href = '/login';
+      } else {
+        alert('Please agree to the Terms and Privacy Notice before continuing.');
+      }
     });
 
-    // Enable/disable the button based on checkbox state
-    termsCheckbox.addEventListener('change', function() {
-
-        loginButton.disabled = !termsCheckbox.checked;
+    // Disable login button until checked
+    loginButton.disabled = true;
+    termsCheckbox.addEventListener('change', () => {
+      loginButton.disabled = !termsCheckbox.checked;
     });
   </script>
+</body>
 </html>
