@@ -659,9 +659,13 @@ def sess():
 @app.route('/check_bcode')
 def check_Bactivation_code():
     global bPay
-    gid=session['google_id']
+    gid=session.get('google_id')
+    if not gid:
+        session['sec']=True
+        session["PLAN"] = 'sec'
+        redirect('/protected_area')
     typee=session.get('wtype', 'drs')
-
+    session['page'] ="home"
 
     if 'cod' in session :
         activation_code = session['cod']
@@ -1298,7 +1302,7 @@ def done():
             #log_me_in(info)
             #quittab()
             if 'sec' in session:
-                return redirect("/acc")
+                return redirect("/check_bcode")
             else:
                 return redirect("/home_page")
         except Exception as e:
