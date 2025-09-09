@@ -1298,9 +1298,9 @@ def done():
             #log_me_in(info)
             #quittab()
             if 'sec' in session:
-                return redirect("/med_sub")
-            else:
                 return redirect("/acc")
+            else:
+                return redirect("/home_page")
         except Exception as e:
             return render_template("errors.html",msg=str(e),err='Unexpected')
 
@@ -1656,7 +1656,7 @@ def get_last_page():
         page=session["page"]
     elif typee=='drs':
         if user_data["plan"]== "free"  :
-            page="acc"
+            page="home"#acc
         else:
             page='home'
 
