@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Binder Medical — Pricing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <style>
+    :root{
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --w: white;
+      --text: #2b2b2b;
+    }
+    body { background: linear-gradient(180deg, var(--bg-main) 0%, #E6D6C0 60%); color:var(--text); }
+    .card { background: rgba(255,255,255,0.86); border-radius: 1rem; padding:1.25rem; border:1px solid rgba(0,0,0,0.04) }
+    .plan-selected { box-shadow: 0 10px 30px rgba(0,0,0,0.08); transform: translateY(-6px); }
+    .price { font-size: 1.6rem; font-weight:700; }
+
+    /* Hamburger lines */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background-color: var(--accent);
+      position: relative;
+      border-radius: 6px;
+      transition: 0.3s ease;
+    }
+    .menu__btn span::before,
+    .menu__btn span::after {
+      content: "";
+      position: absolute;
+      left: 0;
+    }
+    .menu__btn span::before { top: -8px; }
+    .menu__btn span::after { top: 8px; }
+
+    /* Toggle open */
+    .menu-active .menu__btn span {
+      transform: rotate(45deg);
+      background-color: var(--accent);
+    }
+    .menu-active .menu__btn span::before {
+      transform: rotate(90deg);
+      top: 0;
+    }
+    .menu-active .menu__btn span::after {
+      opacity: 0;
+    }
+
+    /* Menu transitions */
+    .menu__box {
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    .menu-active .menu__box {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans">
+
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <main class="max-w-4xl mx-auto pt-24 pb-12 px-6">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold">Choose your plan</h1>
+      <p class="text-sm text-gray-700">Per doctor pricing. Secure checkout powered by Paddle.</p>
+    </div>
+
+    <!-- Billing toggle -->
+    <div class="flex justify-center items-center gap-4 mb-6">
+      <label class="inline-flex items-center gap-2">
+        <input type="radio" name="billing" id="month" value="month" />
+        <span>Monthly</span>
+      </label>
+      <label class="inline-flex items-center gap-2">
+        <input type="radio" name="billing" id="year" value="year" checked />
+        <span>Yearly <sup class="text-xs ml-1">save 20%</sup></span>
+      </label>
+    </div>
+
+    <!-- Plans grid -->
+    <div id="plans" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div id="starter-card" class="card text-center">
+        <h3 class="font-semibold">Starter</h3>
+        <p class="price mt-3" id="starter-price">$—</p>
+        <p class="text-xs mt-1">per Doctor</p>
+        <div class="mt-4">
+          <button data-plan="starter" class="open-checkout px-4 py-2 rounded-lg border">Choose Starter</button>
+        </div>
+        <p class="mt-3 text-xs text-gray-600">Basic features and stats.</p>
+      </div>
+
+      <div id="pro-card" class="card text-center">
+        <h3 class="font-semibold">Pro</h3>
+        <p class="price mt-3" id="pro-price">$—</p>
+        <p class="text-xs mt-1">per Doctor</p>
+        <div class="mt-4">
+          <button data-plan="pro" class="open-checkout px-4 py-2 rounded-lg bg-[var(--accent)] text-white">Choose Pro</button>
+        </div>
+        <p class="mt-3 text-xs text-gray-600">Most popular — full feature set with advanced analytics.</p>
+      </div>
+
+      <div id="ultra-card" class="card text-center">
+        <h3 class="font-semibold">Ultra</h3>
+        <p class="price mt-3" id="ultra-price">$—</p>
+        <p class="text-xs mt-1">per Doctor</p>
+        <div class="mt-4">
+          <button data-plan="ultra" class="open-checkout px-4 py-2 rounded-lg border">Choose Ultra</button>
+        </div>
+        <p class="mt-3 text-xs text-gray-600">Access to our Dr assistant AI, full access to all features and analytics, Enterprise-grade, priority support.</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.paddle.com/paddle/paddle.js"></script>
+  <script>
+    Paddle.Setup({ vendor: 252677 }); // replace with your vendor id
+
+    // client-side token if you're using Paddle's PricePreview that needs it
+    // NOTE: do not expose secret server tokens here — client tokens are okay.
+    const PADDLE_CLIENT_TOKEN = "live_3fed5e049a5cef0b1293a112c12";
+
+    // product (checkout) ids (replace)
+    const starterProduct = "pro_01k4w8wwbf647t6fcr6danrxex";
+    const proProduct     = "pro_01k4w9vna9wyn4yyvfmz5mmygq";
+    const ultraProduct   = "pro_01k4wa1j9fzz2qkp01bfngefv8";
+
+    // price preview objects for monthly/yearly (replace priceId with your Paddle price ids)
+    const monthItems = [
+      { quantity: 1, priceId: "pri_01k4w904zzazmy5ns718shqhmb" },
+      { quantity: 1, priceId: "pri_01k4w9x3geqbzk03zk7w8f51a7" },
+      { quantity: 1, priceId: "pri_01k4wa2eep49nxbdzn6yeefa43" }
+    ];
+    const yearItems = [
+      { quantity: 1, priceId: "pri_01k4w9gr55qjfwc840jyqw1nyq" },
+      { quantity: 1, priceId: "pri_01k4w9yf90haz9bshnh1e5wm04" },
+      { quantity: 1, priceId: "pri_01k4wa44vz83q507fndtx0a2k5" }
+    ];
+    
+
+    // Quick helpers for DOM
+    const starterPriceLabel = document.getElementById("starter-price");
+    const proPriceLabel     = document.getElementById("pro-price");
+    const ultraPriceLabel   = document.getElementById("ultra-price");
+
+    // Get query params (so /payment?plan=pro&cycle=year can preselect)
+    function getQueryParams() {
+      const p = new URLSearchParams(window.location.search);
+      return { plan: p.get('plan') || null, cycle: p.get('cycle') || 'year' };
+    }
+
+    // Preselect plan card (highlight) from query param or user_data
+    function highlightSelectedPlan(plan) {
+      document.querySelectorAll("#plans > div").forEach(card => card.classList.remove("plan-selected", "border-[var(--accent)]"));
+      if (!plan) return;
+      const mapping = { starter: "starter-card", pro: "pro-card", ultra: "ultra-card" };
+      const el = document.getElementById(mapping[plan]);
+      if (el) {
+        el.classList.add("plan-selected");
+      }
+    }
+
+    // Price preview call using Paddle.PricePreview (client token assumed)
+    function getPrices(cycle) {
+      const itemsList = cycle === "month" ? monthItems : yearItems;
+      // If using Paddle.PricePreview, pass the token if required by your setup
+      const request = { items: itemsList, token: PADDLE_CLIENT_TOKEN };
+      if (typeof Paddle.PricePreview !== "function") {
+        // fallback: show placeholders
+        starterPriceLabel.textContent = "$—";
+        proPriceLabel.textContent = "$—";
+        ultraPriceLabel.textContent = "$—";
+        return;
+      }
+      Paddle.PricePreview(request)
+        .then((result) => {
+          // result.data.details.lineItems expected
+          const items = result?.data?.details?.lineItems || [];
+          items.forEach(item => {
+            if (item.product?.name?.toLowerCase()?.includes('starter') || item.product?.id == starterProduct) {
+              starterPriceLabel.innerHTML = item.formattedTotals.subtotal;
+            } else if (item.product?.name?.toLowerCase()?.includes('pro') || item.product?.id == proProduct) {
+              proPriceLabel.innerHTML = item.formattedTotals.subtotal;
+            } else if (item.product?.name?.toLowerCase()?.includes('ultra') || item.product?.id == ultraProduct) {
+              ultraPriceLabel.innerHTML = item.formattedTotals.subtotal;
+            }
+          });
+        })
+        .catch(err => {
+          console.error('PricePreview error', err);
+          starterPriceLabel.textContent = "$—";
+          proPriceLabel.textContent = "$—";
+          ultraPriceLabel.textContent = "$—";
+        });
+    }
+
+    // Open Paddle checkout
+    function openCheckoutFor(planKey) {
+      let productId = proProduct;
+      if (planKey === 'starter') productId = starterProduct;
+      if (planKey === 'ultra') productId = ultraProduct;
+      // If you need to pass metadata (like user id) do it securely. Example:
+      const paddleOptions = { product: productId };
+      // If you use recurring: Paddle.Checkout.open supports passthrough fields, etc.
+      Paddle.Checkout.open(paddleOptions);
+    }
+    
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
+
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
+      menuBtn.addEventListener('click', () => {
+          menuBar.classList.toggle('menu-active');
+      });
+
+      
+
+      const q = getQueryParams();
+      highlightSelectedPlan(q.plan);
+      // set billing radio
+      if (q.cycle === 'month') document.getElementById('month').checked = true;
+      else document.getElementById('year').checked = true;
+
+      // load prices for the preselected cycle
+      getPrices(q.cycle);
+
+      // toggle handler
+      document.getElementById('month').addEventListener('change', () => getPrices('month'));
+      document.getElementById('year').addEventListener('change', () => getPrices('year'));
+
+      // open checkout buttons
+      document.querySelectorAll('.open-checkout').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const plan = e.currentTarget.getAttribute('data-plan');
+          openCheckoutFor(plan);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
