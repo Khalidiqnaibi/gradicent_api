@@ -175,129 +175,91 @@
       </div>
     </div>
   </main>
-
-  <script src="https://cdn.paddle.com/paddle/paddle.js"></script>
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js">//252677</script>
   <script>
-    Paddle.Setup({ vendor: 252677 }); // replace with your vendor id
+    const PADDLE_CLIENT_TOKEN = "{{ paddle_client_token }}";
 
-    // client-side token if you're using Paddle's PricePreview that needs it
-    // NOTE: do not expose secret server tokens here — client tokens are okay.
-    const PADDLE_CLIENT_TOKEN = "live_3fed5e049a5cef0b1293a112c12";
+    Paddle.Initialize({
+      token: PADDLE_CLIENT_TOKEN
+    });
 
-    // product (checkout) ids (replace)
-    const starterProduct = "pro_01k4w8wwbf647t6fcr6danrxex";
-    const proProduct     = "pro_01k4w9vna9wyn4yyvfmz5mmygq";
-    const ultraProduct   = "pro_01k4wa1j9fzz2qkp01bfngefv8";
-
-    // price preview objects for monthly/yearly (replace priceId with your Paddle price ids)
+    // price IDs (your real ones)
     const monthItems = [
-      { quantity: 1, priceId: "pri_01k4w904zzazmy5ns718shqhmb" },
-      { quantity: 1, priceId: "pri_01k4w9x3geqbzk03zk7w8f51a7" },
-      { quantity: 1, priceId: "pri_01k4wa2eep49nxbdzn6yeefa43" }
+      { quantity: 1, priceId: "pri_01k4w904zzazmy5ns718shqhmb" }, // starter monthly
+      { quantity: 1, priceId: "pri_01k4w9x3geqbzk03zk7w8f51a7" }, // pro monthly
+      { quantity: 1, priceId: "pri_01k4wa2eep49nxbdzn6yeefa43" }  // ultra monthly
     ];
     const yearItems = [
-      { quantity: 1, priceId: "pri_01k4w9gr55qjfwc840jyqw1nyq" },
-      { quantity: 1, priceId: "pri_01k4w9yf90haz9bshnh1e5wm04" },
-      { quantity: 1, priceId: "pri_01k4wa44vz83q507fndtx0a2k5" }
+      { quantity: 1, priceId: "pri_01k4w9gr55qjfwc840jyqw1nyq" }, // starter yearly
+      { quantity: 1, priceId: "pri_01k4w9yf90haz9bshnh1e5wm04" }, // pro yearly
+      { quantity: 1, priceId: "pri_01k4wa44vz83q507fndtx0a2k5" }  // ultra yearly
     ];
-    
 
-    // Quick helpers for DOM
     const starterPriceLabel = document.getElementById("starter-price");
     const proPriceLabel     = document.getElementById("pro-price");
     const ultraPriceLabel   = document.getElementById("ultra-price");
 
-    // Get query params (so /payment?plan=pro&cycle=year can preselect)
-    function getQueryParams() {
-      const p = new URLSearchParams(window.location.search);
-      return { plan: p.get('plan') || null, cycle: p.get('cycle') || 'year' };
-    }
-
-    // Preselect plan card (highlight) from query param or user_data
-    function highlightSelectedPlan(plan) {
-      document.querySelectorAll("#plans > div").forEach(card => card.classList.remove("plan-selected", "border-[var(--accent)]"));
-      if (!plan) return;
-      const mapping = { starter: "starter-card", pro: "pro-card", ultra: "ultra-card" };
-      const el = document.getElementById(mapping[plan]);
-      if (el) {
-        el.classList.add("plan-selected");
-      }
-    }
-
-    // Price preview call using Paddle.PricePreview (client token assumed)
     function getPrices(cycle) {
       const itemsList = cycle === "month" ? monthItems : yearItems;
-      // If using Paddle.PricePreview, pass the token if required by your setup
-      const request = { items: itemsList, token: PADDLE_CLIENT_TOKEN };
-      if (typeof Paddle.PricePreview !== "function") {
-        // fallback: show placeholders
-        starterPriceLabel.textContent = "$—";
-        proPriceLabel.textContent = "$—";
-        ultraPriceLabel.textContent = "$—";
-        return;
-      }
-      Paddle.PricePreview(request)
+
+      Paddle.PricePreview({ items: itemsList })
         .then((result) => {
-          // result.data.details.lineItems expected
-          const items = result?.data?.details?.lineItems || [];
+          const items = result.data.details.lineItems;
+
           items.forEach(item => {
-            if (item.product?.name?.toLowerCase()?.includes('starter') || item.product?.id == starterProduct) {
+            const name = item.product.name.toLowerCase();
+            if (name.includes("starter")) {
               starterPriceLabel.innerHTML = item.formattedTotals.subtotal;
-            } else if (item.product?.name?.toLowerCase()?.includes('pro') || item.product?.id == proProduct) {
+            } else if (name.includes("pro")) {
               proPriceLabel.innerHTML = item.formattedTotals.subtotal;
-            } else if (item.product?.name?.toLowerCase()?.includes('ultra') || item.product?.id == ultraProduct) {
+            } else if (name.includes("ultra")) {
               ultraPriceLabel.innerHTML = item.formattedTotals.subtotal;
             }
           });
         })
-        .catch(err => {
-          console.error('PricePreview error', err);
-          starterPriceLabel.textContent = "$—";
-          proPriceLabel.textContent = "$—";
-          ultraPriceLabel.textContent = "$—";
-        });
+        .catch(err => console.error("PricePreview error:", err));
     }
 
-    // Open Paddle checkout
-    function openCheckoutFor(planKey) {
-      let productId = proProduct;
-      if (planKey === 'starter') productId = starterProduct;
-      if (planKey === 'ultra') productId = ultraProduct;
-      // If you need to pass metadata (like user id) do it securely. Example:
-      const paddleOptions = { product: productId };
-      // If you use recurring: Paddle.Checkout.open supports passthrough fields, etc.
-      Paddle.Checkout.open(paddleOptions);
+    function openCheckoutFor(planKey, cycle) {
+      let priceId;
+
+      if (cycle === "month") {
+        if (planKey === "starter") priceId = monthItems[0].priceId;
+        if (planKey === "pro")     priceId = monthItems[1].priceId;
+        if (planKey === "ultra")   priceId = monthItems[2].priceId;
+      } else {
+        if (planKey === "starter") priceId = yearItems[0].priceId;
+        if (planKey === "pro")     priceId = yearItems[1].priceId;
+        if (planKey === "ultra")   priceId = yearItems[2].priceId;
+      }
+
+      Paddle.Checkout.open({
+        items: [{ priceId }]
+      });
     }
     
-    // Init
     document.addEventListener("DOMContentLoaded", () => {
-
       const menuBtn = document.querySelector('.hamburger-menu');
       const menuBar = document.getElementById('menuBar');
       menuBtn.addEventListener('click', () => {
           menuBar.classList.toggle('menu-active');
       });
+      let cycle = "year"; // default
+      getPrices(cycle);
 
-      
+      document.getElementById("month").addEventListener("change", () => {
+        cycle = "month";
+        getPrices("month");
+      });
+      document.getElementById("year").addEventListener("change", () => {
+        cycle = "year";
+        getPrices("year");
+      });
 
-      const q = getQueryParams();
-      highlightSelectedPlan(q.plan);
-      // set billing radio
-      if (q.cycle === 'month') document.getElementById('month').checked = true;
-      else document.getElementById('year').checked = true;
-
-      // load prices for the preselected cycle
-      getPrices(q.cycle);
-
-      // toggle handler
-      document.getElementById('month').addEventListener('change', () => getPrices('month'));
-      document.getElementById('year').addEventListener('change', () => getPrices('year'));
-
-      // open checkout buttons
-      document.querySelectorAll('.open-checkout').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const plan = e.currentTarget.getAttribute('data-plan');
-          openCheckoutFor(plan);
+      document.querySelectorAll(".open-checkout").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const plan = e.currentTarget.getAttribute("data-plan");
+          openCheckoutFor(plan, cycle);
         });
       });
     });

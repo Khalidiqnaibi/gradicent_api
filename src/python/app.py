@@ -79,6 +79,8 @@ firebase_admin.initialize_app(cred, {
 })
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
+PADDLE_API_KEY = "apikey_01k4wa7wtjxbnv8jwy6hzw6g5e"
+
 GOOGLE_CLIENT_ID = "107932074863-nlil9n5j9lmahqfb15cmn52u59evpse9.apps.googleusercontent.com"
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, r"/home/RiaSoftware/s/client_secret1.json")
 
@@ -532,6 +534,25 @@ def get_pcs_by_mac(mac):
     else:
         return None
 
+def get_client_token(customer_id=None):
+    """
+    Create a Paddle client token that can be used in the frontend.
+    Optionally attach a Paddle customerId if the user already exists.
+    """
+    url = "https://api.paddle.com/client-tokens"
+    headers = {
+        "Authorization": f"Bearer {PADDLE_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {}
+    if customer_id:
+        payload["customerId"] = customer_id  # tie to an existing Paddle customer
+
+    resp = requests.post(url, headers=headers, json=payload)
+    resp.raise_for_status()
+    return resp.json()["data"]["attributes"]["token"]
+
 fernet = create_fernet()
 
 """riasoftware api"""
@@ -596,8 +617,18 @@ def basicsubar():
 
 @app.route("/med_sub")
 def medbasic():
-    session['appname']='Binder Medical'
-    return render_template("basic.html")
+    session['appname'] = 'Binder Medical'
+
+    # If you store Paddle customer IDs in your DB, pass it here
+    paddle_customer_id = session.get("paddle_customer_id", None)
+
+    try:
+        token = get_client_token(customer_id=paddle_customer_id)
+    except Exception as e:
+        print("Error fetching Paddle client token:", e)
+        token = None
+
+    return render_template("plans.html", paddle_client_token=token)
 
 @app.route("/medsub_ar")
 def medbasicar():
