@@ -109,6 +109,14 @@
     .toast-container .item.info    { background: #2563EB; }
     .toast-container .item.hide    { opacity: 0; }
 
+    textarea{
+      height: 41px;
+    }
+
+    #details{
+      height: 125px;
+    }
+
     /* File Modal */
     #fileModal {display:none;}
     .file-preview img, .file-preview video {max-height:120px; border-radius:8px;}
@@ -212,9 +220,9 @@
         <div class="space-y-4">
           <label>Weight (kg)</label><input id="wight" class="input-control" placeholder="Enter weight..."/>
           <label>Height (cm)</label><input id="height" class="input-control" placeholder="Enter height..."/>
-          <label>Cost</label><input id="cost" class="input-control" placeholder="Enter cost..."/>
+          <label>Coast</label><input id="coast" class="input-control" placeholder="Enter coast..."/>
           <label>Paid</label><input id="payed" class="input-control" placeholder="Enter paid amount..."/>
-          <label>Debit</label><input id="debit" class="input-control" placeholder="Enter debit amount..."/>
+          <label>Debt</label><input id="debt" class="input-control" placeholder="Enter debt amount..."/>
         </div>
         <div class="md:col-span-2">
           <label>Notes</label><textarea id="details" class="input-control" rows="5" placeholder="Enter additional notes..."></textarea>
@@ -331,7 +339,7 @@
       diagnosis: $('#diagnosis'), treatment: $('#treatment'),
       lab: $('#lab'), wight: $('#wight'),
       height: $('#height'), coast: $('#coast'),
-      payed: $('#payed'), debit: $('#debit'),
+      payed: $('#payed'), debit: $('#debt'),
       details: $('#details'), search: $('#search')
     };
     Object.values(entryWidgets).forEach(widget => {
@@ -378,7 +386,7 @@
     $('#height').value = visit.height ?? '0';
     $('#coast').value = visit.coast ?? '0';
     $('#payed').value = visit.payed ?? '0';
-    $('#debit').value = visit.debit ?? '0';
+    $('#debt').value = visit.debit ?? '0';
     $('#details').value = visit.details || '';
 
     const printed = !!visit.printed;
@@ -423,7 +431,7 @@
       lab: $('#lab').value.trim(),
       wight: $('#wight').value || '0',
       height: $('#height').value || '0',
-      debit: parseFloat($('#debit').value) || 0,
+      debit: parseFloat($('#debt').value) || 0,
       payed: parseFloat($('#payed').value) || 0,
       coast: parseFloat($('#coast').value) || 0,
       details: $('#details').value.trim(),
@@ -441,7 +449,7 @@
     try{
       if(parseFloat(visitData.payed)>0 && parseFloat(visitData.coast)>0){
         const res=parseFloat(visitData.coast)-parseFloat(visitData.payed);
-        $('#debit').value=res; visitData.debit=res;
+        $('#debt').value=res; visitData.debit=res;
       } else if(parseFloat(visitData.debit)!==0 && parseFloat(visitData.coast)>0){
         if(parseFloat(visitData.debit)>0){
           const res=parseFloat(visitData.coast)-parseFloat(visitData.debit);
@@ -455,7 +463,7 @@
         $('#coast').value=res; visitData.coast=res;
       } else if(parseFloat(visitData.coast)>0){
         const res=parseFloat(visitData.coast);
-        $('#debit').value=res; visitData.debit=res;
+        $('#debt').value=res; visitData.debit=res;
       }
     } catch(e){ console.error('totald error',e);}
     return visitData;
