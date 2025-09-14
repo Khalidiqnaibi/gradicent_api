@@ -3,32 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
-  <link rel="icon" href="/static/images/w3.jpg" />
   <title>Binder Medical</title>
-
+  <link rel="icon" href="/static/images/w3.jpg" />
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
     :root {
-      --accent:  #ce7a35;
-      --secondary:#78cee6;
-      --w: white;
-      --bg-main: #d8bda4;   /* warm background */  /* cool accent */
-      --support: #78cee6;   /* supporting earthy tone */
+      --accent: #ce7a35;
+      --secondary: #78cee6;
+      --bg-main: #d8bda4;
       --card: rgba(255,255,255,0.97);
-      --muted: #6b6b6b;
-      --text: #1f2937;
     }
-
     body {
       margin: 0;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      font-family: Inter, system-ui, Arial;
       background: linear-gradient(180deg, var(--bg-main), #f9f5f1 65%);
-      color: var(--text);
     }
-
-    /* Hamburger lines */
+/* Hamburger lines */
     .menu__btn span,
     .menu__btn span::before,
     .menu__btn span::after {
@@ -72,72 +62,63 @@
       transform: translateX(0);
       opacity: 1;
     }
-
-    /* Inputs */
-    .input-control {
-      border-radius: 10px;
-      padding: 0.75rem;
-      font-size: 1rem;
-      background: #fff;
-      border: 1.5px solid var(--accent);
-      transition: box-shadow .2s ease, transform .1s ease;
-      width: 100%;
-    }
-    .input-control:focus {
-      outline: none;
-      border-color: var(--support);
-      box-shadow: 0 0 0 4px rgba(187,220,229,0.35);
-      transform: translateY(-1px);
-    }
-
-    textarea.input-control {
-      resize: vertical;
-      height: 42px;
-    }
-
-    #details{
-      height: 125px;
-    }
-
-    /* Buttons */
-    .btn {
-      padding: 0.6rem 1rem;
-      font-weight: 600;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform .1s ease, box-shadow .15s ease;
-    }
-    .btn:hover { transform: translateY(-2px); }
-
-    .btn-accent {
-      background: var(--accent);
-      border: none;
-      color: #1f2937;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    .btn-accent:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
-
-    .btn-ghost {
-      background: #fff;
-      border: 1px solid var(--accent);
-      color: #1f2937;
-    }
-    .btn-ghost:hover { background: var(--accent); color: #000; }
-
     /* Card */
-    .card {
-      background: var(--card);
-      border-radius: 18px;
-      padding: 2rem;
-      max-width: 1100px;
-      width: 100%;
-      box-shadow: 0 12px 36px rgba(0,0,0,0.08);
-    }
+    .card { background: var(--card); border-radius: 18px; padding: 2rem;
+      max-width: 1100px; width: 100%; box-shadow: 0 12px 36px rgba(0,0,0,0.08);}
+    .input-control {border-radius:10px; padding:0.75rem; background:#fff;
+      border:1.5px solid var(--accent); width:100%; transition:.2s;}
+    .input-control:focus {outline:none; border-color:var(--secondary);
+      box-shadow:0 0 0 4px rgba(187,220,229,0.35);}
+    .btn {padding:0.6rem 1rem; border-radius:10px; font-weight:600;
+      transition:.15s; cursor:pointer;}
+    .btn-accent {background:var(--accent); color:#000;}
+    .btn-ghost {background:#fff; border:1px solid var(--accent);}
+    .btn:hover {transform:translateY(-2px);}
 
-    .muted { color: var(--muted); }
+    /* Toast */
+    #toastContainer .item {padding:0.75rem 1rem; border-radius:10px;
+      color:white; font-weight:500; box-shadow:0 4px 12px rgba(0,0,0,.15);
+      opacity:1; transform:translateX(0);
+      transition:opacity .4s ease, transform .4s ease;}
+    #toastContainer .item.info{background:#3b82f6;}
+    #toastContainer .item.success{background:#10b981;}
+    #toastContainer .item.error{background:#ef4444;}
+    #toastContainer .item.hide{opacity:0; transform:translateX(30px);}
+
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999; /* make sure it’s above modal */
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast-container .item {
+      background: #333;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      opacity: 1;
+      transition: opacity 0.4s;
+      box-shadow: 0 4px 8px rgba(0,0,0,.2);
+    }
+    .toast-container .item.success { background: #059669; }
+    .toast-container .item.error   { background: #B91C1C; }
+    .toast-container .item.info    { background: #2563EB; }
+    .toast-container .item.hide    { opacity: 0; }
+
+    /* File Modal */
+    #fileModal {display:none;}
+    .file-preview img, .file-preview video {max-height:120px; border-radius:8px;}
+    .txtPrev {padding:1rem; border:1px solid #ddd; border-radius:8px;
+      text-align:center; font-size:.85rem; background:#f3f3f3;}
   </style>
 </head>
 <body>
+  <!-- Toasts -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 flex flex-col gap-3 z-50"></div>
 
   <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
@@ -177,15 +158,15 @@
             <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
           </a>
         </li>
-        
-        
-        <li class="border-t border-[var(--secondary)] my-1"></li>
-        <li>
-            <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/back"><img class="icoo icoos" src="/static/images/back.png" alt=""></a>
-            
-            <h6 class="text-sm font-medium">Back</h6>
-        </li>
 
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/back">
+            <img class="icoo w-6 h-6" src="/static/images/back.png" alt="Back"/>
+            <h6 class="text-sm font-medium">Back</h6>
+          </a>
+        </li>
         <li class="border-t border-[var(--secondary)] my-1"></li>
 
         <li>
@@ -207,16 +188,13 @@
   <!-- MAIN -->
   <div class="min-h-screen flex items-center justify-center px-4 py-12">
     <div class="card">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-        <div class="flex items-center gap-4">
-          <img src="/static/images/w3.jpg" class="w-16 h-16 rounded-full shadow" alt="logo"/>
-          <div>
-            <h2 class="text-2xl font-semibold">Patient Visit</h2>
-            <p class="muted text-sm">Manage visit entries, attach files, print or lock visits.</p>
-          </div>
+      <div class="flex flex-col md:flex-row md:justify-between mb-6 gap-4">
+        <div class="flex gap-4 items-center">
+          <img src="/static/images/w3.jpg" class="w-16 h-16 rounded-full shadow">
+          <div><h2 class="text-2xl font-semibold">Patient Visit</h2>
+            <p class="text-gray-500 text-sm">Manage visit entries, attach files, print or lock visits.</p></div>
         </div>
-
-        <div class="flex items-center gap-2">
+        <div class="flex gap-2 items-center">
           <input id="search" type="date" class="input-control w-44"/>
           <button id="searchButton" class="btn btn-ghost">Search</button>
         </div>
@@ -225,54 +203,32 @@
       <!-- Visit Form -->
       <form id="visitForm" class="grid md:grid-cols-2 gap-6">
         <div class="space-y-4">
-          <label class="font-semibold">Visit Date</label>
-          <input id="visitDate" type="date" class="input-control" />
-
-          <label class="font-semibold">Doctor</label>
-          <input id="drname" type="text" class="input-control" />
-
-          <label class="font-semibold">Diagnosis</label>
-          <textarea id="diagnosis" class="input-control" placeholder="Enter diagnosis..."></textarea>
-
-          <label class="font-semibold">Treatment</label>
-          <textarea id="treatment" class="input-control" placeholder="Enter treatment..."></textarea>
-
-          <label class="font-semibold">Lab</label>
-          <textarea id="lab" class="input-control" placeholder="Lab requests, notes..."></textarea>
+          <label>Visit Date</label><input id="visitDate" type="date" class="input-control"/>
+          <label>Doctor</label><input id="drname" type="text" class="input-control"/>
+          <label>Diagnosis</label><textarea id="diagnosis" class="input-control" placeholder="Enter diagnosis..."></textarea>
+          <label>Treatment</label><textarea id="treatment" class="input-control" placeholder="Enter treatment..."></textarea>
+          <label>Lab</label><textarea id="lab" class="input-control" placeholder="Enter lab results..."></textarea>
         </div>
-
         <div class="space-y-4">
-          <label class="font-semibold">Weight (kg)</label>
-          <input id="wight" type="text" class="input-control" />
-
-          <label class="font-semibold">Height (cm)</label>
-          <input id="height" type="text" class="input-control" />
-
-          <label class="font-semibold">Cost</label>
-          <input id="coast" type="text" class="input-control" />
-
-          <label class="font-semibold">Paid</label>
-          <input id="payed" type="text" class="input-control" />
-
-          <label class="font-semibold">Debit</label>
-          <input id="debit" type="text" class="input-control" />
+          <label>Weight (kg)</label><input id="wight" class="input-control" placeholder="Enter weight..."/>
+          <label>Height (cm)</label><input id="height" class="input-control" placeholder="Enter height..."/>
+          <label>Cost</label><input id="cost" class="input-control" placeholder="Enter cost..."/>
+          <label>Paid</label><input id="payed" class="input-control" placeholder="Enter paid amount..."/>
+          <label>Debit</label><input id="debit" class="input-control" placeholder="Enter debit amount..."/>
         </div>
-
         <div class="md:col-span-2">
-          <label class="font-semibold">Notes</label>
-          <textarea id="details" class="input-control" rows="5" placeholder="Additional notes..."></textarea>
+          <label>Notes</label><textarea id="details" class="input-control" rows="5" placeholder="Enter additional notes..."></textarea>
         </div>
       </form>
 
       <!-- Controls -->
-      <div class="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="mt-6 flex flex-col md:flex-row md:justify-between gap-4">
         <div class="flex flex-wrap gap-2">
           <button id="firstButton" class="btn btn-ghost">First</button>
           <button id="prevButton" class="btn btn-ghost">Prev</button>
           <button id="nextButton" class="btn btn-ghost">Next</button>
           <button id="lastButton" class="btn btn-ghost">Last</button>
         </div>
-
         <div class="flex flex-wrap gap-2">
           <button id="openFolderBtn" class="btn btn-accent">Patient Folder</button>
           <button id="printBtn" class="btn btn-accent">Print Visit</button>
@@ -282,312 +238,320 @@
     </div>
   </div>
 
+  <!-- File Modal -->
+  <div id="fileModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50">
+    <div class="bg-white rounded-2xl p-6 shadow-xl w-full max-w-3xl mx-auto my-10 flex flex-col relative">
+      <button id="closeModal" class="absolute top-4 right-4 text-2xl">&times;</button>
+      <h3 class="text-xl font-semibold mb-4">Patient Files</h3>
+      <div class="flex gap-2 mb-4">
+        <button class="folder-btn btn btn-ghost" data-folder="drs">Doctor</button>
+        <button class="folder-btn btn btn-ghost" data-folder="radio">Radiology</button>
+        <button class="folder-btn btn btn-ghost" data-folder="lab">Lab</button>
+      </div>
+      <div id="uploadControls" class="hidden flex flex-col gap-3 mb-4">
+        <div id="dropZone" class="w-full border-2 border-dashed rounded-xl p-6 text-center text-gray-500 cursor-pointer hover:border-[var(--accent)]">
+          Drag & Drop or click Choose
+        </div>
+        <div class="flex gap-2">
+          <button id="chooseFile" class="btn btn-ghost">Choose</button>
+          <input id="fileInput" type="file" class="hidden" multiple />
+          <button id="uploadFiles" class="btn btn-accent">Upload</button>
+        </div>
+        <div id="uploadProgressContainer" class="hidden">
+          <progress id="fileUploadProgress" value="0" max="100" class="w-full h-3 rounded-lg"></progress>
+          <span id="progressText" class="block text-center text-sm mt-1 text-gray-600"></span>
+        </div>
+      </div>
+      <div id="filePreviews" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4"></div>
+    </div>
+  </div>
+
   <script>
-    // small helpers
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  // Helpers
+  const $  = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-    function showToast(text, type = 'info') {
-      const c = $('#toastContainer');
-      const el = document.createElement('div');
-      el.className = 'item';
-      el.textContent = text;
-      if (type === 'error') el.style.background = '#B91C1C';
-      if (type === 'success') el.style.background = '#059669';
-      c.appendChild(el);
-      setTimeout(()=> { el.style.opacity = '0'; setTimeout(()=> el.remove(), 400); }, 3000);
-    }
+  // Toast system
+  function showToast(text, type = 'info') {
+    const c = document.getElementById('toastContainer');
+    if (!c) return;
 
-    // menu toggle + bindings
-    document.addEventListener('DOMContentLoaded', () => {
-      const menuBtn = document.querySelector('.hamburger-menu');
-      const menuBar = document.getElementById('menuBar');
-      menuBtn.addEventListener('click', () => menuBar.classList.toggle('menu-active'));
+    const el = document.createElement('div');
+    el.className = `item ${type}`;
+    el.textContent = text;
+    c.appendChild(el);
 
-      // buttons
-      $('#searchButton').addEventListener('click', search);
-      $('#prevButton').addEventListener('click', prev);
-      $('#nextButton').addEventListener('click', next);
-      $('#firstButton').addEventListener('click', first);
-      $('#lastButton').addEventListener('click', last);
-      $('#saveBtn').addEventListener('click', tacc);
-      $('#openFolderBtn').addEventListener('click', () => openFile());
-      $('#printBtn').addEventListener('click', () => { tacc(); printVisit(); });
+    // animate out after 3s
+    setTimeout(() => {
+      el.classList.add('hide');
+      setTimeout(() => el.remove(), 400);
+    }, 3000);
+  }
 
-      // file modal
-      $('#closeModal').addEventListener('click', closeFileModal);
-      $('#chooseFile').addEventListener('click', () => $('#fileInput').click());
-      $('#fileInput').addEventListener('change', onFilesSelected);
-      $('#uploadFiles').addEventListener('click', uploadFile);
 
-      $$('.folder-btn').forEach(b => b.addEventListener('click', (e) => {
-        $$('.folder-btn').forEach(x => x.classList.remove('bg-[var(--accent)]/20'));
-        e.currentTarget.classList.add('bg-[var(--accent)]/20');
-        selectFolder(e.currentTarget.dataset.folder || 'drs');
-      }));
+  // State
+  let visits = [];
+  let currentVisitIndex = 0;
+  let patientNumber = '';
+  let selectedFolder = 'drs';
 
-      // keyboard focus flow
-      const entryWidgets = {
-        visit_date: $('#visitDate'),
-        drname: $('#drname'),
-        diagnosis: $('#diagnosis'),
-        treatment: $('#treatment'),
-        lab: $('#lab'),
-        wight: $('#wight'),
-        height: $('#height'),
-        coast: $('#coast'),
-        payed: $('#payed'),
-        debit: $('#debit'),
-        details: $('#details'),
-        search: $('#search')
-      };
-      Object.values(entryWidgets).forEach(widget => {
-        if (!widget) return;
-        widget.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const fields = Object.values(entryWidgets).filter(Boolean);
-            const idx = fields.indexOf(widget);
-            if (idx >= 0 && idx < fields.length - 1) fields[idx + 1].focus();
-          }
-        });
-      });
-
-      fetchPatientData();
+  document.addEventListener('DOMContentLoaded', () => {
+    // Hamburger menu
+    const menuBtn = document.querySelector('.hamburger-menu');
+    const menuBar = document.getElementById('menuBar');
+    menuBtn.addEventListener('click', () => {
+      menuBar.classList.toggle('menu-active');
     });
 
-    // state
-    let visits = [];
-    let currentVisitIndex = 0;
-    let patientNumber = '';
-    let selectedFolder = 'drs';
+    // Button bindings
+    $('#searchButton').addEventListener('click', search);
+    $('#prevButton').addEventListener('click', prev);
+    $('#nextButton').addEventListener('click', next);
+    $('#firstButton').addEventListener('click', first);
+    $('#lastButton').addEventListener('click', last);
+    $('#saveBtn').addEventListener('click', tacc);
+    $('#openFolderBtn').addEventListener('click', openFile);
+    $('#printBtn').addEventListener('click', () => { tacc(); printVisit(); });
 
-    function fetchPatientData() {
-      fetch('/getPatientData')
-        .then(r => r.json())
-        .then(data => {
-          visits = data.visits || [];
-          patientNumber = (data.patientss_number || 0) + 1;
-          if (visits.length) { currentVisitIndex = 0; populatePatientData(visits[0]); showToast('Patient data loaded', 'success'); }
-          else { const t = { visit_date: '', drname:'', diagnosis:'', treatment:'', lab:'', wight: '0', height: '0', coast:0, payed:0, debit:0, details:'', vno:1 }; visits=[t]; currentVisitIndex=0; populatePatientData(t); }
-        })
-        .catch(err => { console.error(err); showToast('Failed to load patient data', 'error'); });
-    }
+    // File modal
+    $('#closeModal').addEventListener('click', closeFileModal);
+    $('#chooseFile').addEventListener('click', () => $('#fileInput').click());
+    $('#fileInput').addEventListener('change', onFilesSelected);
+    $('#uploadFiles').addEventListener('click', uploadFile);
 
-    function populatePatientData(visit) {
-      $('#visitDate').value = visit.visit_date || '';
-      $('#drname').value = visit.drname || '';
-      $('#diagnosis').value = visit.diagnosis || '';
-      $('#treatment').value = visit.treatment || '';
-      $('#lab').value = visit.lab || '';
-      $('#wight').value = visit.wight ?? '0';
-      $('#height').value = visit.height ?? '0';
-      $('#coast').value = visit.coast ?? '0';
-      $('#payed').value = visit.payed ?? '0';
-      $('#debit').value = visit.debit ?? '0';
-      $('#details').value = visit.details || 'Details';
+    $$('.folder-btn').forEach(b => b.addEventListener('click', (e) => {
+      $$('.folder-btn').forEach(x => x.classList.remove('bg-[var(--accent)]/20'));
+      e.currentTarget.classList.add('bg-[var(--accent)]/20');
+      selectFolder(e.currentTarget.dataset.folder || 'drs');
+    }));
 
-      const printed = !!visit.printed;
-      if (printed) {
-        $$('#visitForm input, #visitForm textarea').forEach(el => el.disabled = true);
-        $('#search').disabled = false;
-        showToast('This visit is locked (printed).', 'info');
-      } else {
-        $$('#visitForm input, #visitForm textarea').forEach(el => el.disabled = false);
-      }
-      if (!visit.drname || visit.drname.trim() === '') $('#drname').disabled = false;
-      else $('#drname').disabled = true;
-    }
-
-    // navigation
-    function first() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (visits.length){ currentVisitIndex = 0; populatePatientData(visits[0]); } }); }
-    function prev() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (currentVisitIndex > 0){ currentVisitIndex--; populatePatientData(visits[currentVisitIndex]); } }); }
-    function next() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; const newIdx = currentVisitIndex + 1; if (visits[newIdx]){ currentVisitIndex = newIdx; populatePatientData(visits[newIdx]); } else { const t = { visit_date:'', drname:'', treatment:'', diagnosis:'', lab:'', wight:'0', height:'0', coast:0, payed:0, debit:0, details:'', vno:visits.length+1 }; visits.push(t); currentVisitIndex = visits.length-1; populatePatientData(t); } }); }
-    function last() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (visits.length) { currentVisitIndex = visits.length - 1; populatePatientData(visits[currentVisitIndex]); } }); }
-
-    function search() {
-      const dateToSearch = $('#search').value;
-      fetch('/getPatientData').then(r=>r.json()).then(data => {
-        visits = data.visits || [];
-        const found = visits.find(v => v.visit_date === dateToSearch);
-        if (found) { currentVisitIndex = visits.indexOf(found); populatePatientData(found); showToast('Visit found', 'success'); }
-        else showToast('No visit for that date', 'info');
-      });
-    }
-
-    // save
-    function tacc() {
-      const visitData = {
-        visit_date: $('#visitDate').value.trim(),
-        drname: $('#drname').value.trim(),
-        treatment: $('#treatment').value.trim(),
-        diagnosis: $('#diagnosis').value.trim(),
-        lab: $('#lab').value.trim(),
-        wight: $('#wight').value || '0',
-        height: $('#height').value || '0',
-        debit: parseFloat($('#debit').value) || 0,
-        payed: parseFloat($('#payed').value) || 0,
-        coast: parseFloat($('#coast').value) || 0,
-        details:$('#details').value.trim(),
-        vno: (visits[currentVisitIndex] && visits[currentVisitIndex].vno) || (currentVisitIndex + 1)
-      };
-      if (!visitData.visit_date) { showToast('Visit date is required', 'error'); return; }
-      totald(visitData);
-      fetch('/updateVisitData', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(visitData) })
-        .then(r=>r.json().catch(()=>({})))
-        .then(()=> fetch('/updatePatientTotals', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ totalDebit: visitData.debit }) }))
-        .then(()=> { showToast('Visit saved', 'success'); fetchPatientData(); })
-        .catch(err => { console.error(err); showToast('Error saving visit', 'error'); });
-    }
-
-    function totald(visitData) {
-      try {
-        if (parseFloat(visitData.payed) > 0 && parseFloat(visitData.coast) > 0) {
-          const res = parseFloat(visitData.coast) - parseFloat(visitData.payed);
-          $('#debit').value = res; visitData.debit = res;
-        } else if (parseFloat(visitData.debit) !== 0 && parseFloat(visitData.coast) > 0) {
-          if (parseFloat(visitData.debit) > 0) {
-            const res = parseFloat(visitData.coast) - parseFloat(visitData.debit);
-            $('#payed').value = res; visitData.payed = res;
-          } else {
-            const res = parseFloat(visitData.coast) + parseFloat(visitData.debit);
-            $('#payed').value = res; visitData.payed = res;
-          }
-        } else if (parseFloat(visitData.debit) !== 0 && parseFloat(visitData.payed) > 0) {
-          const res = parseFloat(visitData.payed) + parseFloat(visitData.debit);
-          $('#coast').value = res; visitData.coast = res;
-        } else if (parseFloat(visitData.coast) > 0) {
-          const res = parseFloat(visitData.coast);
-          $('#debit').value = res; visitData.debit = res;
+    // Keyboard flow
+    const entryWidgets = {
+      visit_date: $('#visitDate'), drname: $('#drname'),
+      diagnosis: $('#diagnosis'), treatment: $('#treatment'),
+      lab: $('#lab'), wight: $('#wight'),
+      height: $('#height'), coast: $('#coast'),
+      payed: $('#payed'), debit: $('#debit'),
+      details: $('#details'), search: $('#search')
+    };
+    Object.values(entryWidgets).forEach(widget => {
+      if (!widget) return;
+      widget.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey && widget.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          const fields = Object.values(entryWidgets).filter(Boolean);
+          const idx = fields.indexOf(widget);
+          if (idx >= 0 && idx < fields.length - 1) fields[idx + 1].focus();
         }
-      } catch(e) { console.error('totald error', e); }
-      return visitData;
-    }
+      });
+    });
 
-    function printVisit() {
-      if (!confirm("After printing you can't change this visit's info. Continue?")) return;
-      fetch('/kkprint', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ vno: currentVisitIndex }) })
-      .then(resp => { if (!resp.ok) throw new Error('Print failed'); return resp.blob(); })
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'visit.docx'; document.body.appendChild(a); a.click();
-        url && window.URL.revokeObjectURL(url);
-        showToast('Visit printed and locked', 'success');
+    fetchPatientData();
+  });
+
+  // Patient data
+  function fetchPatientData() {
+    fetch('/getPatientData')
+      .then(r => r.json())
+      .then(data => {
+        visits = data.visits || [];
+        patientNumber = (data.patientss_number || 0) + 1;
+        if (visits.length) {
+          currentVisitIndex = 0;
+          populatePatientData(visits[0]);
+          showToast('Patient data loaded', 'success');
+        } else {
+          const t = { visit_date: '', drname:'', diagnosis:'', treatment:'', lab:'', wight:'0', height:'0', coast:0, payed:0, debit:0, details:'', vno:1 };
+          visits=[t]; currentVisitIndex=0; populatePatientData(t);
+        }
+      })
+      .catch(err => { console.error(err); showToast('Failed to load patient data', 'error'); });
+  }
+
+  function populatePatientData(visit) {
+    $('#visitDate').value = visit.visit_date || '';
+    $('#drname').value = visit.drname || '';
+    $('#diagnosis').value = visit.diagnosis || '';
+    $('#treatment').value = visit.treatment || '';
+    $('#lab').value = visit.lab || '';
+    $('#wight').value = visit.wight ?? '0';
+    $('#height').value = visit.height ?? '0';
+    $('#coast').value = visit.coast ?? '0';
+    $('#payed').value = visit.payed ?? '0';
+    $('#debit').value = visit.debit ?? '0';
+    $('#details').value = visit.details || '';
+
+    const printed = !!visit.printed;
+    if (printed) {
+      $$('#visitForm input, #visitForm textarea').forEach(el => el.disabled = true);
+      $('#search').disabled = false;
+      showToast('This visit is locked (printed).', 'info');
+    } else {
+      $$('#visitForm input, #visitForm textarea').forEach(el => el.disabled = false);
+    }
+    if (!visit.drname || visit.drname.trim() === '') $('#drname').disabled = false;
+    else $('#drname').disabled = true;
+  }
+
+  // Navigation
+  function first() { if(visits.length){ currentVisitIndex=0; populatePatientData(visits[0]); } }
+  function prev() { if(currentVisitIndex>0){ currentVisitIndex--; populatePatientData(visits[currentVisitIndex]); } }
+  function next() {
+    const newIdx=currentVisitIndex+1;
+    if(visits[newIdx]){ currentVisitIndex=newIdx; populatePatientData(visits[newIdx]); }
+    else {
+      const t={visit_date:'', drname:'', treatment:'', diagnosis:'', lab:'', wight:'0', height:'0', coast:0, payed:0, debit:0, details:'', vno:visits.length+1};
+      visits.push(t); currentVisitIndex=visits.length-1; populatePatientData(t);
+    }
+  }
+  function last() { if(visits.length){ currentVisitIndex=visits.length-1; populatePatientData(visits[currentVisitIndex]); } }
+
+  function search() {
+    const dateToSearch=$('#search').value;
+    const found=visits.find(v=>v.visit_date===dateToSearch);
+    if(found){ currentVisitIndex=visits.indexOf(found); populatePatientData(found); showToast('Visit found','success'); }
+    else showToast('No visit for that date','info');
+  }
+
+  // Save
+  function tacc() {
+    const visitData = {
+      visit_date: $('#visitDate').value.trim(),
+      drname: $('#drname').value.trim(),
+      treatment: $('#treatment').value.trim(),
+      diagnosis: $('#diagnosis').value.trim(),
+      lab: $('#lab').value.trim(),
+      wight: $('#wight').value || '0',
+      height: $('#height').value || '0',
+      debit: parseFloat($('#debit').value) || 0,
+      payed: parseFloat($('#payed').value) || 0,
+      coast: parseFloat($('#coast').value) || 0,
+      details: $('#details').value.trim(),
+      vno: (visits[currentVisitIndex] && visits[currentVisitIndex].vno) || (currentVisitIndex+1)
+    };
+    if (!visitData.visit_date) { showToast('Visit date is required','error'); return; }
+    totald(visitData);
+    fetch('/updateVisitData',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(visitData)})
+      .then(()=> fetch('/updatePatientTotals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ totalDebit: visitData.debit })}))
+      .then(()=> { showToast('Visit saved','success'); fetchPatientData(); })
+      .catch(err=>{console.error(err); showToast('Error saving visit','error');});
+  }
+
+  function totald(visitData){
+    try{
+      if(parseFloat(visitData.payed)>0 && parseFloat(visitData.coast)>0){
+        const res=parseFloat(visitData.coast)-parseFloat(visitData.payed);
+        $('#debit').value=res; visitData.debit=res;
+      } else if(parseFloat(visitData.debit)!==0 && parseFloat(visitData.coast)>0){
+        if(parseFloat(visitData.debit)>0){
+          const res=parseFloat(visitData.coast)-parseFloat(visitData.debit);
+          $('#payed').value=res; visitData.payed=res;
+        } else {
+          const res=parseFloat(visitData.coast)+parseFloat(visitData.debit);
+          $('#payed').value=res; visitData.payed=res;
+        }
+      } else if(parseFloat(visitData.debit)!==0 && parseFloat(visitData.payed)>0){
+        const res=parseFloat(visitData.payed)+parseFloat(visitData.debit);
+        $('#coast').value=res; visitData.coast=res;
+      } else if(parseFloat(visitData.coast)>0){
+        const res=parseFloat(visitData.coast);
+        $('#debit').value=res; visitData.debit=res;
+      }
+    } catch(e){ console.error('totald error',e);}
+    return visitData;
+  }
+
+  function printVisit(){
+    if(!confirm("After printing you can't change this visit's info. Continue?")) return;
+    fetch('/kkprint',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ vno: currentVisitIndex })})
+      .then(resp=>{ if(!resp.ok) throw new Error('Print failed'); return resp.blob(); })
+      .then(blob=>{
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a'); a.href=url; a.download='visit.docx';
+        document.body.appendChild(a); a.click();
+        url && URL.revokeObjectURL(url);
+        showToast('Visit printed and locked','success');
         fetchPatientData();
       })
-      .catch(err => { console.error(err); showToast('Print failed', 'error'); });
-    }
+      .catch(err=>{console.error(err); showToast('Print failed','error');});
+  }
 
-    // FILE MANAGER: implemented selectFolder behavior to show upload controls only for 'drs'
-    function openFile() {
-      $('#fileModal').style.display = 'flex';
-      $('#fileModal').style.alignItems = 'center';
-      $('#fileModal').style.justifyContent = 'center';
-      selectFolder('drs'); // default open doctor folder
-    }
-    function closeFileModal() {
-      $('#fileModal').style.display = 'none';
-      $('#filePreviews').innerHTML = '';
-    }
+  // File manager
+  function openFile(){ $('#fileModal').style.display='flex'; selectFolder('drs'); }
+  function closeFileModal(){ $('#fileModal').style.display='none'; $('#filePreviews').innerHTML=''; }
 
-    function selectFolder(folder) {
-      selectedFolder = folder || 'drs';
-      const uploadControls = $('#uploadControls');
-      const fileInput = $('#fileInput');
-      const uploadButton = $('#uploadFiles');
-      // Show upload input only for the 'drs' folder
-      if (selectedFolder === 'drs') {
-        // make upload controls visible and interactive
-        uploadControls.style.display = 'flex';
-        // ensure choose/upload are visible (fileInput stays hidden but triggered by chooseFile)
-        if (fileInput) fileInput.disabled = false;
-        if (uploadButton) uploadButton.disabled = false;
-      } else {
-        // hide upload controls for other folders
-        uploadControls.style.display = 'none';
-        if (fileInput) fileInput.disabled = true;
-        if (uploadButton) uploadButton.disabled = true;
+  function selectFolder(folder){
+    selectedFolder=folder||'drs';
+    const uploadControls=$('#uploadControls');
+    if(selectedFolder==='drs'){ uploadControls.style.display='flex'; }
+    else { uploadControls.style.display='none'; }
+    fetchFiles();
+  }
+
+  function onFilesSelected(e){
+    if($('#fileInput').files.length) showToast(`${$('#fileInput').files.length} files selected`,'info');
+  }
+
+  function uploadFile(){
+    const files=$('#fileInput').files;
+    if(!files||files.length===0){ showToast('No files selected','error'); return; }
+    if(selectedFolder!=='drs'){ showToast('Uploads only allowed in Doctor folder','error'); return; }
+
+    const totalFiles=files.length; let currentIndex=0;
+    $('#uploadProgressContainer').classList.remove('hidden');
+    function uploadNext(){
+      if(currentIndex>=totalFiles){
+        $('#uploadProgressContainer').classList.add('hidden'); $('#fileInput').value='';
+        showToast('All files uploaded','success'); fetchFiles(); return;
       }
-      fetchFiles();
+      const file=files[currentIndex]; const form=new FormData();
+      form.append('file',file); form.append('patient_no',patientNumber); form.append('folder',selectedFolder);
+
+      const xhr=new XMLHttpRequest();
+      xhr.open('POST','/uploadFile',true);
+      xhr.upload.onprogress=function(ev){
+        if(!ev.lengthComputable)return;
+        const filePercent=(ev.loaded/ev.total)*100;
+        const overall=Math.round(((currentIndex/totalFiles)*100)+(filePercent/totalFiles));
+        $('#fileUploadProgress').value=overall; $('#progressText').textContent=`${overall}%`;
+      };
+      xhr.onload=function(){ if(xhr.status===200){ currentIndex++; uploadNext(); } else { showToast('Upload failed','error'); $('#uploadProgressContainer').classList.add('hidden'); }};
+      xhr.onerror=function(){ showToast('Upload error','error'); $('#uploadProgressContainer').classList.add('hidden'); };
+      xhr.send(form);
     }
+    uploadNext();
+  }
 
-    function onFilesSelected(e) {
-      if ($('#fileInput').files.length) {
-        showToast(`${$('#fileInput').files.length} files selected`, 'info');
-      }
-    }
+  function fetchFiles(){
+    const folder=encodeURIComponent(selectedFolder||'drs');
+    fetch(`/getFiles?patient_no=${patientNumber}&folder=${folder}`)
+      .then(r=>r.json()).then(files=>renderFiles(files||[]))
+      .catch(err=>{console.error(err); showToast('Failed to fetch files','error');});
+  }
 
-    function uploadFile() {
-      const files = $('#fileInput').files;
-      if (!files || files.length === 0) { showToast('No files selected', 'error'); return; }
-      if (selectedFolder !== 'drs') { showToast("Uploads allowed only in Doctor folder", 'error'); return; }
+  function renderFiles(files){
+    const c=$('#filePreviews'); c.innerHTML='';
+    if(!files||!files.length){ c.innerHTML='<div class="text-gray-500">No files</div>'; return; }
+    files.forEach(file=>{
+      const div=document.createElement('div'); div.className='file-preview';
+      const link=document.createElement('a'); link.href=file.data; link.target='_blank';
+      if(file.file_type.includes('image')){ const img=document.createElement('img'); img.src=file.data; link.appendChild(img);}
+      else if(file.file_type.includes('video')){ const v=document.createElement('video'); v.src=file.data; v.controls=true; v.className='rounded'; link.appendChild(v);}
+      else { const txt=document.createElement('div'); txt.className='p-3 border rounded txtPrev'; txt.textContent=file.name||'file'; link.appendChild(txt);}
+      if(selectedFolder==='drs'){ const rem=document.createElement('div'); rem.className='file-remove'; rem.innerHTML='&times;'; rem.onclick=(e)=>{e.preventDefault(); if(confirm('Delete this file?')) deleteFile(file.data);}; div.appendChild(rem);}
+      div.appendChild(link); c.appendChild(div);
+    });
+  }
 
-      const patientNo = patientNumber;
-      const totalFiles = files.length;
-      let currentIndex = 0;
-      $('#uploadProgressContainer').classList.remove('hidden');
+  function deleteFile(url){
+    fetch(`/deleteFile?url=${encodeURIComponent(url)}`,{method:'DELETE'})
+      .then(r=>r.json()).then(()=>{ showToast('File deleted','success'); fetchFiles(); })
+      .catch(e=>{console.error(e); showToast('Delete failed','error');});
+  }
 
-      function uploadNext() {
-        if (currentIndex >= totalFiles) {
-          $('#uploadProgressContainer').classList.add('hidden');
-          $('#fileInput').value = '';
-          showToast('All files uploaded', 'success');
-          fetchFiles();
-          return;
-        }
-        const file = files[currentIndex];
-        const form = new FormData();
-        form.append('file', file);
-        form.append('patient_no', patientNo);
-        form.append('folder', selectedFolder);
+  window.openFile=openFile;
+  window.printVisit=printVisit;
+</script>
 
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/uploadFile', true);
-        xhr.upload.onprogress = function (ev) {
-          if (!ev.lengthComputable) return;
-          const filePercent = (ev.loaded / ev.total) * 100;
-          const overall = Math.round(( (currentIndex / totalFiles) * 100) + (filePercent / totalFiles));
-          $('#fileUploadProgress').value = overall;
-          $('#progressText').textContent = `${overall}%`;
-        };
-        xhr.onload = function () {
-          if (xhr.status === 200) { currentIndex++; uploadNext(); }
-          else { showToast('Upload failed: ' + xhr.statusText, 'error'); $('#uploadProgressContainer').classList.add('hidden'); }
-        };
-        xhr.onerror = function () { showToast('Upload error', 'error'); $('#uploadProgressContainer').classList.add('hidden'); };
-        xhr.send(form);
-      }
-      uploadNext();
-    }
-
-    function fetchFiles() {
-      const patientNo = patientNumber || '';
-      const folder = encodeURIComponent(selectedFolder || 'drs');
-      fetch(`/getFiles?patient_no=${patientNo}&folder=${folder}`).then(r=>r.json()).then(files => renderFiles(files || [])).catch(err => { console.error(err); showToast('Failed to fetch files', 'error'); });
-    }
-
-    function renderFiles(files) {
-      const container = $('#filePreviews'); container.innerHTML = '';
-      if (!files || !files.length) { container.innerHTML = '<div class="text-gray-500">No files</div>'; return; }
-      files.forEach(file => {
-        const div = document.createElement('div'); div.className = 'file-preview';
-        const link = document.createElement('a'); link.href = file.data; link.target = '_blank';
-        if (file.file_type.includes('image')) { const img = document.createElement('img'); img.src = file.data; link.appendChild(img); }
-        else if (file.file_type.includes('video')) { const v = document.createElement('video'); v.src = file.data; v.controls = true; v.className = 'rounded'; link.appendChild(v); }
-        else { const txt = document.createElement('div'); txt.className='p-3 border rounded txtPrev'; txt.textContent = file.name || 'file'; link.appendChild(txt); }
-        if (selectedFolder === 'drs') {
-          const rem = document.createElement('div'); rem.className = 'file-remove'; rem.innerHTML = '&times;';
-          rem.addEventListener('click', (e) => { e.preventDefault(); if (!confirm('Delete this file?')) return; deleteFile(file.data); });
-          div.appendChild(rem);
-        }
-        div.appendChild(link); container.appendChild(div);
-      });
-    }
-
-    function deleteFile(url) { fetch(`/deleteFile?url=${encodeURIComponent(url)}`, { method:'DELETE' }).then(r=>r.json()).then(()=>{ showToast('File deleted', 'success'); fetchFiles(); }).catch(e=>{ console.error(e); showToast('Delete failed', 'error'); }); }
-
-    window.openFile = openFile;
-    window.printVisit = printVisit;
-  </script>
 </body>
 </html>

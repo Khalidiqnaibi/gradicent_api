@@ -175,10 +175,9 @@ def load_app_data():
 def login_is_required(function):
     def wrapper(*args, **kwargs):
         if "google_id" not in session:
-            return abort(401)  # Authorization required
-        else:
-            return function()
-
+            return abort(401)
+        return function(*args, **kwargs)
+    wrapper.__name__ = function.__name__  # force Flask to see the right name
     return wrapper
 
 def iscode(code):
@@ -2706,7 +2705,6 @@ def show_search_by_number(number):
     elif "binder" in session and session["binder"] == 'lab':
         return redirect('/Binder_labratory')
     
-
 @app.route('/getPatientData', methods=['GET'])
 def get_patient_data():
     google_id = session["google_id"]
@@ -2796,7 +2794,10 @@ def update_patient_totals():
         return jsonify({"message": f"An error occurred while updating patient totals {user_data}"}), 500
 
 @app.route('/nnn')
+@login_is_required
 def nnn():
+    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
+        return jsonify({"message": "Access denied"}), 403
     drs_ref = db.reference('/drs')
     nn=drs_ref.get()
     last =''
@@ -2826,85 +2827,73 @@ def nnn():
 
 @app.route('/updatePatientData', methods=['POST'])
 def update_patient_data():
-    data = request.json
-    typee=session.get('wtype', 'drs')
-    google_id = session.get('google_id', None)
-    patient_no = data.get('patientNo', None)
+    data = request.json or {}
+    typee = session.get('wtype', 'drs')
+    google_id = session.get('google_id')
+    patient_no = data.get('patientNo')
 
-    if not google_id:
-        return jsonify({"message": "Invalid session data"}), 400
+    if not google_id or patient_no is None:
+        return jsonify({"message": "Invalid request/session data"}), 400
 
-    patient_no-=1
-
+    patient_index = patient_no - 1
     try:
-        drs_ref = db.reference(f'/{typee}/{google_id}/patients/{int(patient_no)}')
+        # Get patient reference
+        patient_ref = db.reference(f'/{typee}/{google_id}/patients/{patient_index}')
+        patient = patient_ref.get()
 
-        patient = drs_ref.get()
-
-        if 'next' in patient:   
-            dateee=patient['next']
-        
         if not patient:
             return jsonify({"message": "Patient not found"}), 404
 
-        # Update patient data
+        old_next = patient.get("next")
+
+        # Update patient fields except patientNo
         for key, value in data.items():
-            if key != 'patientNo':
+            if key != "patientNo":
                 patient[key] = value
-                
-        if 'div' in patient:
-            if 'payed' in patient:  
-                patient['payed']=float(patient.get('payed', 0) or 0)/10
-            if 'debit' in patient:  
-                patient['debit']=float(patient.get('debit', 0) or 0)/10
-        else:
-            patient['div']='bruh'
-            if 'payed' in patient:  
-                patient['payed']=float(patient.get('payed', 0) or 0)/10
-            if 'debit' in patient:  
-                patient['debit']=float(patient.get('debit', 0) or 0)/10
-            
 
-        drs_ref.set(patient)
+        # Normalize payed/debit and ensure "div"
+        patient.setdefault("div", "bruh")
+        for field in ["payed", "debit"]:
+            if field in patient:
+                patient[field] = float(patient.get(field, 0) or 0) / 10
 
-        if typee == 'drs':
-            dateti=f'{datetime.fromisoformat(patient["next"]).date()}'
-            timee=f'{datetime.fromisoformat(patient["next"]).time()}'
-            xx=0
-            dr_ref = db.reference(f'/drs/{google_id}/msg')
-            nn=dr_ref.get()
+        # Save patient data
+        patient_ref.set(patient)
 
-            if nn and dateee in nn:
-                for i in nn[dateee]:
-                    if i['no'] == patient_no+1:
-                        nn[dateee].remove(nn[dateee][xx])
-                    else:
-                        xx+=1
+        # Extra handling for doctors (msg updates)
+        if typee == "drs":
+            dr_msg_ref = db.reference(f'/drs/{google_id}/msg')
+            messages = dr_msg_ref.get() or {}
 
-            if 'next' in patient :# and datetime.fromisoformat(patient['next'])>datetime.today() :
-                if nn:
-                    if dateti in nn:
-                        add=True
-                        for i in nn[dateti] :
-                            if patient_no+1 == i["no"]:
-                                add=False
-                        if add:
-                            nn[dateti].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"})
-                    else:
-                        nn[dateti]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"}]
-                else:
-                    nn={dateti :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"}]}
-                
-                
-                dr_ref.update(nn)
+            # Remove old reminder if exists
+            if old_next and old_next in messages:
+                messages[old_next] = [
+                    m for m in messages[old_next] if m.get("no") != patient_no
+                ]
+                if not messages[old_next]:  # cleanup empty dates
+                    messages.pop(old_next)
 
+            # Add new reminder if "next" is valid
+            next_date = patient.get("next")
+            if next_date and "T" in next_date:
+                dt_obj = datetime.fromisoformat(next_date)
+                date_str, time_str = str(dt_obj.date()), str(dt_obj.time())[:-3]
 
-        return jsonify({"message": f"Patient data updated successfully"}), 200
+                messages.setdefault(date_str, [])
+                if not any(m["no"] == patient_no for m in messages[date_str]):
+                    messages[date_str].append({
+                        "phone": patient.get("phone"),
+                        "name": patient.get("name"),
+                        "no": patient_no,
+                        "msg": time_str
+                    })
+
+            dr_msg_ref.update(messages)
+
+        return jsonify({"message": "Patient data updated successfully"}), 200
 
     except Exception as e:
-        app.logger.info("Error updating patient data: %s", e)
-        app.logger.info("patient: %s", patient)
-        app.logger.info("patient['next']: %s", patient['next'])
+        app.logger.error("Error updating patient data: %s", e, exc_info=True)
         return jsonify({"message": f"Error updating patient data: {str(e)}"}), 500
 
 @app.route('/appointments')
@@ -3168,14 +3157,12 @@ def update_visit():
 
     visits = patient_data.get('visits', [])
     for idx, visit in enumerate(visits):
-        if visit['visit_date'] == visit_info['visit_date']:
+        if visit.get("visit_date") and visit['visit_date'] == visit_info['visit_date']:
             visits[idx] = visit_info
             break
 
     patient_data['visits'] = visits
     user_data['patients'] = [p if p['no'] != patient_no else patient_data for p in user_data['patients']]
-    
-    
 
     drs_ref.child(google_id).set(user_data)
 
@@ -3496,7 +3483,10 @@ def delete_file():
         return jsonify({"error": "Internal server error"}), 500
 
 @app.route('/gid')
+@login_is_required
 def giid():
+    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
+        return jsonify({"message": "Access denied"}), 403
     session['google_id']="108738109636203771652"
     if 'PLAN' in session:
         del session['PLAN']
@@ -3506,7 +3496,10 @@ def giid():
     return i
 
 @app.route('/giid/<google_id>')
+@login_is_required
 def giiid(google_id):
+    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
+        return jsonify({"message": "Access denied"}), 403
     session["google_id"] = google_id
     session["lang"] = 'en'
     session["donee"]=True
@@ -3526,7 +3519,6 @@ def pgiiid(google_id, name):
     elif "binder" in session and session["binder"] == 'lab':
         return redirect('/Binder_labratory')
     
-
 @app.route('/editFile', methods=['POST'])
 def edit_file():
     file_id = request.form.get('file_id')
