@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="antialiased">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Binder Medical</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg" />
+
   <style>
-    /* Custom palette mapped into Tailwind */
-    :root {
+    :root{
       --bg-main: #D9C4B0;
       --accent:  #ce7a35;
       --secondary:#78cee6;
-      --w: white;
+      --muted: #7f7f7f;
     }
 
     body {
@@ -23,12 +24,12 @@
     .menu__btn span::before,
     .menu__btn span::after {
       display: block;
-      width: 25px;
+      width: 26px;
       height: 3px;
       background-color: var(--accent);
       position: relative;
       border-radius: 6px;
-      transition: 0.3s ease;
+      transition: 0.28s ease;
     }
     .menu__btn span::before,
     .menu__btn span::after {
@@ -42,7 +43,6 @@
     /* Toggle open */
     .menu-active .menu__btn span {
       transform: rotate(45deg);
-      background-color: var(--accent);
     }
     .menu-active .menu__btn span::before {
       transform: rotate(90deg);
@@ -52,21 +52,30 @@
       opacity: 0;
     }
 
-    /* Menu transitions */
     .menu__box {
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity 0.2s;
+      transform: translateX(-110%);
       opacity: 0;
     }
     .menu-active .menu__box {
       transform: translateX(0);
       opacity: 1;
     }
+
+    .bbg{
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.72));
+    }
+
+    .center-plan{
+      display: flex;
+      align-content: flex-start;
+      align-items: center;
+    }
   </style>
 </head>
-<body class="min-h-screen font-sans text-gray-800">
+<body class="min-h-screen text-gray-800">
 
-   <!-- Menu -->
+  <!-- ===== Sidebar / Mobile menu button ===== -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
       <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
@@ -78,12 +87,6 @@
           <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
             <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
             <h6 class="text-sm font-medium">Account</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
-            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
-            <h6 class="text-sm font-medium">Add</h6>
           </a>
         </li>
         <li>
@@ -123,116 +126,200 @@
     </div>
   </div>
 
-  <!-- Account Frame -->
-  <div class="ac-frame flex items-center justify-center min-h-screen px-6">
-    <div class="bd max-w-lg w-full bg-white/80 backdrop-blur-md shadow-xl rounded-3xl p-8 space-y-6 border border-[var(--secondary)]">
-      
-      <!-- Header -->
-      <div class="header text-center">
-        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Account</h1>
-      </div>
+  <!-- ===== Page content ===== -->
+  <main class="min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-md w-full">
+      <!-- Account Card -->
+      <section class="bbg rounded-3xl shadow-xl p-6 md:p-8 border border-[var(--secondary)]">
+        <div class="flex flex-col items-center text-center gap-4">
+          <img id="avatar" src="/static/images/w3.jpg" alt="avatar" class="w-24 h-24 rounded-2xl object-cover border-2 border-white shadow-sm"/>
+          <h1 id="hello" class="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">Account</h1>
+          <p id="msg" class="text-sm text-[var(--muted)]">Thank you for supporting us</p>
 
-      <!-- Main -->
-      <div class="main-frame space-y-3 text-center">
-        <h3 id="hello" class="text-xl font-semibold text-[var(--secondary)]">Hello Khalid Qnabi!</h3>
-        <h3 id="msg" class="text-gray-700">Thank you for supporting us</h3>
-      </div>
+          <div class="center-plan flex-wrap justify-center gap-2 mt-2">
+            <span id="planBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-[var(--secondary)]/20 text-[var(--secondary)]">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Free trial
+            </span>
+            <span id="trialDays" class="text-xs text-[var(--muted)]">7 days left</span>
+          </div>
 
-      <!-- Buttons -->
-      <div class="btns flex justify-center gap-4 pt-4">
-        <button id="btn1" onclick="opentab(btn1herf)" class="px-5 py-2 rounded-xl bg-[var(--accent)] text-gray-900 font-semibold shadow-md hover:shadow-lg hover:scale-105 transition">
-          Get full version
-        </button>
-        <button id="btn2" onclick="opentab(btn2herf)" class="px-5 py-2 rounded-xl bg-[var(--secondary)] text-white font-medium shadow-md hover:bg-opacity-90 hover:scale-105 transition">
-          Switch account
-        </button>
-      </div>
+          <!-- action buttons -->
+          <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3 w-full">
+            <button id="btn1" onclick="opentab(btn1herf)" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-[var(--accent)] text-gray-900 font-semibold shadow hover:scale-[1.02] transition transform">
+              Get full version
+            </button>
+            <button id="btn2" onclick="opentab(btn2herf)" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-[var(--secondary)] text-white font-medium shadow hover:opacity-95 transition">
+              Switch account
+            </button>
+          </div>
+
+          <!-- helpful cards -->
+          <div class="mt-6 grid grid-cols-2 gap-3 w-full">
+            <div class="p-4 rounded-lg bg-[var(--bg-main)]/10 border border-[var(--secondary)] text-center">
+              <div class="text-xs text-[var(--muted)]">Patients</div>
+              <div id="patientsCount" class="text-xl font-bold">0</div>
+            </div>
+            <div class="p-4 rounded-lg bg-[var(--bg-main)]/10 border border-[var(--secondary)] text-center">
+              <div class="text-xs text-[var(--muted)]">Appointments</div>
+              <div id="appointmentsCount" class="text-xl font-bold">0</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  </div>
-
-  <!-- Scripts (unchanged from your code except styling tweaks apply automatically) -->
+  </main>
   <script>
+    // Links used by buttons (updated later by user_data logic)
     var btn1herf = 'https://www.google.com';
     var btn2herf = "https://www.google.com/search?q=potato&tbm=isch";
 
-    function calculateTrialDaysLeft(plan,firstDateStr) {
-        if (plan=== "free"){
-            try {
-                const firstDate = new Date(firstDateStr);
-                const today = new Date();
-                const trialDuration = 7 * 24 * 60 * 60 * 1000;
-                const trialEndDate = new Date(firstDate.getTime() + trialDuration);
-                return Math.max(0, Math.ceil((trialEndDate - today) / (1000 * 60 * 60 * 24)));
-            } catch (error) { return 0; }
-        } else if (plan === "basic") {
-            try {
-                const firstDate = new Date(firstDateStr);
-                const today = new Date();
-                const trialDuration = 30 * 24 * 60 * 60 * 1000;
-                const trialEndDate = new Date(firstDate.getTime() + trialDuration);
-                return Math.max(0, Math.ceil((trialEndDate - today) / (1000 * 60 * 60 * 24)));
-            } catch (error) { return 0; }
-        }
+    function opentab(url){
+      if(!url) return;
+      window.location.href = url;
     }
 
-    function opentab(url) { window.location.href = url; }
+    function calculateTrialDaysLeft(plan, firstDateStr){
+      try{
+        if(!firstDateStr) return 0;
+        const firstDate = new Date(firstDateStr);
+        const today = new Date();
+        const trialDays = plan === 'basic' ? 30 : 7;
+        const trialEnd = new Date(firstDate.getTime() + (trialDays * 24*60*60*1000));
+        return Math.max(0, Math.ceil((trialEnd - today) / (1000*60*60*24)));
+      }catch(e){ return 0; }
+    }
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      const menuBtn = document.querySelector('.hamburger-menu');
+    // Menu controls: responsive (mobile slide-over & desktop persistent)
+    (function(){
+      const menuToggle = document.getElementById('menuToggle');
       const menuBar = document.getElementById('menuBar');
-      menuBtn.addEventListener('click', () => {
-          menuBar.classList.toggle('menu-active');
+      const primaryMenu = document.getElementById('primaryMenu');
+      const menuOverlay = document.getElementById('menuOverlay');
+
+      function openMenu(){
+        document.documentElement.classList.add('menu-open');
+        primaryMenu.classList.remove('-translate-x-full');
+        menuOverlay.classList.remove('hidden');
+        menuToggle.setAttribute('aria-expanded', 'true');
+      }
+
+      function closeMenu(){
+        document.documentElement.classList.remove('menu-open');
+        if(window.innerWidth < 768){
+          primaryMenu.classList.add('-translate-x-full');
+          menuOverlay.classList.add('hidden');
+        }
+        menuToggle.setAttribute('aria-expanded', 'false');
+      }
+
+      // toggle
+      menuToggle?.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(document.documentElement.classList.contains('menu-open')) closeMenu(); else openMenu();
       });
 
+      // close when clicking overlay
+      menuOverlay?.addEventListener('click', closeMenu);
+
+      // close on Escape
+      document.addEventListener('keydown', (e)=>{
+        if(e.key === 'Escape') closeMenu();
+      });
+
+      // ensure correct state on resize
+      window.addEventListener('resize', ()=>{
+        if(window.innerWidth >= 768){
+          primaryMenu.classList.remove('-translate-x-full');
+          menuOverlay.classList.remove('hidden');
+        } else {
+          if(!document.documentElement.classList.contains('menu-open')){
+            primaryMenu.classList.add('-translate-x-full');
+            menuOverlay.classList.add('hidden');
+          }
+        }
+      });
+
+      // init: small screens start closed
+      if(window.innerWidth < 768){
+        primaryMenu.classList.add('-translate-x-full');
+        menuOverlay.classList.add('hidden');
+      }
+    })();
+
+    // initialize page with server-provided user_data (keeps your template placeholders)
+    window.addEventListener('DOMContentLoaded', () => {
       try {
-          const userData = JSON.parse('{{ user_data | tojson | safe }}');
-          const { name, first, payed, plan } = userData;
-          const trialDaysLeft = calculateTrialDaysLeft(plan,first);
-          const trialStatus = trialDaysLeft > 0 ? "gud" : "bad";
+        const userData = JSON.parse('{{ user_data | tojson | safe }}');
+        const { name, first, payed, plan, google_id } = userData || {};
+        const binder = '{{ binder }}';
 
-          const HH = document.getElementById("hello");
-          const Msg = document.getElementById("msg");
-          const Btn1 = document.getElementById("btn1");
-          const Btn2 = document.getElementById("btn2");
+        const menuBtn = document.querySelector('.hamburger-menu');
+        const menuBar = document.getElementById('menuBar');
 
-          const binder = '{{ binder }}';
+        // Toggle menu (keeps same interaction as previous)
+        menuBtn.addEventListener('click', () => {
+            menuBar.classList.toggle('menu-active');
+        });
+
+        // update avatar/hello/message/buttons
+        const hello = document.getElementById('hello');
+        const msg = document.getElementById('msg');
+        const planBadge = document.getElementById('planBadge');
+        const trialDaysEl = document.getElementById('trialDays');
+        const patientsCount = document.getElementById('patientsCount');
+        const appointmentsCount = document.getElementById('appointmentsCount');
+        const msgsCount = document.getElementById('msgsCount');
+        const balance = document.getElementById('balance');
+
+        // compute trial
+        const daysLeft = calculateTrialDaysLeft(plan, first);
+        if(daysLeft > 0){
+          planBadge.innerHTML = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="ml-1">Trial</span>';
+          trialDaysEl.textContent = `${daysLeft} day${daysLeft>1? 's':''} left`;
+        } else {
+          planBadge.innerHTML = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg><span class="ml-1">Active</span>';
+          trialDaysEl.textContent = `No trial`;
+        }
+
+        // set header + buttons for special cases
+        if(google_id === 1){
+          hello.textContent = "Please sign up with Google";
+          msg.textContent = "";
+          document.getElementById('btn1').textContent = "Sign Up with Google";
+          btn1herf = "/logme";
+          document.getElementById('btn2').style.display = 'none';
+        } else {
+          hello.textContent = name ? `Welcome, ${name}` : 'Welcome';
+          msg.textContent = plan ? `Plan: ${plan}` : 'Thank you for supporting us';
+          btn1herf = "/logout";
+          btn2herf = "/logme";
+        }
+
+        // update counts (best-effort; backend should provide these)
+        patientsCount.textContent = userData.patients_count ?? 0;
+        appointmentsCount.textContent = userData.appointments_count ?? 0;
+        msgsCount.textContent = userData.unread_messages ?? 0;
+        balance.textContent = (payed ?? 0).toString();
+
+        // binder type customizations (lab variant)
+        if(binder === 'lab'){
           const appa = document.getElementById('appa');
           const appimg = document.getElementById('appimg');
           const apph6 = document.getElementById('apph6');
-          var link = document.querySelector("link[rel~='icon']");
-      
-          if (binder === 'lab'){
-              appa.title='Search Lab';
-              appa.href='/srchlab';
-              appimg.src='/static/images/srchlab.png';
-              document.title= 'Binder Labratory'
-              link.href = '/static/images/binderlab.jpg';
-              apph6.textContent = 'Search Lab';
-          }
+          const link = document.querySelector("link[rel~='icon']");
+          appa.title='Search Lab';
+          appa.href='/srchlab';
+          appimg.src='/static/images/srchlab.png';
+          document.title= 'Binder Laboratory';
+          if(link) link.href = '/static/images/binderlab.jpg';
+          if(apph6) apph6.textContent = 'Search Lab';
+        }
 
-          if (userData.google_id === 1) {
-              HH.textContent = "Please sign up with Google";
-              Msg.textContent = "";
-              Btn1.textContent = "Sign Up with Google";
-              btn1herf = "/logme";
-              Btn2.style.display = "none";
-          } else if (plan === "free" && trialStatus === "gud") {
-              HH.textContent = `Welcome, ${name}`;
-              Msg.textContent = "Have a nice day";
-              Btn2.style.display = "inline-block";
-              Btn1.textContent = "Log out";
-              btn1herf = "/logout";
-              btn2herf = "/logme";
-          } else {
-              HH.textContent = `Welcome, ${name}`;
-              Msg.textContent = "Thank you for supporting us";
-              Btn2.style.display = "inline-block";
-              Btn1.textContent = "Log out";
-              btn1herf = "/logout";
-              btn2herf = "/logme";
-          }
       } catch (error) {
-          console.error('Error initializing app:', error);
+        console.error('Failed to initialize user data:', error);
       }
     });
   </script>
