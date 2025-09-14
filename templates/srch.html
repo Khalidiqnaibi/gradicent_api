@@ -272,11 +272,20 @@
       // start rotating media when idle
       initMediaRotation();
     });
-
-    /* -------------------------
-       Search / render logic (kept from your original file)
-       IDs and endpoint calls unchanged
-       ------------------------- */
+    const labels = [
+        { key: 'name', text: 'Patient Name' },
+        { key: 'id', text: 'ID Number' },
+        { key: 'phone', text: 'Phone Number' },
+        { key: 'location', text: 'Location' },
+        { key: 'pmh', text: 'Medical History' },
+        { key: 'allergies', text: 'Allergies' },
+        { key: 'age', text: 'Age' },
+        { key: 'next', text: 'Next visit' },
+        { key: 'btype', text: 'Blood Type' },
+        { key: 'sex', text: 'Sex' },
+        { key: 'payed', text: 'Paid' },
+        { key: 'debit', text: 'Debit' }
+    ];
 
     function searchByName() {
       const nameEntry = document.getElementById('idEntry').value;
@@ -393,8 +402,6 @@
       }
     }
 
-    // createPatientDiv / createPatientInfoDiv / helpers are preserved (copied with minimal formatting)
-    // For brevity they are included verbatim from your original file but adapted to use the new styles.
     function createPatientDiv(patient) {
       const patientDiv = document.createElement('div');
       patientDiv.classList.add('decorative-card','p-4','mb-4');
@@ -445,27 +452,11 @@
       return patientDiv;
     }
 
-    // recreate createPatientInfoDiv, savePatientInfo, searchById, autoSearchByNumber and media rotation
-    // to preserve behaviour I reuse your functions with minimal modification for DOM/query selectors
     function createPatientInfoDiv(patient, PLAN) {
       const infoDiv = document.createElement('div');
       infoDiv.classList.add('decorative-card','p-4','mb-4');
       infoDiv.setAttribute('data-patient-no', patient.no || '');
 
-      const labels = [
-        { key: 'name', text: 'Patient Name' },
-        { key: 'id', text: 'ID Number' },
-        { key: 'phone', text: 'Phone Number' },
-        { key: 'location', text: 'Location' },
-        { key: 'pmh', text: 'Medical History' },
-        { key: 'allergies', text: 'Allergies' },
-        { key: 'age', text: 'Age' },
-        { key: 'next', text: 'Next visit' },
-        { key: 'btype', text: 'Blood Type' },
-        { key: 'sex', text: 'Sex' },
-        { key: 'payed', text: 'Paid' },
-        { key: 'debit', text: 'Debit' }
-      ];
 
       const container = document.createElement('div');
       container.classList.add('grid','grid-cols-1','md:grid-cols-2','gap-3');
@@ -524,25 +515,64 @@
       return infoDiv;
     }
 
-    function savePatientInfo(patientNo) {
-      // gather inputs from the visible patient card
+    async function savePatientInfo(patientNo) {
       const patientDiv = document.querySelector(`[data-patient-no="${patientNo}"]`);
-      if (!patientDiv) { alert('Error: Patient block not found'); return; }
+      if (!patientDiv) {
+        alert('Error: Patient block not found');
+        return;
+      }
 
-      const inputs = Array.from(patientDiv.querySelectorAll('input'));
-      const payload = {};
-      inputs.forEach((input, idx) => {
-        payload['field_' + idx] = input.value;
+      // Build payload with top-level keys (endpoint expects { patientNo, name, id, ... })
+      const payload = { patientNo: Number(patientNo) };
+
+      labels.forEach((lbl, idx) => {
+        // Try common selectors in order: data-key, name, id (with patientNo suffix), then fallback to nth input/textarea/select
+        let input = patientDiv.querySelector(`[data-key="${lbl.key}"]`)
+                || patientDiv.querySelector(`[name="${lbl.key}"]`)
+                || patientDiv.querySelector(`#${lbl.key}-${patientNo}`);
+
+        if (!input) {
+          const els = patientDiv.querySelectorAll('input, textarea, select');
+          input = els[idx]; // best-effort fallback (depends on rendering order)
+        }
+
+        let val = '';
+        if (input) {
+          // for checkboxes/radios/selects handle value properly
+          if (input.type === 'checkbox') val = input.checked ? (input.value || true) : false;
+          else val = input.value ?? '';
+        }
+
+        // Convert numeric-ish fields to numbers so backend can parse them correctly
+        if (['age', 'payed', 'debit'].includes(lbl.key)) {
+          // accept comma or dot decimals, fallback to 0
+          const cleaned = String(val).trim().replace(',', '.');
+          const n = parseFloat(cleaned);
+          payload[lbl.key] = Number.isFinite(n) ? n : 0;
+        } else {
+          payload[lbl.key] = val;
+        }
       });
 
-      // send minimal sanity payload; keep your original endpoint
-      fetch('/updatePatientData', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patientNo, payload })
-      })
-      .then(() => alert('Patient data saved successfully.'))
-      .catch((err) => { console.error(err); alert('Error saving patient data.'); });
+      try {
+        const res = await fetch('/updatePatientData', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          console.error('Save failed:', data);
+          alert('Error saving patient data: ' + (data.message || res.statusText));
+          return;
+        }
+
+        alert('Patient data saved successfully.');
+      } catch (err) {
+        console.error(err);
+        alert('Error saving patient data.');
+      }
     }
 
     function autoSearchByNumber(PLAN) {
