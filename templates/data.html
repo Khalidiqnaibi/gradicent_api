@@ -283,11 +283,311 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const menuBtn = document.querySelector(".hamburger-menu");
-      const menuBar = document.getElementById("menuBar");
-      menuBtn.addEventListener("click", () => menuBar.classList.toggle("menu-active"));
+    // small helpers
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    function showToast(text, type = 'info') {
+      const c = $('#toastContainer');
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.textContent = text;
+      if (type === 'error') el.style.background = '#B91C1C';
+      if (type === 'success') el.style.background = '#059669';
+      c.appendChild(el);
+      setTimeout(()=> { el.style.opacity = '0'; setTimeout(()=> el.remove(), 400); }, 3000);
+    }
+
+    // menu toggle + bindings
+    document.addEventListener('DOMContentLoaded', () => {
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
+      menuBtn.addEventListener('click', () => menuBar.classList.toggle('menu-active'));
+
+      // buttons
+      $('#searchButton').addEventListener('click', search);
+      $('#prevButton').addEventListener('click', prev);
+      $('#nextButton').addEventListener('click', next);
+      $('#firstButton').addEventListener('click', first);
+      $('#lastButton').addEventListener('click', last);
+      $('#saveBtn').addEventListener('click', tacc);
+      $('#openFolderBtn').addEventListener('click', () => openFile());
+      $('#printBtn').addEventListener('click', () => { tacc(); printVisit(); });
+
+      // file modal
+      $('#closeModal').addEventListener('click', closeFileModal);
+      $('#chooseFile').addEventListener('click', () => $('#fileInput').click());
+      $('#fileInput').addEventListener('change', onFilesSelected);
+      $('#uploadFiles').addEventListener('click', uploadFile);
+
+      $$('.folder-btn').forEach(b => b.addEventListener('click', (e) => {
+        $$('.folder-btn').forEach(x => x.classList.remove('bg-[var(--accent)]/20'));
+        e.currentTarget.classList.add('bg-[var(--accent)]/20');
+        selectFolder(e.currentTarget.dataset.folder || 'drs');
+      }));
+
+      // keyboard focus flow
+      const entryWidgets = {
+        visit_date: $('#visitDate'),
+        drname: $('#drname'),
+        diagnosis: $('#diagnosis'),
+        treatment: $('#treatment'),
+        lab: $('#lab'),
+        wight: $('#wight'),
+        height: $('#height'),
+        coast: $('#coast'),
+        payed: $('#payed'),
+        debit: $('#debit'),
+        details: $('#details'),
+        search: $('#search')
+      };
+      Object.values(entryWidgets).forEach(widget => {
+        if (!widget) return;
+        widget.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const fields = Object.values(entryWidgets).filter(Boolean);
+            const idx = fields.indexOf(widget);
+            if (idx >= 0 && idx < fields.length - 1) fields[idx + 1].focus();
+          }
+        });
+      });
+
+      fetchPatientData();
     });
+
+    // state
+    let visits = [];
+    let currentVisitIndex = 0;
+    let patientNumber = '';
+    let selectedFolder = 'drs';
+
+    function fetchPatientData() {
+      fetch('/getPatientData')
+        .then(r => r.json())
+        .then(data => {
+          visits = data.visits || [];
+          patientNumber = (data.patientss_number || 0) + 1;
+          if (visits.length) { currentVisitIndex = 0; populatePatientData(visits[0]); showToast('Patient data loaded', 'success'); }
+          else { const t = { visit_date: '', drname:'', diagnosis:'', treatment:'', lab:'', wight: '0', height: '0', coast:0, payed:0, debit:0, details:'', vno:1 }; visits=[t]; currentVisitIndex=0; populatePatientData(t); }
+        })
+        .catch(err => { console.error(err); showToast('Failed to load patient data', 'error'); });
+    }
+
+    function populatePatientData(visit) {
+      $('#visitDate').value = visit.visit_date || '';
+      $('#drname').value = visit.drname || '';
+      $('#diagnosis').value = visit.diagnosis || '';
+      $('#treatment').value = visit.treatment || '';
+      $('#lab').value = visit.lab || '';
+      $('#wight').value = visit.wight ?? '0';
+      $('#height').value = visit.height ?? '0';
+      $('#coast').value = visit.coast ?? '0';
+      $('#payed').value = visit.payed ?? '0';
+      $('#debit').value = visit.debit ?? '0';
+      $('#details').value = visit.details || 'Details';
+
+      const printed = !!visit.printed;
+      if (printed) {
+        $$('#visitForm input, #visitForm textarea').forEach(el => el.disabled = true);
+        $('#search').disabled = false;
+        showToast('This visit is locked (printed).', 'info');
+      } else {
+        $$('#visitForm input, #visitForm textarea').forEach(el => el.disabled = false);
+      }
+      if (!visit.drname || visit.drname.trim() === '') $('#drname').disabled = false;
+      else $('#drname').disabled = true;
+    }
+
+    // navigation
+    function first() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (visits.length){ currentVisitIndex = 0; populatePatientData(visits[0]); } }); }
+    function prev() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (currentVisitIndex > 0){ currentVisitIndex--; populatePatientData(visits[currentVisitIndex]); } }); }
+    function next() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; const newIdx = currentVisitIndex + 1; if (visits[newIdx]){ currentVisitIndex = newIdx; populatePatientData(visits[newIdx]); } else { const t = { visit_date:'', drname:'', treatment:'', diagnosis:'', lab:'', wight:'0', height:'0', coast:0, payed:0, debit:0, details:'', vno:visits.length+1 }; visits.push(t); currentVisitIndex = visits.length-1; populatePatientData(t); } }); }
+    function last() { fetch('/getPatientData').then(r=>r.json()).then(d=>{ visits = d.visits || visits; if (visits.length) { currentVisitIndex = visits.length - 1; populatePatientData(visits[currentVisitIndex]); } }); }
+
+    function search() {
+      const dateToSearch = $('#search').value;
+      fetch('/getPatientData').then(r=>r.json()).then(data => {
+        visits = data.visits || [];
+        const found = visits.find(v => v.visit_date === dateToSearch);
+        if (found) { currentVisitIndex = visits.indexOf(found); populatePatientData(found); showToast('Visit found', 'success'); }
+        else showToast('No visit for that date', 'info');
+      });
+    }
+
+    // save
+    function tacc() {
+      const visitData = {
+        visit_date: $('#visitDate').value.trim(),
+        drname: $('#drname').value.trim(),
+        treatment: $('#treatment').value.trim(),
+        diagnosis: $('#diagnosis').value.trim(),
+        lab: $('#lab').value.trim(),
+        wight: $('#wight').value || '0',
+        height: $('#height').value || '0',
+        debit: parseFloat($('#debit').value) || 0,
+        payed: parseFloat($('#payed').value) || 0,
+        coast: parseFloat($('#coast').value) || 0,
+        details:$('#details').value.trim(),
+        vno: (visits[currentVisitIndex] && visits[currentVisitIndex].vno) || (currentVisitIndex + 1)
+      };
+      if (!visitData.visit_date) { showToast('Visit date is required', 'error'); return; }
+      totald(visitData);
+      fetch('/updateVisitData', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(visitData) })
+        .then(r=>r.json().catch(()=>({})))
+        .then(()=> fetch('/updatePatientTotals', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ totalDebit: visitData.debit }) }))
+        .then(()=> { showToast('Visit saved', 'success'); fetchPatientData(); })
+        .catch(err => { console.error(err); showToast('Error saving visit', 'error'); });
+    }
+
+    function totald(visitData) {
+      try {
+        if (parseFloat(visitData.payed) > 0 && parseFloat(visitData.coast) > 0) {
+          const res = parseFloat(visitData.coast) - parseFloat(visitData.payed);
+          $('#debit').value = res; visitData.debit = res;
+        } else if (parseFloat(visitData.debit) !== 0 && parseFloat(visitData.coast) > 0) {
+          if (parseFloat(visitData.debit) > 0) {
+            const res = parseFloat(visitData.coast) - parseFloat(visitData.debit);
+            $('#payed').value = res; visitData.payed = res;
+          } else {
+            const res = parseFloat(visitData.coast) + parseFloat(visitData.debit);
+            $('#payed').value = res; visitData.payed = res;
+          }
+        } else if (parseFloat(visitData.debit) !== 0 && parseFloat(visitData.payed) > 0) {
+          const res = parseFloat(visitData.payed) + parseFloat(visitData.debit);
+          $('#coast').value = res; visitData.coast = res;
+        } else if (parseFloat(visitData.coast) > 0) {
+          const res = parseFloat(visitData.coast);
+          $('#debit').value = res; visitData.debit = res;
+        }
+      } catch(e) { console.error('totald error', e); }
+      return visitData;
+    }
+
+    function printVisit() {
+      if (!confirm("After printing you can't change this visit's info. Continue?")) return;
+      fetch('/kkprint', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ vno: currentVisitIndex }) })
+      .then(resp => { if (!resp.ok) throw new Error('Print failed'); return resp.blob(); })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'visit.docx'; document.body.appendChild(a); a.click();
+        url && window.URL.revokeObjectURL(url);
+        showToast('Visit printed and locked', 'success');
+        fetchPatientData();
+      })
+      .catch(err => { console.error(err); showToast('Print failed', 'error'); });
+    }
+
+    // FILE MANAGER: implemented selectFolder behavior to show upload controls only for 'drs'
+    function openFile() {
+      $('#fileModal').style.display = 'flex';
+      $('#fileModal').style.alignItems = 'center';
+      $('#fileModal').style.justifyContent = 'center';
+      selectFolder('drs'); // default open doctor folder
+    }
+    function closeFileModal() {
+      $('#fileModal').style.display = 'none';
+      $('#filePreviews').innerHTML = '';
+    }
+
+    function selectFolder(folder) {
+      selectedFolder = folder || 'drs';
+      const uploadControls = $('#uploadControls');
+      const fileInput = $('#fileInput');
+      const uploadButton = $('#uploadFiles');
+      // Show upload input only for the 'drs' folder
+      if (selectedFolder === 'drs') {
+        // make upload controls visible and interactive
+        uploadControls.style.display = 'flex';
+        // ensure choose/upload are visible (fileInput stays hidden but triggered by chooseFile)
+        if (fileInput) fileInput.disabled = false;
+        if (uploadButton) uploadButton.disabled = false;
+      } else {
+        // hide upload controls for other folders
+        uploadControls.style.display = 'none';
+        if (fileInput) fileInput.disabled = true;
+        if (uploadButton) uploadButton.disabled = true;
+      }
+      fetchFiles();
+    }
+
+    function onFilesSelected(e) {
+      if ($('#fileInput').files.length) {
+        showToast(`${$('#fileInput').files.length} files selected`, 'info');
+      }
+    }
+
+    function uploadFile() {
+      const files = $('#fileInput').files;
+      if (!files || files.length === 0) { showToast('No files selected', 'error'); return; }
+      if (selectedFolder !== 'drs') { showToast("Uploads allowed only in Doctor folder", 'error'); return; }
+
+      const patientNo = patientNumber;
+      const totalFiles = files.length;
+      let currentIndex = 0;
+      $('#uploadProgressContainer').classList.remove('hidden');
+
+      function uploadNext() {
+        if (currentIndex >= totalFiles) {
+          $('#uploadProgressContainer').classList.add('hidden');
+          $('#fileInput').value = '';
+          showToast('All files uploaded', 'success');
+          fetchFiles();
+          return;
+        }
+        const file = files[currentIndex];
+        const form = new FormData();
+        form.append('file', file);
+        form.append('patient_no', patientNo);
+        form.append('folder', selectedFolder);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/uploadFile', true);
+        xhr.upload.onprogress = function (ev) {
+          if (!ev.lengthComputable) return;
+          const filePercent = (ev.loaded / ev.total) * 100;
+          const overall = Math.round(( (currentIndex / totalFiles) * 100) + (filePercent / totalFiles));
+          $('#fileUploadProgress').value = overall;
+          $('#progressText').textContent = `${overall}%`;
+        };
+        xhr.onload = function () {
+          if (xhr.status === 200) { currentIndex++; uploadNext(); }
+          else { showToast('Upload failed: ' + xhr.statusText, 'error'); $('#uploadProgressContainer').classList.add('hidden'); }
+        };
+        xhr.onerror = function () { showToast('Upload error', 'error'); $('#uploadProgressContainer').classList.add('hidden'); };
+        xhr.send(form);
+      }
+      uploadNext();
+    }
+
+    function fetchFiles() {
+      const patientNo = patientNumber || '';
+      const folder = encodeURIComponent(selectedFolder || 'drs');
+      fetch(`/getFiles?patient_no=${patientNo}&folder=${folder}`).then(r=>r.json()).then(files => renderFiles(files || [])).catch(err => { console.error(err); showToast('Failed to fetch files', 'error'); });
+    }
+
+    function renderFiles(files) {
+      const container = $('#filePreviews'); container.innerHTML = '';
+      if (!files || !files.length) { container.innerHTML = '<div class="text-gray-500">No files</div>'; return; }
+      files.forEach(file => {
+        const div = document.createElement('div'); div.className = 'file-preview';
+        const link = document.createElement('a'); link.href = file.data; link.target = '_blank';
+        if (file.file_type.includes('image')) { const img = document.createElement('img'); img.src = file.data; link.appendChild(img); }
+        else if (file.file_type.includes('video')) { const v = document.createElement('video'); v.src = file.data; v.controls = true; v.className = 'rounded'; link.appendChild(v); }
+        else { const txt = document.createElement('div'); txt.className='p-3 border rounded txtPrev'; txt.textContent = file.name || 'file'; link.appendChild(txt); }
+        if (selectedFolder === 'drs') {
+          const rem = document.createElement('div'); rem.className = 'file-remove'; rem.innerHTML = '&times;';
+          rem.addEventListener('click', (e) => { e.preventDefault(); if (!confirm('Delete this file?')) return; deleteFile(file.data); });
+          div.appendChild(rem);
+        }
+        div.appendChild(link); container.appendChild(div);
+      });
+    }
+
+    function deleteFile(url) { fetch(`/deleteFile?url=${encodeURIComponent(url)}`, { method:'DELETE' }).then(r=>r.json()).then(()=>{ showToast('File deleted', 'success'); fetchFiles(); }).catch(e=>{ console.error(e); showToast('Delete failed', 'error'); }); }
+
+    window.openFile = openFile;
+    window.printVisit = printVisit;
   </script>
 </body>
 </html>
