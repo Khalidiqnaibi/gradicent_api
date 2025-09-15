@@ -1293,6 +1293,7 @@ def indexar():
     return render_template("login - ar.html")
 
 @app.route("/sign_in")
+@login_is_required
 def sign_in():
     if "binder" in session and session["binder"] == 'med':
         return render_template("sign_in.html")
@@ -1341,6 +1342,7 @@ def done():
     return render_template("errors.html",msg='User not loged in',err='Unexpected')
 
 @app.route("/protected_area_ar")
+@login_is_required
 def donear():
     logged_in = "google_id" in session
     if logged_in:
@@ -1515,6 +1517,7 @@ def get_userDD():
     return  jsonify({"user_data": user_data}), 200
 
 @app.route('/Binder_labratory')
+@login_is_required
 def get_last_pagelab():
 
     if "google_id" in session:
@@ -1630,6 +1633,7 @@ def get_last_pagelab():
         return  render_template(f"{page}.html",user_data=user_data,binder=binder)
 
 @app.route('/Binder_medical')
+@login_is_required
 def get_last_page():
     session["binder"]= 'med'
     if "binder" in session: 
@@ -1756,12 +1760,14 @@ def get_last_page():
         return  render_template(f"{page}.html",user_data=user_data,binder=binder)
 
 @app.route('/acc')
+@login_is_required
 def accc():
     session["page"]='acc'
     return redirect("/fetchUserData")
     #return render_template("acc.html",user_data=user_data,price=medprice)
 
 @app.route('/home_page')
+@login_is_required
 def homeeeepage():
     session["page"]='home'
     if "google_id" in session:
@@ -1786,6 +1792,7 @@ def homeeeepage():
         return redirect("/fetchUserData")
 
 @app.route('/support')
+@login_is_required
 def support():
     session["page"]='support'
 
@@ -1811,6 +1818,7 @@ def support():
         return redirect("/fetchUserData")
 
 @app.route('/settings')
+@login_is_required
 def settingssss():
 
     if "google_id" in session:
@@ -1851,6 +1859,7 @@ def settingssss():
         return redirect("/fetchUserData")
 
 @app.route('/stats')
+@login_is_required
 def statsss():
     session["page"]='stats'
 
@@ -1876,6 +1885,7 @@ def statsss():
         return redirect("/fetchUserData")
 
 @app.route('/srch')
+@login_is_required
 def srchhhhh():
     session["page"]='srch'
     if "google_id" in session:
@@ -1901,6 +1911,7 @@ def srchhhhh():
         return redirect("/fetchUserData")
 
 @app.route('/back')
+@login_is_required
 def backkkk():
     session["page"]='srch'
     if "google_id" in session:
@@ -1953,10 +1964,12 @@ def meddata():
         return redirect("/fetchUserData")
 
 @app.route('/lab')
+@login_is_required
 def lab():
     return render_template("Labratory.html")
 
 @app.route('/lab_page')
+@login_is_required
 def lab_page():
     session["page"]='lab'
 
@@ -1982,6 +1995,7 @@ def lab_page():
         return redirect("/fetchUserData")
     
 @app.route('/srchlab')
+@login_is_required
 def srchlabbb():
     session["page"]='lab_req'
 
@@ -2007,6 +2021,7 @@ def srchlabbb():
         return redirect("/fetchUserData")
 
 @app.route('/getlab')
+@login_is_required
 def getlab():
     google_id = session["google_id"]
     patient_id = session.get('patientno')
@@ -2792,6 +2807,32 @@ def update_patient_totals():
     except Exception as e:
         print(e)
         return jsonify({"message": f"An error occurred while updating patient totals {user_data}"}), 500
+
+@app.route("/api/patient_count")
+@login_is_required
+def patient_count():
+    gid = session["google_id"]
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}/{gid}/patients')
+    patients = drs_ref.get() or {}
+    return jsonify({"patient_count": len(patients)}), 200
+
+@app.route('/api/appointment_count')
+@login_is_required
+def appointment_count():
+    gid = session["google_id"]
+    typee=session.get('wtype', 'drs')
+    drs_ref = db.reference(f'/{typee}/{gid}/patients')
+    patients = drs_ref.get() or {}
+    count = 0
+    today_str = datetime.now().date().isoformat()
+    
+    for patient in patients:
+        for visit in patient.get('visits', []):
+            if visit.get('next') == today_str:
+                count += 1
+                
+    return jsonify({"appointment_count": count}), 200
 
 @app.route('/nnn')
 @login_is_required

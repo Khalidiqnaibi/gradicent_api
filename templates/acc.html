@@ -43,6 +43,7 @@
     /* Toggle open */
     .menu-active .menu__btn span {
       transform: rotate(45deg);
+      background-color: var(--accent);
     }
     .menu-active .menu__btn span::before {
       transform: rotate(90deg);
@@ -52,6 +53,7 @@
       opacity: 0;
     }
 
+    /* Menu slide */
     .menu__box {
       transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity 0.2s;
       transform: translateX(-110%);
@@ -75,7 +77,7 @@
 </head>
 <body class="min-h-screen text-gray-800">
 
-  <!-- ===== Sidebar / Mobile menu button ===== -->
+  <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
       <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
@@ -87,6 +89,12 @@
           <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
             <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
             <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
           </a>
         </li>
         <li>
@@ -192,62 +200,27 @@
       }catch(e){ return 0; }
     }
 
-    // Menu controls: responsive (mobile slide-over & desktop persistent)
-    (function(){
-      const menuToggle = document.getElementById('menuToggle');
-      const menuBar = document.getElementById('menuBar');
-      const primaryMenu = document.getElementById('primaryMenu');
-      const menuOverlay = document.getElementById('menuOverlay');
-
-      function openMenu(){
-        document.documentElement.classList.add('menu-open');
-        primaryMenu.classList.remove('-translate-x-full');
-        menuOverlay.classList.remove('hidden');
-        menuToggle.setAttribute('aria-expanded', 'true');
-      }
-
-      function closeMenu(){
-        document.documentElement.classList.remove('menu-open');
-        if(window.innerWidth < 768){
-          primaryMenu.classList.add('-translate-x-full');
-          menuOverlay.classList.add('hidden');
-        }
-        menuToggle.setAttribute('aria-expanded', 'false');
-      }
-
-      // toggle
-      menuToggle?.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        if(document.documentElement.classList.contains('menu-open')) closeMenu(); else openMenu();
-      });
-
-      // close when clicking overlay
-      menuOverlay?.addEventListener('click', closeMenu);
-
-      // close on Escape
-      document.addEventListener('keydown', (e)=>{
-        if(e.key === 'Escape') closeMenu();
-      });
-
-      // ensure correct state on resize
-      window.addEventListener('resize', ()=>{
-        if(window.innerWidth >= 768){
-          primaryMenu.classList.remove('-translate-x-full');
-          menuOverlay.classList.remove('hidden');
-        } else {
-          if(!document.documentElement.classList.contains('menu-open')){
-            primaryMenu.classList.add('-translate-x-full');
-            menuOverlay.classList.add('hidden');
+    function get_appointments_count(){
+      fetch('/api/appointment_count')
+        .then(response => response.json())
+        .then(data => {
+          if(data && typeof data.count === 'number'){
+            document.getElementById('appointmentsCount').textContent = data.count;
           }
-        }
-      });
+        })
+        .catch(error => console.error('Error fetching appointments count:', error));
+    }
 
-      // init: small screens start closed
-      if(window.innerWidth < 768){
-        primaryMenu.classList.add('-translate-x-full');
-        menuOverlay.classList.add('hidden');
-      }
-    })();
+    function get_patients_count(){
+      fetch('/api/patient_count')
+        .then(response => response.json())
+        .then(data => {
+          if(data && typeof data.patient_count === 'number'){
+            document.getElementById('patientsCount').textContent = data.patient_count;
+          }
+        })
+        .catch(error => console.error('Error fetching patients count:', error));
+    }
 
     // initialize page with server-provided user_data (keeps your template placeholders)
     window.addEventListener('DOMContentLoaded', () => {
@@ -264,15 +237,15 @@
             menuBar.classList.toggle('menu-active');
         });
 
+        // fetch counts
+        get_appointments_count();
+        get_patients_count();
+
         // update avatar/hello/message/buttons
         const hello = document.getElementById('hello');
         const msg = document.getElementById('msg');
         const planBadge = document.getElementById('planBadge');
         const trialDaysEl = document.getElementById('trialDays');
-        const patientsCount = document.getElementById('patientsCount');
-        const appointmentsCount = document.getElementById('appointmentsCount');
-        const msgsCount = document.getElementById('msgsCount');
-        const balance = document.getElementById('balance');
 
         // compute trial
         const daysLeft = calculateTrialDaysLeft(plan, first);
@@ -297,12 +270,6 @@
           btn1herf = "/logout";
           btn2herf = "/logme";
         }
-
-        // update counts (best-effort; backend should provide these)
-        patientsCount.textContent = userData.patients_count ?? 0;
-        appointmentsCount.textContent = userData.appointments_count ?? 0;
-        msgsCount.textContent = userData.unread_messages ?? 0;
-        balance.textContent = (payed ?? 0).toString();
 
         // binder type customizations (lab variant)
         if(binder === 'lab'){
