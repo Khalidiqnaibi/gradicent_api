@@ -75,8 +75,14 @@
       background: var(--card);
       border-radius: 18px;
       padding: 20px;
+      height: 80%;
       box-shadow: 0 14px 40px rgba(12,12,12,0.06);
       border:1px solid rgba(0,0,0,0.04);
+    }
+
+    .scroll-area{
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) rgba(0,0,0,0.1);
     }
 
     /* input look: soft gradient border, padding */
@@ -132,7 +138,7 @@
     .slot .actions { display:flex; gap:8px; align-items:center; justify-self:end; }
 
     /* scroll area */
-    .scroll-area { max-height: 58vh; overflow-y: auto; padding-right:6px; }
+    .scroll-area { max-height: 30vh; overflow-y: auto; padding-right:6px; }
     .empty {
       display:flex; align-items:center; justify-content:center; padding:36px; color:var(--muted);
       border:2px dashed rgba(0,0,0,0.06); border-radius:12px; background: rgba(255,255,255,0.6);
@@ -156,6 +162,25 @@
     .butnss{
       display: flex;
       flex-direction: column;
+    }
+
+    .w-full.sm\:w-64 {
+      display: flex;
+      align-items: center;
+    }
+
+    .flex.flex-col.sm\:flex-row.sm\:items-center.sm\:gap-4.mb-4 {
+      display: flex;
+      justify-content: space-around;
+    } 
+
+    main.container {
+      display: flex;
+      align-self: center;
+      height: 100%;
+      justify-content: center;
+      justify-self: center;
+      align-items: center;
     }
 
   </style>
@@ -182,7 +207,7 @@
   </div>
 
   <main class="container">
-    <div class="card">
+    <div class="card gap-3">
       <!-- header -->
       <div class="butnss items-center justify-between mb-4">
         <div>
@@ -199,8 +224,8 @@
 
       <!-- controls: date picker + quick filters -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:gap-4 mb-4">
-        <div class="w-full sm:w-64">
-          <label class="small-muted block mb-1">Show appointments for</label>
+        <div class="w-full sm:w-64 gap-3">
+          <label class="small-muted block mb-1">Date</label>
           <input id="appointmentDate" type="date" class="input-control" aria-label="Appointment date" />
         </div>
 

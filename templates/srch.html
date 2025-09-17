@@ -19,116 +19,283 @@
       --text: #2b2b2b;
     }
 
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body { height: 100%; overflow-x: hidden; }
-    body {
+    /* Base reset */
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
       font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
       background: linear-gradient(180deg, var(--bg-main) 0%, #E6D6C0 60%);
       color: var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      margin: 0;
+      line-height: 1.4;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Hamburger + Menu */
-    .menu__btn span,
-    .menu__btn span::before,
-    .menu__btn span::after {
-      display:block;
-      width:28px;
-      height:3px;
-      background:var(--accent);
-      border-radius:6px;
-      transition:0.28s ease;
-      position:relative;
+    /* Main layout */
+    main.layout-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 1100px;
+      margin: 45px auto;
+      padding: 16px;
     }
-    .menu__btn span::before,
-    .menu__btn span::after { content:""; position:absolute; left:0; }
-    .menu__btn span::before { top:-8px; }
-    .menu__btn span::after { top:8px; }
 
-    .menu__box {
-      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity .22s;
-      transform: translateX(-110%);
-      opacity: 0;
-    }
-    .menu-active .menu__box { transform: translateX(0); opacity: 1; }
-    .menu-active .menu__btn span { transform: rotate(45deg); background:var(--accent); }
-    .menu-active .menu__btn span::before { top:0; transform: rotate(90deg); }
-    .menu-active .menu__btn span::after { opacity:0; }
-
-    /* Cards / panels */
+    /* Decorative card */
     .decorative-card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,255,255,0.72));
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.84));
       border: 1px solid rgba(0,0,0,0.04);
       box-shadow: 0 10px 30px rgba(18,18,18,0.06);
-      border-radius: 14px;
+      border-radius: 16px;
     }
 
-    /* Result area background media */
-    .result {
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position: center;
-      min-height: 48vh;
-      max-height: 70vh;
-      overflow-y: auto;
+    section.decorative-card.p-6 {
+      min-height: auto;
+      max-height: none;
+    }
+
+    /* Controls grid */
+    .controls-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    @media (min-width: 900px) {
+      .controls-grid {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+    }
+
+    /* Inputs & Buttons */
+    input[type="text"] {
+      -webkit-appearance:none; 
+      -moz-appearance:none;
+    }
+
+    .big-input {
+      font-size: 1.05rem; 
+      padding: 14px 16px; 
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.98);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .big-btn {
+      min-height: 48px; 
+      padding: 12px 18px; 
+      border-radius: 14px; 
+      font-weight: 600; 
+      font-size: 1rem;
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 10px; 
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(12,12,12,0.06);
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--accent), rgb(207,161,117));
+      color: #142022;
+      border: none;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(90deg, var(--secondary), #7ecbf5);
+      color: #fff; 
+      border: none;
+    }
+
+    .btn-ghost {
+      background: transparent; 
+      border: 1px solid rgba(0,0,0,0.06); 
+      color: var(--text);
+    }
+
+    /* Accessibility focus */
+    .big-input:focus, .big-btn:focus, .menu__btn:focus, .menu-item:focus {
+      outline: 3px solid rgba(206,122,53,0.14);
+      outline-offset: 3px;
+    }
+
+    /* Search hint */
+    #srchHint { 
+      margin-top:10px; 
+      padding:12px; 
+      border-radius:12px; 
+      background: linear-gradient(90deg, rgba(255,255,255,0.88), rgba(255,255,255,0.8)); 
+      border:1px solid rgba(0,0,0,0.03); 
+      color:rgba(0,0,0,0.6); 
+      font-size:0.98rem; 
+      display:flex; 
+      gap:12px; 
+      align-items:center; 
+    }
+
+    /* Search results */
+    #srchMain {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-height: none;         /* remove artificial height limit */
+      min-height: 150px;
+      overflow-y: visible;      /* allow natural flow */
+      justify-content: flex-start;
+      margin-bottom: 20px;      /* give breathing room before patient cards */
+    }
+
+    #srchMain img {
+      width: 100%;
+      max-height: 60vh;
+      object-fit: cover;
       border-radius: 12px;
     }
 
-    .scrollbar {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(0,0,0,0.6) rgba(0,0,0,0.1);
+    /* Patient card grid */
+    .patient-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      width: 100%;
     }
 
-    /* Keep inputs from causing overflow in flex containers */
-    .flex-safe > * { min-width: 0; }
-
-    /* The new hint box: placed above the media area (won't overlap) */
-    #srchHint {
-      margin-top: 0.75rem;
-      font-size: 0.95rem;
-      color: rgba(0,0,0,0.55);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.6rem 0.75rem;
-      border-radius: 10px;
-      background: linear-gradient(90deg, rgba(255,255,255,0.72), rgba(255,255,255,0.64));
-      border: 1px solid rgba(0,0,0,0.03);
+    .patient-info-grid input.patient-value {
+      width: 100%;
+      box-sizing: border-box;
     }
 
-    /* Buttons */
-    .btn-primary {
-      background: linear-gradient(90deg, var(--accent), rgb(207, 161, 117));
-      color: #142022;
-    }
-    .btn-ghost {
-      background: var(--secondary);
-      color: #fff;
+    .patient-card > div:last-child {
+      flex-wrap: wrap;
     }
 
-    /* small hint icon */
-    #srchHint .dot {
-      width: 14px;
-      height: 10px;
-      background: var(--accent);
-      border-radius: 90%;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    .flex.gap-6.items-center {
+      gap: 18rem;
     }
+
+    /* Patient labels & values */
+    .patient-card {
+      margin-top: 0;            /* no more manual top margin needed */
+      width: 100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.84));
+      border: 1px solid rgba(0,0,0,0.04);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    .patient-row { display:flex; gap:12px; align-items:center; width: 100%; }
+    .patient-label { font-weight:600; min-width:120px; color:rgba(0,0,0,0.7); }
+    .patient-value { background:rgba(255,255,255,0.92); padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.04); flex:1; }
 
     /* Responsive tweaks */
-    @media (min-width: 900px) {
-      .layout-center { max-width: 1100px; margin: 48px auto; }
+    @media (max-width: 500px) {
+      .patient-value {
+        font-size: 0.95rem;
+        padding: 8px;
+      }
+      .patient-label {
+        min-width: auto;
+        font-size: 0.9rem;
+      }
+      #srchHint, #textupper {
+        display: none;
+      }
     }
-    @media (max-width: 899px) {
-      .result { min-height: 36vh; }
+
+    /* Smooth scroll for results */
+    #srchMain {
+      scroll-behavior: smooth;
     }
+
+    /* Hamburger menu lines */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display: block;
+      width: 26px;
+      height: 3px;
+      background-color: var(--accent);
+      position: relative;
+      border-radius: 6px;
+      transition: 0.28s ease;
+    }
+    .menu__btn span::before,
+    .menu__btn span::after {
+      content: "";
+      position: absolute;
+      left: 0;
+    }
+    .menu__btn span::before { top: -8px; }
+    .menu__btn span::after { top: 8px; }
+
+    .menu-active .menu__btn span {
+      transform: rotate(45deg);
+      background-color: var(--accent);
+    }
+    .menu-active .menu__btn span::before {
+      transform: rotate(90deg);
+      top: 0;
+    }
+    .menu-active .menu__btn span::after {
+      opacity: 0;
+    }
+
+    /* Menu slide */
+    .menu__box {
+      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity 0.2s;
+      transform: translateX(-110%);
+      opacity: 0;
+    }
+    .menu-active .menu__box {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 260px;
+      max-width: 350px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      font-size: 0.95rem;
+      font-weight: 500;
+      animation: slideIn 0.4s ease, fadeOut 0.6s ease 3.4s forwards;
+    }
+    .toast-success { background: #d1fae5; color: #065f46; border-left: 6px solid #10b981; }
+    .toast-error   { background: #fee2e2; color: #991b1b; border-left: 6px solid #ef4444; }
+    .toast-info    { background: #dbeafe; color: #1e3a8a; border-left: 6px solid #3b82f6; }
+
+    @keyframes slideIn {
+      from { transform: translateX(120%); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateX(120%); }
+    }
+
   </style>
 </head>
 <body>
 
-  <!-- Menu -->
+  <!-- Floating menu (kept same items + icons) -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
       <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
@@ -186,55 +353,96 @@
   </div>
 
   <!-- Page content -->
-  <div class="layout-center px-6 py-10">
-    <div class="decorative-card p-6 shadow-sm">
-      <div class="flex flex-col md:flex-row items-start gap-4 flex-safe">
-        <!-- Left: search controls -->
-        <div class="w-full md:w-1/3">
-          <label class="block text-sm font-semibold mb-2">Search by name / number</label>
-          <input id="idEntry" type="text" placeholder="Enter patient name or number" class="w-full px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/90 focus:ring-2 focus:ring-[var(--accent)]" />
+  <main class="layout-center">
+    <section class="decorative-card p-6">
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <div class="flex gap-6 items-center">
+          <div class="flex items-center gap-4">
+            <img src="/static/images/w3.jpg" class="w-16 h-16 rounded-full shadow">
+            <h1 style="font-size:1.6rem; font-weight:700; letter-spacing:-0.6px;">Search patients</h1>
+          </div>
+          <p id="textupper" style="color:rgba(0,0,0,0.6); margin-top:6px; font-size:0.98rem;">
+            Enter a patient name, ID, or phone number.
+          </p>
+        </div>
+      </div>
 
-          <div class="mt-4 flex gap-3">
-            <button id="searchNameBtn" onclick="searchByName()" class="px-4 py-2 rounded-xl btn-primary shadow">Search by Name</button>
-            <button id="searchNumberBtn" onclick="searchByNumber('{{plan}}')" class="px-4 py-2 rounded-xl btn-ghost shadow">Search by Number</button>
+      <div class="controls-grid">
+        <!-- Left controls -->
+        <div>
+          <input id="idEntry" type="text" class="big-input" aria-label="Search by patient name or number"
+                 value="" />
+
+          <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-3">
+            <button id="searchNameBtn" onclick="searchByName()" class="big-btn btn-primary w-full sm:w-auto" title="Search by name">
+              Search by Name
+            </button>
+
+            <button id="searchNumberBtn" onclick="searchByNumber('{{plan}}')" class="big-btn btn-secondary w-full sm:w-auto" title="Search by number">
+              Search by Number
+            </button>
           </div>
 
           <div id="srchHint" aria-live="polite">
-            <div>
-              <div class="font-semibold">Tip: press Enter after typing to search by name.</div>
-                <div class="text-sm">Results will appear here. Ads rotate when no results are shown.</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <div>
+                <div style="font-weight:600;">Tips:</div>
+                <div style="font-weight: 600;">- press Enter to quickly search by name.</div>
+                <div style="font-weight: 600;">- search ID or phone number using 'search by number' button.</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Right: result area -->
-        <div class="w-full md:w-2/3 mt-4 md:mt-0">
-          <div id="srchMain" class="result decorative-card p-4 scrollbar">
-            <!-- Initially empty. Media rotation will set background-image. -->
+        <!-- Right result area -->
+        <div>
+          <div id="srchMain" class="result decorative-card scrollbar" role="region" aria-live="polite" aria-label="Search results">
+            <!-- Rotating media / results will appear here -->
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[9999] space-y-3"></div>
 
 
-  <!-- Chart.js not used here; keep scripts for app logic -->
+  <!-- scripts (logic preserved and slightly refactored for the new layout) -->
   <script>
     const PLAN = '{{plan}}';
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      container.appendChild(toast);
+
+      // auto remove after animation
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
+    }
+
+
     document.addEventListener("DOMContentLoaded", function() {
+      // template tokens (unchanged)
       const nono = '{{nono}}';
       const pats = '{{pats}}';
-
-      const menuBtn = document.querySelector('.hamburger-menu');
-      const menuBar = document.getElementById('menuBar');
-
-      // Toggle menu and spin transition
-      menuBtn.addEventListener('click', () => {
-        menuBar.classList.toggle('menu-active');
-      });
-
-      // binder logic preserved
       const binder = '{{ binder }}';
+
+      // MENU toggle accessibility
+      const menuBtn = document.querySelector('.hamburger-menu');
+        const menuBar = document.getElementById('menuBar');
+
+        // Toggle menu (keeps same interaction as previous)
+        menuBtn.addEventListener('click', () => {
+            menuBar.classList.toggle('menu-active');
+        });
+
+      // binder-specific adjustments (kept from original)
       const appa = document.getElementById('appa');
       const appimg = document.getElementById('appimg');
       const apph6 = document.getElementById('apph6');
@@ -248,28 +456,28 @@
         apph6.textContent = 'Search Lab';
       }
 
-      // Attach enter key search for convenience
+      // quick-enter support
       const idEntry = document.getElementById('idEntry');
       idEntry.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') searchByName();
+        if (e.key === 'Enter') {
+          // prefer name search on enter
+          searchByName();
+        }
       });
 
-      // Attach button for number search (keeps your original behaviour)
       document.getElementById("searchNumberBtn").addEventListener("click", function(event) {
         searchByNumber(PLAN);
       });
 
-      // if nono, auto search
-      if (nono === 'yup'){
+      // auto flows from template
+      if (nono === 'yup') {
         autoSearchByNumber(PLAN);
       }
-
-      // if pats provided, call searchStats (preserve original flow)
       if (pats !== 'nope') {
         searchStats();
       }
 
-      // start rotating media when idle
+      // start rotating media when empty
       initMediaRotation();
     });
     const labels = [
@@ -288,8 +496,18 @@
     ];
 
     function searchByName() {
-      const nameEntry = document.getElementById('idEntry').value;
+      const nameEntry = document.getElementById('idEntry').value.trim();
       const srchMain = document.getElementById('srchMain');
+
+      if (!nameEntry) {
+        showToast("Please type a name or number above.", "info");
+        return;
+      }
+
+      if (/^\d+$/.test(nameEntry)) {
+        showToast("That looks like a number. Please use the number search instead.", "error");
+        return;
+      }
 
       fetch('/search_by_name', {
           method: 'POST',
@@ -300,18 +518,15 @@
       .then(data => {
           if (Array.isArray(data)) {
               renderSearchResult(data, srchMain);
-              srchMain.style.justifyContent="space-around";
               srchMain.style.backgroundImage="none";
               srchMain.style.backgroundColor = "var(--w)";
           } else {
-              srchMain.innerHTML = `Error: ${data.error || 'Unexpected error'}`;
-              srchMain.style.backgroundImage="none";
+              showToast(`Error: ${data.error || 'Unexpected error'}`, "error");
           }
       })
       .catch(error => {
-          console.error('Fetch error:', error);
-          srchMain.innerHTML = 'Error fetching data. Please try again.';
-          srchMain.style.backgroundImage="none";
+        console.error('Fetch error:', error);
+        showToast("Error fetching data. Please try again.", "error");
       });
     }
 
@@ -325,23 +540,31 @@
       .then(data => {
         if (Array.isArray(data)) {
           renderSearchResult(data, srchMain);
-          srchMain.style.justifyContent = "space-around";
           srchMain.style.backgroundImage = "none";
         } else {
-          srchMain.innerHTML = `Error: ${data.error || 'Unexpected error'}`;
-          srchMain.style.backgroundImage = "none";
+          showToast(`Error: ${data.error || 'Unexpected error'}`, "error");
         }
       })
       .catch(error => {
         console.error('Fetch error:', error);
-        srchMain.innerHTML = 'Error fetching data. Please try again.';
-        srchMain.style.backgroundImage = "none";
+        showToast("Error fetching data. Please try again.", "error");
       });
     }
 
     function searchByNumber(PLAN) {
-      const numberEntry = document.getElementById('idEntry').value;
+      const numberEntry = document.getElementById('idEntry').value.trim();
       const srchMain = document.getElementById('srchMain');
+
+      if (!numberEntry) {
+        showToast("Please enter an ID or phone number.", "info");
+        return; 
+      }
+
+      // 🚫 validate numeric input (digits only)
+      if (!/^\d+$/.test(numberEntry)) {
+        showToast("Invalid number. Please enter digits only.", "error");
+        return;
+      }
 
       fetch('/search_by_number', {
         method: 'POST',
@@ -354,171 +577,133 @@
       })
       .then(data => {
         if (data.error) {
-          srchMain.innerHTML = `Error: ${data.error}`;
+          showToast(`Error: ${data.error}`, "error");
         } else {
           if (Object.keys(data).length === 0) {
-            srchMain.innerHTML = 'No patient found.';
+            showToast('No patient found.', "info");
           } else {
             renderPatientInfo(data, srchMain, PLAN);
+            srchMain.style.backgroundImage = "none";
           }
-          srchMain.style.backgroundImage="none";
         }
       })
       .catch(error => {
         console.error('Fetch error:', error);
-        srchMain.innerHTML = 'Error fetching data. Please try again.';
-        srchMain.style.backgroundImage="none";
+        showToast("Error fetching data. Please try again.", "error");
       });
     }
 
     function renderSearchResult(patients, srchMain) {
       srchMain.innerHTML = '';
-      const s = document.getElementById('idFrame');
-      s && s.classList && s.classList.add('aha');
-
       if (!patients || patients.length === 0) {
-        const message = document.createElement('label');
-        message.textContent = 'The name is not registered';
-        srchMain.appendChild(message);
-      } else {
-        patients.forEach((patient) => {
-          const patientDiv = createPatientDiv(patient);
-          srchMain.appendChild(patientDiv);
-        });
+        showToast(`No matches found. Try another spelling or try searching by number.`, "info");
+        return;
       }
+
+      patients.forEach(patient => {
+        const container = document.createElement('div');
+        container.className = 'patient-card decorative-card';
+        container.innerHTML = `
+          <div class="patient-row" style="justify-content:space-between;">
+            <div>
+              <div style="font-weight:800; font-size:1.05rem;">${patient.name || '—'}</div>
+              <div style="color:rgba(0,0,0,0.6); margin-top:6px;">ID: ${patient.no || '—'} • Age: ${patient.age || '—'}</div>
+            </div>
+            <div style="text-align:right;">
+              <button class="big-btn btn-secondary" style="min-width:110px;" onclick="searchById('${patient.no}')">Open</button>
+            </div>
+          </div>
+        `;
+        srchMain.appendChild(container);
+      });
     }
 
     function renderPatientInfo(patient, srchMain, PLAN) {
       srchMain.innerHTML = '';
-      if (patient) {
-        const infoDiv = createPatientInfoDiv(patient ,PLAN);
-        srchMain.appendChild(infoDiv);
-        const maxwidth = document.documentElement.clientWidth;
-        if (maxwidth > 750) srchMain.style.justifyContent = "center";
-      } else {
-        const message = document.createElement('label');
-        message.textContent = 'The number is not registered';
-        srchMain.appendChild(message);
-      }
-    }
-
-    function createPatientDiv(patient) {
-      const patientDiv = document.createElement('div');
-      patientDiv.classList.add('decorative-card','p-4','mb-4');
-
-      const inpuu = document.createElement('div');
-      inpuu.classList.add('flex','flex-col','gap-3');
-
-      const idRow = document.createElement('div');
-      idRow.classList.add('flex','items-center','gap-3');
-
-      const idLabel = document.createElement('label');
-      idLabel.textContent = 'Patient Number:';
-      idLabel.classList.add('text-sm','w-36');
-
-      const idEntry = document.createElement('input');
-      idEntry.type = 'text';
-      idEntry.classList.add('px-3','py-2','rounded-xl','border','border-[var(--secondary)]','w-full');
-      idEntry.value = patient.no;
-
-      const searchBtn = document.createElement('button');
-      searchBtn.textContent = 'Search';
-      searchBtn.classList.add('px-3','py-2','rounded-lg','btn-primary');
-      searchBtn.onclick = function() { searchById(patient.no); };
-
-      idRow.appendChild(idLabel);
-      idRow.appendChild(idEntry);
-      idRow.appendChild(searchBtn);
-      inpuu.appendChild(idRow);
-
-      // Name / Location / Age / Debit (conditionally)
-      const nameRow = document.createElement('div');
-      nameRow.classList.add('flex','flex-wrap','gap-3');
-      nameRow.innerHTML = `
-        <div class="w-full sm:w-1/2"><label class="text-sm">Patient Name:</label><input class="px-3 py-2 rounded-xl border border-[var(--secondary)] w-full" value="${patient.name || ''}" /></div>
-        <div class="w-full sm:w-1/2"><label class="text-sm">Location:</label><input class="px-3 py-2 rounded-xl border border-[var(--secondary)] w-full" value="${patient.location || ''}" /></div>
-        <div class="w-1/3"><label class="text-sm">Age:</label><input class="px-3 py-2 rounded-xl border border-[var(--secondary)] w-full" value="${patient.age || ''}" /></div>
-      `;
-      inpuu.appendChild(nameRow);
-
-      if (PLAN !== 'sec') {
-        const debitRow = document.createElement('div');
-        debitRow.classList.add('mt-2');
-        debitRow.innerHTML = `<label class="text-sm">Debit:</label><input class="px-3 py-2 rounded-xl border border-[var(--secondary)] w-full" value="${patient.debit || 0}" />`;
-        inpuu.appendChild(debitRow);
+      if (!patient) {
+        showToast('The number is not registered', "info");
+        return;
       }
 
-      patientDiv.appendChild(inpuu);
-      return patientDiv;
-    }
-
-    function createPatientInfoDiv(patient, PLAN) {
       const infoDiv = document.createElement('div');
-      infoDiv.classList.add('decorative-card','p-4','mb-4');
+      infoDiv.className = 'patient-card decorative-card';
       infoDiv.setAttribute('data-patient-no', patient.no || '');
 
-
-      const container = document.createElement('div');
-      container.classList.add('grid','grid-cols-1','md:grid-cols-2','gap-3');
+      // grid of fields (simple clear layout for older eyes)
+      const grid = document.createElement('div');
+      grid.className = 'patient-info-grid';
 
       labels.forEach(label => {
-        const wrapper = document.createElement('div');
-        wrapper.classList.add('flex','flex-col','gap-1');
-
-        const entryLabel = document.createElement('label');
-        entryLabel.classList.add('text-sm');
-        entryLabel.textContent = label.text + ':';
+        const field = document.createElement('div');
+        const fldLabel = document.createElement('div');
+        fldLabel.className = 'patient-label';
+        fldLabel.style.fontWeight = '700';
+        fldLabel.style.marginBottom = '6px';
+        fldLabel.textContent = label.text + ':';
 
         let entry;
-        if (label.key === "next") {
+        if (label.key === 'next') {
           entry = document.createElement('input');
           entry.type = 'datetime-local';
           entry.value = patient[label.key] || formatyear();
-          entry.classList.add('px-3','py-2','rounded-xl','border','border-[var(--secondary)]');
+          entry.className = 'patient-value';
         } else {
           entry = document.createElement('input');
           entry.type = 'text';
           entry.value = (patient[label.key] !== undefined ? patient[label.key] : '');
-          entry.classList.add('px-3','py-2','rounded-xl','border','border-[var(--secondary)]');
+          entry.className = 'patient-value';
         }
 
-        wrapper.appendChild(entryLabel);
-        wrapper.appendChild(entry);
-        container.appendChild(wrapper);
+        // set data-key for save extraction
+        entry.setAttribute('data-key', label.key);
+
+        field.appendChild(fldLabel);
+        field.appendChild(entry);
+        grid.appendChild(field);
       });
 
-      // buttons row
+      // actions
       const btnRow = document.createElement('div');
-      btnRow.classList.add('mt-3','flex','gap-3','justify-center');
+      btnRow.style.marginTop = '14px';
+      btnRow.style.display = 'flex';
+      btnRow.style.gap = '10px';
+      btnRow.style.justifyContent = 'center';
 
       const saveButton = document.createElement('button');
+      saveButton.className = 'big-btn btn-primary';
       saveButton.textContent = 'Save';
-      saveButton.classList.add('px-4','py-2','rounded-xl','btn-primary');
       saveButton.onclick = () => savePatientInfo(patient.no);
 
       const printBtn = document.createElement('button');
+      printBtn.className = 'big-btn btn-ghost';
       printBtn.textContent = 'Print';
-      printBtn.classList.add('px-4','py-2','rounded-xl','btn-ghost');
       printBtn.onclick = () => showPage('kprint');
 
       const openBtn = document.createElement('button');
+      openBtn.className = 'big-btn';
       openBtn.textContent = 'Open';
-      openBtn.classList.add('px-4','py-2','rounded-xl','bg-white','border','border-[var(--secondary)]');
+      openBtn.style.background = 'white';
+      openBtn.style.border = '1px solid rgba(0,0,0,0.06)';
       openBtn.onclick = () => showPage('meddata');
 
       btnRow.appendChild(saveButton);
       btnRow.appendChild(printBtn);
       if (PLAN !== 'sec') btnRow.appendChild(openBtn);
 
-      infoDiv.appendChild(container);
+      infoDiv.appendChild(grid);
       infoDiv.appendChild(btnRow);
-      return infoDiv;
+      srchMain.appendChild(infoDiv);
+
+      // center for wide screens
+      const maxwidth = document.documentElement.clientWidth;
+      if (maxwidth > 750) srchMain.style.justifyContent = "center";
     }
 
+    /* Save function (keeps original conversion logic) */
     async function savePatientInfo(patientNo) {
       const patientDiv = document.querySelector(`[data-patient-no="${patientNo}"]`);
       if (!patientDiv) {
-        alert('Error: Patient block not found');
+        showToast('Error: Patient block not found', "error");
         return;
       }
 
@@ -526,26 +711,22 @@
       const payload = { patientNo: Number(patientNo) };
 
       labels.forEach((lbl, idx) => {
-        // Try common selectors in order: data-key, name, id (with patientNo suffix), then fallback to nth input/textarea/select
         let input = patientDiv.querySelector(`[data-key="${lbl.key}"]`)
                 || patientDiv.querySelector(`[name="${lbl.key}"]`)
                 || patientDiv.querySelector(`#${lbl.key}-${patientNo}`);
 
         if (!input) {
           const els = patientDiv.querySelectorAll('input, textarea, select');
-          input = els[idx]; // best-effort fallback (depends on rendering order)
+          input = els[idx];
         }
 
         let val = '';
         if (input) {
-          // for checkboxes/radios/selects handle value properly
           if (input.type === 'checkbox') val = input.checked ? (input.value || true) : false;
           else val = input.value ?? '';
         }
 
-        // Convert numeric-ish fields to numbers so backend can parse them correctly
         if (['age', 'payed', 'debit'].includes(lbl.key)) {
-          // accept comma or dot decimals, fallback to 0
           const cleaned = String(val).trim().replace(',', '.');
           const n = parseFloat(cleaned);
           payload[lbl.key] = Number.isFinite(n) ? n : 0;
@@ -571,7 +752,7 @@
         alert('Patient data saved successfully.');
       } catch (err) {
         console.error(err);
-        alert('Error saving patient data.');
+        showToast('Error saving patient data.', "error");
       }
     }
 
@@ -584,9 +765,9 @@
       })
       .then(res => { if (!res.ok) return res.text().then(t => { throw new Error(t); }); return res.json(); })
       .then(data => {
-        if (data.error) { srchMain.innerHTML = `Error: ${data.error}`; srchMain.style.backgroundImage="none"; }
+        if (data.error) { showToast(`Error: ${data.error}`, "error"); }
         else {
-          if (Object.keys(data).length === 0) srchMain.innerHTML = 'No patient found.';
+          if (Object.keys(data).length === 0) showToast('No patient found.', "info");
           else {
             document.getElementById('idEntry').value = data.no || '';
             renderPatientInfo(data, srchMain, PLAN);
@@ -594,7 +775,7 @@
           srchMain.style.backgroundImage="none";
         }
       })
-      .catch(err => { console.error(err); srchMain.innerHTML = 'Error fetching data.'; srchMain.style.backgroundImage="none"; });
+      .catch(err => { console.error(err); showToast("Error fetching data. Please try again.", "error"); });
     }
 
     function searchById(patientNumber) {
@@ -606,23 +787,20 @@
       })
       .then(res => { if (!res.ok) return res.text().then(t => { throw new Error(t); }); return res.json(); })
       .then(data => {
-        if (data.error) srchMain.innerHTML = `Error: ${data.error}`;
+        if (data.error) showToast(`Error: ${data.error}`, "error");
         else {
-          if (Object.keys(data).length === 0) srchMain.innerHTML = 'No patient found.';
+          if (Object.keys(data).length === 0) showToast('No patient found.', "info");
           else {
             document.getElementById('idEntry').value = data.no || '';
             renderPatientInfo(data, srchMain, PLAN);
           }
         }
       })
-      .catch(err => { console.error(err); srchMain.innerHTML = 'Error fetching data.'; });
+      .catch(err => { console.error(err); showToast("Error fetching data. Please try again.", "error"); });
     }
 
     function showPage(page) { window.location.href = `/${page}`; }
 
-    /* --------------------------
-       Media rotation when result area is empty
-       -------------------------- */
     const mediaSources = [
       { type: 'image', src: '/static/images/ad.jpg' },
       { type: 'image', src: 'https://firebasestorage.googleapis.com/v0/b/monydb-f2cdb.appspot.com/o/freebindermed.png?alt=media&token=55b86ff5-fd63-4a9d-bc41-79302130c7ba' },
@@ -642,35 +820,35 @@
       const srchMain = document.getElementById('srchMain');
       mediaIndex = getStartIndexBasedOnTime();
 
+      // create an img element once
+      let adImg = document.createElement('img');
+      adImg.style.maxWidth = "100%";
+      adImg.style.borderRadius = "16px";
+      adImg.style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)";
+      adImg.style.display = "none";
+      srchMain.appendChild(adImg);
+
       function showNextMedia() {
-        // only change media if srchMain has no inner result (no child .decorative-card)
-        const hasResultCards = !!srchMain.querySelector('.decorative-card');
-        if (hasResultCards) return; // don't override results
+        const hasResultCards = !!srchMain.querySelector('.patient-card');
+        if (hasResultCards) { adImg.style.display = 'none'; return; }
 
         const media = mediaSources[mediaIndex];
         if (media.type === 'image') {
-          srchMain.style.backgroundImage = `url(${media.src})`;
-          // remove inner placeholder text if exists
-          if (!srchMain.querySelector('.decorative-card')) {
-            // ensure centered message displayed over bg
-            srchMain.innerHTML = `<div class="w-full h-full flex items-center justify-center text-[rgba(0,0,0,0.55)]"></div>`;
-          }
+          adImg.src = media.src;
+          adImg.style.display = 'block';
         }
+
         mediaIndex = (mediaIndex + 1) % mediaSources.length;
         clearTimeout(mediaTimer);
         mediaTimer = setTimeout(showNextMedia, 15000);
       }
 
-      // start rotating
       showNextMedia();
-      // restart on user clearing results
+
       const observer = new MutationObserver(() => {
-        // if results removed, resume rotation
-        if (!srchMain.querySelector('.decorative-card')) {
-          if (!mediaTimer) mediaTimer = setTimeout(showNextMedia, 15000);
-        } else {
-          clearTimeout(mediaTimer); mediaTimer = null;
-        }
+        const hasCards = !!srchMain.querySelector('.patient-card');
+        if (!hasCards && !mediaTimer) mediaTimer = setTimeout(showNextMedia, 15000);
+        if (hasCards) { clearTimeout(mediaTimer); mediaTimer = null; adImg.style.display='none'; }
       });
       observer.observe(srchMain, { childList: true, subtree: true });
     }
