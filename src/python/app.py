@@ -1517,7 +1517,6 @@ def get_userDD():
     return  jsonify({"user_data": user_data}), 200
 
 @app.route('/Binder_labratory')
-@login_is_required
 def get_last_pagelab():
 
     if "google_id" in session:
@@ -1633,7 +1632,6 @@ def get_last_pagelab():
         return  render_template(f"{page}.html",user_data=user_data,binder=binder)
 
 @app.route('/Binder_medical')
-@login_is_required
 def get_last_page():
     session["binder"]= 'med'
     if "binder" in session: 
@@ -1964,7 +1962,6 @@ def meddata():
         return redirect("/fetchUserData")
 
 @app.route('/lab')
-@login_is_required
 def lab():
     return render_template("Labratory.html")
 
