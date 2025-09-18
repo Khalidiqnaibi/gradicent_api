@@ -680,7 +680,10 @@ def codesec():
         return jsonify({'error': 'Invalid code'}), 403
 
 @app.route('/ses')
+@login_is_required
 def sess():
+    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
+        return jsonify({"message": "Access denied"}), 403
     i={}
     for j in session:
         i[j]=session[j]
