@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Settings — Binder Medical</title>
+  <title>Binder Medical</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,13 +20,7 @@
       font-family: Inter, system-ui, sans-serif;
     }
 
-    /* Hamburger lines (keep theme/menu)<div style="display:flex; gap:10px; align-items:center;">
-              <div>
-                <div style="font-weight:600;">Tips:</div>
-                <div style="font-weight: 600;">- press Enter to quickly search by name.</div>
-                <div style="font-weight: 600;">- search ID or phone number using 'search by number'</div>
-              </div>
-            </div> */
+    /* Hamburger lines (keep theme/menu)*/
     .menu__btn span,
     .menu__btn span::before,
     .menu__btn span::after {
@@ -65,10 +59,6 @@
       display: inline;
     }
 
-    .flex.items-center.justify-center.min-h-screen.px-6.w-full {
-      width: 500px;
-    } 
-
     .flex.flex-col.sm\:flex-row.items-stretch.sm\:items-center.gap-2 {
       display: flex;
       flex-direction: column;
@@ -90,6 +80,10 @@
       line-height: 1.45;
       overflow: auto;
       box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    input {
+      width: 100%;
     }
 
     /* small toast for copy/save feedback */
@@ -348,54 +342,11 @@
       }
     });
 
-    // generate code
-    document.getElementById("generate-code").addEventListener("click", async (e) => {
-      e.preventDefault();
-      try {
-        // server should accept { action: 'generate' } and return { code: '...' }
-        const res = await fetch('/codesec', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ action: 'generate' })
-        });
-        const d = await res.json();
-        if (d?.code) {
-          document.getElementById("code").value = d.code;
-          document.getElementById("codePreview").textContent = d.code;
-          // show preview automatically
-          showPreview(true);
-          showToast('New code generated');
-        } else {
-          showToast('Generation failed');
-        }
-      } catch (err) {
-        console.error(err);
-        showToast('Generation error');
-      }
-    });
-
-    // toggle preview panel
-    const previewWrap = document.getElementById('codePreviewWrap');
-    const previewBtn = document.getElementById('toggle-preview');
-    function showPreview(forceOpen = false){
-      const isHidden = previewWrap.classList.contains('hidden');
-      if(forceOpen || isHidden){
-        previewWrap.classList.remove('hidden');
-        previewBtn.setAttribute('aria-pressed','true');
-      } else {
-        previewWrap.classList.add('hidden');
-        previewBtn.setAttribute('aria-pressed','false');
-      }
-    }
-    previewBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      showPreview();
-    });
 
     // copy code to clipboard
     document.getElementById("copy-code").addEventListener("click", async (e) => {
       e.preventDefault();
-      const code = document.getElementById("code").value || document.getElementById("codePreview").textContent;
+      const code = document.getElementById("codePreview").textContent || document.getElementById("code").value;
       if(!code) { showToast('Nothing to copy'); return; }
       try {
         await navigator.clipboard.writeText(code);
