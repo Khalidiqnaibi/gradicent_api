@@ -73,6 +73,23 @@
       align-content: flex-start;
       align-items: center;
     }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 260px;
+      max-width: 350px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      font-size: 0.95rem;
+      font-weight: 500;
+      animation: slideIn 0.4s ease, fadeOut 0.6s ease 3.4s forwards;
+    }
+    .toast-success { background: #d1fae5; color: #065f46; border-left: 6px solid #10b981; }
+    .toast-error   { background: #fee2e2; color: #991b1b; border-left: 6px solid #ef4444; }
+    .toast-info    { background: #dbeafe; color: #1e3a8a; border-left: 6px solid #3b82f6; }
   </style>
 </head>
 <body class="min-h-screen text-gray-800">
@@ -179,14 +196,38 @@
       </section>
     </div>
   </main>
+
+  
+  <div id="toast-container" class="fixed top-4 right-4 z-[9999] space-y-3"></div>
   <script>
     // Links used by buttons (updated later by user_data logic)
     var btn1herf = 'https://www.google.com';
     var btn2herf = "https://www.google.com/search?q=potato&tbm=isch";
-
+    
     function opentab(url){
       if(!url) return;
       window.location.href = url;
+    }
+
+    function isoToday() {
+      const t = new Date();
+      const tzOffset = t.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(t - tzOffset)).toISOString().slice(0,10);
+      return localISOTime;
+    }
+
+    function toast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      container.appendChild(toast);
+
+      // auto remove after animation
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
     }
 
     function calculateTrialDaysLeft(plan, firstDateStr){
@@ -200,15 +241,23 @@
       }catch(e){ return 0; }
     }
 
-    function get_appointments_count(){
-      fetch('/api/appointment_count')
-        .then(response => response.json())
-        .then(data => {
-          if(data && typeof data.count === 'number'){
-            document.getElementById('appointmentsCount').textContent = data.count;
-          }
-        })
-        .catch(error => console.error('Error fetching appointments count:', error));
+    async function get_appointments_count(){
+      var date = isoToday();
+      try {
+        const res = await fetch(`/get_appointments/${date}`);
+        if (!res.ok) throw new Error('Network response not ok');
+        const data = await res.json();
+        // Accept both array and { appointments: [...] } shapes
+        appointments = Array.isArray(data) ? data : (data.appointments || []);
+        // ensure msg property exists
+        appointments = appointments.map(a => ({ ...a, msg: a.msg ?? '' }));
+        document.getElementById('appointmentsCount').textContent = appointments.length;
+      } catch (err) {
+        console.error(err);
+        appointments = [];
+        document.getElementById('appointmentsCount').textContent = 0;
+        toast('Failed to load appointments', 'error');
+      }
     }
 
     function get_patients_count(){
@@ -219,7 +268,10 @@
             document.getElementById('patientsCount').textContent = data.patient_count;
           }
         })
-        .catch(error => console.error('Error fetching patients count:', error));
+        .catch(error => {
+          toast(`Error fetching patients count`, "error");
+          console.log(`Error fetching patients count:`,error);
+        });
     }
 
     // initialize page with server-provided user_data (keeps your template placeholders)
@@ -286,6 +338,7 @@
         }
 
       } catch (error) {
+        toast("Failed to initialize user data", "error");
         console.error('Failed to initialize user data:', error);
       }
     });

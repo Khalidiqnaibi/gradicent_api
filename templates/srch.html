@@ -745,11 +745,11 @@
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           console.error('Save failed:', data);
-          alert('Error saving patient data: ' + (data.message || res.statusText));
+          showToast(`Error saving patient data:${(data.message || res.statusText)}` ,"error");
           return;
         }
 
-        alert('Patient data saved successfully.');
+        showToast('Patient data saved successfully.',"success");
       } catch (err) {
         console.error(err);
         showToast('Error saving patient data.', "error");
