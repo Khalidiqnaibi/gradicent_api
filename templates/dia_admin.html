@@ -1,0 +1,38 @@
+{% extends "dia_base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="bg-white rounded-2xl p-6 shadow-soft">
+    <h3 class="text-lg font-semibold">Admin — Manage Users</h3>
+    <p class="text-sm text-slate-500">Add new users and assign roles. Passwords are hashed in the backend (werkzeug).</p>
+
+    <form method="POST" action="{{ url_for('admin') }}" class="mt-4 grid grid-cols-2 gap-3">
+      <input name="username" placeholder="Username" class="form-input" required>
+      <input name="password" placeholder="Password" type="password" class="form-input" required>
+      <select name="role" class="form-input">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button type="submit" class="btn-primary">Create</button>
+    </form>
+
+    <hr class="my-4">
+
+    <h4 class="text-md font-semibold">Existing users</h4>
+    <div id="userList" class="mt-3 text-sm text-slate-700">
+      <!-- Optionally render list from backend -->
+      {% if users %}
+        <ul class="space-y-2">
+        {% for u in users %}
+          <li class="flex items-center justify-between bg-cream-soft p-3 rounded">
+            <div><strong>{{ u.username }}</strong> • <span class="text-slate-500">{{ u.role }}</span></div>
+            <div><a href="#" class="text-xs text-indigo-600">Edit</a></div>
+          </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-slate-500">No users found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

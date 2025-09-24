@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Immortal Diagnosie AI</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <link href="../static/css/dia_styles.css" rel="stylesheet">
+
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="controls">
+    <div class="brand">
+      <div class="logo">RAG</div>
+      <div>
+        <h1>Immortal Diagnosie AI</h1>
+        <p>Ask, index or inspect</p>
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Add Document</h3>
+      <div class="muted" style="margin-bottom:8px">Upload a file or paste raw text. Supported: .txt, .csv, .pdf, .docx</div>
+
+      <div id="dropzone" style="border:1px dashed rgba(15,23,42,0.04); padding:12px; border-radius:8px; text-align:center; cursor:pointer;">
+        <input id="fileInput" type="file" style="display:none" />
+        <div style="padding: 16px 10px;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="opacity:0.85"><path d="M12 3v9" stroke="#6aa5ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 7l4-4 4 4" stroke="#7c5cff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 21H4a2 2 0 0 1-2-2V8" stroke="#56d9c4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="margin-top:8px" class="muted">Drag & drop a file here , or click to choose</div>
+        </div>
+      </div>
+
+      <label style="margin-top:10px">Or paste raw text</label>
+      <textarea id="rawText" placeholder="Paste raw text here..."></textarea>
+
+      <label style="margin-top:8px">Optional metadata (JSON)</label>
+      <textarea id="rawMeta" placeholder='{"source":"notes.txt","chunk_id":"123"}' style="min-height:64px"></textarea>
+
+      <div style="display:flex;justify-content:space-between;margin-top:10px;align-items:center">
+        <button id="uploadTextBtn" class="btn small">Index text</button>
+        <div id="uploadStatus" class="muted" style="font-size:13px"></div>
+      </div>
+    </div>
+
+    <!-- Model switch -->
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Model / LLM</h3>
+      <label>Mode</label>
+      <select id="modelMode">
+        <option value="openrouter">openrouter</option>
+        <option value="hf">hf</option>
+        <option value="other">other</option>
+      </select>
+      <label style="margin-top:8px">HF Model (optional)</label>
+      <input id="modelName" type="text" placeholder="e.g. gpt2-xl / mistral-7b" />
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="switchModelBtn" class="btn small">Switch Model</button>
+        <button id="rebuildBtn" class="btn small secondary">Rebuild Retriever</button>
+      </div>
+      <div class="muted" style="margin-top:8px">Switch LLM backend or rebuild top-k parameters for hybrid retriever.</div>
+    </div>
+
+    <!-- Inspector -->
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Inspector</h3>
+      <label>Query to inspect retrieval</label>
+      <input id="inspectQuery" type="text" placeholder="e.g. who is John Doe?" />
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="inspectBtn" class="btn small ghost">Run Inspect</button>
+        <button id="clearInspect" class="btn small secondary">Clear</button>
+      </div>
+      <div id="inspectResult" style="margin-top:10px;font-size:13px;color:var(--muted)"></div>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted); margin-top:12px">Tip: index a few documents first to see SelfQuery retriever & compression in action.</div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="toolbar">
+      <div style="display:flex;gap:12px;align-items:center">
+        <h2 style="margin:0">Query</h2>
+        <div class="muted">Ask the system using retrieval-augmented generation</div>
+      </div>
+
+      <div class="status" id="serverStatus">
+        <div class="dot"></div>
+        <div><span id="statusText" class="muted">Checking server...</span></div>
+      </div>
+    </div>
+
+    <!-- Query card -->
+    <section class="query-card">
+      <div class="query-area">
+        <label>Question</label>
+        <textarea id="question" placeholder="Type your question here and press Ask..."></textarea>
+
+        <div class="controls">
+          <label style="display:inline-flex;align-items:center;gap:8px">
+            <input id="returnSources" type="checkbox" /> Return QA sources
+          </label>
+
+          <!-- top-k slider -->
+          <div style="display:flex;align-items:center;gap:10px;">
+            <label style="margin:0">Top K</label>
+            <div class="range-wrap">
+              <input id="topkRange" class="range" type="range" min="1" max="20" value="5" />
+              <div id="topkValue" class="value-bubble">5</div>
+            </div>
+          </div>
+
+          <label style="display:inline-flex;align-items:center;gap:8px">
+            Mode:
+            <select id="modeSelect">
+              <option value="">(default)</option>
+              <option value="hybrid">hybrid</option>
+              <option value="selfquery">selfquery</option>
+              <option value="compression">compression</option>
+            </select>
+          </label>
+
+          <div style="flex:1"></div>
+
+          <button id="askBtn" class="btn">Ask</button>
+          <button id="clearBtn" class="btn secondary">Clear</button>
+        </div>
+      </div>
+
+      <aside style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:13px;color:var(--muted)">Quick actions</div>
+        <button id="sampleBtn" class="btn small ghost">Insert sample query</button>
+        <button id="rawJsonBtn" class="btn small secondary">Show raw JSON</button>
+        <div class="muted" style="font-size:12px">Tip: toggle "Return QA sources" to show retrieved chunks.</div>
+      </aside>
+    </section>
+
+    <!-- Response -->
+    <div class="response">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div id="loaderWrap" style="display:none"><div class="loader"></div></div>
+          <h3 style="margin:0">Answer</h3>
+          <div class="muted" id="answerMeta" style="font-size:13px"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="copyAnswer" class="btn small secondary">Copy</button>
+          <button id="downloadJson" class="btn small ghost">Download JSON</button>
+        </div>
+      </div>
+
+      <div id="answerText" style="font-size:15px; line-height:1.55; padding:6px 2px;"></div>
+
+      <!-- Voice controls -->
+      <div class="voice-controls">
+        <select id="voiceSelect" style="width: 25%;">
+          <!--option>Loading voices…</option-->
+        </select>
+        <button id="readAnswer" class="btn small">🔊 Read Answer</button>
+        <button id="stopRead" class="btn small secondary">Stop</button>
+        <div id="log"><p># bruh</p></div>
+      </div>
+
+      <details id="provenance" open>
+        <summary style="cursor:pointer">Sources (vectorstore provenance)</summary>
+        <div id="sourcesList" class="sources" style="margin-top:8px; max-height: 200px; overflow-y: auto;"></div>
+      </details>
+
+      <details id="qaSourcesDetail" style="margin-top:8px;">
+        <summary>QA chain returned sources (if requested)</summary>
+        <div id="qaSources" style="margin-top:8px; max-height: 300px; overflow-y: auto;"></div>
+      </details>
+
+      <details style="margin-top:8px">
+        <summary>Raw response JSON</summary>
+        <pre id="rawJson" class="json" style="display:none"></pre>
+      </details>
+    </div>
+  </main>
+</div>
+
+<!-- Toast container -->
+<div id="toast" style="display:none" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="../static/js/main.js"></script>
+</body>
+</html>

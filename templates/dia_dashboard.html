@@ -1,0 +1,98 @@
+{% extends "dia_base.html" %}
+{% block content %}
+<div class="grid grid-cols-12 gap-6">
+  <!-- Left: Q&A -->
+  <section class="col-span-12 lg:col-span-8">
+    <div class="bg-white rounded-2xl p-6 shadow-soft">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold">Ask the Assistant</h3>
+        </div>
+        <div id="statusBadge" class="text-sm text-slate-500">Ready</div>
+      </div>
+
+      <textarea id="question" class="mt-4 w-full min-h-[140px] p-4 rounded-xl border border-slate-200 resize-y" placeholder="A 65-year-old with chest pain and atrial fibrillation..."></textarea>
+
+      <div class="flex items-center gap-3 mt-4">
+        <button id="askBtn" class="btn-primary">Ask</button>
+        <button id="clearBtn" class="btn-ghost">Clear</button>
+
+        <div id="loading" class="ml-3 hidden items-center gap-2">
+          <div class="spinner"></div>
+          <span class="text-sm text-slate-500">Thinking…</span>
+        </div>
+
+        <!--div class="ml-auto text-sm text-slate-500">
+          <label class="inline-flex items-center gap-2">
+            <input id="toggleRaw" type="checkbox" class="checkbox"> Show raw markdown
+          </label>
+        </div-->
+      </div>
+
+      <!-- Answer card -->
+      <div id="answerCard" class="mt-6 bg-cream-soft rounded-2xl p-5 border border-slate-100 hidden">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-lg bg-white/80 shadow-inner flex items-center justify-center font-bold AI">AI</div>
+          <div class="flex-1">
+            <div class="flex items-center gap-3">
+              <h4 class="text-md font-semibold">Answer</h4>
+              <div class="ml-auto flex items-center gap-2">
+                <button id="copyMdBtn" class="btn-small">Copy</button>
+                <button id="downloadMdBtn" class="btn-small">Download</button>
+                <button id="toggleSourcesBtn" class="btn-small">Sources</button>
+              </div>
+            </div>
+
+            <div id="rawMd" class="mt-3 text-sm text-slate-700 font-mono hidden whitespace-pre-wrap bg-white/80 rounded p-3 border border-slate-100"></div>
+            <div id="renderedMd" class="mt-3 prose max-w-none"></div>
+
+            <div id="sourcesPanel" class="mt-4 hidden">
+              <h5 class="text-sm font-medium text-slate-600">Retrieved Sources</h5>
+              <ul id="sourcesList" class="mt-2 text-sm text-slate-700"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right: Tools / Upload / Admin -->
+  <aside class="col-span-12 lg:col-span-4">
+    <div class="bg-white rounded-2xl p-6 shadow-soft">
+      <h4 class="font-semibold">Utilities</h4>
+
+      {% if current_user.is_authenticated and current_user.role == "admin" %}
+      <div class="mt-4">
+        <label class="block text-sm text-slate-600 mb-2">Upload Source Document</label>
+        <input id="docfile" type="file" class="text-sm">
+        <div class="flex gap-2 mt-3">
+          <button id="uploadBtn" class="btn-primary">Upload</button>
+          <div id="uploadStatus" class="text-sm text-slate-600 self-center"></div>
+        </div>
+
+        <hr class="my-4">
+        <h5 class="text-sm font-medium">Developer Tools</h5>
+        <div class="mt-3 space-y-2">
+          <button id="rebuildBtn" class="btn-ghost">Rebuild Retriever</button>
+          <button id="switchModelBtn" class="btn-ghost">Switch Model</button>
+        </div>
+      </div>
+      {% else %}
+      <div class="mt-4 bg-white/50 rounded p-4 text-sm text-slate-600">
+        <img src="">
+        <!--strong>Upload (Admin only)</strong>
+        <p class="mt-2">You don't have permission to upload documents. Ask an admin to add sources.</p-->
+      </div>
+      {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated and current_user.role == "admin" %}
+    <div class="bg-white rounded-2xl p-6 mt-4 shadow-soft">
+      <h4 class="font-semibold">Admin</h4>
+      <p class="text-sm text-slate-500">Manage users and logs from the admin page.</p>
+      <a class="btn-ghost mt-3 inline-block" href="{{ url_for('admin') }}">Open Admin Panel</a>
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "dia_base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto mt-12">
+  <div class="bg-white rounded-2xl p-8 shadow-soft">
+    <h2 class="text-xl font-semibold mb-4">Sign in</h2>
+    <form method="POST" class="space-y-4">
+      <input name="username" placeholder="Username" class="form-input" required>
+      <input name="password" type="password" placeholder="Password" class="form-input" required>
+      <div class="flex items-center justify-between">
+        <button class="btn-primary w-full" type="submit">Sign in</button>
+      </div>
+    </form>
+    <p class="mt-4 text-sm text-slate-500">If you're admin, you will see the management panel after signing in.</p>
+  </div>
+</div>
+{% endblock %}

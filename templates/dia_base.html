@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" class="antialiased">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ title or "Immortal AI - Clinical Assistant" }}</title>
+
+  <!-- Tailwind (for quick utility styling) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Marked for Markdown rendering + DOMPurify for sanitization -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+
+  <!-- Highlight.js for code blocks -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dia_style.css') }}">
+</head>
+
+<body class="bg-cream text-slate-800 min-h-screen">
+  <div class="max-w-6xl mx-auto p-6">
+    <header class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-white/90 rounded-xl shadow-soft flex items-center justify-center text-2xl font-bold AI">AI</div>
+        <div>
+          <h1 class="text-2xl font-semibold">Immortal AI</h1>
+          <p class="text-sm text-slate-500">Clinical Decision Assistant</p><!-- - with collabration with PPU</p>--> 
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        {% if current_user.is_authenticated %}
+          <div class="text-sm text-slate-600">Signed in as <strong>{{ current_user.username }}</strong> • <span class="AI">{{ current_user.role }}</span></div>
+          <a class="btn-ghost" href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <a class="btn-primary" href="{{ url_for('login') }}">Login</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script>document.addEventListener("DOMContentLoaded",()=>{hljs.highlightAll();});</script>
+  <script src="{{ url_for('static', filename='js/dia_app.js') }}"></script>
+</body>
+</html>
