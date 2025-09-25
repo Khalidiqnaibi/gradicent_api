@@ -31,6 +31,7 @@ except Exception:
 
 #* My Tools *#
 from knowlage_base.chroma import ChromaStore
+from knowlage_base.pinecone import PineconeStore
 from models.mistaral import MistralLLM
 
 # Optional BM25 import
@@ -378,7 +379,8 @@ class RetrievalPipeline:
 
         # initialize ChromaStore (this expects ChromaStore to handle embeddings / persistence)
         self.embeddings = None  # optionally set by caller; ChromaStore handles fallback
-        self.vstore = ChromaStore(embeddings=self.embeddings)
+        #self.vstore = ChromaStore(embeddings=self.embeddings)
+        self.vstore = PineconeStore(embeddings=self.embeddings)
         self.metadata_map = self.vstore.get_metadata_map() or {}
 
         # initialize LLMs

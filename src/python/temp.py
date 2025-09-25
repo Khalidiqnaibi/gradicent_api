@@ -1,22 +1,35 @@
-import os,io,shutil,pathlib,json,html,requests,base64,logging
-import webbrowser,secrets,string,firebase_admin,paypalrestsdk
-from selenium import webdriver
+import os
+import io  # Import the io module
+import shutil
+import pathlib
+import json
+import html
+import requests
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from flask import sessions, Flask, jsonify, render_template, redirect, request, session, url_for, abort, send_file,make_response,flash
+import base64
+from flask import sessions, Flask, jsonify, render_template, redirect, request, session, url_for, abort, send_file,make_response
 from google.oauth2 import id_token
 from datetime import datetime,timedelta
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 import google.auth.transport.requests
+import webbrowser
+import firebase_admin
 from firebase_admin import credentials, db, firestore, storage
 from google.cloud.firestore_v1.base_query import FieldFilter
 from werkzeug.utils import secure_filename
 from io import BytesIO
+import paypalrestsdk
 from paypalrestsdk import Payment
+import secrets
+import uuid
+import string
 from zenora import APIClient
+import logging
+from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -27,22 +40,7 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from uuid import uuid4
-from typing import List, Optional
-import traceback,platform,time,tempfile,pyttsx3
-from dotenv import load_dotenv
-from logging import Logger
-import sqlite3
-
-#* My Tools *#
-from dependencies.rag import RetrievalPipeline
-from dependencies.chains import QASystem
-from knowlage_base.chroma import ToDocument,DATA_FOLDER
-from langchain.schema import Document
+import uuid
 
 ##############
 #~ Immortal ~#
@@ -177,9 +175,10 @@ def load_app_data():
 def login_is_required(function):
     def wrapper(*args, **kwargs):
         if "google_id" not in session:
-            return abort(401)
-        return function(*args, **kwargs)
-    wrapper.__name__ = function.__name__  # force Flask to see the right name
+            return abort(401)  # Authorization required
+        else:
+            return function()
+
     return wrapper
 
 def iscode(code):
@@ -682,10 +681,7 @@ def codesec():
         return jsonify({'error': 'Invalid code'}), 403
 
 @app.route('/ses')
-@login_is_required
 def sess():
-    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
-        return jsonify({"message": "Access denied"}), 403
     i={}
     for j in session:
         i[j]=session[j]
@@ -1220,7 +1216,7 @@ def login():
 @app.route("/login/BinderMedical")
 def loginmedical():
     #session.clear()
-    new_state = str(uuid4())
+    new_state = str(uuid.uuid4())
     session["state"] = new_state 
     authorization_url, state = flow.authorization_url(include_granted_scopes='true',state=new_state)
     if 'PLAN' in session and 'google_id' in session:
@@ -1241,7 +1237,7 @@ def loginmedical():
 @app.route("/login/BinderLab")
 def lablogin():
     #session.clear()
-    new_state = str(uuid4())
+    new_state = str(uuid.uuid4())
     session["state"] = new_state 
     authorization_url, state = flow.authorization_url(include_granted_scopes='true',state=new_state)
     if 'PLAN' in session and 'google_id' in session:
@@ -1298,7 +1294,6 @@ def indexar():
     return render_template("login - ar.html")
 
 @app.route("/sign_in")
-@login_is_required
 def sign_in():
     if "binder" in session and session["binder"] == 'med':
         return render_template("sign_in.html")
@@ -1347,7 +1342,6 @@ def done():
     return render_template("errors.html",msg='User not loged in',err='Unexpected')
 
 @app.route("/protected_area_ar")
-@login_is_required
 def donear():
     logged_in = "google_id" in session
     if logged_in:
@@ -1763,14 +1757,12 @@ def get_last_page():
         return  render_template(f"{page}.html",user_data=user_data,binder=binder)
 
 @app.route('/acc')
-@login_is_required
 def accc():
     session["page"]='acc'
     return redirect("/fetchUserData")
     #return render_template("acc.html",user_data=user_data,price=medprice)
 
 @app.route('/home_page')
-@login_is_required
 def homeeeepage():
     session["page"]='home'
     if "google_id" in session:
@@ -1795,7 +1787,6 @@ def homeeeepage():
         return redirect("/fetchUserData")
 
 @app.route('/support')
-@login_is_required
 def support():
     session["page"]='support'
 
@@ -1821,7 +1812,6 @@ def support():
         return redirect("/fetchUserData")
 
 @app.route('/settings')
-@login_is_required
 def settingssss():
 
     if "google_id" in session:
@@ -1862,7 +1852,6 @@ def settingssss():
         return redirect("/fetchUserData")
 
 @app.route('/stats')
-@login_is_required
 def statsss():
     session["page"]='stats'
 
@@ -1888,7 +1877,6 @@ def statsss():
         return redirect("/fetchUserData")
 
 @app.route('/srch')
-@login_is_required
 def srchhhhh():
     session["page"]='srch'
     if "google_id" in session:
@@ -1914,7 +1902,6 @@ def srchhhhh():
         return redirect("/fetchUserData")
 
 @app.route('/back')
-@login_is_required
 def backkkk():
     session["page"]='srch'
     if "google_id" in session:
@@ -1971,7 +1958,6 @@ def lab():
     return render_template("Labratory.html")
 
 @app.route('/lab_page')
-@login_is_required
 def lab_page():
     session["page"]='lab'
 
@@ -1997,7 +1983,6 @@ def lab_page():
         return redirect("/fetchUserData")
     
 @app.route('/srchlab')
-@login_is_required
 def srchlabbb():
     session["page"]='lab_req'
 
@@ -2023,7 +2008,6 @@ def srchlabbb():
         return redirect("/fetchUserData")
 
 @app.route('/getlab')
-@login_is_required
 def getlab():
     google_id = session["google_id"]
     patient_id = session.get('patientno')
@@ -2722,6 +2706,7 @@ def show_search_by_number(number):
     elif "binder" in session and session["binder"] == 'lab':
         return redirect('/Binder_labratory')
     
+
 @app.route('/getPatientData', methods=['GET'])
 def get_patient_data():
     google_id = session["google_id"]
@@ -2810,37 +2795,8 @@ def update_patient_totals():
         print(e)
         return jsonify({"message": f"An error occurred while updating patient totals {user_data}"}), 500
 
-@app.route("/api/patient_count")
-@login_is_required
-def patient_count():
-    gid = session["google_id"]
-    typee=session.get('wtype', 'drs')
-    drs_ref = db.reference(f'/{typee}/{gid}/patients')
-    patients = drs_ref.get() or {}
-    return jsonify({"patient_count": len(patients)}), 200
-
-@app.route('/api/appointment_count')
-@login_is_required
-def appointment_count():
-    gid = session["google_id"]
-    typee=session.get('wtype', 'drs')
-    drs_ref = db.reference(f'/{typee}/{gid}/patients')
-    patients = drs_ref.get() or {}
-    count = 0
-    today_str = datetime.now().date().isoformat()
-    
-    for patient in patients:
-        for visit in patient.get('visits', []):
-            if visit.get('next') == today_str:
-                count += 1
-                
-    return jsonify({"appointment_count": count}), 200
-
 @app.route('/nnn')
-@login_is_required
 def nnn():
-    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
-        return jsonify({"message": "Access denied"}), 403
     drs_ref = db.reference('/drs')
     nn=drs_ref.get()
     last =''
@@ -2870,73 +2826,85 @@ def nnn():
 
 @app.route('/updatePatientData', methods=['POST'])
 def update_patient_data():
-    data = request.json or {}
-    typee = session.get('wtype', 'drs')
-    google_id = session.get('google_id')
-    patient_no = data.get('patientNo')
+    data = request.json
+    typee=session.get('wtype', 'drs')
+    google_id = session.get('google_id', None)
+    patient_no = data.get('patientNo', None)
 
-    if not google_id or patient_no is None:
-        return jsonify({"message": "Invalid request/session data"}), 400
+    if not google_id:
+        return jsonify({"message": "Invalid session data"}), 400
 
-    patient_index = patient_no - 1
+    patient_no-=1
+
     try:
-        # Get patient reference
-        patient_ref = db.reference(f'/{typee}/{google_id}/patients/{patient_index}')
-        patient = patient_ref.get()
+        drs_ref = db.reference(f'/{typee}/{google_id}/patients/{int(patient_no)}')
 
+        patient = drs_ref.get()
+
+        if 'next' in patient:   
+            dateee=patient['next']
+        
         if not patient:
             return jsonify({"message": "Patient not found"}), 404
 
-        old_next = patient.get("next")
-
-        # Update patient fields except patientNo
+        # Update patient data
         for key, value in data.items():
-            if key != "patientNo":
+            if key != 'patientNo':
                 patient[key] = value
+                
+        if 'div' in patient:
+            if 'payed' in patient:  
+                patient['payed']=float(patient.get('payed', 0) or 0)/10
+            if 'debit' in patient:  
+                patient['debit']=float(patient.get('debit', 0) or 0)/10
+        else:
+            patient['div']='bruh'
+            if 'payed' in patient:  
+                patient['payed']=float(patient.get('payed', 0) or 0)/10
+            if 'debit' in patient:  
+                patient['debit']=float(patient.get('debit', 0) or 0)/10
+            
 
-        # Normalize payed/debit and ensure "div"
-        patient.setdefault("div", "bruh")
-        for field in ["payed", "debit"]:
-            if field in patient:
-                patient[field] = float(patient.get(field, 0) or 0) / 10
+        drs_ref.set(patient)
 
-        # Save patient data
-        patient_ref.set(patient)
+        if typee == 'drs':
+            dateti=f'{datetime.fromisoformat(patient["next"]).date()}'
+            timee=f'{datetime.fromisoformat(patient["next"]).time()}'
+            xx=0
+            dr_ref = db.reference(f'/drs/{google_id}/msg')
+            nn=dr_ref.get()
 
-        # Extra handling for doctors (msg updates)
-        if typee == "drs":
-            dr_msg_ref = db.reference(f'/drs/{google_id}/msg')
-            messages = dr_msg_ref.get() or {}
+            if nn and dateee in nn:
+                for i in nn[dateee]:
+                    if i['no'] == patient_no+1:
+                        nn[dateee].remove(nn[dateee][xx])
+                    else:
+                        xx+=1
 
-            # Remove old reminder if exists
-            if old_next and old_next in messages:
-                messages[old_next] = [
-                    m for m in messages[old_next] if m.get("no") != patient_no
-                ]
-                if not messages[old_next]:  # cleanup empty dates
-                    messages.pop(old_next)
+            if 'next' in patient :# and datetime.fromisoformat(patient['next'])>datetime.today() :
+                if nn:
+                    if dateti in nn:
+                        add=True
+                        for i in nn[dateti] :
+                            if patient_no+1 == i["no"]:
+                                add=False
+                        if add:
+                            nn[dateti].append({"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"})
+                    else:
+                        nn[dateti]=[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"}]
+                else:
+                    nn={dateti :[{"phone":patient['phone'],"name":patient['name'],"no":patient_no+1,'msg':f"{timee[:-3]}"}]}
+                
+                
+                dr_ref.update(nn)
 
-            # Add new reminder if "next" is valid
-            next_date = patient.get("next")
-            if next_date and "T" in next_date:
-                dt_obj = datetime.fromisoformat(next_date)
-                date_str, time_str = str(dt_obj.date()), str(dt_obj.time())[:-3]
 
-                messages.setdefault(date_str, [])
-                if not any(m["no"] == patient_no for m in messages[date_str]):
-                    messages[date_str].append({
-                        "phone": patient.get("phone"),
-                        "name": patient.get("name"),
-                        "no": patient_no,
-                        "msg": time_str
-                    })
-
-            dr_msg_ref.update(messages)
-
-        return jsonify({"message": "Patient data updated successfully"}), 200
+        return jsonify({"message": f"Patient data updated successfully"}), 200
 
     except Exception as e:
-        app.logger.error("Error updating patient data: %s", e, exc_info=True)
+        app.logger.info("Error updating patient data: %s", e)
+        app.logger.info("patient: %s", patient)
+        app.logger.info("patient['next']: %s", patient['next'])
         return jsonify({"message": f"Error updating patient data: {str(e)}"}), 500
 
 @app.route('/appointments')
@@ -3200,12 +3168,14 @@ def update_visit():
 
     visits = patient_data.get('visits', [])
     for idx, visit in enumerate(visits):
-        if visit.get("visit_date") and visit['visit_date'] == visit_info['visit_date']:
+        if visit['visit_date'] == visit_info['visit_date']:
             visits[idx] = visit_info
             break
 
     patient_data['visits'] = visits
     user_data['patients'] = [p if p['no'] != patient_no else patient_data for p in user_data['patients']]
+    
+    
 
     drs_ref.child(google_id).set(user_data)
 
@@ -3526,10 +3496,7 @@ def delete_file():
         return jsonify({"error": "Internal server error"}), 500
 
 @app.route('/gid')
-@login_is_required
 def giid():
-    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
-        return jsonify({"message": "Access denied"}), 403
     session['google_id']="108738109636203771652"
     if 'PLAN' in session:
         del session['PLAN']
@@ -3539,10 +3506,7 @@ def giid():
     return i
 
 @app.route('/giid/<google_id>')
-@login_is_required
 def giiid(google_id):
-    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
-        return jsonify({"message": "Access denied"}), 403
     session["google_id"] = google_id
     session["lang"] = 'en'
     session["donee"]=True
@@ -3562,6 +3526,7 @@ def pgiiid(google_id, name):
     elif "binder" in session and session["binder"] == 'lab':
         return redirect('/Binder_labratory')
     
+
 @app.route('/editFile', methods=['POST'])
 def edit_file():
     file_id = request.form.get('file_id')
@@ -3593,726 +3558,6 @@ def edit_file():
 
     return jsonify({"message": "File edited successfully"}), 200
 
-#################################################################
-'''
-THE IMMORTAL DIAGNOSE AI
-'''
-
-
-# Try to import openpyxl for Excel logging; fall back to csv if not available
-USE_XLSX = True
-try:
-    from openpyxl import Workbook, load_workbook
-    from openpyxl.utils import get_column_letter
-except Exception:
-    USE_XLSX = False
-    import csv
-    print("openpyxl not available - Excel logging disabled, falling back to CSV. To enable Excel logs: pip install openpyxl")
-
-# load .env
-load_dotenv(override=False)
-SECREATE = os.getenv("SECREATE","SECREATE")
-DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
-LOG_FILE = os.getenv("DEV_LOG_FILE", "dev_query_log.xlsx" if USE_XLSX else "dev_query_log.csv")
-DEV_NAME = os.getenv("DEV_NAME", "")
-IS_SERVER_USED = os.getenv("IS_SERVER_USED", "false").lower() == "true"
-MODEL_NAME = os.getenv("MISTRAL_OPENROUTER_MODEL", "mistralai/mistral-nemo")
-
-log = Logger(name="clog",level=1)
-
-# Excel (or CSV) header definition
-LOG_HEADERS = [
-    "timestamp_utc",
-    "dev_name",
-    "client_ip",
-    "api_provider",
-    "model_name",
-    "question",
-    "answer",
-    "total_time_s",
-    "retrieval_time_s",
-    "qa_time_s",
-    "tokens_used",
-    "used_server",
-    "retrieved_doc_count",
-    "retrieved_sources"
-]
-
-def _ensure_logfile_exists():
-    """
-    Create the XLSX or CSV log file with headers if it doesn't already exist.
-    """
-    if not DEV_MODE:
-        return
-    if USE_XLSX:
-        if not os.path.exists(LOG_FILE):
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "logs"
-            ws.append(LOG_HEADERS)
-            # Optional: set reasonable column widths
-            for i, header in enumerate(LOG_HEADERS, start=1):
-                col = get_column_letter(i)
-                ws.column_dimensions[col].width = min(max(len(header) + 2, 12), 50)
-            wb.save(LOG_FILE)
-    else:
-        # CSV fallback
-        if not os.path.exists(LOG_FILE):
-            with open(LOG_FILE, mode="w", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                writer.writerow(LOG_HEADERS)
-
-def _append_row_excel(row):
-    """
-    Append a single row to the Excel workbook (safe basic append).
-    """
-    if not os.path.exists(LOG_FILE):
-        _ensure_logfile_exists()
-
-    if USE_XLSX:
-        wb = load_workbook(LOG_FILE)
-        if "logs" not in wb.sheetnames:
-            ws = wb.create_sheet("logs")
-            ws.append(LOG_HEADERS)
-        else:
-            ws = wb["logs"]
-        ws.append(row)
-        wb.save(LOG_FILE)
-    else:
-        with open(LOG_FILE, mode="a", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(row)
-
-def _log_query(
-    question,
-    api_provider,
-    total_time,
-    retrieval_time,
-    qa_time,
-    tokens,
-    sources_list,
-    client_ip=None,
-    answer=None
-):
-    """
-    Write a log row to Excel (or CSV fallback) when DEV_MODE is true.
-    """
-    if not DEV_MODE:
-        return
-    _ensure_logfile_exists()
-    try:
-        timestamp = datetime.utcnow().isoformat()
-        device_name = DEV_NAME or platform.node()
-        client_ip = client_ip or ""
-        api_provider = api_provider or "unknown"
-        model_name = MODEL_NAME or "unknown"
-        used_server = "true" if IS_SERVER_USED else "false"
-        retrieved_sources_joined = ";".join([
-            str(s.get("source_filename") or s.get("chunk_id") or "") for s in (sources_list or [])
-        ])
-
-        row = [
-            timestamp,
-            device_name,
-            client_ip,
-            api_provider,
-            model_name,
-            question,
-            answer or "",
-            f"{total_time:.4f}",
-            f"{retrieval_time:.4f}",
-            f"{qa_time:.4f}",
-            tokens if tokens is not None else "",
-            used_server,
-            len(sources_list) if sources_list else 0,
-            retrieved_sources_joined
-        ]
-
-        _append_row_excel(row)
-    except Exception as e:
-        # never crash the app because logging failed; print for dev visibility
-        print("Logging failed:", e)
-
-# best-effort token usage retrieval (may be None if not tracked)
-def _get_token_usage():
-    try:
-        tokens = getattr(chains, "last_tokens_used", None)
-        if tokens is not None:
-            return int(tokens)
-    except Exception:
-        pass
-
-    try:
-        qa_llm = getattr(chains, "qa_chain", None) and getattr(chains.qa_chain, "llm", None)
-        if qa_llm:
-            for attr in ("last_token_usage", "token_usage", "tokens_used", "last_tokens_used"):
-                v = getattr(qa_llm, attr, None)
-                if v:
-                    try:
-                        return int(v)
-                    except Exception:
-                        pass
-    except Exception:
-        pass
-
-    return None
-
-CORS(app)
-
-app.secret_key = SECREATE
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "login"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
-
-# initialize pipeline + QA system
-deps = RetrievalPipeline()
-chains = QASystem(pipeline=deps)
-# allow pipeline to refresh QA when docs added (if pipeline checks this attribute)
-deps.qa_system = chains
-
-# helper to locate underlying vectorstore for provenance queries
-def _locate_vectorstore(pipeline):
-    if hasattr(pipeline, "vstore"):
-        v = pipeline.vstore
-        return getattr(v, "store", v)
-    if hasattr(pipeline, "vectorstore"):
-        return pipeline.vectorstore
-    if hasattr(pipeline, "store"):
-        return pipeline.store
-    return None
-
-vectorstore = _locate_vectorstore(deps)
-metadata_map = getattr(deps, "metadata_map", getattr(getattr(deps, "vstore", {}), "metadata_map", {}) or {})
-
-# ensure upload directory exists
-os.makedirs(DATA_FOLDER, exist_ok=True)
-
-def _run_qa(chain_obj, question: str, return_sources: bool = False):
-    """
-    Robust QA invocation helper. Returns (answer_text, optional_source_documents_or_None).
-    Tries ask_with_metadata -> ask -> run in that order.
-    """
-    try:
-        if return_sources and hasattr(chain_obj, "ask_with_metadata"):
-            res = chain_obj.ask_with_metadata(question, return_sources=True)
-            if isinstance(res, dict):
-                answer = res.get("answer") or str(res)
-                srcs = res.get("source_documents")
-                return answer, srcs
-            return str(res), None
-        elif hasattr(chain_obj, "ask"):
-            return chain_obj.ask(question), None
-        elif hasattr(chain_obj, "run"):
-            return chain_obj.run(question), None
-        raise RuntimeError("No usable QA method found on chain object.")
-    except Exception as e:
-        raise RuntimeError(f"QA chain invocation failed: {e}")
-
-def _tts_engine():
-    """Initialize a pyttsx3 engine instance."""
-    return pyttsx3.init()
-
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(20), default="user")  # "admin" or "user"
-
-    def is_admin(self):
-        return self.role == "admin"
-
-with app.app_context():
-    db.create_all()
-    # Create admin if none exists
-    if not User.query.filter_by(username="khalid").first():
-        admin = User(
-            username="khalid",
-            password=generate_password_hash("kh123hakar",method="pbkdf2:sha256"),
-            role="admin"
-        )
-        db.session.add(admin)
-        db.session.commit()
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-@app.route("/ai/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = generate_password_hash(request.form["password"],method="pbkdf2:sha256")
-        role = request.form.get("role", "user")  # default user unless chosen
-        if User.query.filter_by(username=username).first():
-            return "User already exists!"
-        user = User(username=username, password=password, role=role)
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for("dia_login"))
-    return render_template("dia_signup.html")
-
-@app.route("/ai/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        user = User.query.filter_by(username=request.form["username"]).first()
-        if user and check_password_hash(user.password, request.form["password"]):
-            login_user(user)
-            return redirect(url_for("dashboard"))
-        return "Invalid credentials"
-    return render_template("dia_login.html")
-
-@app.route("/ai/logout")
-@login_required
-def logout():
-    logout_user()
-    session.clear()
-    return redirect(url_for("login"))
-
-@app.route("/ai/dashboard")
-@login_required
-def dashboard():
-    return render_template("dia_dashboard.html", user=current_user)
-
-@app.route("/ai/admin", methods=["GET", "POST"])
-@login_required
-def admin():
-    if not current_user.is_admin():
-        flash("Unauthorized!", "danger")
-        return redirect(url_for("dashboard"))
-
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        role = request.form["role"]
-
-        if User.query.filter_by(username=username).first():
-            flash("User already exists!", "danger")
-            return redirect(url_for("admin"))
-
-        user = User(
-            username=username,
-            password=generate_password_hash(password,method="pbkdf2:sha256"),
-            role=role
-        )
-        db.session.add(user)
-        db.session.commit()
-
-        flash("User added!", "success")
-        return redirect(url_for("admin"))
-
-    users = User.query.all()
-    return render_template("dia_admin.html", users=users)
-
-@app.route("/tts/voices", methods=["GET"])
-def list_voices():
-    try:
-        e = _tts_engine()
-        out = []
-        for v in e.getProperty("voices"):
-            out.append({
-                "id": v.id,
-                "name": getattr(v, "name", None),
-                "lang": (v.languages[0].decode() if getattr(v, "languages", None) else None)
-            })
-            log.info({
-                "id": v.id,
-                "name": getattr(v, "name", None),
-                "lang": (v.languages[0].decode() if getattr(v, "languages", None) else None)
-            })
-        return jsonify({"voices": out})
-    except Exception as ex:
-        log.exception(str(ex))
-        return jsonify({"error": str(ex)}), 500
-
-@app.route("/tts/speak", methods=["POST"])
-def speak():
-    """
-    POST JSON: { "text": "...", "voice_id": "optional voice id" }
-    Returns: WAV audio stream
-    """
-    try:
-        data = request.get_json(force=True) or {}
-        text = (data.get("text") or "").strip()
-        voice_id = data.get("voice_id")
-
-        if not text:
-            log.error("No text provided")
-            return jsonify({"error": "No text provided"}), 400
-
-        e = _tts_engine()
-        if voice_id:
-            try:
-                e.setProperty("voice", voice_id)
-            except Exception:
-                log.exception("e.setProperty('voice', voice_id) didnt work in line 273")
-
-        # create temporary mp3 file
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
-            tmp_path = tmp.name
-        e.save_to_file(text, tmp_path)
-        e.runAndWait()
-
-        # stream back to client
-        return send_file(tmp_path, mimetype="audio/mp3", as_attachment=False, download_name="speech.mp3")
-
-    except Exception as ex:
-        tb = traceback.format_exc()
-        log.exception({"error": str(ex), "trace": tb})
-        return jsonify({"error": str(ex), "trace": tb}), 500
-
-@app.route("/ai/query", methods=["POST"])
-@login_required
-def query():
-    """
-    POST JSON:
-      {
-        "question": "text",
-        "top_k": 5,
-        "mode": "hybrid" | "selfquery" | "compression",
-        "return_sources": false
-      }
-    Response:
-      { "answer": "...", "sources": [...], "qa_sources": [...], "error": null }
-    """
-    overall_start = time.time()
-    try:
-        data = request.get_json(force=True) or {}
-        question = data.get("question", "") or ""
-        if not question:
-            log.error("no question provided")
-            return jsonify({"error": "no question provided"}), 400
-
-        top_k = int(data.get("top_k", 5))
-        mode = data.get("mode")
-        return_sources = bool(data.get("return_sources", False))
-
-        # Optionally switch retriever mode for this request (non-persistent)
-        if mode:
-            if hasattr(chains, "switch_retriever_mode"):
-                try:
-                    chains.switch_retriever_mode(mode)
-                except Exception:
-                    pass
-            else:
-                if hasattr(deps, "create_full_pipeline_retriever") and mode == "compression":
-                    chains.retriever = deps.create_full_pipeline_retriever()
-                    chains.qa_chain = chains._build_qa_chain()
-
-        # provenance: attempt base vector similarity search
-        retrieval_start = time.time()
-        sources = []
-        try:
-            if vectorstore is None:
-                log.error("vectorstore not found on pipeline")
-                raise AttributeError("vectorstore not found on pipeline")
-            if hasattr(vectorstore, "similarity_search_with_score"):
-                base_results = vectorstore.similarity_search_with_score(question, k=top_k)
-                for item in base_results:
-                    try:
-                        doc, score = item
-                    except Exception:
-                        doc, score = item, None
-                    md = getattr(doc, "metadata", {}) or {}
-                    sources.append({
-                        "source_filename": md.get("source") or md.get("source_filename") or md.get("file"),
-                        "page": md.get("page"),
-                        "chunk_id": md.get("chunk_id") or md.get("id"),
-                        "similarity_score": float(score) if score is not None else None
-                    })
-            elif hasattr(vectorstore, "similarity_search"):
-                docs = vectorstore.similarity_search(question, k=top_k)
-                for d in docs:
-                    md = getattr(d, "metadata", {}) or {}
-                    sources.append({
-                        "source_filename": md.get("source") or md.get("source_filename"),
-                        "page": md.get("page"),
-                        "chunk_id": md.get("chunk_id") or md.get("id"),
-                        "similarity_score": None
-                    })
-            elif hasattr(vectorstore, "as_retriever"):
-                retr = vectorstore.as_retriever(search_kwargs={"k": top_k})
-                docs = retr.get_relevant_documents(question)
-                for d in docs:
-                    md = getattr(d, "metadata", {}) or {}
-                    sources.append({
-                        "source_filename": md.get("source") or md.get("source_filename"),
-                        "page": md.get("page"),
-                        "chunk_id": md.get("chunk_id") or md.get("id"),
-                        "similarity_score": None
-                    })
-        except Exception:
-            sources = []
-        retrieval_end = time.time()
-
-        # run QA chain
-        qa_start = time.time()
-        answer, src_docs = _run_qa(chains, question, return_sources=return_sources)
-        qa_end = time.time()
-
-        # If QA returned doc objects, structure them
-        if src_docs:
-            structured_srcs = []
-            for d in src_docs:
-                if isinstance(d, dict):
-                    structured_srcs.append({
-                        "page_content": d.get("page_content") or d.get("content") or None,
-                        "metadata": d.get("metadata", {})
-                    })
-                else:
-                    md = getattr(d, "metadata", {}) or {}
-                    structured_srcs.append({
-                        "page_content": getattr(d, "page_content", None),
-                        "metadata": md
-                    })
-
-            # Logging (DEV MODE)
-            try:
-                total_time = time.time() - overall_start
-                retrieval_time = retrieval_end - retrieval_start
-                qa_time = qa_end - qa_start
-                tokens = _get_token_usage()
-                api_provider = getattr(deps, "mistral_mode", None) or getattr(getattr(deps, "answer_llm", {}), "mode", "unknown")
-                client_ip = request.remote_addr
-                _log_query(
-                    question=question,
-                    api_provider=api_provider,
-                    total_time=total_time,
-                    retrieval_time=retrieval_time,
-                    qa_time=qa_time,
-                    tokens=tokens,
-                    sources_list=sources,
-                    client_ip=client_ip,
-                    answer=answer
-                )
-            except Exception as e:
-                log.exception(f"DEV logging error: {e}")
-
-            return jsonify({"answer": answer, "sources": sources, "qa_sources": structured_srcs})
-
-        # Logging (no qa_sources)
-        try:
-            total_time = time.time() - overall_start
-            retrieval_time = retrieval_end - retrieval_start
-            qa_time = qa_end - qa_start
-            tokens = _get_token_usage()
-            api_provider = getattr(deps, "mistral_mode", None) or getattr(getattr(deps, "answer_llm", {}), "mode", "unknown")
-            client_ip = request.remote_addr
-            _log_query(
-                question=question,
-                api_provider=api_provider,
-                total_time=total_time,
-                retrieval_time=retrieval_time,
-                qa_time=qa_time,
-                tokens=tokens,
-                sources_list=sources,
-                client_ip=client_ip,
-                answer=answer
-            )
-        except Exception as e:
-            log.exception(f"DEV logging error: {str(e)}")
-
-        return jsonify({"answer": answer, "sources": sources})
-
-    except Exception as e:
-        tb = traceback.format_exc()
-        # Log the failed attempt as well (optional)
-        try:
-            if DEV_MODE:
-                _log_query(
-                    question=data.get("question", "") if isinstance(data, dict) else "",
-                    api_provider=getattr(deps, "mistral_mode", None) or "unknown",
-                    total_time=time.time() - overall_start,
-                    retrieval_time=0.0,
-                    qa_time=0.0,
-                    tokens=None,
-                    sources_list=[],
-                    client_ip=request.remote_addr if request else "",
-                    answer=str(e)
-                )
-        except Exception as e:
-            log.exception(e)
-
-        return jsonify({"error": str(e), "trace": tb}), 500
-
-@app.route("/ai/add_document", methods=["POST"])
-@login_required
-def add_document():
-    """
-    Accepts:
-      - multipart upload: 'file' (file field)
-      - OR JSON: {"raw_text": "...", "metadata": {...}}
-      - OR JSON: {"file_path": "/abs/path/to/file"}
-
-    Only users with role == "admin" can add documents.
-    """
-    # enforce admin-only
-    if getattr(current_user, "role", None) != "admin":
-        # consistent JSON error + 403
-        return jsonify({"error": "admin privileges required to add documents"}), 403
-
-    try:
-        added = []
-
-        def _normalize_to_list(obj) -> List[Document]:
-            if obj is None:
-                return []
-            if isinstance(obj, list):
-                return obj
-            if isinstance(obj, Document):
-                return [obj]
-            raise TypeError("Loader returned unexpected type; expected Document or list[Document]")
-
-        def _prepare_docs(docs: List[Document], base_meta: Optional[dict]):
-            out = []
-            for i, d in enumerate(docs):
-                content = getattr(d, "page_content", None)
-                if isinstance(content, (bytes, bytearray)):
-                    try:
-                        content = content.decode("utf-8", errors="ignore")
-                    except Exception:
-                        content = ""
-                content = content or ""
-
-                md = dict(getattr(d, "metadata", {}) or {})
-                merged = {**md, **(base_meta or {})}
-                merged.setdefault("chunk_id", str(uuid4()))
-                merged.setdefault("source", merged.get("source") or (base_meta.get("source") if base_meta else "unknown"))
-                merged.setdefault("page", merged.get("page", merged.get("page_number", 0)))
-                out.append(Document(page_content=content, metadata=merged))
-            return out
-
-        # 1) multipart upload
-        if "file" in request.files:
-            f = request.files["file"]
-            if f.filename == "":
-                return jsonify({"error": "empty filename provided"}), 400
-            filename = secure_filename(f.filename)
-            save_path = os.path.join(DATA_FOLDER, filename)
-            f.save(save_path)
-
-            base_meta = {"source": save_path, "original_filename": filename}
-
-            try:
-                loaded = ToDocument.from_path(save_path)
-            except FileNotFoundError as fe:
-                return jsonify({"error": f"file not found after save: {fe}"}), 500
-            except Exception as e:
-                tb = traceback.format_exc()
-                print("Loader error:", tb)
-                return jsonify({"error": "file conversion failed", "trace": tb}), 500
-
-            docs_list = _normalize_to_list(loaded)
-            docs_to_add = _prepare_docs(docs_list, base_meta)
-
-            deps.add_documents(docs_to_add)
-            for d in docs_to_add:
-                added.append({"source": d.metadata.get("source"), "chunk_id": d.metadata.get("chunk_id")})
-            return jsonify({"ok": True, "added": len(added), "details": added})
-
-        # 2) JSON body (raw_text or file_path)
-        data = request.get_json(force=True) or {}
-        raw_text = data.get("raw_text")
-        metadata = data.get("metadata", {}) or {}
-        file_path = data.get("file_path")
-
-        docs_to_add: List[Document] = []
-
-        if raw_text:
-            loaded = ToDocument.from_text(raw_text, source=metadata.get("source", "raw_text"))
-            docs_list = _normalize_to_list(loaded)
-            docs_prepared = _prepare_docs(docs_list, metadata)
-            docs_to_add.extend(docs_prepared)
-
-        elif file_path:
-            if not os.path.exists(file_path):
-                return jsonify({"error": f"file_path not found: {file_path}"}), 400
-            base_meta = {**metadata, "source": file_path}
-            try:
-                loaded = ToDocument.from_path(file_path)
-            except Exception as e:
-                tb = traceback.format_exc()
-                print("Loader error:", tb)
-                return jsonify({"error": "file conversion failed", "trace": tb}), 500
-
-            docs_list = _normalize_to_list(loaded)
-            docs_prepared = _prepare_docs(docs_list, base_meta)
-            docs_to_add.extend(docs_prepared)
-
-        else:
-            return jsonify({"error": "no file uploaded, no raw_text, and no file_path provided"}), 400
-
-        if not docs_to_add:
-            return jsonify({"error": "no documents produced from input"}), 400
-
-        deps.add_documents(docs_to_add)
-        for d in docs_to_add:
-            added.append({"source": getattr(d, "metadata", {}).get("source"), "chunk_id": getattr(d, "metadata", {}).get("chunk_id")})
-        return jsonify({"ok": True, "added": len(added), "details": added})
-
-    except Exception as e:
-        tb = traceback.format_exc()
-        print("ADD_DOCUMENT ERROR:", tb)
-        log.error({"error": str(e), "trace": tb})
-        return jsonify({"error": str(e), "trace": tb}), 500
-    
-@app.route("/ai/inspect", methods=["GET"])
-@login_required
-def inspect():
-    query_text = request.args.get("q", "")
-    if not query_text:
-        return jsonify({"error": "no query provided"}), 400
-
-    if not hasattr(deps, "inspect_retrieval"):
-        return jsonify({"error": "inspect_retrieval not available on pipeline"}), 501
-
-    try:
-        result = deps.inspect_retrieval(query_text)
-        return jsonify({"query": query_text, "inspection": result})
-    except Exception as e:
-        log.error(e)
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/ai/switch_model", methods=["POST"])
-@login_required
-def switch_model():
-    """
-    POST JSON: {"mode": "openrouter"|"hf"|"other", "hf_model": "..."} to switch the LLM used by the pipeline.
-    """
-    try:
-        data = request.get_json(force=True) or {}
-        mode = data.get("mode")
-        hf_model = data.get("hf_model")
-        if not mode:
-            return jsonify({"error": "mode required"}), 400
-        if not hasattr(deps, "switch_llm_model"):
-            return jsonify({"error": "switch_llm_model not available on pipeline"}), 501
-        deps.switch_llm_model(mode=mode, hf_model=hf_model)
-        return jsonify({"ok": True, "mode": mode, "hf_model": hf_model})
-    except Exception as e:
-        log.error(e)
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/ai/rebuild_retriever", methods=["POST"])
-@login_required
-def rebuild_retriever():
-    try:
-        data = request.get_json(force=True) or {}
-        top_k_dense = int(data.get("top_k_dense", 10))
-        top_k_sparse = int(data.get("top_k_sparse", 10))
-
-        if not hasattr(deps, "rebuild_hybrid_retriever"):
-            return jsonify({"error": "rebuild_hybrid_retriever not available on pipeline"}), 501
-
-        deps.rebuild_hybrid_retriever(top_k_dense=top_k_dense, top_k_sparse=top_k_sparse)
-        return jsonify({"ok": True, "top_k_dense": top_k_dense, "top_k_sparse": top_k_sparse})
-    except Exception as e:
-        log.error(e)
-        return jsonify({"error": str(e)}), 500
-    
 #################################################################
 
 """discord bot"""
@@ -4595,4 +3840,3 @@ def logouttttt():
 
 if __name__ == "__main__":
     app.run(debug=False)
-
