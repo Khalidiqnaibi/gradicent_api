@@ -53,9 +53,16 @@ app = Flask(f"{cname} Api",static_url_path='/home/RiaSoftware/s/static',template
 
 app.secret_key = "abcdefghijk123"
 appurl='http://www.bindersoftware.com'
+
 basicprice=22
 premprice=300
 medprice=215
+
+# Binder Medical
+starter_price = 5
+pro_price = 25
+ultra_price = 125
+
 global bPay
 bPay =False
 global closee
@@ -65,11 +72,8 @@ prePay= False
 global password
 password = "@Ksoftkhaafif1"  # Change this to your secure password
 
-dCLIENT_ID = 1215723302987890758
-CLIENTtt_SECRET = "pN9VuIwixzDvVIy6AaCKh2pQGNggWBKz"
-REDIRECccT_URI ="http://www.bindersoftware.com/addcomm/callback"
-BOTtt_TOKEN ="MTIxNTcyMzMwMjk4Nzg5MDc1OA.G5QNR9.ltin2yRaszigZAg-acMsgsRc_2bg8jG675AMUA"
-
+PAYPAL_CLIENT_ID ="AaH6jy2wDk69MEKa5aVYIwz06AMJwjym3qziA3wmF0qlbdKtcI-iIZCmj9qjK2mcHvEXgXbVnyq_6nP1",
+PAYPAL_SECRET = "EFFgbsOtPSMXBbRyivM5ogXekW4BMETUkjcBJf9LCMRuWGaqxTtAVOWHa30WkwP-w19eQ6b8aMHIxFf9"
 
 # Initialize Firebase with your Firebase project's credentials
 cred = credentials.Certificate(r"/home/RiaSoftware/s/key2.json")
@@ -802,8 +806,8 @@ def paybasicar():
             try:
                 paypalrestsdk.configure({
                 "mode": "live",  # Use "live"sandbox in production
-                "client_id": "AaH6jy2wDk69MEKa5aVYIwz06AMJwjym3qziA3wmF0qlbdKtcI-iIZCmj9qjK2mcHvEXgXbVnyq_6nP1",
-                "client_secret": "EFFgbsOtPSMXBbRyivM5ogXekW4BMETUkjcBJf9LCMRuWGaqxTtAVOWHa30WkwP-w19eQ6b8aMHIxFf9"
+                "client_id": PAYPAL_CLIENT_ID,
+                "client_secret": PAYPAL_SECRET
                 })
                 payment = Payment({
                     "intent": "sale",
@@ -837,8 +841,8 @@ def paybasicar():
             try:
                 paypalrestsdk.configure({
                 "mode": "live",  # Use "live"sandbox in production
-                "client_id": "AaH6jy2wDk69MEKa5aVYIwz06AMJwjym3qziA3wmF0qlbdKtcI-iIZCmj9qjK2mcHvEXgXbVnyq_6nP1",
-                "client_secret": "EFFgbsOtPSMXBbRyivM5ogXekW4BMETUkjcBJf9LCMRuWGaqxTtAVOWHa30WkwP-w19eQ6b8aMHIxFf9"
+                "client_id": PAYPAL_CLIENT_ID,
+                "client_secret": PAYPAL_SECRET
                 })
                 payment = Payment({
                     "intent": "sale",
@@ -896,8 +900,8 @@ def paybasic():
             try:
                 paypalrestsdk.configure({
                 "mode": "live",  # Use "live"sandbox in production
-                "client_id": "AaH6jy2wDk69MEKa5aVYIwz06AMJwjym3qziA3wmF0qlbdKtcI-iIZCmj9qjK2mcHvEXgXbVnyq_6nP1",
-                "client_secret": "EFFgbsOtPSMXBbRyivM5ogXekW4BMETUkjcBJf9LCMRuWGaqxTtAVOWHa30WkwP-w19eQ6b8aMHIxFf9"
+                "client_id": PAYPAL_CLIENT_ID,
+                "client_secret": PAYPAL_SECRET
                 })
                 payment = Payment({
                     "intent": "sale",
@@ -931,8 +935,8 @@ def paybasic():
             try:
                 paypalrestsdk.configure({
                 "mode": "live",  # Use "live"sandbox in production
-                "client_id": "AaH6jy2wDk69MEKa5aVYIwz06AMJwjym3qziA3wmF0qlbdKtcI-iIZCmj9qjK2mcHvEXgXbVnyq_6nP1",
-                "client_secret": "EFFgbsOtPSMXBbRyivM5ogXekW4BMETUkjcBJf9LCMRuWGaqxTtAVOWHa30WkwP-w19eQ6b8aMHIxFf9"
+                "client_id": PAYPAL_CLIENT_ID,
+                "client_secret": PAYPAL_SECRET
                 })
                 payment = Payment({
                     "intent": "sale",
@@ -3593,282 +3597,156 @@ def edit_file():
 
 #################################################################
 
-"""discord bot"""
+@app.route("/pay_starter")
+def pay_starter():
+    if "google_id" not in session:
+        return redirect("/fetchUserData")
 
-def just_do_it(server_id,name,val,des="try it"):
-    ref = db.reference(f'/servers/{server_id}')
-    server_data = ref.get()
+    gid = session["google_id"]
+    user_data = get_userD(gid)
 
-    # Get existing commands or initialize if not present
-    commands = server_data.get('commands', [])
+    paypalrestsdk.configure({
+        "mode": "live",  # or "sandbox" for testing
+        "client_id": PAYPAL_CLIENT_ID,
+        "client_secret": PAYPAL_SECRET
+    })
 
-    v= {"command":name,"val":val, "des": des}
+    payment = Payment({
+        "intent": "sale",
+        "payer": {"payment_method": "paypal"},
+        "transactions": [{
+            "amount": {"total": f"{starter_price}.00", "currency": "USD"},
+            "description": "Binder Medical Starter Plan - $5/month"
+        }],
+        "redirect_urls": {
+            "return_url": f"{appurl}/starter_success",
+            "cancel_url": f"{appurl}/starter_cancel"
+        }
+    })
 
-    commands.append(v)
-
-    # Update server data
-    ref.update({'commands': commands})
-
-def update_val(server_id, path, data):
-    ref = db.reference(f'/servers/{server_id}/{path}')
-    ref.update(data)
-
-def get_command(server_id,command):
-    # Reference to the Firebase Realtime Database
-    ref = db.reference(f'/servers/{server_id}/suggestions/{user_id}')  # '/users' is the path where user data is stored
-
-    # Query the database to find the user with the matching google_id
-    query = ref.order_by_child('command').equal_to(command).limit_to_first(1)
-
-    # Execute the query
-    result = query.get()
-
-    if not result:
-        # User with the provided google_id not found
-        return None
-
-    # The result is a dictionary where keys are unique identifiers (Firebase push IDs)
-    # We need to extract the user data from this dictionary
-    user_id, user_data = next(iter(result.items()))
-    if user_id:
-        return user_data
+    if payment.create():
+        for link in payment.links:
+            if link.method == "REDIRECT":
+                session["pending_plan"] = "starter"
+                session["payment_id"] = payment.id
+                return redirect(link.href)
     else:
-        return None
+        return f"Error creating payment: {payment.error}"
 
-def add_command_suggestion(guild_id, user_id,username,command, messages,des="try it"):
-        suggestions = get_val(guild_id, f'suggestions/{user_id}')
-        if suggestions:
-            suggestions['val'].append({'command': command, 'messages': messages})
-        else:
-            suggestions = {'name':username,'val': [{'command': command, 'messages': messages}]}
-        update_val(guild_id, f'suggestions/{user_id}', suggestions)
 
-def get_val(server_id,name):
-    # Reference to the Firebase Realtime Database
-    ref = db.reference(f'/servers/{server_id}/val')  # '/users' is the path where user data is stored
+@app.route("/pay_pro")
+def pay_pro():
+    if "google_id" not in session:
+        return redirect("/fetchUserData")
 
-    # Query the database to find the user with the matching google_id
-    query = ref.order_by_child('name').equal_to(name).limit_to_first(1)
+    gid = session["google_id"]
+    user_data = get_userD(gid)
 
-    # Execute the query
-    result = query.get()
+    paypalrestsdk.configure({
+        "mode": "live",
+        "client_id": PAYPAL_CLIENT_ID,
+        "client_secret": PAYPAL_SECRET
+    })
 
-    if not result:
-        # User with the provided google_id not found
-        return None
+    payment = Payment({
+        "intent": "sale",
+        "payer": {"payment_method": "paypal"},
+        "transactions": [{
+            "amount": {"total": f"{pro_price}.00", "currency": "USD"},
+            "description": "Binder Medical Pro Plan - $25/month"
+        }],
+        "redirect_urls": {
+            "return_url": f"{appurl}/pro_success",
+            "cancel_url": f"{appurl}/pro_cancel"
+        }
+    })
 
-    # The result is a dictionary where keys are unique identifiers (Firebase push IDs)
-    # We need to extract the user data from this dictionary
-    user_id, user_data = next(iter(result.items()))
-
-    if user_id:
-        return user_data
+    if payment.create():
+        for link in payment.links:
+            if link.method == "REDIRECT":
+                session["pending_plan"] = "pro"
+                session["payment_id"] = payment.id
+                return redirect(link.href)
     else:
-        return None
+        return f"Error creating payment: {payment.error}"
 
-@app.route('/commands/meow')
-def meow():
-    idd=825778729904767037
-    if "user" in session:
-        return {'serverid': str(idd),"id":session["user"].id,"username": session["user"].username}
+
+@app.route("/pay_ultra")
+def pay_ultra():
+    if "google_id" not in session:
+        return redirect("/fetchUserData")
+
+    gid = session["google_id"]
+    user_data = get_userD(gid)
+
+    paypalrestsdk.configure({
+        "mode": "live",
+        "client_id": PAYPAL_CLIENT_ID,
+        "client_secret": PAYPAL_SECRET
+    })
+
+    payment = Payment({
+        "intent": "sale",
+        "payer": {"payment_method": "paypal"},
+        "transactions": [{
+            "amount": {"total": f"{ultra_price}.00", "currency": "USD"},
+            "description": "Binder Medical Ultra Plan - $125/month"
+        }],
+        "redirect_urls": {
+            "return_url": f"{appurl}/ultra_success",
+            "cancel_url": f"{appurl}/ultra_cancel"
+        }
+    })
+
+    if payment.create():
+        for link in payment.links:
+            if link.method == "REDIRECT":
+                session["pending_plan"] = "ultra"
+                session["payment_id"] = payment.id
+                return redirect(link.href)
     else:
-        return {'serverid': str(idd)}
+        return f"Error creating payment: {payment.error}"
 
-@app.route('/server/<server_id>/check_user/<user_id>', methods=['GET'])
-def check_user(server_id, user_id):
-    ref = db.reference(f'/servers/{server_id}/allowed')
-    allowed_users = ref.get()
-    user_allowed = any(user['id'] == int(user_id) for user in allowed_users)
-    return jsonify({'allowed': user_allowed})
+@app.route("/<plan>_success")
+def payment_success(plan):
+    if "google_id" not in session:
+        return redirect("/fetchUserData")
 
-@app.route('/server/<server_id>/add_command', methods=['POST'])
-def add_commands(server_id):
-    data = request.json
-    des = data.get('des', "try it")
+    gid = session["google_id"]
+    plan = session.get("pending_plan", plan)
 
-    just_do_it(server_id,data['command'],data['messages'],des)
-    return jsonify({'success': True})
+    drs_ref = db.reference(f'/drs/{gid}')
+    user_data = drs_ref.get()
+    if not user_data:
+        return jsonify({"error": "User not found"}), 404
 
-@app.route('/server/<server_id>/add_suggestion', methods=['POST'])
-def add_suggs(server_id):
-    data = request.json
-    add_command_suggestion(server_id, data['id'],data['name'],data['command'],data['val'],data['des'])
-    return jsonify({'success': True})
+    user_data["plan"] = plan
+    user_data["payed"] = user_data.get("payed", 0) + (
+        starter_price if plan == "starter" else pro_price if plan == "pro" else ultra_price
+    )
+    user_data["first"] = datetime.now().isoformat()
+    drs_ref.update(user_data)
 
-@app.route('/<server_id>/add_command', methods=['POST'])
-def add_comms(server_id):
-    data = request.json
-    des = data.get('des', "try it")
+    return render_template("pay_success.html", plan=plan, price=user_data["payed"])
 
-    just_do_it(server_id,data['command'],data['val'],des)
-    return jsonify({'success': True})
 
-@app.route('/<server_id>/add_suggestion', methods=['POST'])
-def add_suggestions(server_id):
-    data = request.json
-    add_command_suggestion(server_id, data['id'],data['name'],data['command'],data['val'],data['des'])
-    return jsonify({'success': True})
+@app.route("/<plan>_cancel")
+def payment_cancel(plan):
+    return render_template("payment_canceled.html", plan=plan)
 
-@app.route('/commands/<server_id>', methods=['GET'])
-def get_commands(server_id):
-    for i in session:
-        print(i)
-    ref = db.reference(f'/servers/{server_id}/commands')
-    commands = ref.get()
-    return jsonify(commands)
+''' restrictions
+user_plan = session.get("plan", "free")
 
-@app.route('/suggestions/<server_id>', methods=['GET'])
-def get_suggestions(server_id):
-    ref = db.reference(f'/servers/{server_id}/suggestions')
-    suggestions = ref.get()
-    return jsonify(suggestions)
+# restrict Starter users
+if user_plan == "starter":
+    allowed_stats = ["basic_stats", "roi"]
+    if requested_stat not in allowed_stats:
+        return render_template("upgrade.html", msg="Upgrade to Pro to access full stats.")
 
-@app.route('/delete_command/<server_id>/<command_id>', methods=['DELETE'])
-def delete_command(server_id, command_id):
-    ref = db.reference(f'/servers/{server_id}/commands/{command_id}')
-    ref.delete()
-    return jsonify({"message": "Command deleted successfully"}), 200
+    if action in ["print", "upload"]:
+        return render_template("upgrade.html", msg="Printing and uploads are Pro features.")
 
-@app.route('/add_suggestion/<server_id>', methods=['POST'])
-def add_suggestion(server_id):
-    data = request.json
-    user_id = data['user_id']
-    username = data['username']
-    command = data['command']
-    messages = data['messages']
-    des = data.get('des', "try it")
-
-    ref = db.reference(f'/servers/{server_id}/suggestions/{user_id}')
-    suggestion_data = {'name': username, 'val': [{'command': command, 'messages': messages}]}
-    ref.set(suggestion_data)
-    return jsonify({"message": "Suggestion added successfully"}), 201
-
-@app.route('/delete_suggestion/<server_id>/<user_id>/<command_name>', methods=['DELETE'])
-def delete_suggestion(server_id, user_id, command_name):
-    ref = db.reference(f'/servers/{server_id}/suggestions')
-    suggestions = ref.get()
-    if suggestions:
-        hmm=suggestions[str(user_id)]['val']
-        x=[j for j in hmm if not j['command']==command_name]
-        if x == []:
-            #y=[{j:suggestions[j]} for j in suggestions if not j==user_id]
-            y=[]
-            for j in suggestions:
-                if not j==user_id:
-                    y.append({j:suggestions[j]})
-
-            ref = db.reference(f'servers/{server_id}')
-            ref.child('suggestions').set(y)
-        else:
-            update_val(server_id, f'suggestions/{user_id}', x)
-
-        return jsonify({'message': 'Suggestion deleted successfully'})
-    else:
-        return jsonify({'message': 'Suggestion not deleted'})
-
-@app.route('/add_command/<server_id>')
-def add_command(server_id):
-    session["serverid"]=server_id
-    app.logger.info("Session data for add_command page: %s", session)
-    return redirect(url_for("indexxx"))
-
-@app.route("/addcomm")
-def homeeee():
-    return render_template("adds.html")
-
-@app.route('/server/<server_id>/update_command/<command_id>', methods=['PUT'])
-def update_commanddd(server_id, command_id):
-    data = request.json
-    ref = db.reference(f'/servers/{server_id}/commands')
-    commands = ref.get()
-
-    if not commands:
-        return jsonify({'error': 'Commands not found'}), 404
-
-    command_id = int(command_id)
-    if commands[command_id]:
-        commands[command_id].update(data)
-        x = commands[command_id]
-        print(x)
-        update_val(server_id, f"commands/{command_id}", x)
-        return jsonify({'success': 'Command updated'}), 200
-    else:
-        return jsonify({'error': 'Command not found'}), 404
-
-@app.route("/addcomm/callback")
-def callbackkk():
-    code = request.args.get("code")
-    if not code:
-        return redirect(url_for("homeeee"))
-
-    # Create a temporary client for OAuth
-    oauth_client = APIClient(BOTtt_TOKEN, client_secret=CLIENTtt_SECRET)
-
-    try:
-        token_response = oauth_client.oauth.get_access_token(code,REDIRECccT_URI)
-        token = token_response.access_token
-        session["token"] = token
-    except Exception as e:
-        return str(e)
-
-    # Create a client using the retrieved OAuth token
-    user_client = APIClient(token, bearer=True)
-
-    user = user_client.users.get_current_user()
-    print(user)
-    session["user"] = {"id": user.id, "username": user.username, "discriminator": user.discriminator}
-
-    return redirect(url_for("indexxx"))
-
-@app.route("/indexx")
-def indexxx():
-    if "user" not in session:
-        return redirect(url_for("homeeee"))
-    user = session["user"]
-    x="825778729904767037"
-    if "serverid" in session:
-        x=session["serverid"]
-
-    ref = db.reference(f'/servers/{x}/allowed')
-    allowed_users = ref.get()
-    user_allowed = any(uuser['id'] == int(user['id']) for uuser in allowed_users)
-
-    app.logger.info("Session data for index page: %s", session)
-    if user_allowed:
-        return render_template("comm.html",user=user,serverid=x)
-    else:
-        return render_template("add.html",user=user,serverid=x)
-    #return render_template("index.html",user=user,serverid=x)
-
-@app.route("/addcommand")
-def addcommmand():
-    if "user" not in session:
-        return redirect(url_for("homeeee"))
-    user = session["user"]
-    x="825778729904767037"
-    if "serverid" in session:
-        x=session["serverid"]
-    return render_template("addd.html",user=user,serverid=x)
-
-@app.route("/sugg")
-def sugggg():
-    if "user" not in session:
-        return redirect(url_for("homeeee"))
-    user = session["user"]
-    x="825778729904767037"
-    if "serverid" in session:
-        x=session["serverid"]
-    return render_template("sugg.html",user=user,serverid=x)
-
-@app.route("/login_dis")
-def loginnnnn():
-    discord_login_url = f"https://discord.com/oauth2/authorize?client_id={dCLIENT_ID}&response_type=code&redirect_uri=https%3A%2F%2Friasoftware.pythonanywhere.com%2Faddcomm%2Fcallback&scope=identify+email+guilds+guilds.members.read"
-    return redirect(discord_login_url)
-
-@app.route("/logout_dis")
-def logouttttt():
-    session.clear()
-    return redirect(url_for("homeeee"))
+'''
 
 
 if __name__ == "__main__":
