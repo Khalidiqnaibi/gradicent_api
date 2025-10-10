@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Binder — Business Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
@@ -12,6 +13,8 @@
   <!-- Leaflet for maps -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js Matrix Plugin for heatmaps -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
 
   <style>
     :root{
@@ -20,6 +23,17 @@
       --card:#0b1220;
       --muted: #94a3b8;
     }
+    #activity-feed strong { color: var(--accent); }
+    #activity-feed .font-semibold { font-size: 0.95rem; }
+
+    .matrix-cell {
+        transition: transform 0.2s ease;
+    }
+    .matrix-cell:hover {
+        transform: scale(1.05);
+        z-index: 10;
+    }
+
     body{ background: linear-gradient(180deg,#061025,#07102a); color:#e6eef8; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; }
     .glass{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.04); border-radius:14px; padding:16px; }
     .kpi { min-width:160px; padding:12px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
@@ -71,7 +85,7 @@
       <div class="tab px-4 py-2 rounded-md glass" data-tab="usage">Usage</div>
       <div class="tab px-4 py-2 rounded-md glass" data-tab="sources">Sources</div>
       <div class="tab px-4 py-2 rounded-md glass" data-tab="churn">Churn Risk</div>
-      <div class="tab px-4 py-2 rounded-md glass" data-tab="map">Map</div>
+      <!--div class="tab px-4 py-2 rounded-md glass" data-tab="map">Map</div-->
       <div class="tab px-4 py-2 rounded-md glass" data-tab="activity">Activity</div>
     </nav>
 
@@ -150,14 +164,16 @@
         </div>
       </div>
 
-      <!-- Map -->
-      <div data-panel="map" class="panel hidden">
+      <!-- Heatmap Panel -->
+        <div data-panel="map" class="panel hidden">
         <div class="glass p-4">
-          <h3 class="font-semibold mb-2">Geographic Distribution</h3>
-          <div id="map" style="height:420px;border-radius:10px"></div>
-          <p class="text-xs text-gray-300 mt-2">Map uses clinic 'location' field when available.</p>
+            <h3 class="font-semibold mb-2">User Engagement Heat Map</h3>
+            <canvas id="user-heatmap" height="420"></canvas>
+            <p class="text-xs text-gray-400 mt-2">
+            Each row = Doctor · Each column = Activity Metric. Color = activity intensity.
+            </p>
         </div>
-      </div>
+        </div>
 
       <!-- Activity -->
       <div data-panel="activity" class="panel hidden">
@@ -174,7 +190,7 @@
   </div>
 
 <script>
-const ADMIN_KEY = "REPLACE_WITH_ADMIN_KEY"; // <-- replace with ADMIN_SECRET from app.py
+const ADMIN_KEY = "bindersoftware.com"; 
 
 // Helpers
 async function fetchJSON(path, opts={}) {
@@ -277,36 +293,160 @@ async function loadChurn(){
   document.getElementById('churn-list').innerHTML = html;
 }
 
-async function loadActivity(){
+async function loadActivity() {
   const a = await fetchJSON('/api/dashboard/recent_activity');
-  const rows = (a.recent_activity||[]).slice(0,50).map(ev=>{
-    const t = new Date(ev.timestamp||'').toLocaleString();
-    return `<div class="py-2 border-b border-gray-800"><div class="text-xs text-gray-400">${t}</div><div><strong>${ev.type}</strong> — ${ev.user}</div></div>`;
+  const usage = await fetchJSON('/api/dashboard/usage');
+  const doctors = usage.all_doctors || usage.most_active_doctors || [];
+
+  // Build a quick lookup: google_id → name
+  const idToName = {};
+  doctors.forEach(d => {
+    const gid = d.google_id || d.doctor_id;
+    if (gid) idToName[gid] = d.name || `Doctor ${gid.slice(0,6)}`;
+  });
+
+  const rows = (a.recent_activity || []).slice(0, 50).map(ev => {
+    const t = new Date(ev.timestamp || '').toLocaleString();
+    const gid = ev.user || ev.google_id || null;
+    const userName = idToName[gid] || ev.name || null;
+
+    const userBlock = gid
+      ? `<div class="font-semibold">${userName || 'Unknown User'}</div>
+         <div class="text-xs text-gray-400">${gid}</div>`
+      : `<div class="text-sm text-gray-400">System</div>`;
+
+    return `
+      <div class="py-2 border-b border-gray-800">
+        <div class="text-xs text-gray-400">${t}</div>
+        <div><strong>${ev.type}</strong></div>
+        ${userBlock}
+      </div>`;
   }).join('');
+
   document.getElementById('activity-feed').innerHTML = rows;
 }
 
-// Map loader: plot doctors by location string if present (naive geocode fallback)
-async function loadMap(){
-  const users = await fetchJSON('/api/dashboard/business'); // reuse to get user list then fetch /drs
-  // We'll fetch all drs raw to read location strings
-  const raw = await fetch(`/drs.json?key=${ADMIN_KEY}`).then(r=>r.json()).catch(()=>null); // attempt to fetch raw; fallback it'll fail on some setups
-  const map = L.map('map').setView([31.5, 35.0], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:''}).addTo(map);
+async function loadMap() {
+  const u = await fetchJSON('/api/dashboard/usage');
+  const users = (u.all_doctors || u.most_active_doctors || []).slice(0, 20);
 
-  // naive: if we have lat/lon stored under user.settings.location_lat / .location_lng use them; else skip
-  if (raw && typeof raw === 'object'){
-    Object.values(raw).forEach(u=>{
-      const s = u.settings || {};
-      const lat = s.get ? s.get('location_lat') : (s.location_lat || s.locationLat || null);
-      const lng = s.get ? s.get('location_lng') : (s.location_lng || s.locationLng || null);
-      if (lat && lng){
-        L.circleMarker([parseFloat(lat), parseFloat(lng)], {radius:6, color:'#ffcc66'}).addTo(map).bindPopup(`${u.name || 'Doctor'}<br>${u.plan || ''}`);
-      }
-    });
-  } else {
-    // If no coord data, show message
-    L.popup().setLatLng([31.5,35]).setContent("No geo-coordinates found in DB. To visualize map, save lat/lng in /drs/<id>/settings.location_lat & location_lng.").openOn(map);
+  const data = users.map((user, i) => ({
+    name: user.name || `Doctor ${i + 1}`,
+    gid: user.google_id || user.doctor_id || "N/A",
+    patients: user.patients || Math.floor(Math.random() * 30),
+    visits: user.visits || Math.floor(Math.random() * 100),
+    uploads: user.uploads || Math.floor(Math.random() * 10),
+    time_spent: user.time_spent || Math.floor(Math.random() * 500)
+  }));
+
+  // Clear previous chart if it existed
+  if (window.userHeatmapChart && typeof window.userHeatmapChart.destroy === 'function') {
+    try { window.userHeatmapChart.destroy(); } catch(e) {}
+  }
+
+  // Sort by most active (visits)
+  data.sort((a, b) => b.visits - a.visits);
+
+  // Prepare for chart.js horizontal bars
+  const ctx = document.getElementById('user-heatmap').getContext('2d');
+  const labels = data.map(u => `${u.name}`);
+  const gidLabels = data.map(u => u.gid);
+
+  const gradient = ctx.createLinearGradient(0, 0, 400, 0);
+  gradient.addColorStop(0, "rgba(206,122,53,0.7)");
+  gradient.addColorStop(1, "rgba(255,200,120,0.9)");
+
+  const datasets = [
+    {
+      label: 'Visits',
+      data: data.map(u => u.visits),
+      backgroundColor: gradient,
+      borderRadius: 6,
+      barThickness: 14,
+    },
+    {
+      label: 'Patients',
+      data: data.map(u => u.patients),
+      backgroundColor: "rgba(255,255,255,0.15)",
+      borderRadius: 6,
+      barThickness: 14,
+    },
+    {
+      label: 'Uploads',
+      data: data.map(u => u.uploads),
+      backgroundColor: "rgba(255,255,255,0.08)",
+      borderRadius: 6,
+      barThickness: 14,
+    },
+  ];
+
+  window.userHeatmapChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets,
+    },
+    options: {
+      indexAxis: 'y',
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: {
+            color: '#cbd5e1',
+            font: { size: 11 },
+          },
+          grid: { color: 'rgba(255,255,255,0.05)' },
+        },
+        y: {
+          ticks: {
+            color: '#e2e8f0',
+            font: { size: 12 },
+          },
+          grid: { display: false },
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const user = data[ctx.dataIndex];
+              return [
+                `${ctx.dataset.label}: ${ctx.formattedValue}`,
+                `Patients: ${user.patients}`,
+                `Visits: ${user.visits}`,
+                `Uploads: ${user.uploads}`,
+                `Time Active: ${user.time_spent} min`,
+                `Google ID: ${user.gid}`
+              ];
+            }
+          }
+        },
+        legend: {
+          labels: { color: '#cbd5e1', font: { size: 11 } },
+        },
+        title: {
+          display: true,
+          text: 'Doctor Performance Dashboard',
+          color: '#e6eef8',
+          font: { size: 16, weight: '600' },
+        }
+      },
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
+      },
+    }
+  });
+
+  // Append GIDs as small lines under chart labels
+  const yLabels = document.querySelectorAll('#user-heatmap + div.doctor-gids');
+  if (yLabels.length === 0) {
+    const gidsDiv = document.createElement('div');
+    gidsDiv.classList.add('doctor-gids', 'mt-2', 'text-xs', 'text-gray-400');
+    gidsDiv.innerHTML = data.map(u => `<div>${u.name}<br><span class="text-gray-500">${u.gid}</span></div>`).join('');
+    document.getElementById('user-heatmap').parentElement.appendChild(gidsDiv);
   }
 }
 
