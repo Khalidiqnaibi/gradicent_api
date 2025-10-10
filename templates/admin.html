@@ -1,0 +1,352 @@
+<!-- templates/admin_dashboard.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Binder — Business Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leaflet for maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root{
+      --accent:#ce7a35;
+      --bg:#0f172a;
+      --card:#0b1220;
+      --muted: #94a3b8;
+    }
+    body{ background: linear-gradient(180deg,#061025,#07102a); color:#e6eef8; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+    .glass{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.04); border-radius:14px; padding:16px; }
+    .kpi { min-width:160px; padding:12px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+    .tab { cursor:pointer; }
+  </style>
+</head>
+<body class="p-6">
+  <div class="max-w-7xl mx-auto">
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold">Binder Medical — Business Dashboard</h1>
+        <p class="text-sm text-gray-300">Investor view · Live KPIs · Auto-refresh every 60s</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="refreshBtn" class="px-4 py-2 rounded-md bg-[var(--accent)] text-black font-semibold">Refresh</button>
+        <a href="/admin/dashboard/export" id="exportBtn" class="px-4 py-2 rounded-md border border-gray-600">Export CSV</a>
+      </div>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">MRR</div>
+        <div id="kpi-mrr" class="text-2xl font-bold">$0</div>
+        <div class="text-xs text-gray-500">Monthly Recurring Revenue</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Total Revenue</div>
+        <div id="kpi-revenue" class="text-2xl font-bold">$0</div>
+        <div class="text-xs text-gray-500">All-time</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Active Doctors</div>
+        <div id="kpi-active" class="text-2xl font-bold">0</div>
+        <div class="text-xs text-gray-500">With patients</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Patients Today</div>
+        <div id="kpi-patients-today" class="text-2xl font-bold">0</div>
+        <div class="text-xs text-gray-500">New patients</div>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="mb-6 flex gap-3">
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="overview">Overview</div>
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="usage">Usage</div>
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="sources">Sources</div>
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="churn">Churn Risk</div>
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="map">Map</div>
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="activity">Activity</div>
+    </nav>
+
+    <!-- Tab panels -->
+    <section id="panels">
+      <!-- Overview -->
+      <div data-panel="overview" class="panel space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">MRR & Revenue Trend</h3>
+            <canvas id="chart-revenue" height="220"></canvas>
+          </div>
+
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Plan Distribution</h3>
+            <canvas id="chart-plans" height="220"></canvas>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Top Doctors (by visits)</h3>
+            <div id="top-doctors"></div>
+          </div>
+
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Key Ratios</h3>
+            <div id="key-ratios" class="text-sm text-gray-200"></div>
+          </div>
+
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Daily Patients (last 30 days)</h3>
+            <canvas id="chart-daily-patients" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage -->
+      <div data-panel="usage" class="panel hidden space-y-4">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Totals</h3>
+            <ul>
+              <li>Total patients: <strong id="u-total-patients">0</strong></li>
+              <li>Total visits: <strong id="u-total-visits">0</strong></li>
+              <li>Avg patients/doctor: <strong id="u-avg-patients">0</strong></li>
+              <li>Avg visits/doctor: <strong id="u-avg-visits">0</strong></li>
+              <li>Uploads: <strong id="u-uploads">0</strong></li>
+            </ul>
+          </div>
+
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Most Active Doctors</h3>
+            <div id="u-most-active"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sources -->
+      <div data-panel="sources" class="panel hidden">
+        <div class="glass p-4">
+          <h3 class="font-semibold mb-2">Acquisition Sources</h3>
+          <canvas id="chart-sources" height="160"></canvas>
+        </div>
+        <div class="glass p-4 mt-4">
+          <h3 class="font-semibold mb-2">Source Table</h3>
+          <div id="source-table" class="text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Churn -->
+      <div data-panel="churn" class="panel hidden">
+        <div class="glass p-4">
+          <h3 class="font-semibold mb-2">Churn Risk</h3>
+          <div id="churn-list" class="text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div data-panel="map" class="panel hidden">
+        <div class="glass p-4">
+          <h3 class="font-semibold mb-2">Geographic Distribution</h3>
+          <div id="map" style="height:420px;border-radius:10px"></div>
+          <p class="text-xs text-gray-300 mt-2">Map uses clinic 'location' field when available.</p>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div data-panel="activity" class="panel hidden">
+        <div class="glass p-4">
+          <h3 class="font-semibold mb-2">Recent Activity</h3>
+          <div id="activity-feed" class="text-sm"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-8 text-sm text-gray-400">
+      Built for investor demos — live data. Secure access required.
+    </footer>
+  </div>
+
+<script>
+const ADMIN_KEY = "REPLACE_WITH_ADMIN_KEY"; // <-- replace with ADMIN_SECRET from app.py
+
+// Helpers
+async function fetchJSON(path, opts={}) {
+  const url = `${path}?key=${ADMIN_KEY}`;
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error("Fetch error " + res.status);
+  return res.json();
+}
+
+// Charts placeholders
+let revenueChart, plansChart, dailyPatientsChart, sourcesChart;
+
+function initCharts(){
+  const ctxR = document.getElementById('chart-revenue').getContext('2d');
+  revenueChart = new Chart(ctxR, { type:'line', data:{ labels:[], datasets:[{ label:'MRR', data:[], tension:0.25, fill:true }]}, options:{ responsive:true }});
+
+  const ctxP = document.getElementById('chart-plans').getContext('2d');
+  plansChart = new Chart(ctxP, { type:'doughnut', data:{ labels:['Starter','Pro','Ultra','Free'], datasets:[{ data:[0,0,0,0]}]}, options:{ responsive:true }});
+
+  const ctxD = document.getElementById('chart-daily-patients').getContext('2d');
+  dailyPatientsChart = new Chart(ctxD, { type:'bar', data:{ labels:[], datasets:[{ label:'New Patients', data:[] }]}, options:{ responsive:true }});
+
+  const ctxS = document.getElementById('chart-sources').getContext('2d');
+  sourcesChart = new Chart(ctxS, { type:'bar', data:{ labels:[], datasets:[{ label:'Users', data:[] }]}, options:{ responsive:true }});
+}
+
+// Data loaders
+async function loadOverview(){
+  const b = await fetchJSON('/api/dashboard/business');
+  const u = await fetchJSON('/api/dashboard/usage');
+  // KPIs
+  document.getElementById('kpi-mrr').innerText = `$${b.MRR}`;
+  document.getElementById('kpi-revenue').innerText = `$${b.total_revenue}`;
+  document.getElementById('kpi-active').innerText = b.active_doctors;
+  document.getElementById('kpi-patients-today').innerText = b.new_today;
+
+  // plan distribution
+  const pd = b.plan_distribution;
+  const planData = [pd.starter||0, pd.pro||0, pd.ultra||0, pd.free||0];
+  plansChart.data.datasets[0].data = planData;
+  plansChart.update();
+
+  // top doctors
+  const top = u.most_active_doctors || [];
+  const topHtml = top.map((d,i)=>`<div class="mb-2"><strong>${i+1}. ${d.name||d.doctor_id}</strong> — ${d.visits} visits, ${d.patients} patients</div>`).join('');
+  document.getElementById('top-doctors').innerHTML = topHtml;
+
+  // small ratios
+  document.getElementById('key-ratios').innerHTML = `
+    MRR: $${b.MRR} · New Today: ${b.new_today} · New Week: ${b.new_this_week} · Active Doctors: ${b.active_doctors}
+  `;
+
+  // daily patients demo data (we'll use last 30 days from daily_reports if available)
+  try {
+    const dr = await fetchJSON('/api/dashboard/daily_report');
+    const reports = dr.reports || [];
+    const labels = reports.map(r=>r.date).reverse();
+    const vals = reports.map(r=> (r.usage && r.usage.total_patients) ? r.usage.total_patients : 0).reverse();
+    dailyPatientsChart.data.labels = labels;
+    dailyPatientsChart.data.datasets[0].data = vals;
+    dailyPatientsChart.update();
+  } catch(e){ /* ignore */ }
+}
+
+async function loadUsage(){
+  const u = await fetchJSON('/api/dashboard/usage');
+  document.getElementById('u-total-patients').innerText = u.total_patients;
+  document.getElementById('u-total-visits').innerText = u.total_visits;
+  document.getElementById('u-avg-patients').innerText = u.avg_patients_per_doctor;
+  document.getElementById('u-avg-visits').innerText = u.avg_visits_per_doctor;
+  document.getElementById('u-uploads').innerText = u.uploads || 0;
+
+  const ma = u.most_active_doctors || [];
+  const html = ma.map(d=>`<div class="mb-2"><strong>${d.name||d.doctor_id}</strong> — ${d.visits} visits</div>`).join('');
+  document.getElementById('u-most-active').innerHTML = html;
+}
+
+async function loadSources(){
+  const s = await fetchJSON('/api/dashboard/sources');
+  const labels = Object.keys(s);
+  const users = labels.map(k => s[k].users);
+  const revenues = labels.map(k => s[k].revenue);
+
+  sourcesChart.data.labels = labels;
+  sourcesChart.data.datasets[0].data = users;
+  sourcesChart.update();
+
+  // Table
+  const rows = labels.map(k=>{
+    const v=s[k];
+    return `<div class="py-2 border-b border-gray-700 flex justify-between"><div><strong>${k}</strong><div class="text-xs text-gray-400">${v.users} users • ${v.payers} payers</div></div><div class="text-sm">$${v.revenue}</div></div>`;
+  }).join('');
+  document.getElementById('source-table').innerHTML = rows;
+}
+
+async function loadChurn(){
+  const c = await fetchJSON('/api/dashboard/churn_risk');
+  const items = c.chis || [];
+  const html = items.map(i=>`<div class="py-2 border-b border-gray-800"><strong>${i.name||i.doctor_id}</strong> — ${i.days_inactive===null?'never active': i.days_inactive+' days inactive'}</div>`).join('');
+  document.getElementById('churn-list').innerHTML = html;
+}
+
+async function loadActivity(){
+  const a = await fetchJSON('/api/dashboard/recent_activity');
+  const rows = (a.recent_activity||[]).slice(0,50).map(ev=>{
+    const t = new Date(ev.timestamp||'').toLocaleString();
+    return `<div class="py-2 border-b border-gray-800"><div class="text-xs text-gray-400">${t}</div><div><strong>${ev.type}</strong> — ${ev.user}</div></div>`;
+  }).join('');
+  document.getElementById('activity-feed').innerHTML = rows;
+}
+
+// Map loader: plot doctors by location string if present (naive geocode fallback)
+async function loadMap(){
+  const users = await fetchJSON('/api/dashboard/business'); // reuse to get user list then fetch /drs
+  // We'll fetch all drs raw to read location strings
+  const raw = await fetch(`/drs.json?key=${ADMIN_KEY}`).then(r=>r.json()).catch(()=>null); // attempt to fetch raw; fallback it'll fail on some setups
+  const map = L.map('map').setView([31.5, 35.0], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:''}).addTo(map);
+
+  // naive: if we have lat/lon stored under user.settings.location_lat / .location_lng use them; else skip
+  if (raw && typeof raw === 'object'){
+    Object.values(raw).forEach(u=>{
+      const s = u.settings || {};
+      const lat = s.get ? s.get('location_lat') : (s.location_lat || s.locationLat || null);
+      const lng = s.get ? s.get('location_lng') : (s.location_lng || s.locationLng || null);
+      if (lat && lng){
+        L.circleMarker([parseFloat(lat), parseFloat(lng)], {radius:6, color:'#ffcc66'}).addTo(map).bindPopup(`${u.name || 'Doctor'}<br>${u.plan || ''}`);
+      }
+    });
+  } else {
+    // If no coord data, show message
+    L.popup().setLatLng([31.5,35]).setContent("No geo-coordinates found in DB. To visualize map, save lat/lng in /drs/<id>/settings.location_lat & location_lng.").openOn(map);
+  }
+}
+
+// Tab logic
+document.querySelectorAll('.tab').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('bg-[var(--accent)]','text-black'));
+    el.classList.add('bg-[var(--accent)]','text-black');
+    const tab = el.dataset.tab;
+    document.querySelectorAll('.panel').forEach(p=>p.classList.add('hidden'));
+    document.querySelector(`[data-panel="${tab}"]`).classList.remove('hidden');
+    // on-demand loads
+    if (tab==='overview'){ loadOverview(); }
+    if (tab==='usage'){ loadUsage(); }
+    if (tab==='sources'){ loadSources(); }
+    if (tab==='churn'){ loadChurn(); }
+    if (tab==='map'){ loadMap(); }
+    if (tab==='activity'){ loadActivity(); }
+  });
+});
+
+// Init
+initCharts();
+document.querySelector('[data-tab="overview"]').click();
+
+// Refresh
+document.getElementById('refreshBtn').addEventListener('click', ()=> {
+  document.querySelector('[data-tab="overview"]').click();
+  if (document.querySelector('.tab.bg-[var(--accent)]').dataset.tab === 'usage') loadUsage();
+});
+
+// Auto refresh every 60 seconds
+setInterval(()=> {
+  const activeTab = document.querySelector('.tab.bg-[var(--accent)]')?.dataset.tab || 'overview';
+  if (activeTab === 'overview') loadOverview();
+  if (activeTab === 'usage') loadUsage();
+  if (activeTab === 'sources') loadSources();
+  if (activeTab === 'churn') loadChurn();
+  if (activeTab === 'activity') loadActivity();
+}, 60000);
+</script>
+</body>
+</html>

@@ -282,6 +282,14 @@
   // Helpers
   const $  = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  
+  setInterval(() => {
+    fetch("/track_time", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({seconds: 60})
+    });
+  }, 60000); // log 1 min active time
 
   // Toast system
   function showToast(text, type = 'info') {

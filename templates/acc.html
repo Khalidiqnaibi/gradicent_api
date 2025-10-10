@@ -203,6 +203,14 @@
     // Links used by buttons (updated later by user_data logic)
     var btn1herf = 'https://www.google.com';
     var btn2herf = "https://www.google.com/search?q=potato&tbm=isch";
+
+    setInterval(() => {
+      fetch("/track_time", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({seconds: 60})
+      });
+    }, 60000); // log 1 min active time
     
     function opentab(url){
       if(!url) return;

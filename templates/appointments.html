@@ -286,6 +286,14 @@
     // state
     let appointments = [];
 
+    setInterval(() => {
+      fetch("/track_time", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({seconds: 60})
+      });
+    }, 60000); // log 1 min active time
+
     function toast(message, type='info') {
       const t = document.getElementById('toast');
       const el = document.createElement('div');

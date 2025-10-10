@@ -267,6 +267,14 @@
     const plan = '{{plan}}';
     let patss = [];
 
+    setInterval(() => {
+      fetch("/track_time", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({seconds: 60})
+      });
+    }, 60000); // log 1 min active time
+
     /* Utility: convert hex to rgba string */
     function hexToRgba(hex, alpha=1) {
       if (!hex) return `rgba(0,0,0,${alpha})`;

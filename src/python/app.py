@@ -71,6 +71,7 @@ global prePay
 prePay= False
 global password
 password = "@Ksoftkhaafif1"  # Change this to your secure password
+ADMIN_SECRET = "bindersoftware.com"  # change to env var in production
 
 PAYPAL_CLIENT_ID ="AaH6jy2wDk69MEKa5aVYIwz06AMJwjym3qziA3wmF0qlbdKtcI-iIZCmj9qjK2mcHvEXgXbVnyq_6nP1",
 PAYPAL_SECRET = "EFFgbsOtPSMXBbRyivM5ogXekW4BMETUkjcBJf9LCMRuWGaqxTtAVOWHa30WkwP-w19eQ6b8aMHIxFf9"
@@ -182,6 +183,15 @@ def login_is_required(function):
             return abort(401)
         return function(*args, **kwargs)
     wrapper.__name__ = function.__name__  # force Flask to see the right name
+    return wrapper
+
+def admin_required(func):
+    def wrapper(*args, **kwargs):
+        key = request.args.get("key") or request.headers.get("X-Admin-Key")
+        if key != ADMIN_SECRET:
+            return jsonify({"error": "Unauthorized"}), 403
+        return func(*args, **kwargs)
+    wrapper.__name__ = func.__name__
     return wrapper
 
 def iscode(code):
@@ -1342,6 +1352,7 @@ def done():
             if 'sec' in session:
                 return redirect("/check_bcode")
             else:
+                log_event(session['google_id'], "login", {"binder": session.get("binder")})
                 return redirect("/home_page")
         except Exception as e:
             return render_template("errors.html",msg=str(e),err='Unexpected')
@@ -1444,6 +1455,7 @@ def get_userD(google_id):
         drssref = db.reference(f'/{typee}/{google_id}')
         doc = drssref.get()
         name = session.get("name")
+        source = session.get("source","organic")
         year=datetime.now().year
 
         if doc:
@@ -1456,6 +1468,7 @@ def get_userD(google_id):
                         "first": datetime.now().isoformat(),
                         "google_id": google_id,
                         "name": name,
+                        "source":source,
                         "payed": 0,
                         "plan": "free",
                         'settings':{
@@ -1525,6 +1538,7 @@ def get_userDD():
 
 @app.route('/Binder_labratory')
 def get_last_pagelab():
+    session['source'] = request.args.get("src", "organic")
 
     if "google_id" in session:
         gid = session["google_id"]
@@ -1641,6 +1655,7 @@ def get_last_pagelab():
 @app.route('/Binder_medical')
 def get_last_page():
     session["binder"]= 'med'
+    session['source'] = request.args.get("src", "organic")
     if "binder" in session: 
         binder=session["binder"]
         if binder == 'lab' :
@@ -2322,6 +2337,7 @@ def add_patient():
 
     drs_ref.child(google_id).set(user_data)
 
+    log_event(session['google_id'], "new_patient", {"patient_id": nno})
     return jsonify({"message": "Patient added successfully"}), 200
 
 @app.route('/ssearch', methods=['POST']) #'''need place holder if the typee is not drs'''
@@ -3171,6 +3187,7 @@ def insert_visit():
     
     drs_ref.child(google_id).set(user_data)
 
+    log_event(session['google_id'], "new_visit", {"patient_id": patient_no})
     return jsonify({"message": "Visit added successfully"}), 200
 
 @app.route('/updateVisit', methods=['POST'])
@@ -3271,6 +3288,7 @@ def kprint():
     patient['dr']=dr['settings'].get("drname", dr['name'])
     file_stream, filename = create_patient_document(patient)
 
+    log_event(session['google_id'], "print_document", {"type": "patient"})
     # Send the file to the user for download without saving it to disk
     return send_file(file_stream, as_attachment=True, download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
@@ -3302,6 +3320,7 @@ def kkprint():
     
     v_ref.set(visit)
 
+    log_event(session['google_id'], "print_document", {"type": "visit"})
     # Send the file to the user for download
     return send_file(file_stream, as_attachment=True, download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
@@ -3597,6 +3616,32 @@ def edit_file():
 
 #################################################################
 
+def log_event(google_id, event_type, metadata=None):
+    """Save user activity for business analytics"""
+    ref = db.reference('/analytics')
+    event = {
+        "user": google_id,
+        "type": event_type,
+        "meta": metadata or {},
+        "timestamp": datetime.now().isoformat()
+    }
+    ref.push(event)
+
+@app.route("/track_time", methods=["POST"])
+def track_time():
+    if "google_id" not in session:
+        return jsonify({"error": "not logged in"}), 401
+
+    data = request.get_json()
+    seconds_spent = data.get("seconds", 0)
+    ref = db.reference('/time_tracking')
+    ref.push({
+        "user": session['google_id'],
+        "seconds": seconds_spent,
+        "timestamp": datetime.now().isoformat()
+    })
+    return jsonify({"message": "time logged"})
+
 @app.route("/pay_starter")
 def pay_starter():
     if "google_id" not in session:
@@ -3734,6 +3779,292 @@ def payment_success(plan):
 def payment_cancel(plan):
     return render_template("payment_canceled.html", plan=plan)
 
+@app.route("/dashboard/business", methods=["GET"])
+@admin_required
+def dashboard_business():
+    """
+    Returns high-level business metrics:
+    - total revenue
+    - plan distribution (starter/pro/ultra)
+    - total active doctors
+    - new users today/this week
+    - MRR (monthly recurring revenue)
+    """
+    ref = db.reference('/drs')
+    all_users = ref.get() or {}
+
+    total_revenue = 0
+    plan_counts = {"starter": 0, "pro": 0, "ultra": 0, "free": 0,"fam":0}
+    new_today = 0
+    new_this_week = 0
+    active_users = 0
+    now = datetime.now()
+
+    for uid, data in all_users.items():
+        plan = data.get("plan", "free")
+        payed = float(data.get("payed", 0))
+        first_date = data.get("first")
+        total_revenue += payed
+        if plan in plan_counts:
+            plan_counts[plan] += 1
+        else:
+            plan_counts["free"] += 1
+        try:
+            dt = datetime.fromisoformat(first_date)
+            if (now - dt).days <= 1:
+                new_today += 1
+            if (now - dt).days <= 7:
+                new_this_week += 1
+        except:
+            pass
+        if "patients" in data and len(data["patients"]) > 0:
+            active_users += 1
+
+    mrr = (
+        plan_counts["starter"] * 5 +
+        plan_counts["pro"] * 25 +
+        plan_counts["ultra"] * 125
+    )
+
+    return jsonify({
+        "total_revenue": round(total_revenue, 2),
+        "plan_distribution": plan_counts,
+        "active_doctors": active_users,
+        "new_today": new_today,
+        "new_this_week": new_this_week,
+        "MRR": mrr,
+        "timestamp": now.isoformat()
+    })
+
+@app.route("/dashboard/usage", methods=["GET"])
+@admin_required
+def dashboard_usage():
+    """
+    Returns usage metrics from all doctors:
+    - total patients, visits, avg per doctor
+    - upload activity
+    - most active doctors
+    """
+    ref = db.reference('/drs')
+    all_users = ref.get() or {}
+
+    total_patients = 0
+    total_visits = 0
+    uploads = 0
+    activity = []
+    most_active = []
+    now = datetime.now()
+
+    for uid, data in all_users.items():
+        patients = data.get("patients", [])
+        patient_count = len(patients)
+        total_patients += patient_count
+        visit_count = sum(len(p.get("visits", [])) for p in patients)
+        total_visits += visit_count
+
+        # Track upload-like activity
+        if any("lab" in p for p in patients):
+            uploads += 1
+
+        activity.append({
+            "doctor_id": uid,
+            "name": data.get("name"),
+            "plan": data.get("plan", "free"),
+            "patients": patient_count,
+            "visits": visit_count,
+            "last_active": data.get("first")
+        })
+
+    # top 5 most active
+    most_active = sorted(activity, key=lambda x: x["visits"], reverse=True)[:5]
+
+    avg_patients = round(total_patients / len(all_users), 2) if all_users else 0
+    avg_visits = round(total_visits / len(all_users), 2) if all_users else 0
+
+    return jsonify({
+        "total_patients": total_patients,
+        "total_visits": total_visits,
+        "avg_patients_per_doctor": avg_patients,
+        "avg_visits_per_doctor": avg_visits,
+        "uploads": uploads,
+        "most_active_doctors": most_active,
+        "timestamp": now.isoformat()
+    })
+
+@app.route("/dashboard/recent_activity", methods=["GET"])
+@admin_required
+def dashboard_recent_activity():
+    """
+    Lists the 20 most recent doctor signups or updates.
+    """
+    ref = db.reference('/drs')
+    all_users = ref.get() or {}
+
+    records = []
+    for uid, data in all_users.items():
+        records.append({
+            "doctor_id": uid,
+            "name": data.get("name"),
+            "plan": data.get("plan", "free"),
+            "date": data.get("first"),
+            "patients": len(data.get("patients", []))
+        })
+
+    recent = sorted(records, key=lambda x: x.get("date", ""), reverse=True)[:20]
+    return jsonify({"recent_activity": recent})
+
+@app.route("/dashboard/metrics", methods=["GET"])
+@admin_required
+def dashboard_metrics():
+    ref_users = db.reference('/drs').get() or {}
+    ref_events = db.reference('/analytics').get() or {}
+    ref_time = db.reference('/time_tracking').get() or {}
+
+    metrics = {
+        "total_doctors": len(ref_users),
+        "MRR": 0,
+        "ARR": 0,
+        "avg_revenue_per_user": 0,
+        "avg_time_spent_per_user": 0,
+        "patients_added_today": 0,
+        "avg_patients_per_doctor": 0,
+        "daily_active_users": 0,
+        "weekly_active_users": 0,
+        "upgrade_rate": 0,
+        "retention_rate": 0,
+        "plan_distribution": {"starter": 0, "pro": 0, "ultra": 0, "free": 0},
+        "timestamp": datetime.now().isoformat()
+    }
+
+    today = datetime.now().date()
+    week_ago = today - timedelta(days=7)
+
+    total_revenue = 0
+    total_time = {}
+    active_today = set()
+    active_week = set()
+    total_patients = 0
+    upgrades = 0
+
+    for uid, user in ref_users.items():
+        plan = user.get("plan", "free")
+        payed = float(user.get("payed", 0))
+        total_revenue += payed
+        metrics["plan_distribution"][plan] = metrics["plan_distribution"].get(plan, 0) + 1
+
+        if "patients" in user:
+            total_patients += len(user["patients"])
+
+    # Time spent tracking
+    for tid, entry in ref_time.items():
+        user = entry.get("user")
+        sec = int(entry.get("seconds", 0))
+        total_time[user] = total_time.get(user, 0) + sec
+
+        ts = datetime.fromisoformat(entry.get("timestamp"))
+        if ts.date() == today:
+            active_today.add(user)
+        if ts.date() >= week_ago:
+            active_week.add(user)
+
+    # Events tracking (patients, upgrades, etc.)
+    for eid, ev in ref_events.items():
+        ev_type = ev.get("type")
+        ts = datetime.fromisoformat(ev.get("timestamp"))
+        if ev_type == "new_patient" and ts.date() == today:
+            metrics["patients_added_today"] += 1
+        elif ev_type == "upgrade_plan":
+            upgrades += 1
+
+    # Derived metrics
+    user_count = len(ref_users) if len(ref_users) > 0 else 1
+    metrics["MRR"] = (
+        metrics["plan_distribution"]["starter"] * 5 +
+        metrics["plan_distribution"]["pro"] * 25 +
+        metrics["plan_distribution"]["ultra"] * 125
+    )
+    metrics["ARR"] = metrics["MRR"] * 12
+    metrics["avg_revenue_per_user"] = round(total_revenue / user_count, 2)
+    metrics["avg_patients_per_doctor"] = round(total_patients / user_count, 2)
+    metrics["avg_time_spent_per_user"] = round(sum(total_time.values()) / user_count / 60, 1)
+    metrics["daily_active_users"] = len(active_today)
+    metrics["weekly_active_users"] = len(active_week)
+    metrics["upgrade_rate"] = round((upgrades / user_count) * 100, 2)
+
+    return jsonify(metrics)
+
+@app.route("/dashboard/churn_risk", methods=["GET"])
+@admin_required
+def churn_risk():
+    ref_time = db.reference('/time_tracking').get() or {}
+    ref_users = db.reference('/drs').get() or {}
+
+    last_activity = {}
+    for tid, entry in ref_time.items():
+        uid = entry.get("user")
+        ts = datetime.fromisoformat(entry.get("timestamp"))
+        last_activity[uid] = max(last_activity.get(uid, ts), ts)
+
+    churn_risk_users = []
+    today = datetime.now()
+
+    for uid, user in ref_users.items():
+        last_seen = last_activity.get(uid)
+        if not last_seen:
+            continue
+        days_since = (today - last_seen).days
+        if days_since > 7:  # over a week of inactivity
+            churn_risk_users.append({
+                "doctor": user.get("name"),
+                "plan": user.get("plan", "free"),
+                "days_inactive": days_since,
+                "email": user.get("email"),
+            })
+
+    return jsonify({
+        "churn_risk_count": len(churn_risk_users),
+        "churn_risk_users": churn_risk_users[:50]
+    })
+
+@app.route("/dashboard/sources", methods=["GET"])
+@admin_required
+def dashboard_sources():
+    users = db.reference('/drs').get() or {}
+    events = db.reference('/analytics').get() or {}
+
+    source_stats = {}
+
+    for uid, user in users.items():
+        src = user.get("source", "unknown")
+        plan = user.get("plan", "free")
+        payed = float(user.get("payed", 0))
+        if src not in source_stats:
+            source_stats[src] = {"users": 0, "payers": 0, "revenue": 0}
+        source_stats[src]["users"] += 1
+        if plan != "free":
+            source_stats[src]["payers"] += 1
+            source_stats[src]["revenue"] += payed
+
+    for src, data in source_stats.items():
+        data["conversion_rate"] = round((data["payers"] / data["users"]) * 100, 2)
+        data["avg_revenue_per_user"] = round(data["revenue"] / data["users"], 2)
+
+    return jsonify(source_stats)
+
+@app.route("/track_page", methods=["POST"])
+def track_page():
+    if "google_id" not in session:
+        return jsonify({"error": "not logged in"}), 401
+
+    data = request.get_json()
+    page = data.get("page")
+    db.reference("/page_views").push({
+        "user": session['google_id'],
+        "page": page,
+        "timestamp": datetime.now().isoformat()
+    })
+    return jsonify({"message": "page logged"})
+
 ''' restrictions
 user_plan = session.get("plan", "free")
 
@@ -3747,7 +4078,6 @@ if user_plan == "starter":
         return render_template("upgrade.html", msg="Printing and uploads are Pro features.")
 
 '''
-
 
 if __name__ == "__main__":
     app.run(debug=False)

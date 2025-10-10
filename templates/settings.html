@@ -271,6 +271,14 @@
     const menuBar=document.getElementById('menuBar');
     menuBtn.addEventListener('click',()=>menuBar.classList.toggle('menu-active'));
 
+    setInterval(() => {
+      fetch("/track_time", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({seconds: 60})
+      });
+    }, 60000); // log 1 min active time
+
     const binder='{{ binder }}';
     if(binder==='lab'){
       const appa=document.getElementById('appa');
