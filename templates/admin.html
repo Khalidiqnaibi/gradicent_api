@@ -23,9 +23,43 @@
       --card:#0b1220;
       --muted: #94a3b8;
     }
+
+    body ,.glass.p-4{
+      --sb-track-color: var(--muted);
+      --sb-thumb-color: var(--accent);
+      --sb-size: 5px;
+    }
+
+    body::-webkit-scrollbar  ,.glass.p-4::-webkit-scrollbar {
+      width: var(--sb-size)
+    }
+
+    body::-webkit-scrollbar-track,.glass.p-4::-webkit-scrollbar-track {
+      background: var(--sb-track-color);
+      border-radius: 8px;
+    }
+
+    body::-webkit-scrollbar-thumb,.glass.p-4::-webkit-scrollbar-thumb {
+      background: var(--sb-thumb-color);
+      border-radius: 8px;
+      
+    }
+
+    @supports not selector(::-webkit-scrollbar) {
+      body {
+        scrollbar-color: 
+        var(--sb-thumb-color)
+        var(--sb-track-color);
+      }
+    }
+
     #activity-feed strong { color: var(--accent); }
     #activity-feed .font-semibold { font-size: 0.95rem; }
 
+    .glass.p-4 {
+      overflow-y: auto;
+      max-height: 400px;
+    }
     .matrix-cell {
         transition: transform 0.2s ease;
     }
@@ -69,7 +103,7 @@
       <div class="kpi glass">
         <div class="text-sm text-gray-400">Active Doctors</div>
         <div id="kpi-active" class="text-2xl font-bold">0</div>
-        <div class="text-xs text-gray-500">With patients</div>
+        <div class="text-xs text-gray-500">With more than one patient</div>
       </div>
 
       <div class="kpi glass">

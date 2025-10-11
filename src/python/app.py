@@ -3809,7 +3809,7 @@ def api_dashboard_business():
                 new_this_week += 1
         except Exception:
             pass
-        if "patients" in data and len(data["patients"]) > 0:
+        if "patients" in data and len(data["patients"]) > 1:
             active_users += 1
 
     mrr = plan_counts.get("starter",0)*5 + plan_counts.get("pro",0)*25 + plan_counts.get("ultra",0)*125
