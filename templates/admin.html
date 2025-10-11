@@ -67,6 +67,15 @@
         transform: scale(1.05);
         z-index: 10;
     }
+    .kpi .text-2xl {
+      color: #f8fafc;
+      letter-spacing: 0.5px;
+    }
+    .kpi:hover {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      transform: translateY(-2px);
+      transition: all 0.2s ease;
+    }
 
     body{ background: linear-gradient(180deg,#061025,#07102a); color:#e6eef8; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; }
     .glass{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.04); border-radius:14px; padding:16px; }
@@ -87,7 +96,7 @@
       </div>
     </header>
 
-    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <section class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
       <div class="kpi glass">
         <div class="text-sm text-gray-400">MRR</div>
         <div id="kpi-mrr" class="text-2xl font-bold">$0</div>
@@ -107,9 +116,21 @@
       </div>
 
       <div class="kpi glass">
-        <div class="text-sm text-gray-400">Patients Today</div>
-        <div id="kpi-patients-today" class="text-2xl font-bold">0</div>
-        <div class="text-xs text-gray-500">New patients</div>
+        <div class="text-sm text-gray-400">Total Patients</div>
+        <div id="kpi-total-patients" class="text-2xl font-bold">0</div>
+        <div class="text-xs text-gray-500">Across all doctors</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Avg Time/Doctor</div>
+        <div id="kpi-avg-time" class="text-2xl font-bold">0m</div>
+        <div class="text-xs text-gray-500">Minutes spent using Binder</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Total Activities</div>
+        <div id="kpi-activities" class="text-2xl font-bold">0</div>
+        <div class="text-xs text-gray-500">Interactions recorded</div>
       </div>
     </section>
 
@@ -224,107 +245,184 @@
   </div>
 
 <script>
-const ADMIN_KEY = "bindersoftware.com"; 
+const ADMIN_KEY = "bindersoftware.com";
 
-// Helpers
-async function fetchJSON(path, opts={}) {
+// Safe fetch helper with error handling
+async function fetchJSON(path, opts = {}) {
   const url = `${path}?key=${ADMIN_KEY}`;
-  const res = await fetch(url, opts);
-  if (!res.ok) throw new Error("Fetch error " + res.status);
-  return res.json();
+  try {
+    const res = await fetch(url, opts);
+    if (!res.ok) {
+      console.warn("fetchJSON non-ok:", url, res.status);
+      return {};
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("fetchJSON error:", err, path);
+    return {};
+  }
 }
 
-// Charts placeholders
-let revenueChart, plansChart, dailyPatientsChart, sourcesChart;
-
-function initCharts(){
-  const ctxR = document.getElementById('chart-revenue').getContext('2d');
-  revenueChart = new Chart(ctxR, { type:'line', data:{ labels:[], datasets:[{ label:'MRR', data:[], tension:0.25, fill:true }]}, options:{ responsive:true }});
-
-  const ctxP = document.getElementById('chart-plans').getContext('2d');
-  plansChart = new Chart(ctxP, { type:'doughnut', data:{ labels:['Starter','Pro','Ultra','Free'], datasets:[{ data:[0,0,0,0]}]}, options:{ responsive:true }});
-
-  const ctxD = document.getElementById('chart-daily-patients').getContext('2d');
-  dailyPatientsChart = new Chart(ctxD, { type:'bar', data:{ labels:[], datasets:[{ label:'New Patients', data:[] }]}, options:{ responsive:true }});
-
-  const ctxS = document.getElementById('chart-sources').getContext('2d');
-  sourcesChart = new Chart(ctxS, { type:'bar', data:{ labels:[], datasets:[{ label:'Users', data:[] }]}, options:{ responsive:true }});
+// small helper to safely set text content
+function safeSet(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = text;
 }
 
-// Data loaders
-async function loadOverview(){
+// Chart references
+let revenueChart = null;
+let plansChart = null;
+let dailyPatientsChart = null;
+let sourcesChart = null;
+let userPerformanceChart = null;
+
+// Initialize charts only if canvases exist
+function initCharts() {
+  // Revenue line
+  const cR = document.getElementById('chart-revenue');
+  if (cR) {
+    if (revenueChart && typeof revenueChart.destroy === 'function') revenueChart.destroy();
+    const ctxR = cR.getContext('2d');
+    revenueChart = new Chart(ctxR, {
+      type: 'line',
+      data: { labels: [], datasets: [{ label: 'MRR', data: [], tension: 0.25, fill: true }]},
+      options: { responsive: true }
+    });
+  }
+
+  // Plans doughnut
+  const cP = document.getElementById('chart-plans');
+  if (cP) {
+    if (plansChart && typeof plansChart.destroy === 'function') plansChart.destroy();
+    const ctxP = cP.getContext('2d');
+    plansChart = new Chart(ctxP, {
+      type: 'doughnut',
+      data: { labels: ['Starter','Pro','Ultra','Free'], datasets: [{ data: [0,0,0,0] }] },
+      options: { responsive: true }
+    });
+  }
+
+  // Daily patients bar
+  const cD = document.getElementById('chart-daily-patients');
+  if (cD) {
+    if (dailyPatientsChart && typeof dailyPatientsChart.destroy === 'function') dailyPatientsChart.destroy();
+    const ctxD = cD.getContext('2d');
+    dailyPatientsChart = new Chart(ctxD, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'New Patients', data: [] }] },
+      options: { responsive: true }
+    });
+  }
+
+  // Sources bar
+  const cS = document.getElementById('chart-sources');
+  if (cS) {
+    if (sourcesChart && typeof sourcesChart.destroy === 'function') sourcesChart.destroy();
+    const ctxS = cS.getContext('2d');
+    sourcesChart = new Chart(ctxS, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'Users', data: [] }] },
+      options: { responsive: true }
+    });
+  }
+}
+
+
+async function loadOverview() {
   const b = await fetchJSON('/api/dashboard/business');
   const u = await fetchJSON('/api/dashboard/usage');
-  // KPIs
-  document.getElementById('kpi-mrr').innerText = `$${b.MRR}`;
-  document.getElementById('kpi-revenue').innerText = `$${b.total_revenue}`;
-  document.getElementById('kpi-active').innerText = b.active_doctors;
-  document.getElementById('kpi-patients-today').innerText = b.new_today;
 
-  // plan distribution
-  const pd = b.plan_distribution;
-  const planData = [pd.starter||0, pd.pro||0, pd.ultra||0, pd.free||0];
-  plansChart.data.datasets[0].data = planData;
-  plansChart.update();
+  // safe set KPIs
+  safeSet('kpi-mrr', `$${b.MRR ?? 0}`);
+  safeSet('kpi-revenue', `$${b.total_revenue ?? 0}`);
+  safeSet('kpi-active', b.active_doctors ?? 0);
+  safeSet('kpi-total-patients', b.total_patients ?? 0);
+  safeSet('kpi-avg-time', `${b.avg_time_per_doctor ?? 0}m`);
+  safeSet('kpi-activities', b.total_activity_events ?? 0);
+  safeSet('kpi-patients-today', b.new_today ?? 0);
 
-  // top doctors
+  // plan distribution (safe)
+  const pd = b.plan_distribution || {};
+  const planData = [pd.starter || 0, pd.pro || 0, pd.ultra || 0, pd.free || 0];
+  if (plansChart && plansChart.data && plansChart.data.datasets?.[0]) {
+    plansChart.data.datasets[0].data = planData;
+    plansChart.update();
+  }
+
+  // top doctors text block
   const top = u.most_active_doctors || [];
-  const topHtml = top.map((d,i)=>`<div class="mb-2"><strong>${i+1}. ${d.name||d.doctor_id}</strong> — ${d.visits} visits, ${d.patients} patients</div>`).join('');
-  document.getElementById('top-doctors').innerHTML = topHtml;
+  const topHtml = top.map((d, i) =>
+    `<div class="mb-2"><strong>${i+1}. ${d.name || d.doctor_id || 'Unknown'}</strong> — ${d.visits||0} visits, ${d.patients||0} patients</div>`
+  ).join('');
+  const topEl = document.getElementById('top-doctors');
+  if (topEl) topEl.innerHTML = topHtml;
 
-  // small ratios
-  document.getElementById('key-ratios').innerHTML = `
-    MRR: $${b.MRR} · New Today: ${b.new_today} · New Week: ${b.new_this_week} · Active Doctors: ${b.active_doctors}
-  `;
+  // key ratios
+  const kr = document.getElementById('key-ratios');
+  if (kr) {
+    kr.innerHTML = `
+      MRR: $${b.MRR ?? 0} · New Today: ${b.new_today ?? 0} · New Week: ${b.new_this_week ?? 0} · Active Doctors: ${b.active_doctors ?? 0}
+    `;
+  }
 
-  // daily patients demo data (we'll use last 30 days from daily_reports if available)
+  // daily patients chart
   try {
     const dr = await fetchJSON('/api/dashboard/daily_report');
     const reports = dr.reports || [];
-    const labels = reports.map(r=>r.date).reverse();
-    const vals = reports.map(r=> (r.usage && r.usage.total_patients) ? r.usage.total_patients : 0).reverse();
-    dailyPatientsChart.data.labels = labels;
-    dailyPatientsChart.data.datasets[0].data = vals;
-    dailyPatientsChart.update();
-  } catch(e){ /* ignore */ }
+    const labels = reports.map(r => r.date).reverse();
+    const vals = reports.map(r => (r.usage && r.usage.total_patients) ? r.usage.total_patients : 0).reverse();
+    if (dailyPatientsChart) {
+      dailyPatientsChart.data.labels = labels;
+      dailyPatientsChart.data.datasets[0].data = vals;
+      dailyPatientsChart.update();
+    }
+  } catch (e) {
+    console.warn("daily_report load error", e);
+  }
 }
 
-async function loadUsage(){
+async function loadUsage() {
   const u = await fetchJSON('/api/dashboard/usage');
-  document.getElementById('u-total-patients').innerText = u.total_patients;
-  document.getElementById('u-total-visits').innerText = u.total_visits;
-  document.getElementById('u-avg-patients').innerText = u.avg_patients_per_doctor;
-  document.getElementById('u-avg-visits').innerText = u.avg_visits_per_doctor;
-  document.getElementById('u-uploads').innerText = u.uploads || 0;
+  safeSet('u-total-patients', u.total_patients ?? 0);
+  safeSet('u-total-visits', u.total_visits ?? 0);
+  safeSet('u-avg-patients', u.avg_patients_per_doctor ?? 0);
+  safeSet('u-avg-visits', u.avg_visits_per_doctor ?? 0);
+  safeSet('u-uploads', u.uploads ?? 0);
 
   const ma = u.most_active_doctors || [];
-  const html = ma.map(d=>`<div class="mb-2"><strong>${d.name||d.doctor_id}</strong> — ${d.visits} visits</div>`).join('');
-  document.getElementById('u-most-active').innerHTML = html;
+  const html = ma.map(d => `<div class="mb-2"><strong>${d.name || d.doctor_id || 'Unknown'}</strong> — ${d.visits || 0} visits</div>`).join('');
+  const el = document.getElementById('u-most-active');
+  if (el) el.innerHTML = html;
 }
 
-async function loadSources(){
+async function loadSources() {
   const s = await fetchJSON('/api/dashboard/sources');
-  const labels = Object.keys(s);
-  const users = labels.map(k => s[k].users);
-  const revenues = labels.map(k => s[k].revenue);
+  const labels = Object.keys(s || {});
+  const users = labels.map(k => s[k].users || 0);
 
-  sourcesChart.data.labels = labels;
-  sourcesChart.data.datasets[0].data = users;
-  sourcesChart.update();
+  if (sourcesChart) {
+    sourcesChart.data.labels = labels;
+    sourcesChart.data.datasets[0].data = users;
+    sourcesChart.update();
+  }
 
-  // Table
-  const rows = labels.map(k=>{
-    const v=s[k];
-    return `<div class="py-2 border-b border-gray-700 flex justify-between"><div><strong>${k}</strong><div class="text-xs text-gray-400">${v.users} users • ${v.payers} payers</div></div><div class="text-sm">$${v.revenue}</div></div>`;
+  const rows = labels.map(k => {
+    const v = s[k];
+    return `<div class="py-2 border-b border-gray-700 flex justify-between">
+      <div><strong>${k}</strong><div class="text-xs text-gray-400">${v.users || 0} users • ${v.payers || 0} payers</div></div>
+      <div class="text-sm">$${v.revenue || 0}</div>
+    </div>`;
   }).join('');
-  document.getElementById('source-table').innerHTML = rows;
+  const tableEl = document.getElementById('source-table');
+  if (tableEl) tableEl.innerHTML = rows;
 }
 
-async function loadChurn(){
+async function loadChurn() {
   const c = await fetchJSON('/api/dashboard/churn_risk');
   const items = c.chis || [];
-  const html = items.map(i=>`<div class="py-2 border-b border-gray-800"><strong>${i.name||i.doctor_id}</strong> — ${i.days_inactive===null?'never active': i.days_inactive+' days inactive'}</div>`).join('');
-  document.getElementById('churn-list').innerHTML = html;
+  const html = items.map(i => `<div class="py-2 border-b border-gray-800"><strong>${i.name || i.doctor_id}</strong> — ${i.days_inactive===null ? 'never active' : i.days_inactive + ' days inactive'}</div>`).join('');
+  const el = document.getElementById('churn-list');
+  if (el) el.innerHTML = html;
 }
 
 async function loadActivity() {
@@ -336,11 +434,11 @@ async function loadActivity() {
   const idToName = {};
   doctors.forEach(d => {
     const gid = d.google_id || d.doctor_id;
-    if (gid) idToName[gid] = d.name || `Doctor ${gid.slice(0,6)}`;
+    if (gid) idToName[gid] = d.name || `Doctor ${gid.toString().slice(0,6)}`;
   });
 
   const rows = (a.recent_activity || []).slice(0, 50).map(ev => {
-    const t = new Date(ev.timestamp || '').toLocaleString();
+    const t = ev.timestamp ? new Date(ev.timestamp).toLocaleString() : '';
     const gid = ev.user || ev.google_id || null;
     const userName = idToName[gid] || ev.name || null;
 
@@ -352,17 +450,35 @@ async function loadActivity() {
     return `
       <div class="py-2 border-b border-gray-800">
         <div class="text-xs text-gray-400">${t}</div>
-        <div><strong>${ev.type}</strong></div>
+        <div><strong>${ev.type || 'event'}</strong></div>
         ${userBlock}
       </div>`;
   }).join('');
 
-  document.getElementById('activity-feed').innerHTML = rows;
+  const feed = document.getElementById('activity-feed');
+  if (feed) feed.innerHTML = rows;
 }
 
+let mapCardsRendered = false;
+
 async function loadMap() {
+  // create container if missing
+  let container = document.getElementById('map-cards');
+  if (!container) {
+    const parent = document.getElementById('user-heatmap')?.parentElement;
+    if (!parent) return; // nothing to render into
+    parent.innerHTML = `<div id="map-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2"></div>`;
+    container = document.getElementById('map-cards');
+  }
+
+  // Avoid re-rendering repeatedly (unless you want live refresh; to force refresh set mapCardsRendered=false)
+  if (mapCardsRendered) return;
+  mapCardsRendered = true;
+
+  container.innerHTML = `<div class="text-gray-400 text-sm p-2">Loading doctor performance...</div>`;
+
   const u = await fetchJSON('/api/dashboard/usage');
-  const users = (u.all_doctors || u.most_active_doctors || []).slice(0, 20);
+  const users = (u.all_doctors || u.most_active_doctors || []).slice(0, 30);
 
   const data = users.map((user, i) => ({
     name: user.name || `Doctor ${i + 1}`,
@@ -373,154 +489,142 @@ async function loadMap() {
     time_spent: user.time_spent || Math.floor(Math.random() * 500)
   }));
 
-  // Clear previous chart if it existed
-  if (window.userHeatmapChart && typeof window.userHeatmapChart.destroy === 'function') {
-    try { window.userHeatmapChart.destroy(); } catch(e) {}
-  }
-
-  // Sort by most active (visits)
+  // sort by visits
   data.sort((a, b) => b.visits - a.visits);
 
-  // Prepare for chart.js horizontal bars
-  const ctx = document.getElementById('user-heatmap').getContext('2d');
-  const labels = data.map(u => `${u.name}`);
-  const gidLabels = data.map(u => u.gid);
+  const maxVisits = Math.max(1, ...data.map(d => d.visits));
+  const maxPatients = Math.max(1, ...data.map(d => d.patients));
+  const maxUploads = Math.max(1, ...data.map(d => d.uploads));
+  const maxTime = Math.max(1, ...data.map(d => d.time_spent));
 
-  const gradient = ctx.createLinearGradient(0, 0, 400, 0);
-  gradient.addColorStop(0, "rgba(206,122,53,0.7)");
-  gradient.addColorStop(1, "rgba(255,200,120,0.9)");
-
-  const datasets = [
-    {
-      label: 'Visits',
-      data: data.map(u => u.visits),
-      backgroundColor: gradient,
-      borderRadius: 6,
-      barThickness: 14,
-    },
-    {
-      label: 'Patients',
-      data: data.map(u => u.patients),
-      backgroundColor: "rgba(255,255,255,0.15)",
-      borderRadius: 6,
-      barThickness: 14,
-    },
-    {
-      label: 'Uploads',
-      data: data.map(u => u.uploads),
-      backgroundColor: "rgba(255,255,255,0.08)",
-      borderRadius: 6,
-      barThickness: 14,
-    },
-  ];
-
-  window.userHeatmapChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets,
-    },
-    options: {
-      indexAxis: 'y',
-      scales: {
-        x: {
-          beginAtZero: true,
-          ticks: {
-            color: '#cbd5e1',
-            font: { size: 11 },
-          },
-          grid: { color: 'rgba(255,255,255,0.05)' },
-        },
-        y: {
-          ticks: {
-            color: '#e2e8f0',
-            font: { size: 12 },
-          },
-          grid: { display: false },
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const user = data[ctx.dataIndex];
-              return [
-                `${ctx.dataset.label}: ${ctx.formattedValue}`,
-                `Patients: ${user.patients}`,
-                `Visits: ${user.visits}`,
-                `Uploads: ${user.uploads}`,
-                `Time Active: ${user.time_spent} min`,
-                `Google ID: ${user.gid}`
-              ];
-            }
-          }
-        },
-        legend: {
-          labels: { color: '#cbd5e1', font: { size: 11 } },
-        },
-        title: {
-          display: true,
-          text: 'Doctor Performance Dashboard',
-          color: '#e6eef8',
-          font: { size: 16, weight: '600' },
-        }
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 1000,
-        easing: 'easeOutQuart'
-      },
-    }
-  });
-
-  // Append GIDs as small lines under chart labels
-  const yLabels = document.querySelectorAll('#user-heatmap + div.doctor-gids');
-  if (yLabels.length === 0) {
-    const gidsDiv = document.createElement('div');
-    gidsDiv.classList.add('doctor-gids', 'mt-2', 'text-xs', 'text-gray-400');
-    gidsDiv.innerHTML = data.map(u => `<div>${u.name}<br><span class="text-gray-500">${u.gid}</span></div>`).join('');
-    document.getElementById('user-heatmap').parentElement.appendChild(gidsDiv);
+  function makeBar(value, max, colorClass) {
+    const pct = Math.round((value / max) * 100);
+    return `
+      <div class="w-full bg-gray-700/30 h-2 rounded-full overflow-hidden">
+        <div class="h-2 ${colorClass}" style="width:${pct}%"></div>
+      </div>
+    `;
   }
+
+  const html = data.map(u => `
+    <div class="p-4 rounded-xl bg-[var(--card)] shadow-md border border-white/5 hover:border-[var(--accent)]/50 transition-all duration-300">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <h3 class="font-semibold text-lg">${u.name}</h3>
+          <p class="text-xs text-gray-500">${u.gid}</p>
+        </div>
+        <div class="text-sm text-[var(--accent)] font-medium">${u.visits} visits</div>
+      </div>
+
+      <div class="space-y-2 mt-3 text-sm">
+        <div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Patients</span><span>${u.patients}</span>
+          </div>
+          ${makeBar(u.patients, maxPatients, "bg-emerald-500")}
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Visits</span><span>${u.visits}</span>
+          </div>
+          ${makeBar(u.visits, maxVisits, "bg-blue-500")}
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Uploads</span><span>${u.uploads}</span>
+          </div>
+          ${makeBar(u.uploads, maxUploads, "bg-orange-500")}
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Minutes Active</span><span>${u.time_spent}</span>
+          </div>
+          ${makeBar(u.time_spent, maxTime, "bg-yellow-400")}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  container.innerHTML = html || `<div class="text-gray-400 text-sm">No doctor data found.</div>`;
 }
 
-// Tab logic
-document.querySelectorAll('.tab').forEach(el=>{
-  el.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('bg-[var(--accent)]','text-black'));
-    el.classList.add('bg-[var(--accent)]','text-black');
-    const tab = el.dataset.tab;
-    document.querySelectorAll('.panel').forEach(p=>p.classList.add('hidden'));
-    document.querySelector(`[data-panel="${tab}"]`).classList.remove('hidden');
-    // on-demand loads
-    if (tab==='overview'){ loadOverview(); }
-    if (tab==='usage'){ loadUsage(); }
-    if (tab==='sources'){ loadSources(); }
-    if (tab==='churn'){ loadChurn(); }
-    if (tab==='map'){ loadMap(); }
-    if (tab==='activity'){ loadActivity(); }
+// ------------------ Tab logic (fixed selectors) ------------------
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      // remove active-tab from all
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active-tab', 'bg-[var(--accent)]', 'text-black');
+      });
+
+      // add active to clicked
+      tab.classList.add('active-tab', 'bg-[var(--accent)]', 'text-black');
+
+      // show panel
+      const tabName = tab.dataset.tab;
+      document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+      const panel = document.querySelector(`[data-panel="${tabName}"]`);
+      if (panel) panel.classList.remove('hidden');
+
+      // on-demand load
+      if (tabName === 'overview') loadOverview();
+      if (tabName === 'usage') loadUsage();
+      if (tabName === 'sources') loadSources();
+      if (tabName === 'churn') loadChurn();
+      if (tabName === 'map') loadMap();
+      if (tabName === 'activity') loadActivity();
+    });
   });
+}
+
+// Helper to get current active tab
+function getActiveTab() {
+  return document.querySelector('.tab.active-tab')?.dataset.tab || 'overview';
+}
+
+// Initialization after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  // init charts
+  initCharts();
+
+  // setup tab listeners
+  setupTabs();
+
+  // open overview by default
+  const defaultTab = document.querySelector('[data-tab="overview"]');
+  if (defaultTab) defaultTab.click();
+
+  // refresh button
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      const current = getActiveTab();
+      if (current === 'overview') loadOverview();
+      if (current === 'usage') loadUsage();
+      if (current === 'sources') loadSources();
+      if (current === 'churn') loadChurn();
+      if (current === 'map') {
+        // allow manual refresh for cards if you want
+        mapCardsRendered = false;
+        loadMap();
+      }
+      if (current === 'activity') loadActivity();
+    });
+  }
+
+  // Auto refresh every 60s but only reloads the active panel
+  setInterval(() => {
+    const active = getActiveTab();
+    if (active === 'overview') loadOverview();
+    if (active === 'usage') loadUsage();
+    if (active === 'sources') loadSources();
+    if (active === 'churn') loadChurn();
+    if (active === 'map') {
+      // do not auto-refresh map/cards constantly — leave manual or infrequent refresh
+    }
+    if (active === 'activity') loadActivity();
+  }, 60000);
 });
-
-// Init
-initCharts();
-document.querySelector('[data-tab="overview"]').click();
-
-// Refresh
-document.getElementById('refreshBtn').addEventListener('click', ()=> {
-  document.querySelector('[data-tab="overview"]').click();
-  if (document.querySelector('.tab.bg-[var(--accent)]').dataset.tab === 'usage') loadUsage();
-});
-
-// Auto refresh every 60 seconds
-setInterval(()=> {
-  const activeTab = document.querySelector('.tab.bg-[var(--accent)]')?.dataset.tab || 'overview';
-  if (activeTab === 'overview') loadOverview();
-  if (activeTab === 'usage') loadUsage();
-  if (activeTab === 'sources') loadSources();
-  if (activeTab === 'churn') loadChurn();
-  if (activeTab === 'activity') loadActivity();
-}, 60000);
 </script>
 </body>
 </html>

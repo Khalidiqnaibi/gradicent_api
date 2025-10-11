@@ -3782,46 +3782,109 @@ def admin_dashboard_page():
     # Render the admin dashboard template
     return render_template("admin.html")
 
-# Business metrics (high level)
 @app.route("/api/dashboard/business", methods=["GET"])
 @admin_required
 def api_dashboard_business():
-    ref = db.reference('/drs')
-    all_users = ref.get() or {}
+    # --- 1️⃣  Doctor and billing data ---
+    dr_ref = db.reference('/drs')
+    all_users = dr_ref.get() or {}
 
     total_revenue = 0.0
     plan_counts = {"starter": 0, "pro": 0, "ultra": 0, "free": 0}
     new_today = 0
     new_this_week = 0
     active_users = 0
+    total_patients = 0
     now = datetime.now()
+
     for uid, data in all_users.items():
         plan = data.get("plan", "free")
         payed = float(data.get("payed", 0) or 0)
         first_date = data.get("first")
         total_revenue += payed
         plan_counts[plan] = plan_counts.get(plan, 0) + 1
+
+        # Count new users by registration date
         try:
             dt = datetime.fromisoformat(first_date)
-            if (now - dt).days <= 1:
+            delta = (now - dt).days
+            if delta <= 1:
                 new_today += 1
-            if (now - dt).days <= 7:
+            if delta <= 7:
                 new_this_week += 1
         except Exception:
             pass
-        if "patients" in data and len(data["patients"]) > 1:
+
+        # Count patients and active users
+        patients = data.get("patients", {})
+        total_patients += len(patients)
+        if len(patients) > 1:
             active_users += 1
 
-    mrr = plan_counts.get("starter",0)*5 + plan_counts.get("pro",0)*25 + plan_counts.get("ultra",0)*125
+    # --- 2️⃣  Activity data from /analytics ---
+    analytics_ref = db.reference('/analytics')
+    events = analytics_ref.get() or {}
+
+    total_activity_events = 0
+    patient_add_events = 0
+    upload_events = 0
+    visit_events = 0
+
+    if isinstance(events, dict):
+        for eid, ev in events.items():
+            total_activity_events += 1
+            event_type = ev.get("type", "").lower()
+
+            if "patient" in event_type:
+                patient_add_events += 1
+            elif "upload" in event_type:
+                upload_events += 1
+            elif "visit" in event_type:
+                visit_events += 1
+
+    # --- 3️⃣  Time tracking data from /time_tracking ---
+    time_ref = db.reference('/time_tracking')
+    time_logs = time_ref.get() or {}
+
+    total_time_seconds = 0
+    user_time_map = {}
+
+    if isinstance(time_logs, dict):
+        for tid, log in time_logs.items():
+            seconds = float(log.get("seconds", 0) or 0)
+            user = log.get("user")
+            total_time_seconds += seconds
+            if user:
+                user_time_map[user] = user_time_map.get(user, 0) + seconds
+
+    avg_time_per_doctor = round((total_time_seconds / (len(all_users) or 1)) / 60, 2)  # in minutes
+
+    # --- 4️⃣  Derived KPIs ---
+    mrr = (
+        plan_counts.get("starter", 0) * 5 +
+        plan_counts.get("pro", 0) * 25 +
+        plan_counts.get("ultra", 0) * 125
+    )
+    avg_activity_per_doctor = round(total_activity_events / (len(all_users) or 1), 2)
+
+    # --- 5️⃣  Payload ---
     payload = {
         "total_revenue": round(total_revenue, 2),
         "plan_distribution": plan_counts,
         "active_doctors": active_users,
+        "total_patients": total_patients,
+        "total_activity_events": total_activity_events,
+        "avg_activity_per_doctor": avg_activity_per_doctor,
+        "avg_time_per_doctor": avg_time_per_doctor,  # avg minutes per doctor
         "new_today": new_today,
         "new_this_week": new_this_week,
         "MRR": mrr,
+        "patient_add_events": patient_add_events,
+        "upload_events": upload_events,
+        "visit_events": visit_events,
         "timestamp": now.isoformat()
     }
+
     return jsonify(payload)
 
 # Usage metrics (patients, visits, uploads, time)
