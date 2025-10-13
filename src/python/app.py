@@ -576,6 +576,7 @@ def home():
 
 @app.route("/med")
 def med():
+    session['source'] = request.args.get("src", "organic")
     return render_template("med.html")
 
 @app.route("/products")
@@ -1655,7 +1656,8 @@ def get_last_pagelab():
 @app.route('/Binder_medical')
 def get_last_page():
     session["binder"]= 'med'
-    session['source'] = request.args.get("src", "organic")
+    if not session.get('source'):
+        session['source'] = request.args.get("src", "organic")
     if "binder" in session: 
         binder=session["binder"]
         if binder == 'lab' :
@@ -4035,6 +4037,9 @@ if user_plan == "starter":
 
     if action in ["print", "upload"]:
         return render_template("upgrade.html", msg="Printing and uploads are Pro features.")
+        
+# try :
+Quick calculator to show how much time and money Binder can save your practice or org each month.
 
 '''
 
