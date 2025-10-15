@@ -2856,6 +2856,187 @@ def appointment_count():
                 
     return jsonify({"appointment_count": count}), 200
 
+########### Gaia First Look ############
+
+@app.route("/api/stats/roi", methods=["GET"])
+@login_is_required
+def api_stats_roi():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "not logged in"}), 401
+
+    # Get time tracking
+    time_logs = db.reference('/time_tracking').get() or {}
+    user_logs = [v for v in time_logs.values() if v.get("user") == google_id]
+
+    total_seconds = sum(v.get("seconds", 0) for v in user_logs)
+    hours_saved = round(total_seconds / 3600 * 0.35, 2)  # assume 35% time saved
+    avg_hourly_rate = 40  # USD/hour
+    plan_prices = {"starter": 5, "pro": 25, "ultra": 125}
+
+    dr_ref = db.reference(f"/drs/{google_id}").get() or {}
+    plan = dr_ref.get("plan", "starter")
+    sub_price = plan_prices.get(plan, 5)
+    roi_value = round((hours_saved * avg_hourly_rate) - sub_price, 2)
+
+    # Analytics
+    analytics = db.reference('/analytics').get() or {}
+    events = [v for v in analytics.values() if v.get("user") == google_id]
+    searches = len([e for e in events if e.get("type") == "search"])
+    patients_added = len([e for e in events if e.get("type") == "add_patient"])
+    visits_created = len([e for e in events if e.get("type") == "add_visit"])
+
+    return jsonify({
+        "plan": plan,
+        "subscription_cost": sub_price,
+        "hours_saved": hours_saved,
+        "roi_usd": roi_value,
+        "searches": searches,
+        "patients_added": patients_added,
+        "visits_created": visits_created,
+        "avg_hourly_rate": avg_hourly_rate
+    })
+
+@app.route("/api/stats/time", methods=["GET"])
+@login_is_required
+def api_stats_time():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "not logged in"}), 401
+
+    time_logs = db.reference('/time_tracking').get() or {}
+    user_logs = [v for v in time_logs.values() if v.get("user") == google_id]
+
+    if not user_logs:
+        return jsonify({"total_hours": 0, "avg_session_minutes": 0, "sessions": 0})
+
+    total_seconds = sum(v.get("seconds", 0) for v in user_logs)
+    total_hours = round(total_seconds / 3600, 2)
+    sessions = len(user_logs)
+
+    # Approximate productivity: visits created per hour
+    analytics = db.reference('/analytics').get() or {}
+    events = [v for v in analytics.values() if v.get("user") == google_id]
+    visits_created = len([e for e in events if e.get("type") == "add_visit"])
+
+    productivity_rate = round(visits_created / (total_hours or 1), 2)
+    avg_session_minutes = round((total_seconds / sessions) / 60, 1)
+
+    return jsonify({
+        "total_hours": total_hours,
+        "sessions": sessions,
+        "avg_session_minutes": avg_session_minutes,
+        "visits_per_hour": productivity_rate,
+        "visits_created": visits_created
+    })
+
+@app.route("/api/stats/financials", methods=["GET"])
+@login_is_required
+def api_stats_financials():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "not logged in"}), 401
+
+    doctor_data = db.reference(f"/drs/{google_id}/patients").get() or {}
+
+    total_revenue = 0
+    total_debit = 0
+    visits_count = 0
+    patients_count = len(doctor_data)
+
+    for patient in doctor_data:
+        visits = patient.get("visits", [])
+        for visit in visits:
+            total_revenue += float(visit.get("payed", 0))
+            total_debit += float(visit.get("debit", 0))
+            visits_count += 1
+
+    avg_revenue_per_patient = round(total_revenue / (patients_count or 1), 2)
+    avg_revenue_per_visit = round(total_revenue / (visits_count or 1), 2)
+    unpaid_ratio = round((total_debit / (total_debit + total_revenue + 0.001)) * 100, 1)
+
+    return jsonify({
+        "total_revenue": round(total_revenue, 2),
+        "total_unpaid": round(total_debit, 2),
+        "avg_revenue_per_patient": avg_revenue_per_patient,
+        "avg_revenue_per_visit": avg_revenue_per_visit,
+        "patients_count": patients_count,
+        "visits_count": visits_count,
+        "unpaid_ratio": unpaid_ratio
+    })
+
+@app.route("/api/stats/patients", methods=["GET"])
+@login_is_required
+def api_stats_patients():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "not logged in"}), 401
+
+    doctor_data = db.reference(f"/drs/{google_id}/patients").get() or {}
+
+    total_patients = len(doctor_data)
+    new_patients_month = 0
+    returning_patients = 0
+    debt_patients = 0
+    now = datetime.now()
+
+    for patient in doctor_data:
+        visits = patient.get("visits", [])
+        if not visits:
+            continue
+        first_visit = visits[0].get("visit_date")
+        if first_visit:
+            try:
+                dt = datetime.fromisoformat(first_visit)
+                if dt.month == now.month and dt.year == now.year:
+                    new_patients_month += 1
+            except Exception:
+                pass
+        if len(visits) > 1:
+            returning_patients += 1
+        if any(float(v.get("debit", 0)) > 0 for v in visits):
+            debt_patients += 1
+
+    return jsonify({
+        "total_patients": total_patients,
+        "new_patients_month": new_patients_month,
+        "returning_patients": returning_patients,
+        "debt_patients": debt_patients,
+        "retention_rate": round((returning_patients / (total_patients or 1)) * 100, 1),
+        "debt_ratio": round((debt_patients / (total_patients or 1)) * 100, 1)
+    })
+
+@app.route("/api/stats/impact", methods=["GET"])
+@login_is_required
+def api_stats_impact():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "not logged in"}), 401
+
+    # Hypothetical “efficiency” values based on app usage
+    analytics = db.reference('/analytics').get() or {}
+    events = [v for v in analytics.values() if v.get("user") == google_id]
+    visits_created = len([e for e in events if e.get("type") == "add_visit"])
+    patients_added = len([e for e in events if e.get("type") == "add_patient"])
+    searches = len([e for e in events if e.get("type") == "search"])
+
+    binder_speed = 1.2  # minutes per patient
+    paper_speed = 3.5
+    efficiency_gain = round(((paper_speed - binder_speed) / paper_speed) * 100, 1)
+
+    return jsonify({
+        "patients_added": patients_added,
+        "visits_created": visits_created,
+        "searches": searches,
+        "binder_speed_min": binder_speed,
+        "paper_speed_min": paper_speed,
+        "efficiency_gain_percent": efficiency_gain,
+        "avg_time_saved_per_patient_min": round(paper_speed - binder_speed, 2),
+        "errors_reduced_percent": 75,
+        "avg_patients_per_day_gain": 78
+    })
+
+########################################
 @app.route('/nnn')
 @login_is_required
 def nnn():
