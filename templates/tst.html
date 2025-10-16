@@ -1,643 +1,784 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Basic -->
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <title>Binder Medical — Stats (Advanced)</title>
 
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css" />
-  <!--owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-
-  <!-- font awesome style -->
-  <link href="/static/css/font-awesome.min.css" rel="stylesheet" />
-
-  <!-- Custom styles for this template -->
-  <link href="/static/css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
-  <link href="/static/css/responsive.css" rel="stylesheet" />
-  <meta name="author" content="" /><link rel="shortcut icon" href="/static/icn/B.ico" type="image/x-icon">
-  <style>
-
-    img {
-      vertical-align: middle;
-      border-style: none;
-      border-radius: 5px;
-      border: 1.5px solid #ffaf0f;
-    }
-
-    #main_loo {
-      height: 45px;
-      width: 115px;
-      border: 0px solid #ffaf0f;
-    }
-
-    .slider_section .carousel-indicators li.active {
-      width: 23px;
-      height: 23px;
-      background-color: #ffaf0f;
-    }
-
-    .slider_section .detail-box .btn-box .btn1 {
-      display: inline-block;
-      padding: 12px 15px;
-      background-color: #ffaf0f;
-      color: #1b427a;
-      border-radius: 5px;
-      -webkit-transition: all 0.3s;
-      transition: all 0.3s;
-      border: 1px solid #ffaf0f;
-    }
-
-    .slider_section {
-      -webkit-box-flex: 1;
-      -ms-flex: 1;
-      flex: 1;
-      display: -webkit-box;
-      display: -ms-flexbox;
-      display: flex;
-      -webkit-box-align: center;
-      -ms-flex-align: center;
-      align-items: center;
-      padding: 45px 0;
-      background-color: #ffaf0f;
-      border-radius: 0 0 0 250px;
-      background: #1b427a;
-    }
-
-    .hero_area .hero_social a {
-      color: #1b427a;
-      margin: 5px 0;
-    }
-
-    .contact_section{
-      margin-top: 40px;
-    }
-
-    .client_section .box {
-      display: -webkit-box;
-      display: -ms-flexbox;
-      display: flex;
-      -webkit-box-orient: vertical;
-      -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-      flex-direction: column;
-      -webkit-box-align: center;
-      -ms-flex-align: center;
-      align-items: center;
-      margin: 45px 0;
-      text-align: center;
-      background-color: #1b427a;
-      color: #ffffff;
-      border-radius: 15px;
-      padding: 25px;
-    }
-
-    .client_section .box .client_info .client_name h6 {
-      color: #ffaf0f;
-      font-weight: normal;
-      font-size: 15px;
-      text-transform: uppercase;
-    }
-
-    .client_section .box .client_info .client_name h6 {
-      color: #ffaf0f;
-      font-weight: normal;
-      font-size: 15px;
-      text-transform: uppercase;
-    }
-
-    .contact_section button {
-      font-family: "Poppins", sans-serif;
-      display: inline-block;
-      padding: 10px 65px;
-      background-color: #ffaf0f;
-      color: #ffffff;
-      border-radius: 3px;
-      -webkit-transition: all 0.3s;
-      transition: all 0.3s;
-      border: 1px solid #ffaf0f;
-      color: #1b427a;
-      margin-top: 10px;
-    }
-
-    .client_section .box .img-box {
-      width: 125px;
-      height: 125px;
-      min-width: 125px;
-      position: relative;
-      border: 2px dashed #ffaf0f;
-      border-radius: 100%;
-      padding: 5px;
-      margin-bottom: 15px;
-    }
-
-    .client_section .owl-carousel .owl-nav .owl-prev, .client_section .owl-carousel .owl-nav .owl-next {
-      width: 45px;
-      height: 45px;
-      background-color: #ffaf0f;
-      color: #ffffff;
-      outline: none;
-      bottom: 0px;
-      font-size: 24px;
-      margin: 0 5px;
-    }
-
-    .footer_section {
-      background-color: #1b427a;
-      color: #ffffff;
-      padding-top: 30px;
-    }
-
-    .footer_section .footer_contact .contact_link_box a:hover {
-      color: #ffaf0f;
-    }
-
-    .footer_section .footer_social a:hover {
-      color: #ffaf0f;
-    }
-
-    .footer_section .footer-info p a {
-      color: #ffaf0f;
-    }
-
-    .footer_section .footer_contact .contact_link_box a {
-      margin: 5px 0;
-      color: #ffffff;
-      display: flex;
-      align-items: baseline;
-    }
-
-    .footer_section .footer_social a {
-      color: #1b427a;
-    }
-
-  </style>
-
-  <title>Binder Software — Save Time. Run Smarter.</title>
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    :root { --brand-navy: #1b427a; --brand-orange: #ffaf0f; }
-    .carousel-item { display: none; }
-    .carousel-item.active { display: block; }
-    .indicator { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); }
-    .indicator.active { background: var(--brand-orange); width: 20px; height: 20px; }
+    :root{
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --w: white;
+      --text: #2b2b2b;
+    }
+    /* Hamburger + slide menu */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display:block;
+      width:26px;
+      height:3px;
+      background:var(--accent);
+      border-radius:6px;
+      transition:0.28s ease;
+      position:relative;
+    }
+    .menu__btn span::before,
+    .menu__btn span::after { content:""; position:absolute; left:0; }
+    .menu__btn span::before { top:-8px; }
+    .menu__btn span::after { top:8px; }
+
+    .menu__box {
+      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity .22s;
+      transform: translateX(-110%);
+      opacity: 0;
+    }
+    .menu-active .menu__box {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .menu-active .menu__btn span { transform: rotate(45deg); background:var(--accent); }
+    .menu-active .menu__btn span::before { top:0; transform: rotate(90deg); }
+    .menu-active .menu__btn span::after { opacity:0; }
+    html, body { height: 100%; overflow-x: hidden; }
+    body {
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, var(--bg-main) 0%, #E6D6C0 60%);
+      color: var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      margin: 0;
+    }
+    .decorative-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.68));
+      border: 1px solid rgba(0,0,0,0.04);
+      box-shadow: 0 8px 28px rgba(18,18,18,0.06);
+    }
+    /* Prevent canvas from growing indefinitely:
+   - give the chart container a fixed/min height
+   - force canvas to respect width and not grow vertically
+*/
+.chart-card { min-height: 220px; display: flex; flex-direction: column; }
+.chart-card > canvas,
+.chart-card canvas {
+  /* fixed visible height, but still responsive width */
+  height: 220px !important;
+  max-height: 420px !important;
+  width: 100% !important;
+  display: block;
+}
+
+    canvas { border-radius: 10px; }
+
+    /* Tabs & KPIs (kept and extended) */
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; }
+    .tab-btn {
+      padding:8px 14px; border-radius:12px; background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(0,0,0,0.04); cursor: pointer; font-weight:600; transition: all .18s ease;
+    }
+    .tab-btn[aria-selected="true"] {
+      background: linear-gradient(90deg,var(--accent),var(--secondary));
+      color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    .kpi-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:12px; }
+    @media (max-width: 768px) { .kpi-grid { grid-template-columns: repeat(1,1fr); } }
+    .kpi {
+      padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.88); border: 1px solid rgba(0,0,0,0.04);
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .kpi .label { font-size:13px; color: rgba(0,0,0,0.65); }
+    .kpi .value { font-size:20px; font-weight:700; }
+
+    /* session table */
+    .table { width:100%; border-collapse:collapse; }
+    .table th, .table td { padding:8px 10px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; font-size:13px; }
+    .small { font-size:12px; color: #666; }
+    .chart-card { padding:14px; border-radius:12px; background: rgba(255,255,255,0.9); border:1px solid rgba(0,0,0,0.04); }
+
+    /* loader */
+    .loader { width:28px; height:28px; border-radius:999px; border:3px solid rgba(0,0,0,0.08); border-top-color: var(--accent); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="bg-white text-slate-800">
-
-
-  <div class="hero_area">
-    <div class="hero_social">
-      <a  target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/share/AqfHc9bC87HPo9Hb/?mibextid=qi2Omg">
-        <i class="fa fa-facebook" aria-hidden="true"></i>
-      </a>
-      <a  target="_blank" rel="noopener noreferrer" href="https://x.com/Binder_software">
-        <i class="fa fa-twitter" aria-hidden="true"></i>
-      </a>
-      <a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/@bindersoftware">
-        <i class="fa fa-youtube" aria-hidden="true"></i>
-      </a>
-      <a target="_blank" rel="noopener noreferrer" href="mailto:bindersoftware.com@gmail.com">
-        <i class="fa fa-envelope-o" aria-hidden="true"></i>
-      </a>
+<body>
+  <!-- Menu (keeps your original) -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg"><span></span></label>
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc"><img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account"><h6 class="text-sm font-medium">Account</h6></a></li>
+        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page"><img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add"><h6 class="text-sm font-medium">Add</h6></a></li>
+        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch"><img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search"><h6 class="text-sm font-medium">Search</h6></a></li>
+        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats"><img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats"><h6 class="text-sm font-medium">Stats</h6></a></li>
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings"><img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings"><h6 class="text-sm font-medium">Settings</h6></a></li>
+      </ul>
     </div>
-    <!-- header section strats -->
-    <header class="header_section">
-      <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg custom_nav-container ">
-          <a class="navbar-brand" href="/">
-            <img id="main_loo" src="/static/images/logoo.png" alt="">
-          </a>
+  </div>
 
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class=""> </span>
-          </button>
+  <main class="min-h-screen flex flex-col items-center pt-24 px-6 pb-12 w-full">
+    <section class="w-full max-w-6xl mb-6">
+      <div class="decorative-card p-4 rounded-2xl">
+        <div class="flex items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold">Analytics Dashboard</h2>
+            <p class="text-sm text-gray-700">Richer KPIs and charts tuned for real product analysis — sessions, trends, revenue, patients and impact.</p>
+          </div>
 
-          <div class="navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav">
-              <li class="nav-item active">
-                <a class="nav-link text-black" href="/">Home <span class="sr-only">(current)</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link text-black" href="/products"> Products </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link text-black" href="#why"> About </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link text-black" href="/contact">Contact Us</a>
-              </li>
-            </ul>
-            <div class="user_option-box">
-              <div class="fa okk"></div>
+          <div class="flex items-center gap-3">
+            <div class="tabs" role="tablist" aria-label="Stats tabs">
+              <button class="tab-btn" role="tab" aria-selected="true" data-tab="roi">ROI</button>
+              <button class="tab-btn" role="tab" aria-selected="false" data-tab="time">Time</button>
+              <button class="tab-btn" role="tab" aria-selected="false" data-tab="financials">Financials</button>
+              <button class="tab-btn" role="tab" aria-selected="false" data-tab="patients">Patients</button>
+              <button class="tab-btn" role="tab" aria-selected="false" data-tab="impact">Impact</button>
             </div>
-          </div>
-          <!-- end header section
-          <div id="ahh">
-          </div>-->
-        </nav>
-      </div>
-    </header>
-    <!-- end header section -->
-    <!-- slider section -->
-    <section class="slider_section ">
-      <div id="customCarousel1" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="container-fluid ">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="detail-box ">
-                    <h1 class="text-3xl text-white font-bold">
-                      Run Your Clinic 10x Faster.
-                    </h1>
-                    <p class="text-white">
-                      Binder Medical replaces spreadsheets and chaos. Manage patients, visits, and reports in one clean dashboard.
-                    </p>
-                    <div class="btn-box">
-                      <a href="/med" class="btn1">
-                        Try Now!
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-3">
-                  <div class="img-box">
-                    <img id="bii1" src="/static/images/w3.jpg" alt="">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="carousel-item">
-            <div class="container-fluid ">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="detail-box">
-                    <h1 class="text-3xl text-white font-bold">
-                      Your Data. Your Decisions.
-                    </h1>
-                    <p class="text-white">
-                      Gaia Analytics turns your business data into insights and predictions instantly. No data team needed.
-                    </p>
-                    <div class="btn-box">
-                      <a href="mailto:bindersoftware.com@gmail.com" class="btn1">
-                        Book Demo
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-3">
-                  <div class="img-box">
-                    <img id="bii1" src="/static/images/image_2025-10-13_102430800.png" alt="">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="carousel-item ">
-            <div class="container-fluid ">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="detail-box">
-                    <h1 class="text-3xl text-white font-bold">
-                      Give Us Your Feedback
-                    </h1>
-                    <p  class="text-white">
-                      Tell us your review of our products and about your experience.
-                    </p>
-                    <div class="btn-box">
-                      <a href="mailto:bindersoftware.com@gmail.com" class="btn1">
-                        Contact Us
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="img-box">
-                    <img id="bii3" src="/static/images/feedback.jpg" alt="">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="carousel-item ">
-            <div class="container-fluid ">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="detail-box">
-                    <h1 class="text-3xl text-white font-bold">
-                      Limited Offer: Get Pro for $5
-                    </h1>
-                    <p class="text-white">
-                      First 50 doctors get Binder Medical Pro for 2 months at the Starter price.
-                    </p>
-                    <div class="btn-box">
-                      <a href="" class="btn1">
-                        Claim Offer!
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="img-box">
-                    <img id="bii2" src="/static/images/join.jpg" alt="">
-                  </div>
-                </div>
-              </div>
-            </div>
+            <button id="refreshAll" class="px-3 py-2 rounded-xl bg-[var(--secondary)] text-white font-semibold shadow-md">Refresh</button>
+            <button id="exportCSV" class="px-3 py-2 rounded-xl bg-[var(--accent)] text-[var(--text)] font-semibold shadow-md">Export CSV</button>
           </div>
         </div>
-        <ol class="carousel-indicators">
-          <li data-target="#customCarousel1" data-slide-to="0" class="active"></li>
-          <li data-target="#customCarousel1" data-slide-to="1"></li>
-          <li data-target="#customCarousel1" data-slide-to="2"></li>
-          <li data-target="#customCarousel1" data-slide-to="3"></li>
-        </ol>
-      </div>
 
+        <!-- Filters -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div class="flex-1">
+            <input id="detailsEntry" type="text" class="w-full rounded-xl px-4 py-2 border border-[var(--secondary)] bg-white/90" placeholder="Filter details or diagnosis..." />
+          </div>
+          <div class="flex items-center gap-3">
+            <input id="startDate" type="date" class="rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90" />
+            <input id="endDate" type="date" class="rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90" />
+            <label class="small">Plan: <strong id="planLabel">{{plan}}</strong></label>
+          </div>
+        </div>
+
+        <!-- Panels -->
+        <div id="panels" class="space-y-4">
+          <!-- ROI -->
+          <div class="panel" data-panel="roi">
+            <div class="kpi-grid mb-4">
+              <div class="kpi"><div class="label">Plan</div><div class="value" id="roi-plan">—</div></div>
+              <div class="kpi"><div class="label">Subscription</div><div class="value" id="roi-sub">—</div></div>
+              <div class="kpi"><div class="label">Hours Saved</div><div class="value" id="roi-hours">—</div></div>
+              <div class="kpi"><div class="label">ROI (USD)</div><div class="value" id="roi-usd">—</div></div>
+              <div class="kpi"><div class="label">Searches</div><div class="value" id="roi-searches">—</div></div>
+              <div class="kpi"><div class="label">Visits Created</div><div class="value" id="roi-visits">—</div></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div class="chart-card lg:col-span-2">
+                <h4 class="text-sm font-semibold mb-2">Usage counts (Searches / Adds / Visits)</h4>
+                <canvas id="roi-counts" height="220"></canvas>
+              </div>
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">Profitability</h4>
+                <canvas id="roi-donut" height="200"></canvas>
+                <div id="roi-note" class="small mt-2"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time -->
+          <div class="panel hidden" data-panel="time">
+            <div class="kpi-grid mb-4">
+              <div class="kpi"><div class="label">Total Hours</div><div class="value" id="time-total-hours">—</div></div>
+              <div class="kpi"><div class="label">Sessions</div><div class="value" id="time-sessions">—</div></div>
+              <div class="kpi"><div class="label">Avg Session (min)</div><div class="value" id="time-avg">—</div></div>
+              <div class="kpi"><div class="label">Visits / Hour</div><div class="value" id="time-vph">—</div></div>
+              <div class="kpi"><div class="label">Peak Hour</div><div class="value" id="time-peak-hour">—</div></div>
+              <div class="kpi"><div class="label">Sessions Today</div><div class="value" id="time-today-sessions">—</div></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">Sessions per day (trend)</h4>
+                <canvas id="time-trend" height="220"></canvas>
+              </div>
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">Session length distribution</h4>
+                <canvas id="time-hist" height="220"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <h4 class="text-sm font-semibold mb-2">Recent sessions (most recent 25)</h4>
+              <div style="max-height:260px; overflow:auto;">
+                <table class="table" id="sessions-table">
+                  <thead><tr><th>Start</th><th>Length (min)</th><th>Visits</th><th>Notes</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financials -->
+          <div class="panel hidden" data-panel="financials">
+            <div class="kpi-grid mb-4">
+              <div class="kpi"><div class="label">Total Revenue</div><div class="value" id="fin-total">—</div></div>
+              <div class="kpi"><div class="label">Total Unpaid</div><div class="value" id="fin-unpaid">—</div></div>
+              <div class="kpi"><div class="label">Avg / Patient</div><div class="value" id="fin-avg-pat">—</div></div>
+              <div class="kpi"><div class="label">Avg / Visit</div><div class="value" id="fin-avg-visit">—</div></div>
+              <div class="kpi"><div class="label">Patients Count</div><div class="value" id="fin-pcount">—</div></div>
+              <div class="kpi"><div class="label">Unpaid Ratio</div><div class="value" id="fin-unpaid-ratio">—</div></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">Revenue over time</h4>
+                <canvas id="fin-trend" height="220"></canvas>
+              </div>
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">Paid vs Unpaid (stacked)</h4>
+                <canvas id="fin-stacked" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Patients -->
+          <div class="panel hidden" data-panel="patients">
+            <div class="kpi-grid mb-4">
+              <div class="kpi"><div class="label">Total Patients</div><div class="value" id="pat-total">—</div></div>
+              <div class="kpi"><div class="label">New This Month</div><div class="value" id="pat-new">—</div></div>
+              <div class="kpi"><div class="label">Returning</div><div class="value" id="pat-return">—</div></div>
+              <div class="kpi"><div class="label">With Debt</div><div class="value" id="pat-debt">—</div></div>
+              <div class="kpi"><div class="label">Retention %</div><div class="value" id="pat-retention">—</div></div>
+              <div class="kpi"><div class="label">Debt Ratio</div><div class="value" id="pat-debt-ratio">—</div></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">New vs Returning (period)</h4>
+                <canvas id="pat-trend" height="220"></canvas>
+              </div>
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">Retention vs Debt</h4>
+                <canvas id="pat-donut" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Impact -->
+          <div class="panel hidden" data-panel="impact">
+            <div class="kpi-grid mb-4">
+              <div class="kpi"><div class="label">Patients Added</div><div class="value" id="imp-pat-added">—</div></div>
+              <div class="kpi"><div class="label">Visits Created</div><div class="value" id="imp-visits">—</div></div>
+              <div class="kpi"><div class="label">Searches</div><div class="value" id="imp-searches">—</div></div>
+              <div class="kpi"><div class="label">Binder Speed (min)</div><div class="value" id="imp-binder">—</div></div>
+              <div class="kpi"><div class="label">Paper Speed (min)</div><div class="value" id="imp-paper">—</div></div>
+              <div class="kpi"><div class="label">Efficiency %</div><div class="value" id="imp-eff">—</div></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">Binder vs Paper (mins)</h4>
+                <canvas id="imp-bar" height="220"></canvas>
+              </div>
+              <div class="chart-card">
+                <h4 class="text-sm font-semibold mb-2">Errors reduced</h4>
+                <canvas id="imp-donut" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- panels -->
+      </div>
     </section>
-    <!-- end slider section -->
-  </div>
+  </main>
 
-<section id="why" class="max-w-6xl mx-auto px-4 py-16 text-center">
-  <h2 class="text-3xl font-bold text-[var(--brand-navy)]">Why Binder?</h2>
-  <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">We help you store, manage, and understand your data. Whether you’re a doctor, business, or data-driven team — Binder makes it simple to work smarter, not harder.</p>
-  <div class="mt-8 grid md:grid-cols-3 gap-6">
-    <div class="p-6 border rounded-lg">
-      <h3 class="font-semibold text-[var(--brand-navy)]">Fast & Simple</h3>
-      <p class="mt-2 text-sm">Get organized instantly. Add patients or data, and search anything in seconds.</p>
-    </div>
-    <div class="p-6 border rounded-lg">
-      <h3 class="font-semibold text-[var(--brand-navy)]">AI-Powered</h3>
-      <p class="mt-2 text-sm">Our Ultra plan includes Diagnose AI for smart, accurate, instant analysis.</p>
-    </div>
-    <div class="p-6 border rounded-lg">
-      <h3 class="font-semibold text-[var(--brand-navy)]">Secure & Scalable</h3>
-      <p class="mt-2 text-sm">Encrypted, fast, and ready for teams or enterprises with advanced analytics.</p>
-    </div>
-  </div>
-</section>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <script>
+  // Templating variable
+  const plan = '{{plan}}';
+  document.getElementById('planLabel').textContent = plan || 'starter';
 
-<!-- CTA Section -->
-<section id="cta" class="max-w-6xl mx-auto px-4 py-16 text-center">
-  <h2 class="text-3xl font-bold text-[var(--brand-navy)]">Discover Our Products</h2>
-  <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">We build smart, simple tools for managing, analyzing, and understanding your data. Choose the right Binder for your field.</p>
+  // API routes
+  const API = {
+    roi: '/api/stats/roi',
+    time: '/api/stats/time',
+    financials: '/api/stats/financials',
+    patients: '/api/stats/patients',
+    impact: '/api/stats/impact'
+  };
 
-  <div class="mt-10 grid md:grid-cols-3 gap-6">
-    <div class="p-8 border rounded-lg hover:shadow-lg transition">
-      <img src="/static/images/w3.jpg" alt="Binder Medical" class="mx-auto rounded-md mb-4">
-      <h3 class="font-semibold text-xl text-[var(--brand-navy)]">Binder Medical</h3>
-      <p class="text-sm text-slate-600 mt-2">Manage patients, visits, and records effortlessly with Binder Medical — used by 50+ doctors.</p>
-      <a href="/med" class="mt-4 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-6 py-2 rounded-md font-semibold">Learn More</a>
-    </div>
+  // helpers
+  function fmt(v) { return v === undefined || v === null ? '—' : v; }
+  function currency(v) { if (v===null||v===undefined) return '—'; return Number(v).toLocaleString(undefined, {style:'currency', currency:'USD', maximumFractionDigits:2}); }
+  function hexToRgba(hex, a=1) {
+    if(!hex) return `rgba(0,0,0,${a})`;
+    const h = hex.replace('#','');
+    const bigint = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+    const r = (bigint>>16)&255, g=(bigint>>8)&255, b=bigint&255;
+    return `rgba(${r},${g},${b},${a})`;
+  }
 
-    <div class="p-8 border rounded-lg hover:shadow-lg transition">
-      <img src="/static/images/image_2025-10-13_102430800.png" alt="Gaia Analytics" class="mx-auto rounded-md mb-4">
-      <h3 class="font-semibold text-xl text-[var(--brand-navy)]">Gaia Analytics</h3>
-      <p class="text-sm text-slate-600 mt-2">AI dashboards and predictions for smarter decisions. Perfect for B2B insights.</p>
-      <a href="/gaia" class="mt-4 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-6 py-2 rounded-md font-semibold">Learn More</a>
-    </div>
+  // chart storage
+  const charts = {};
 
-    <div class="p-8 border rounded-lg hover:shadow-lg transition">
-      <img src="/static/images/binderlab.jpg" alt="Binder Laboratory" class="mx-auto rounded-md mb-4">
-      <h3 class="font-semibold text-xl text-[var(--brand-navy)]">Binder Laboratory</h3>
-      <p class="text-sm text-slate-600 mt-2">Organize and track lab results with automation and easy data retrieval.</p>
-      <a href="/lab" class="mt-4 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-6 py-2 rounded-md font-semibold">Learn More</a>
-    </div>
-  </div>
-</section>
-
-<!-- section id="pricing" class="bg-slate-50 py-16">
-  <div class="max-w-6xl mx-auto px-4 text-center">
-    <h2 class="text-3xl font-bold">Choose Your Plan</h2>
-    <p class="mt-2 text-slate-600">Start small or scale big — Binder grows with you.</p>
-
-    <div class="mt-10 grid md:grid-cols-3 gap-6">
-      <div class="bg-white rounded-lg p-6 border">
-        <h3 class="font-bold text-lg">Starter</h3>
-        <p class="text-4xl font-extrabold mt-2">$5<span class="text-sm">/mo</span></p>
-        <ul class="mt-4 text-sm text-slate-600 space-y-1">
-          <li>✔ Basic patient management</li>
-          <li>✖ No file uploads</li>
-          <li>✖ No print visits</li>
-          <li>✖ Basic stats only</li>
-        </ul>
-        <a href="/med" class="mt-6 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-5 py-2 rounded-md font-semibold">Start Now</a>
-      </div>
-
-      <div class="bg-white rounded-lg p-6 border-2 border-[var(--brand-orange)]">
-        <h3 class="font-bold text-lg">Pro</h3>
-        <p class="text-4xl font-extrabold mt-2">$25<span class="text-sm">/mo</span></p>
-        <ul class="mt-4 text-sm text-slate-600 space-y-1">
-          <li>✔ All Starter features</li>
-          <li>✔ File uploads</li>
-          <li>✔ Print visits</li>
-          <li>✔ All stats</li>
-        </ul>
-        <a href="/med" class="mt-6 inline-block bg-[var(--brand-navy)] text-white px-5 py-2 rounded-md font-semibold">Get Pro</a>
-        <p class="mt-2 text-xs text-slate-500">Best for growing clinics</p>
-      </div>
-
-      <div class="bg-white rounded-lg p-6 border">
-        <h3 class="font-bold text-lg">Ultra</h3>
-        <p class="text-4xl font-extrabold mt-2">$125<span class="text-sm">/mo</span></p>
-        <ul class="mt-4 text-sm text-slate-600 space-y-1">
-          <li>✔ All Pro features</li>
-          <li>✔ Diagnose AI</li>
-          <li>✔ Priority support</li>
-          <li>✔ Enterprise-ready</li>
-        </ul>
-        <a href="mailto:bindersoftware.com@gmail.com" class="mt-6 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-5 py-2 rounded-md font-semibold">Contact Sales</a>
-      </div>
-    </div>
-  </div>
-</section -->
-
-<section id="gaia" class="bg-[var(--brand-navy)] mx-auto px-4 py-16 text-center text-white">
-  <h2 class="text-3xl font-bold">Gaia Analytics</h2>
-  <p class="mt-4 text-lg text-white-600 max-w-2xl mx-auto">Turn your company data into dashboards and AI predictions that help you make smarter decisions instantly.</p>
-  <a href="mailto:bindersoftware.com@gmail.com" class="mt-6 inline-block bg-[var(--brand-orange)] text-black px-6 py-3 rounded-md font-semibold">Book Demo</a>
-</section>
-
-<!-- contact section -->
-
-  <section class="contact_section margin-top-35" id="contact">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form_container">
-            <div class="heading_container">
-              <h2 class="text-3xl font-bold">
-                Contact Us
-              </h2>
-            </div>
-            <form action="">
-              <div>
-                <input type="text" placeholder="Full Name " />
-              </div>
-              <div>
-                <input type="email" placeholder="Email" />
-              </div>
-              <div>
-                <input type="text" placeholder="Phone number" />
-              </div>
-              <div>
-                <input type="text" class="message-box" placeholder="Message" />
-              </div>
-              <div class="d-flex ">
-                <button>
-                  SEND
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="img-box">
-            <img src="/static/images/cuss.JPG" alt="">
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  
-  <!-- client section -->
-  <section class="client_section layout_padding">
-    <div class="container">
-      <div class="heading_container heading_center">
-        <h2>
-          Testimonial
-        </h2>
-      </div>
-      <div class="carousel-wrap ">
-        <div class="owl-carousel client_owl-carousel">
-          <div class="item">
-            <div class="box">
-              <div class="img-box">
-                <img src="/static/images/c1.jpg" alt="">
-              </div>
-              <div class="detail-box">
-                <div class="client_info">
-                  <div class="client_name">
-                    <h5>
-                      Mark Thomas
-                    </h5>
-                    <h6>
-                      Customer
-                    </h6>
-                  </div>
-                  <i class="fa fa-quote-left" aria-hidden="true"></i>
-                </div>
-                <p>
-                  I've been using Binder for my accounting needs,
-                  and it has truly transformed the way I manage my finances.
-                  The user-friendly design makes it easy for me to navigate,
-                  even as someone who's not a finance expert.
-                  The time-saving features have been a game-changer –
-                  automating routine tasks,
-                  leaving me with more time to focus on strategic aspects of my business.
-                  What sets Binder apart is their commitment to user feedback;
-                  I suggested a feature, and they actually implemented it!
-                  Plus, their customer support is incredibly responsive.
-                  Binder is more than just accounting software;
-                  it's a partner in my business success
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="item">
-            <div class="box">
-              <div class="img-box">
-                <img src="/static/images/c2.jpg" alt="">
-              </div>
-              <div class="detail-box">
-                <div class="client_info">
-                  <div class="client_name">
-                    <h5>
-                      Alina Hans
-                    </h5>
-                    <h6>
-                      Customer
-                    </h6>
-                  </div>
-                  <i class="fa fa-quote-left" aria-hidden="true"></i>
-                </div>
-                <p>
-                  As a seasoned accountant,
-                  finding the right software that aligns with my workflow was crucial.
-                  Binder not only met but exceeded my expectations.
-                  The feature-rich platform caters to my specific needs,
-                  and the customizable options allow me to tailor it to my preferences.
-                  What I appreciate most is the responsive customer support –
-                  whenever I've had a question or needed assistance,
-                  they were quick to provide solutions.
-                  Binder's commitment to continuous improvement and innovation sets it apart from other accounting software.
-                  It's a tool that grows with me and adds tremendous value to my professional life.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- end client section -->
-
-  <footer class="footer_section">
-        <div class="footer-info ">
-          <p id="rights">
-            &copy; <span id="displayYear"></span>
-            <a class="link" href="/">Binder Software</a> — Manage. Predict. Grow.
-          </p>
-        </div>
-  </footer>
-
-  
-  <!-- jQery -->
-  <script src="/static/js/jquery-3.4.1.min.js"></script>
-  <!-- popper js -->
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
-  </script>
-  <!-- bootstrap js -->
-  <script src="/static/js/bootstrap.js"></script>
-  <!-- owl slider -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
-  </script>
-  <!-- custom js -->
-  <script src="/static/js/custom.js"></script>
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-
-    $(document).ready(function(){
-        $('.client_owl-carousel').owlCarousel({
-        loop:true,
-        margin:10,
-        nav:true,
-        navText: [
-            '<i class="fa fa-angle-left" aria-hidden="true"></i>',
-            '<i class="fa fa-angle-right" aria-hidden="true"></i>'
-        ],
-        responsive:{
-            0:{
-            items:1
-            },
-            600:{
-            items:1
-            },
-            1000:{
-            items:2
-            }
-        }
-        });
+  // create chart helpers
+  function createLine(ctx, labels=[], datasets=[], opts={}) {
+    if (ctx && ctx.canvas) {
+      ctx.canvas.height = 220;
+      ctx.canvas.style.height = '220px';
+      ctx.canvas.style.maxHeight = '420px';
+      ctx.canvas.style.width = '100%';
+      ctx.canvas.style.display = 'block';
+    }
+    return new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      options: Object.assign({
+        responsive:true, maintainAspectRatio:false,
+        plugins: { legend:{position:'top'} },
+        scales: { x:{ticks:{}}, y:{beginAtZero:true} }
+      }, opts)
     });
-</script>
+  }
+  function createBar(ctx, labels=[], datasets=[], opts={}) {
+    if (ctx && ctx.canvas) {
+      ctx.canvas.height = 220;
+      ctx.canvas.style.height = '220px';
+      ctx.canvas.style.maxHeight = '420px';
+      ctx.canvas.style.width = '100%';
+      ctx.canvas.style.display = 'block';
+    }
+    return new Chart(ctx, {
+      type: 'bar',
+      data:{labels, datasets},
+      options: Object.assign({ responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}, opts)
+    });
+  }
+  function createDoughnut(ctx, labels=[], data=[], opts={}) {
+    if (ctx && ctx.canvas) {
+      ctx.canvas.height = 200;
+      ctx.canvas.style.height = '200px';
+      ctx.canvas.style.maxHeight = '420px';
+      ctx.canvas.style.width = '100%';
+      ctx.canvas.style.display = 'block';
+    }
+    return new Chart(ctx, {
+      type:'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim()] }] },
+      options: Object.assign({ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}, opts)
+    });
+  }
+
+  // initialize blank charts safely
+  function initCharts() {
+    // ROI counts bar
+    if (charts.roiCounts) charts.roiCounts.destroy();
+    charts.roiCounts = createBar(document.getElementById('roi-counts').getContext('2d'), ['Searches','Patients added','Visits created'], [{
+      label:'Counts',
+      data:[0,0,0],
+      backgroundColor:[hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim(),0.9), hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),0.9), hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim(),0.6)]
+    }], { plugins:{legend:{display:false}}});
+
+    if (charts.roiDonut) charts.roiDonut.destroy();
+    charts.roiDonut = createDoughnut(document.getElementById('roi-donut').getContext('2d'), ['Subscription','ROI'], [1,1]);
+
+    // Time charts
+    if (charts.timeTrend) charts.timeTrend.destroy();
+    charts.timeTrend = createLine(document.getElementById('time-trend').getContext('2d'), ['T-6','T-5','T-4','T-3','T-2','T-1','Today'], [{
+      label:'Sessions',
+      data:[0,0,0,0,0,0,0],
+      borderWidth:2, fill:true, tension:0.3,
+      backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim(),0.15),
+      borderColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim(),1)
+    }], { plugins:{legend:{display:false}}});
+
+    if (charts.timeHist) charts.timeHist.destroy();
+    charts.timeHist = createBar(document.getElementById('time-hist').getContext('2d'), ['0-2','3-5','6-10','11-20','21+'], [{
+      label:'Sessions',
+      data:[0,0,0,0,0],
+      backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),0.9)
+    }], { plugins:{legend:{display:false}}});
+
+    // Financials
+    if (charts.finTrend) charts.finTrend.destroy();
+    charts.finTrend = createLine(document.getElementById('fin-trend').getContext('2d'), [], [{
+      label:'Revenue',
+      data:[], borderWidth:2, fill:true,
+      backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),0.12),
+      borderColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),1)
+    }]);
+    if (charts.finStack) charts.finStack.destroy();
+    charts.finStack = new Chart(document.getElementById('fin-stacked').getContext('2d'), {
+      type:'bar',
+      data:{ labels:[], datasets:[{label:'Paid', data:[], backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),0.9)}, {label:'Unpaid', data:[], backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim(),0.9)}]},
+      options:{ responsive:true, maintainAspectRatio:false, scales: { x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } } }
+    });
+
+    // Patients
+    if (charts.patTrend) charts.patTrend.destroy();
+    charts.patTrend = createLine(document.getElementById('pat-trend').getContext('2d'), [], [{label:'New', data:[]}, {label:'Returning', data:[]}], { plugins:{legend:{position:'bottom'}}});
+    if (charts.patDonut) charts.patDonut.destroy();
+    charts.patDonut = createDoughnut(document.getElementById('pat-donut').getContext('2d'), ['Retention','Debt'], [1,1]);
+
+    // Impact
+    if (charts.impBar) charts.impBar.destroy();
+    charts.impBar = createBar(document.getElementById('imp-bar').getContext('2d'), ['Binder','Paper'], [{
+      label:'Minutes',
+      data:[1.2,3.5],
+      backgroundColor:[hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim(),0.95), hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),0.95)]
+    }]);
+
+    if (charts.impDonut) charts.impDonut.destroy();
+    charts.impDonut = createDoughnut(document.getElementById('imp-donut').getContext('2d'), ['Errors reduced','Remaining'], [75,25]);
+  }
+
+  // Fetch with credentials
+  async function apiGet(url) {
+    const params = [];
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    const details = document.getElementById('detailsEntry').value;
+    if (start) params.push('start=' + encodeURIComponent(start));
+    if (end) params.push('end=' + encodeURIComponent(end));
+    if (details) params.push('details=' + encodeURIComponent(details));
+    const full = params.length ? `${url}?${params.join('&')}` : url;
+    const res = await fetch(full, { credentials:'same-origin' });
+    if (!res.ok) throw new Error(`${res.status}`);
+    return await res.json();
+  }
+
+  // ROI loader
+  async function loadROI() {
+    try {
+      const d = await apiGet(API.roi);
+      document.getElementById('roi-plan').textContent = fmt(d.plan);
+      document.getElementById('roi-sub').textContent = currency(d.subscription_cost);
+      document.getElementById('roi-hours').textContent = fmt(d.hours_saved);
+      document.getElementById('roi-usd').textContent = currency(d.roi_usd);
+      document.getElementById('roi-searches').textContent = fmt(d.searches);
+      document.getElementById('roi-visits').textContent = fmt(d.visits_created);
+
+      charts.roiCounts.data.datasets[0].data = [d.searches || 0, d.patients_added || 0, d.visits_created || 0];
+      charts.roiCounts.update();
+
+      const sub = d.subscription_cost || 0;
+      const roi = Math.max(0, d.roi_usd || 0);
+      charts.roiDonut.data.datasets[0].data = [sub, Math.abs(roi)];
+      charts.roiDonut.data.labels = ['Subscription','ROI'];
+      charts.roiDonut.update();
+
+      // If server provides a `series` for ROI trend {date:..., roi_usd:...}, draw it
+      if (d.series && Array.isArray(d.series) && d.series.length) {
+        const labels = d.series.map(s=>s.date);
+        const values = d.series.map(s=>s.roi_usd);
+        if (charts.roiTrend) charts.roiTrend.destroy();
+        // Create a temporary canvas for ROI trend if needed
+        const roiTrendCanvas = document.createElement('canvas');
+        roiTrendCanvas.height = 220;
+        roiTrendCanvas.style.height = '220px';
+        roiTrendCanvas.style.maxHeight = '420px';
+        roiTrendCanvas.style.width = '100%';
+        roiTrendCanvas.style.display = 'block';
+        charts.roiTrend = createLine(roiTrendCanvas.getContext('2d'), labels, [{label:'ROI', data:values}]);
+      }
+      document.getElementById('roi-note').textContent = 'Tip: use date filters to view ROI for any period.';
+    } catch (e) {
+      console.error('ROI load error', e);
+      document.getElementById('roi-note').textContent = 'Failed to load ROI (check auth).';
+    }
+  }
+
+  // TIME loader (rewritten)
+  async function loadTime() {
+    try {
+      const d = await apiGet(API.time);
+      // KPIs
+      document.getElementById('time-total-hours').textContent = fmt(d.total_hours);
+      document.getElementById('time-sessions').textContent = fmt(d.sessions);
+      document.getElementById('time-avg').textContent = fmt(d.avg_session_minutes);
+      document.getElementById('time-vph').textContent = fmt(d.visits_per_hour);
+      document.getElementById('time-today-sessions').textContent = 0;
+
+      // If server returns sessions list (recommended)
+      let sessions = [];
+      if (d.sessions && Array.isArray(d.sessions) && d.sessions.length) {
+        sessions = d.sessions;
+      } else if (d.user_logs && Array.isArray(d.user_logs) && d.user_logs.length) {
+        sessions = d.user_logs;
+      }
+
+      // Build sessions table & hist/trend either from server sessions or synthesize
+      if (sessions.length) {
+        sessions = sessions.map(s => {
+          const seconds = s.seconds !== undefined ? Number(s.seconds) : (s.duration_seconds || 0);
+          return { start: s.start || s.timestamp || s.start_iso || s.start_time || s.start_date || s.ts || null, seconds: seconds, visits: s.visits_created || s.visits || 0, notes: s.notes || '' };
+        }).filter(s => s.start);
+
+        sessions.sort((a,b) => new Date(b.start) - new Date(a.start));
+
+        const tbody = document.querySelector('#sessions-table tbody');
+        tbody.innerHTML = '';
+        const top = sessions.slice(0,25);
+        top.forEach(s => {
+          const tr = document.createElement('tr');
+          const start = new Date(s.start).toLocaleString();
+          const mins = Math.round((s.seconds||0)/60 * 10)/10;
+          tr.innerHTML = `<td>${start}</td><td>${mins}</td><td>${fmt(s.visits)}</td><td class="small">${(s.notes||'')}</td>`;
+          tbody.appendChild(tr);
+        });
+        document.getElementById('time-today-sessions').textContent = top.filter(x => new Date(x.start).toDateString() === new Date().toDateString()).length;
+
+        // Trend: group by day
+        const byDay = {};
+        sessions.forEach(s => {
+          const dStr = new Date(s.start).toISOString().split('T')[0];
+          byDay[dStr] = byDay[dStr] || { sessions:0, totalSeconds:0 };
+          byDay[dStr].sessions += 1;
+          byDay[dStr].totalSeconds += (s.seconds||0);
+        });
+        const days = Object.keys(byDay).sort();
+        const trendLabels = days.slice(-14); // last 14 days
+        const trendData = trendLabels.map(day => byDay[day] ? byDay[day].sessions : 0);
+        charts.timeTrend.data.labels = trendLabels;
+        charts.timeTrend.data.datasets[0].data = trendData;
+        charts.timeTrend.update();
+
+        // Histogram: create buckets from session lengths
+        const lengths = sessions.map(s=>Math.round((s.seconds||0)/60)); // minutes
+        const buckets = [0,3,6,11,21]; // bucket thresholds in minutes
+        const bucketCounts = buckets.map((b,i)=>{
+          const min = b;
+          const max = (i < buckets.length-1 ? buckets[i+1]-1 : Infinity);
+          return lengths.filter(l => l >= min && l <= max).length;
+        });
+        charts.timeHist.data.datasets[0].data = bucketCounts;
+        charts.timeHist.update();
+
+      } else {
+        // no sessions from server: synthesize plausible visuals from totals and avg
+        const sessionsCount = d.sessions || 0;
+        const avgMin = d.avg_session_minutes || 5;
+        // trend: distribute sessions over last 7 days
+        const last7 = Array.from({length:7}).map((_,i) => {
+          const v = Math.max(0, Math.round((sessionsCount / 7) * (0.8 + Math.random()*0.8)));
+          return v;
+        });
+        const labels = Array.from({length:7}).map((_,i) => {
+          const date = new Date(); date.setDate(date.getDate() - (6-i)); return date.toISOString().split('T')[0];
+        });
+        charts.timeTrend.data.labels = labels;
+        charts.timeTrend.data.datasets[0].data = last7;
+        charts.timeTrend.update();
+
+        // histogram: use avg to create bell-ish distribution
+        const buckets = [Math.max(0, Math.round(avgMin*0.3)), Math.round(avgMin*0.6), Math.round(avgMin), Math.round(avgMin*1.5), Math.round(avgMin*2)];
+        const hist = [Math.round(sessionsCount*0.12), Math.round(sessionsCount*0.28), Math.round(sessionsCount*0.38), Math.round(sessionsCount*0.15), Math.round(sessionsCount*0.07)];
+        charts.timeHist.data.datasets[0].data = hist;
+        charts.timeHist.update();
+
+        // fill minimal table row showing aggregate
+        const tbody = document.querySelector('#sessions-table tbody'); tbody.innerHTML = '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>—</td><td>${fmt(d.avg_session_minutes)}</td><td>${fmt(d.visits_created)}</td><td class="small">No session list returned — consider adding sessions array to /api/stats/time</td>`;
+        tbody.appendChild(tr);
+      }
+
+      // Peak hour heuristic from sessions if available
+      if (sessions.length) {
+        const hours = new Array(24).fill(0);
+        sessions.forEach(s => {
+          const h = new Date(s.start).getHours();
+          hours[h] += 1;
+        });
+        const peak = hours.indexOf(Math.max(...hours));
+        document.getElementById('time-peak-hour').textContent = `${peak}:00`;
+      } else {
+        document.getElementById('time-peak-hour').textContent = '—';
+      }
+
+    } catch (e) {
+      console.error('Time load error', e);
+    }
+  }
+
+  // Financials loader (prefers series)
+  async function loadFinancials() {
+    try {
+      const d = await apiGet(API.financials);
+      document.getElementById('fin-total').textContent = currency(d.total_revenue);
+      document.getElementById('fin-unpaid').textContent = currency(d.total_unpaid);
+      document.getElementById('fin-avg-pat').textContent = currency(d.avg_revenue_per_patient);
+      document.getElementById('fin-avg-visit').textContent = currency(d.avg_revenue_per_visit);
+      document.getElementById('fin-pcount').textContent = fmt(d.patients_count);
+      document.getElementById('fin-unpaid-ratio').textContent = (d.unpaid_ratio !== undefined) ? `${d.unpaid_ratio}%` : '—';
+
+      // if server returns series: [{date:'2025-10-01', revenue:100, paid:80, unpaid:20}, ...]
+      if (d.series && Array.isArray(d.series) && d.series.length) {
+        const labels = d.series.map(s => s.date);
+        const revenue = d.series.map(s => s.revenue || 0);
+        const paid = d.series.map(s => s.paid || 0);
+        const unpaid = d.series.map(s => s.unpaid || 0);
+
+        charts.finTrend.data.labels = labels;
+        charts.finTrend.data.datasets[0].data = revenue;
+        charts.finTrend.update();
+
+        charts.finStack.data.labels = labels;
+        charts.finStack.data.datasets[0].data = paid;
+        charts.finStack.data.datasets[1].data = unpaid;
+        charts.finStack.update();
+      } else {
+        // fallback: show single bar of paid/unpaid
+        charts.finTrend.data.labels = ['Period'];
+        charts.finTrend.data.datasets[0].data = [d.total_revenue || 0];
+        charts.finTrend.update();
+
+        charts.finStack.data.labels = ['Period'];
+        charts.finStack.data.datasets[0].data = [Math.max(0, (d.total_revenue || 0))];
+        charts.finStack.data.datasets[1].data = [d.total_unpaid || 0];
+        charts.finStack.update();
+      }
+
+    } catch (e) {
+      console.error('Financials error', e);
+    }
+  }
+
+  // Patients loader
+  async function loadPatients() {
+    try {
+      const d = await apiGet(API.patients);
+      document.getElementById('pat-total').textContent = fmt(d.total_patients);
+      document.getElementById('pat-new').textContent = fmt(d.new_patients_month);
+      document.getElementById('pat-return').textContent = fmt(d.returning_patients);
+      document.getElementById('pat-debt').textContent = fmt(d.debt_patients);
+      document.getElementById('pat-retention').textContent = (d.retention_rate !== undefined) ? `${d.retention_rate}%` : '—';
+      document.getElementById('pat-debt-ratio').textContent = (d.debt_ratio !== undefined) ? `${d.debt_ratio}%` : '—';
+
+      // small trend: if endpoint returns series of new/returning per day
+      if (d.series && Array.isArray(d.series)) {
+        const labels = d.series.map(s=>s.date);
+        charts.patTrend.data.labels = labels;
+        charts.patTrend.data.datasets[0].data = d.series.map(s=>s.new || 0);
+        charts.patTrend.data.datasets[1].data = d.series.map(s=>s.returning || 0);
+        charts.patTrend.update();
+      } else {
+        charts.patTrend.data.labels = ['Period'];
+        charts.patTrend.data.datasets[0].data = [d.new_patients_month || 0];
+        charts.patTrend.data.datasets[1].data = [d.returning_patients || 0];
+        charts.patTrend.update();
+      }
+
+      charts.patDonut.data.datasets[0].data = [d.retention_rate || 0, d.debt_ratio || 0];
+      charts.patDonut.update();
+
+    } catch (e) {
+      console.error('Patients error', e);
+    }
+  }
+
+  // Impact loader
+  async function loadImpact() {
+    try {
+      const d = await apiGet(API.impact);
+      document.getElementById('imp-pat-added').textContent = fmt(d.patients_added);
+      document.getElementById('imp-visits').textContent = fmt(d.visits_created);
+      document.getElementById('imp-searches').textContent = fmt(d.searches);
+      document.getElementById('imp-binder').textContent = fmt(d.binder_speed_min);
+      document.getElementById('imp-paper').textContent = fmt(d.paper_speed_min);
+      document.getElementById('imp-eff').textContent = (d.efficiency_gain_percent !== undefined) ? `${d.efficiency_gain_percent}%` : '—';
+
+      charts.impBar.data.datasets[0].data = [d.binder_speed_min || 1.2, d.paper_speed_min || 3.5];
+      charts.impBar.update();
+
+      charts.impDonut.data.datasets[0].data = [d.errors_reduced_percent || 75, Math.max(0,100 - (d.errors_reduced_percent || 75))];
+      charts.impDonut.update();
+
+    } catch (e) {
+      console.error('Impact error', e);
+    }
+  }
+
+  // Tab logic & init
+  function setActive(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('hidden', p.dataset.panel !== tab));
+    // call loader
+    switch(tab) {
+      case 'roi': loadROI(); break;
+      case 'time': loadTime(); break;
+      case 'financials': loadFinancials(); break;
+      case 'patients': loadPatients(); break;
+      case 'impact': loadImpact(); break;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // connect tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => setActive(btn.dataset.tab));
+    });
+
+    // refresh / export
+    document.getElementById('refreshAll').addEventListener('click', () => {
+      setActive(document.querySelector('.tab-btn[aria-selected="true"]').dataset.tab);
+    });
+    document.getElementById('exportCSV').addEventListener('click', async () => {
+      // export visible tab KPIs — simple format
+      const active = document.querySelector('.tab-btn[aria-selected="true"]').dataset.tab;
+      let rows = [['metric','value']];
+      switch(active) {
+        case 'roi': {
+          const d = await apiGet(API.roi);
+          rows.push(['plan', d.plan||'']);
+          rows.push(['subscription_cost', d.subscription_cost||'']);
+          rows.push(['hours_saved', d.hours_saved||0]);
+          rows.push(['roi_usd', d.roi_usd||0]);
+          break;
+        }
+        case 'time': {
+          const d = await apiGet(API.time);
+          rows.push(['total_hours', d.total_hours||0]);
+          rows.push(['sessions', d.sessions||0]);
+          rows.push(['avg_session_minutes', d.avg_session_minutes||0]);
+          break;
+        }
+        case 'financials': {
+          const d = await apiGet(API.financials);
+          rows.push(['total_revenue', d.total_revenue||0]);
+          rows.push(['total_unpaid', d.total_unpaid||0]);
+          break;
+        }
+        case 'patients': {
+          const d = await apiGet(API.patients);
+          rows.push(['total_patients', d.total_patients||0]);
+          rows.push(['new_this_month', d.new_patients_month||0]);
+          break;
+        }
+        case 'impact': {
+          const d = await apiGet(API.impact);
+          rows.push(['patients_added', d.patients_added||0]);
+          rows.push(['efficiency_gain_percent', d.efficiency_gain_percent||0]);
+          break;
+        }
+      }
+      // download CSV
+      const csv = rows.map(r => r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `binder_stats_${active}_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link); link.click(); link.remove();
+    });
+
+    // init charts and select default
+    initCharts();
+    setActive('roi');
+
+    // open menu toggle
+    const menuBtn = document.querySelector('.hamburger-menu');
+    const menuBar = document.getElementById('menuBar');
+    menuBtn.addEventListener('click', () => menuBar.classList.toggle('menu-active'));
+  });
+  </script>
 </body>
 </html>

@@ -2897,72 +2897,133 @@ def api_stats_roi():
         "avg_hourly_rate": avg_hourly_rate
     })
 
+from datetime import datetime, timedelta
 @app.route("/api/stats/time", methods=["GET"])
 @login_is_required
-def api_stats_time():
+def api_stats_time_extended():
     google_id = session.get("google_id")
     if not google_id:
-        return jsonify({"error": "not logged in"}), 401
+        return jsonify({"error":"not logged in"}), 401
 
     time_logs = db.reference('/time_tracking').get() or {}
-    user_logs = [v for v in time_logs.values() if v.get("user") == google_id]
+    user_logs = []
+    daily_sessions = {}
+    for v in time_logs.values():
+        if v.get("user") == google_id and "timestamp" in v:
+            try:
+                ts = datetime.fromisoformat(v["timestamp"])
+            except Exception:
+                continue
+            day = ts.date()
+            daily_sessions.setdefault(day, []).append((ts, v))
 
-    if not user_logs:
-        return jsonify({"total_hours": 0, "avg_session_minutes": 0, "sessions": 0})
+    # merge consecutive sessions as you currently do
+    merged_logs = []
+    for day, sessions in daily_sessions.items():
+        sessions.sort()
+        merged=[]
+        for ts, v in sessions:
+            if not merged:
+                merged.append({"start": ts, "end": ts, "seconds": v.get("seconds",0)})
+            else:
+                prev = merged[-1]
+                gap = (ts - prev["end"]).total_seconds()
+                if gap <= 600:
+                    prev["end"] = ts
+                    prev["seconds"] += v.get("seconds",0)
+                else:
+                    merged.append({"start": ts, "end": ts, "seconds": v.get("seconds",0)})
+        merged_logs.extend(merged)
 
-    total_seconds = sum(v.get("seconds", 0) for v in user_logs)
+    # build sessions array to return
+    sessions_out = []
+    for s in merged_logs:
+        sessions_out.append({
+            "start": s["start"].isoformat(),
+            "seconds": s.get("seconds",0),
+            "minutes": round(s.get("seconds",0)/60,1)
+        })
+
+    # build last-30-days daily series
+    today = datetime.utcnow().date()
+    days = [today - timedelta(days=i) for i in range(29, -1, -1)]
+    series = []
+    for d in days:
+        day_str = d.isoformat()
+        s = [x for x in merged_logs if x["start"].date() == d]
+        series.append({"date": day_str, "sessions": len(s), "total_seconds": sum(x.get("seconds",0) for x in s)})
+
+    total_seconds = sum(s.get("seconds",0) for s in merged_logs)
     total_hours = round(total_seconds / 3600, 2)
-    sessions = len(user_logs)
+    sessions_count = len(merged_logs)
+    avg_session_minutes = round((total_seconds / sessions_count)/60 if sessions_count else 0, 1)
 
-    # Approximate productivity: visits created per hour
+    # visits_created (recomputed from analytics)
     analytics = db.reference('/analytics').get() or {}
     events = [v for v in analytics.values() if v.get("user") == google_id]
     visits_created = len([e for e in events if e.get("type") == "add_visit"])
 
-    productivity_rate = round(visits_created / (total_hours or 1), 2)
-    avg_session_minutes = round((total_seconds / sessions) / 60, 1)
-
     return jsonify({
         "total_hours": total_hours,
-        "sessions": sessions,
+        "sessions": sessions_count,
         "avg_session_minutes": avg_session_minutes,
-        "visits_per_hour": productivity_rate,
-        "visits_created": visits_created
+        "visits_per_hour": round(visits_created / (total_hours or 1), 2),
+        "visits_created": visits_created,
+        "sessions": sessions_out,   # array for client table
+        "series": series            # daily series for charts
     })
 
 @app.route("/api/stats/financials", methods=["GET"])
 @login_is_required
-def api_stats_financials():
+def api_stats_financials_series():
     google_id = session.get("google_id")
     if not google_id:
-        return jsonify({"error": "not logged in"}), 401
+        return jsonify({"error":"not logged in"}), 401
 
-    doctor_data = db.reference(f"/drs/{google_id}/patients").get() or {}
-
-    total_revenue = 0
-    total_debit = 0
-    visits_count = 0
+    doctor_data = db.reference(f"/drs/{google_id}/patients").get() or []
+    # compute totals
+    total_revenue = 0.0
+    total_unpaid = 0.0
     patients_count = len(doctor_data)
+    visits_count = 0
 
+    daily = {}
     for patient in doctor_data:
         visits = patient.get("visits", [])
-        for visit in visits:
-            total_revenue += float(visit.get("payed", 0))
-            total_debit += float(visit.get("debit", 0))
+        for v in visits:
+            dstr = v.get("visit_date", "")[:10]
+            paid = float(v.get("payed", 0) or 0)
+            debit = float(v.get("debit", 0) or 0)
+            total_revenue += paid
+            total_unpaid += debit
             visits_count += 1
+            daily.setdefault(dstr, {"paid":0.0,"unpaid":0.0, "revenue":0.0})
+            daily[dstr]["paid"] += paid
+            daily[dstr]["unpaid"] += debit
+            daily[dstr]["revenue"] += paid
+
+    # last 30 days series
+    from datetime import date, timedelta
+    today = date.today()
+    days = [(today - timedelta(days=i)).isoformat() for i in range(29, -1, -1)]
+    series = []
+    for d in days:
+        s = daily.get(d, {"paid":0.0,"unpaid":0.0,"revenue":0.0})
+        series.append({"date":d, "paid": round(s["paid"],2), "unpaid": round(s["unpaid"],2), "revenue": round(s["revenue"],2)})
 
     avg_revenue_per_patient = round(total_revenue / (patients_count or 1), 2)
     avg_revenue_per_visit = round(total_revenue / (visits_count or 1), 2)
-    unpaid_ratio = round((total_debit / (total_debit + total_revenue + 0.001)) * 100, 1)
+    unpaid_ratio = round((total_unpaid / (total_unpaid + total_revenue + 1e-6)) * 100, 1)
 
     return jsonify({
-        "total_revenue": round(total_revenue, 2),
-        "total_unpaid": round(total_debit, 2),
+        "total_revenue": round(total_revenue,2),
+        "total_unpaid": round(total_unpaid,2),
         "avg_revenue_per_patient": avg_revenue_per_patient,
         "avg_revenue_per_visit": avg_revenue_per_visit,
         "patients_count": patients_count,
         "visits_count": visits_count,
-        "unpaid_ratio": unpaid_ratio
+        "unpaid_ratio": unpaid_ratio,
+        "series": series
     })
 
 @app.route("/api/stats/patients", methods=["GET"])
@@ -3035,6 +3096,11 @@ def api_stats_impact():
         "errors_reduced_percent": 75,
         "avg_patients_per_day_gain": 78
     })
+
+@app.route('/tst')
+@login_is_required
+def tst():
+    return render_template('tst.html')
 
 ########################################
 @app.route('/nnn')
@@ -4221,7 +4287,7 @@ if user_plan == "starter":
         
 # try :
 Quick calculator to show how much time and money Binder can save your practice or org each month.
-
+l
 '''
 
 if __name__ == "__main__":
