@@ -2,1121 +2,227 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>GAIA Analytics — Binder Medical Dashboard</title>
-
-  <!-- Tailwind -->
+  <title>Gaia Analytics — Binder Medical Dashboard</title>
+  <link rel="icon" href="/static/images/w3.jpg" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root{
-      --bg-main: #F6F4F2;
-      --accent: #0f766e;  /* GAIA teal */
-      --accent-2:#ce7a35;
-      --muted:#6b7280;
-      --card: #ffffff;
-      --glass: rgba(255,255,255,0.85);
-      --text:#111827;
-    }
-    html,body { height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(180deg,#fbfbfb,#f1f6f5); color:var(--text); }
-    .app-shell { min-height:100vh; display:grid; grid-template-columns: 260px 1fr; gap:20px; padding:28px; box-sizing:border-box; }
-
-    /* Sidebar */
-    .sidebar { background:var(--card); border-radius:12px; padding:18px; box-shadow:0 6px 20px rgba(2,6,23,0.06); }
-    .brand { display:flex; gap:12px; align-items:center; margin-bottom:18px; }
-    .brand .logo { width:44px; height:44px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:18px; }
-    .nav { display:flex; flex-direction:column; gap:6px; }
-    .nav button { text-align:left; padding:10px 12px; border-radius:10px; border:0; background:transparent; cursor:pointer; font-weight:600; color:var(--muted); }
-    .nav button[aria-selected="true"] { background: linear-gradient(90deg,var(--accent),var(--accent-2)); color:white; box-shadow:0 8px 20px rgba(15,118,110,0.12); }
-
-    /* Main */
-    .main { padding:10px 6px; }
-    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
-    .filters { display:flex; gap:8px; align-items:center; }
-    .filters input, .filters select { padding:8px 10px; border-radius:10px; border:1px solid rgba(0,0,0,0.06); background:var(--glass); }
-
-    /* KPIs */
-    .kpi-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:16px; }
-    @media (max-width: 1000px) { .app-shell { grid-template-columns: 1fr; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-    .kpi { background:var(--card); border-radius:12px; padding:14px; box-shadow: 0 6px 18px rgba(2,6,23,0.04); }
-    .kpi .label { color:var(--muted); font-size:13px; }
-    .kpi .value { font-size:20px; font-weight:700; margin-top:6px; }
-
-    /* Chart cards - fix infinite height by constraining container */
-    .chart-grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px; }
-    @media (max-width: 1000px) { .chart-grid { grid-template-columns: 1fr; } }
-    .chart-card { background:var(--card); border-radius:12px; padding:14px; box-shadow: 0 8px 28px rgba(2,6,23,0.04); min-height:240px; display:flex; flex-direction:column; }
-    .chart-card h4 { font-size:14px; margin-bottom:10px; }
-
-    /* make canvases stable */
-    .chart-card canvas { width:100% !important; height:220px !important; max-height:420px !important; display:block; }
-
-    /* sessions table */
-    .table { width:100%; border-collapse:collapse; margin-top:8px; }
-    .table th, .table td { text-align:left; padding:8px 10px; border-bottom:1px solid rgba(0,0,0,0.06); font-size:13px; }
-
-    /* modal */
-    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:60; }
-    .modal { width:min(900px,96%); background:var(--card); border-radius:12px; padding:16px; box-shadow:0 12px 40px rgba(2,6,23,0.3); max-height:80vh; overflow:auto; }
-
-    /* small helpers */
-    .muted { color:var(--muted); font-size:13px; }
-    .chip { padding:6px 8px; border-radius:999px; background:rgba(0,0,0,0.04); font-weight:600; font-size:13px; }
-    .controls { display:flex; gap:8px; align-items:center; }
-    .btn { padding:8px 10px; border-radius:10px; border:0; cursor:pointer; font-weight:700; }
-    .btn.primary { background:var(--accent); color:white; }
-    .btn.ghost { background:transparent; border:1px solid rgba(0,0,0,0.06); color:var(--muted); }
+    html,body{height:100%;}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#F6F7FB 0%, #fff 60%);color:#1f2937}
+    .glass{background:rgba(255,255,255,0.85);backdrop-filter:blur(6px);border:1px solid rgba(15,23,42,0.04)}
   </style>
 </head>
-<body>
-
-  <div class="app-shell">
-    <!-- Sidebar -->
-    <aside class="sidebar" aria-label="Navigation">
-      <div class="brand">
-        <div class="logo">G</div>
-        <div>
-          <div style="font-weight:700">GAIA Analytics</div>
-          <div class="muted" style="font-size:13px">Binder Medical</div>
-        </div>
-      </div>
-
-      <nav class="nav" role="tablist" aria-label="Dashboard tabs">
-        <button class="nav-btn" role="tab" data-tab="overview" aria-selected="true">Overview</button>
-        <button class="nav-btn" role="tab" data-tab="time" aria-selected="false">Time & Sessions</button>
-        <button class="nav-btn" role="tab" data-tab="financials" aria-selected="false">Financials</button>
-        <button class="nav-btn" role="tab" data-tab="patients" aria-selected="false">Patients</button>
-        <button class="nav-btn" role="tab" data-tab="roi" aria-selected="false">ROI</button>
-        <button class="nav-btn" role="tab" data-tab="impact" aria-selected="false">Impact</button>
-      </nav>
-
-      <div style="margin-top:18px; display:flex; gap:8px;">
-        <button id="exportAllCSV" class="btn ghost" style="flex:1">Export</button>
-        <button id="refreshBtn" class="btn primary" style="flex:1">Refresh</button>
-      </div>
-      <div style="margin-top:14px;" class="muted">Tip: use date filters and click chart bars to drill down.</div>
-    </aside>
-
-    <!-- Main area -->
-    <main class="main">
-      <div class="topbar">
-        <div style="display:flex; gap:12px; align-items:center;">
-          <div class="chip">Binder Medical · GAIA</div>
-          <div class="muted">Plan: <strong id="planLabel">{{plan}}</strong></div>
-        </div>
-
-        <div class="filters">
-          <input id="start" type="date" />
-          <input id="end" type="date" />
-          <select id="period">
-            <option value="14">Last 14 days</option>
-            <option value="30" selected>Last 30 days</option>
-            <option value="90">Last 90 days</option>
-          </select>
-          <input id="searchFilter" placeholder="search visits / notes..." />
-        </div>
-      </div>
-
-      <!-- Overview KPIs -->
-      <section id="overview" class="tab-panel">
-        <div class="kpi-grid">
-          <div class="kpi"><div class="label">Active Hours (period)</div><div class="value" id="kpi-hours">—</div></div>
-          <div class="kpi"><div class="label">Sessions</div><div class="value" id="kpi-sessions">—</div></div>
-          <div class="kpi"><div class="label">Total Revenue</div><div class="value" id="kpi-revenue">—</div></div>
-          <div class="kpi"><div class="label">Unpaid / AR (%)</div><div class="value" id="kpi-unpaid-ratio">—</div></div>
-        </div>
-
-        <div class="chart-grid">
-          <div class="chart-card">
-            <h4>Sessions & Revenue Trend</h4>
-            <canvas id="overview-trend"></canvas>
-            <div class="muted" style="margin-top:8px">Combined view: sessions (bars) vs revenue (line). Click any bar for drilldown.</div>
-          </div>
-
-          <div class="chart-card">
-            <h4>Top KPIs</h4>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div class="kpi" style="padding:10px;"><div class="label">Avg Rev / Patient</div><div class="value" id="kpi-avg-patient">—</div></div>
-              <div class="kpi" style="padding:10px;"><div class="label">Avg Rev / Visit</div><div class="value" id="kpi-avg-visit">—</div></div>
-              <div class="kpi" style="padding:10px;"><div class="label">Visits / Hour</div><div class="value" id="kpi-vph">—</div></div>
-              <div class="kpi" style="padding:10px;"><div class="label">Retention %</div><div class="value" id="kpi-retention">—</div></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Time & Sessions -->
-      <section id="time" class="tab-panel hidden">
-        <div class="kpi-grid">
-          <div class="kpi"><div class="label">Total Hours</div><div class="value" id="time-hours">—</div></div>
-          <div class="kpi"><div class="label">Sessions</div><div class="value" id="time-sessions">—</div></div>
-          <div class="kpi"><div class="label">Avg Session (min)</div><div class="value" id="time-avg">—</div></div>
-          <div class="kpi"><div class="label">Visits / Hour</div><div class="value" id="time-vph-kpi">—</div></div>
-        </div>
-
-        <div class="chart-grid">
-          <div class="chart-card">
-            <h4>Sessions per day (trend)</h4>
-            <canvas id="time-trend"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Session length distribution</h4>
-            <canvas id="time-hist"></canvas>
-          </div>
-        </div>
-
-        <div class="chart-card">
-          <h4>Recent sessions (most recent 50)</h4>
-          <div style="max-height:320px; overflow:auto">
-            <table class="table">
-              <thead><tr><th>Start</th><th>Length (min)</th><th>Visits</th><th>Notes</th></tr></thead>
-              <tbody id="sessions-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- Financials -->
-      <section id="financials" class="tab-panel hidden">
-        <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
-          <div class="kpi-grid" style="flex:1">
-            <div class="kpi"><div class="label">Total Revenue</div><div class="value" id="fin-total">—</div></div>
-            <div class="kpi"><div class="label">Total Unpaid</div><div class="value" id="fin-unpaid">—</div></div>
-            <div class="kpi"><div class="label">Avg / Patient</div><div class="value" id="fin-avg-patient">—</div></div>
-            <div class="kpi"><div class="label">Unpaid Ratio</div><div class="value" id="fin-unpaid-ratio">—</div></div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:8px; width:320px;">
-            <div style="display:flex; gap:8px;">
-              <label class="muted" style="align-self:center">Granularity</label>
-              <select id="fin-granularity" class="controls" style="padding:8px;border-radius:8px;">
-                <option value="daily" selected>Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-
-              <label class="muted" style="align-self:center">Display</label>
-              <select id="fin-display-mode" class="controls" style="padding:8px;border-radius:8px;">
-                <option value="stacked" selected>Stacked (Paid/Unpaid)</option>
-                <option value="grouped">Grouped (Comparison)</option>
-              </select>
-            </div>
-
-            <div style="display:flex; gap:8px;">
-              <button id="fin-export-series" class="btn ghost" style="flex:1">Export Series CSV</button>
-              <button id="fin-download-chart" class="btn primary" style="flex:1">Download Chart</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-grid">
-          <div class="chart-card">
-            <h4>Revenue & Moving Average</h4>
-            <canvas id="fin-trend"></canvas>
-            <div class="muted" style="margin-top:8px">Shows revenue (area) with a 7-day moving average and % growth vs previous period.</div>
-          </div>
-
-          <div class="chart-card">
-            <h4>Paid vs Unpaid</h4>
-            <canvas id="fin-stacked"></canvas>
-            <div class="muted" style="margin-top:8px">Click a bar to view patients/visits for that date or period.</div>
-          </div>
-        </div>
-
-        <div class="chart-card" style="margin-top:12px;">
-          <h4>Accounts Receivable — Aging preview</h4>
-          <div class="muted">Buckets come from server `aging` if provided; otherwise computed from unpaid visits when possible.</div>
-          <div id="aging-preview" style="margin-top:12px; display:flex; gap:8px; align-items:stretch;"></div>
-        </div>
-
-        <!-- Drilldown table area (hidden until user clicks) -->
-        <div id="fin-drilldown" class="chart-card" style="margin-top:12px; display:none;">
-          <h4 id="fin-drilldown-title">Drilldown</h4>
-          <div style="max-height:360px; overflow:auto; margin-top:8px;">
-            <table class="table" id="fin-drilldown-table">
-              <thead>
-                <tr><th>Patient</th><th>Visits on period</th><th>Debit (USD)</th><th>Paid (USD)</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div style="display:flex; gap:8px; margin-top:10px;">
-            <button id="fin-drilldown-export" class="btn ghost">Export Drilldown CSV</button>
-            <button id="fin-drilldown-hide" class="btn primary">Hide</button>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- Patients -->
-      <section id="patients" class="tab-panel hidden">
-        <div class="kpi-grid">
-          <div class="kpi"><div class="label">Total Patients</div><div class="value" id="pat-total">—</div></div>
-          <div class="kpi"><div class="label">New This Month</div><div class="value" id="pat-new">—</div></div>
-          <div class="kpi"><div class="label">Returning</div><div class="value" id="pat-return">—</div></div>
-          <div class="kpi"><div class="label">Debt Patients</div><div class="value" id="pat-debt">—</div></div>
-        </div>
-
-        <div class="chart-grid">
-          <div class="chart-card">
-            <h4>New vs Returning</h4>
-            <canvas id="pat-trend"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Retention vs Debt</h4>
-            <canvas id="pat-donut"></canvas>
-          </div>
-        </div>
-
-        <div class="chart-card">
-          <h4>Suggested next step</h4>
-          <div class="muted">Add cohort endpoints to return `cohorts: [{cohort:'2025-07', retention:[...]}]` so this panel can draw a retention matrix (industry best practice).</div>
-        </div>
-      </section>
-
-      <!-- ROI -->
-      <section id="roi" class="tab-panel hidden">
-        <div class="kpi-grid">
-          <div class="kpi"><div class="label">Plan</div><div class="value" id="roi-plan">—</div></div>
-          <div class="kpi"><div class="label">Subscription</div><div class="value" id="roi-sub">—</div></div>
-          <div class="kpi"><div class="label">Hours Saved</div><div class="value" id="roi-hours">—</div></div>
-          <div class="kpi"><div class="label">ROI (USD)</div><div class="value" id="roi-usd">—</div></div>
-        </div>
-
-        <div class="chart-grid">
-          <div class="chart-card">
-            <h4>Searches / Patients / Visits</h4>
-            <canvas id="roi-counts"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Profitability</h4>
-            <canvas id="roi-donut"></canvas>
-            <div id="roi-note" class="muted" style="margin-top:8px"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Impact -->
-      <section id="impact" class="tab-panel hidden">
-        <div class="kpi-grid">
-          <div class="kpi"><div class="label">Patients Added</div><div class="value" id="imp-pat-added">—</div></div>
-          <div class="kpi"><div class="label">Visits Created</div><div class="value" id="imp-visits">—</div></div>
-          <div class="kpi"><div class="label">Binder Speed (min)</div><div class="value" id="imp-binder">—</div></div>
-          <div class="kpi"><div class="label">Efficiency Gain %</div><div class="value" id="imp-eff">—</div></div>
-        </div>
-
-        <div class="chart-grid">
-          <div class="chart-card"><h4>Binder vs Paper</h4><canvas id="imp-bar"></canvas></div>
-          <div class="chart-card"><h4>Errors reduced</h4><canvas id="imp-donut"></canvas></div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- Drilldown modal (hidden by default) -->
-  <div id="modal" class="modal-backdrop" style="display:none;">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-        <h3 id="modalTitle">Drilldown</h3>
-        <button id="closeModal" class="btn ghost">Close</button>
-      </div>
-      <div id="modalBody" style="margin-top:12px;"></div>
+<body class="p-6">
+  <header class="max-w-7xl mx-auto mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">Gaia Analytics — Binder Medical</h1>
+      <p class="text-sm text-gray-500">Business dashboard — ROI, Productivity, Financials & Patient Insights</p>
     </div>
-  </div>
+    <div class="flex items-center gap-3">
+      <select id="range" class="px-3 py-2 border rounded-md">
+        <option value="30">Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="365">Last 12 months</option>
+      </select>
+      <button id="refresh" class="px-4 py-2 bg-indigo-600 text-white rounded-md">Refresh</button>
+    </div>
+  </header>
 
-<script>
-/* -------------------------
-  Configuration & helpers
-   ------------------------- */
-   /* Utility: convert hex to rgba string */
-    function hexToRgba(hex, alpha=1) {
-      if (!hex) return `rgba(0,0,0,${alpha})`;
-      const h = hex.replace('#','').trim();
-      const bigint = parseInt(h.length === 3 ? h.split('').map(ch=>ch+ch).join('') : h, 16);
-      const r = (bigint >> 16) & 255;
-      const g = (bigint >> 8) & 255;
-      const b = bigint & 255;
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left column: KPI cards -->
+    <section class="col-span-1 space-y-4">
+      <div class="glass p-4 rounded-2xl">
+        <h3 class="text-sm font-medium text-gray-600">ROI Tracker</h3>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div class="p-3 bg-white rounded-lg shadow-sm">
+            <div class="text-xs text-gray-400">Hours saved</div>
+            <div id="roi-hours" class="text-xl font-bold">—</div>
+          </div>
+          <div class="p-3 bg-white rounded-lg shadow-sm">
+            <div class="text-xs text-gray-400">Estimated ROI (USD)</div>
+            <div id="roi-usd" class="text-xl font-bold">—</div>
+          </div>
+          <div class="p-3 bg-white rounded-lg shadow-sm">
+            <div class="text-xs text-gray-400">Subscription</div>
+            <div id="roi-sub" class="text-lg">—</div>
+          </div>
+          <div class="p-3 bg-white rounded-lg shadow-sm">
+            <div class="text-xs text-gray-400">Payback period</div>
+            <div id="roi-payback" class="text-lg">—</div>
+          </div>
+        </div>
+        <div class="mt-3 text-sm text-gray-500">Calculated from <code>/api/stats/roi</code> and time tracking.</div>
+      </div>
+
+      <div class="glass p-4 rounded-2xl">
+        <h3 class="text-sm font-medium text-gray-600">Time & Productivity</h3>
+        <div class="mt-3 grid grid-cols-1 gap-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-400">Total time (hrs)</div>
+              <div id="time-total" class="text-xl font-bold">—</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400">Avg session (min)</div>
+              <div id="time-avg" class="text-xl font-bold">—</div>
+            </div>
+          </div>
+          <div>
+            <canvas id="chart-time" height="140"></canvas>
+          </div>
+        </div>
+        <div class="mt-3 text-sm text-gray-500">Data pulled from <code>/api/stats/time</code>.</div>
+      </div>
+
+      <div class="glass p-4 rounded-2xl">
+        <h3 class="text-sm font-medium text-gray-600">Patient Insights</h3>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div class="p-3 bg-white rounded-lg shadow-sm">
+            <div class="text-xs text-gray-400">Total patients</div>
+            <div id="patients-total" class="text-xl font-bold">—</div>
+          </div>
+          <div class="p-3 bg-white rounded-lg shadow-sm">
+            <div class="text-xs text-gray-400">New this month</div>
+            <div id="patients-new" class="text-xl font-bold">—</div>
+          </div>
+          <div class="p-3 bg-white rounded-lg shadow-sm col-span-2">
+            <div class="text-xs text-gray-400">Returning %</div>
+            <div id="patients-returning" class="text-xl font-bold">—</div>
+          </div>
+        </div>
+        <div class="mt-3 text-sm text-gray-500">Prefer <code>/api/stats/patients</code> (recommended new endpoint).</div>
+      </div>
+    </section>
+
+    <!-- Middle column: charts -->
+    <section class="col-span-1 lg:col-span-2 space-y-4">
+      <div class="glass p-4 rounded-2xl">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-medium text-gray-600">Financial Performance</h3>
+          <div class="text-xs text-gray-400">Revenue / Unpaid</div>
+        </div>
+        <div class="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="bg-white p-3 rounded-lg shadow-sm">
+            <div class="text-xs text-gray-400">Total revenue</div>
+            <div id="fin-total" class="text-2xl font-bold">—</div>
+            <div class="mt-2 text-sm text-gray-500">Avg per patient: <span id="fin-avg">—</span></div>
+          </div>
+          <div class="bg-white p-3 rounded-lg shadow-sm">
+            <canvas id="chart-finance" height="160"></canvas>
+          </div>
+        </div>
+        <div class="mt-3 text-sm text-gray-500">Uses <code>/api/stats/financials</code> or <code>/api/dashboard/usage</code> for MRR breakdown.</div>
+      </div>
+
+      <div class="glass p-4 rounded-2xl">
+        <h3 class="text-sm font-medium text-gray-600">Visits vs Patients</h3>
+        <div class="mt-3">
+          <canvas id="chart-visits" height="120"></canvas>
+        </div>
+        <div class="mt-3 text-sm text-gray-500">Good for showing visit creation rate per active hour (calls <code>/api/stats/time</code> + analytics).</div>
+      </div>
+
+      <div class="glass p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-medium text-gray-600">Quick Actions</h3>
+          <div class="mt-2 space-x-2">
+            <button id="download-report" class="px-3 py-2 bg-green-600 text-white rounded-md text-sm">Download PDF</button>
+            <button id="save-snapshot" class="px-3 py-2 bg-gray-800 text-white rounded-md text-sm">Save Daily Snapshot</button>
+          </div>
+        </div>
+        <div class="text-sm text-gray-400">Powered by Gaia Analytics</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Helpers
+    function fmt(n){return (typeof n==='number'?n.toLocaleString():n||'—')}
+
+    async function fetchJson(url, opts={}){
+      const r = await fetch(url, opts);
+      if(!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
+      return r.json();
     }
-const API = {
-  roi: '/api/stats/roi',
-  time: '/api/stats/time',
-  financials: '/api/stats/financials',
-  patients: '/api/stats/patients',
-  impact: '/api/stats/impact'
-};
 
-function fmtNum(v, opts = {}) {
-  if (v === null || v === undefined) return '—';
-  if (opts.currency) return Number(v).toLocaleString(undefined, {style:'currency',currency:opts.currency === true ? 'USD' : opts.currency});
-  return Number(v).toLocaleString();
-}
+    // Charts placeholders
+    let timeChart, financeChart, visitsChart;
 
-function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = (text === null || text === undefined) ? '—' : text; }
-function showModal(title, html) {
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalBody').innerHTML = html;
-  document.getElementById('modal').style.display = 'flex';
-}
-document.getElementById('closeModal').addEventListener('click', ()=>document.getElementById('modal').style.display='none');
+    function initCharts(){
+      const tctx = document.getElementById('chart-time').getContext('2d');
+      timeChart = new Chart(tctx,{type:'bar',data:{labels:[],datasets:[{label:'Daily active minutes',data:[]}]},options:{responsive:true}});
 
-/* Chart container - stable sizing: maintainAspectRatio=false everywhere */
-const defaultOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { position: 'bottom', labels: { boxWidth:12 } } },
-  scales: { x: { ticks: { maxRotation: 0, autoSkip: true } }, y: { beginAtZero: true } }
-};
+      const fctx = document.getElementById('chart-finance').getContext('2d');
+      financeChart = new Chart(fctx,{type:'line',data:{labels:[],datasets:[{label:'Revenue',data:[]},{label:'Unpaid',data:[]} ]},options:{responsive:true}});
 
-/* Keep references for cleanup */
-const charts = {};
-function ensureDestroyed(key) {
-  if (charts[key]) {
-    try { charts[key].destroy(); } catch(e) { console.warn('destroy err',e); }
-    charts[key] = null;
-  }
-}
-
-/* Chart creators */
-function createLine(ctx, labels=[], datasets=[], opts={}) {
-  ensureDestroyed(ctx.canvas.id);
-  charts[ctx.canvas.id] = new Chart(ctx, Object.assign({type:'line', data:{labels, datasets}, options: Object.assign({}, defaultOptions, opts)}, {}));
-  return charts[ctx.canvas.id];
-}
-function createBar(ctx, labels=[], datasets=[], opts={}) {
-  ensureDestroyed(ctx.canvas.id);
-  charts[ctx.canvas.id] = new Chart(ctx, Object.assign({type:'bar', data:{labels, datasets}, options: Object.assign({}, defaultOptions, opts)}, {}));
-  return charts[ctx.canvas.id];
-}
-function createStacked(ctx, labels=[], datasets=[], opts={}) {
-  ensureDestroyed(ctx.canvas.id);
-  const cfg = Object.assign({}, defaultOptions, { scales: { x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } } }, opts);
-  charts[ctx.canvas.id] = new Chart(ctx, { type:'bar', data:{labels, datasets}, options: cfg });
-  return charts[ctx.canvas.id];
-}
-function createDoughnut(ctx, labels=[], data=[], opts={}) {
-  ensureDestroyed(ctx.canvas.id);
-  charts[ctx.canvas.id] = new Chart(ctx, { type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:[getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#0f766e', getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() || '#ce7a35' ]}]}, options: Object.assign({}, defaultOptions, { plugins:{ legend:{ position:'bottom' } } }, opts) });
-  return charts[ctx.canvas.id];
-}
-
-/* Utility: safe fetch JSON with query params (period, start/end, search) */
-async function apiGet(url) {
-  const params = [];
-  const start = document.getElementById('start').value;
-  const end = document.getElementById('end').value;
-  const period = document.getElementById('period').value;
-  const search = document.getElementById('searchFilter').value;
-  if (start) params.push('start=' + encodeURIComponent(start));
-  if (end) params.push('end=' + encodeURIComponent(end));
-  if (period) params.push('period=' + encodeURIComponent(period));
-  if (search) params.push('q=' + encodeURIComponent(search));
-  const full = params.length ? `${url}?${params.join('&')}` : url;
-  const res = await fetch(full, { credentials: 'same-origin' });
-  if (!res.ok) { const txt = await res.text().catch(()=>null); throw new Error(`${res.status} ${res.statusText} ${txt}`); }
-  return res.json();
-}
-
-/* -------------------------
-   Loaders for panels
-   ------------------------- */
-
-/* Overview */
-async function loadOverview() {
-  // We will fetch financials + time endpoints to build a combined chart
-  try {
-    const [fin, time] = await Promise.all([ apiGet(API.financials), apiGet(API.time) ]);
-
-    // KPIs
-    setText('kpi-hours', `${fmtNum(time.total_hours)} hrs`);
-    setText('kpi-sessions', fmtNum(time.sessions));
-    setText('kpi-revenue', fmtNum(fin.total_revenue, {currency:true}));
-    setText('kpi-unpaid-ratio', fin.unpaid_ratio ? fin.unpaid_ratio + '%' : '—');
-    setText('kpi-avg-patient', fin.avg_revenue_per_patient ? fmtNum(fin.avg_revenue_per_patient, {currency:true}) : '—');
-    setText('kpi-avg-visit', fin.avg_revenue_per_visit ? fmtNum(fin.avg_revenue_per_visit, {currency:true}) : '—');
-    setText('kpi-vph', time.visits_per_hour ? fmtNum(time.visits_per_hour) : '—');
-    setText('kpi-retention', (document.getElementById('pat-retention')?.textContent) ? document.getElementById('pat-retention').textContent : '—');
-
-    // Trend chart: prefer series from financials (daily revenue) and time.series (sessions series)
-    const finSeries = (fin.series && Array.isArray(fin.series)) ? fin.series : null;
-    const timeSeries = (time.series && Array.isArray(time.series)) ? time.series : null;
-
-    // Build labels as last N days (prefer series labels)
-    let labels = [];
-    let revenueData = [];
-    let sessionsData = [];
-
-    if (finSeries && finSeries.length) {
-      labels = finSeries.map(s => s.date);
-      revenueData = finSeries.map(s => s.revenue || s.paid || 0);
+      const vctx = document.getElementById('chart-visits').getContext('2d');
+      visitsChart = new Chart(vctx,{type:'line',data:{labels:[],datasets:[{label:'Visits',data:[]},{label:'Patients added',data:[]} ]},options:{responsive:true}});
     }
-    if (timeSeries && timeSeries.length) {
-      // align labels if missing: if finSeries empty, use timeSeries
-      if (!labels.length) labels = timeSeries.map(s => s.date);
-      // map sessions
-      const idx = timeSeries.reduce((acc,s,i)=>{ acc[s.date]=i; return acc; }, {});
-      sessionsData = labels.map(d => {
-        const i = idx[d];
-        return (i !== undefined) ? (timeSeries[i].sessions || 0) : 0;
-      });
-    } else {
-      // fallback: time has sessions count only -> synthetic distribution across labels
-      if (!labels.length) {
-        const days = Number(document.getElementById('period').value || 30);
-        const arr = [];
-        for (let i = days-1; i >= 0; --i) {
-          const dt = new Date(); dt.setDate(dt.getDate() - i); arr.push(dt.toISOString().split('T')[0]);
-        }
-        labels = arr;
+
+    async function loadAll(){
+      try{
+        // ROI
+        const roi = await fetchJson('/api/stats/roi');
+        document.getElementById('roi-hours').innerText = fmt(roi.hours_saved);
+        document.getElementById('roi-usd').innerText = '$'+fmt(roi.roi_usd);
+        document.getElementById('roi-sub').innerText = '$'+fmt(roi.subscription_cost);
+
+        // Time & productivity
+        const time = await fetchJson('/api/stats/time');
+        document.getElementById('time-total').innerText = fmt(time.total_hours);
+        document.getElementById('time-avg').innerText = fmt(time.avg_session_minutes);
+
+        // patch time chart
+        const series = (time.series||[]).map(s=>({d:s.date,m:Math.round((s.total_seconds||0)/60)}));
+        timeChart.data.labels = series.map(x=>x.d);
+        timeChart.data.datasets[0].data = series.map(x=>x.m);
+        timeChart.update();
+
+        // Financials (existing endpoint)
+        const fin = await fetchJson('/api/stats/financials');
+        document.getElementById('fin-total').innerText = '$'+fmt(fin.total_revenue);
+        document.getElementById('fin-avg').innerText = '$'+fmt(fin.avg_revenue_per_patient||0);
+        // finance chart
+        financeChart.data.labels = (fin.series||[]).map(s=>s.period);
+        financeChart.data.datasets[0].data = (fin.series||[]).map(s=>s.revenue||0);
+        financeChart.data.datasets[1].data = (fin.series||[]).map(s=>s.unpaid||0);
+        financeChart.update();
+
+        // Patient insights — recommended new endpoint /api/stats/patients
+        let patients;
+        try{ patients = await fetchJson('/api/stats/patients'); }
+        catch(e){ patients = {total: fin.total_patients || '—', new_month: '—', returning_pct: '—'} }
+        document.getElementById('patients-total').innerText = fmt(patients.total);
+        document.getElementById('patients-new').innerText = fmt(patients.new_month);
+        document.getElementById('patients-returning').innerText = (patients.returning_pct?patients.returning_pct+'%':'—');
+
+        // Visits vs patients: combine analytics /api/dashboard/usage and /api/stats/time
+        const usage = await fetchJson('/api/dashboard/usage?key=bindersoftware.com');
+        visitsChart.data.labels = (usage.timestamp? [usage.timestamp] : ['']);
+        visitsChart.data.datasets[0].data = [usage.total_visits||0];
+        visitsChart.data.datasets[1].data = [usage.total_patients||0];
+        visitsChart.update();
+
+      }catch(err){
+        console.error(err);
+        // best-effort: show message in console; production: show toast
       }
-      const totalSessions = time.sessions || 0;
-      const per = Math.max(0, Math.round(totalSessions / (labels.length || 1)));
-      sessionsData = labels.map((_,i) => Math.max(0, Math.round(per * (0.85 + Math.random()*0.3))));
-      revenueData = labels.map((_,i) => Math.round((fin.total_revenue || 0) / (labels.length || 1)));
     }
 
-    // create combined chart: bars for sessions, line for revenue
-    ensureDestroyed('overview-trend');
-    const ctx = document.getElementById('overview-trend').getContext('2d');
-    charts['overview-trend'] = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          { type: 'bar', label: 'Sessions', data: sessionsData, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), yAxisID: 'y' },
-          { type: 'line', label: 'Revenue (USD)', data: revenueData, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim(), tension:0.25, fill:false, yAxisID: 'y1' }
-        ]
-      },
-      options: Object.assign({}, defaultOptions, {
-        scales: {
-          x: { stacked: false },
-          y: { position:'left', beginAtZero:true, title: { display:true, text:'Sessions' } },
-          y1: { position:'right', beginAtZero:true, grid: { display:false }, title: { display:true, text:'Revenue (USD)' } }
-        },
-        onClick(evt, active) {
-          if (active && active.length) {
-            const item = active[0];
-            const label = this.data.labels[item.index];
-            // drilldown by date
-            loadDrilldownForDate(label);
-          }
-        }
-      })
+    document.getElementById('refresh').addEventListener('click', loadAll);
+    document.getElementById('save-snapshot').addEventListener('click', async ()=>{
+      await fetch('/api/dashboard/daily_report', {method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':'bindersoftware.com'}});
+      alert('Daily snapshot requested');
     });
 
-  } catch (err) {
-    console.error('Overview load error', err);
-  }
-}
-
-/* Time panel (rewritten to sessions focus) */
-async function loadTimePanel() {
-  try {
-    const d = await apiGet(API.time);
-    // KPIs
-    setText('time-hours', `${fmtNum(d.total_hours)} hrs`);
-    setText('time-sessions', fmtNum(d.sessions));
-    setText('time-avg', d.avg_session_minutes ? (d.avg_session_minutes + ' min') : '—');
-    setText('time-vph-kpi', fmtNum(d.visits_per_hour));
-
-    // sessions list
-    let sessions = Array.isArray(d.sessions) ? d.sessions : (Array.isArray(d.user_logs) ? d.user_logs : []);
-    // normalize common fields: start (ISO), seconds, visits_created, notes
-    sessions = sessions.map(s => {
-      return {
-        start: s.start || s.timestamp || s.start_iso || s.start_time || s.start_date || s.ts || s[ 'start' ] || null,
-        seconds: Number(s.seconds || s.duration_seconds || s.seconds_total || 0),
-        visits: s.visits_created || s.visits || s.added_visits || 0,
-        notes: s.notes || s.note || s.details || ''
-      };
-    }).filter(s => s.start).sort((a,b)=> new Date(b.start) - new Date(a.start));
-
-    // table
-    const tbody = document.getElementById('sessions-tbody');
-    tbody.innerHTML = '';
-    const top = sessions.slice(0,50);
-    top.forEach(s => {
-      const tr = document.createElement('tr');
-      const mins = Math.round((s.seconds||0)/60 * 10)/10;
-      tr.innerHTML = `<td>${new Date(s.start).toLocaleString()}</td><td>${mins}</td><td>${s.visits||0}</td><td class="muted">${(s.notes||'')}</td>`;
-      tbody.appendChild(tr);
+    document.getElementById('download-report').addEventListener('click', ()=>{
+      // simple export trigger (server-side more robust)
+      window.print();
     });
 
-    // peak hour
-    if (sessions.length) {
-      const hours = new Array(24).fill(0);
-      sessions.forEach(s => { const h = new Date(s.start).getHours(); hours[h]++; });
-      const peak = hours.indexOf(Math.max(...hours));
-      setText('time-peak-hour', peak + ':00');
-      setText('time-today-sessions', top.filter(x=> new Date(x.start).toDateString() === new Date().toDateString()).length);
-    } else {
-      setText('time-peak-hour', '—');
-    }
-
-    // Trend: use d.series if present (daily sessions)
-    let labels = [];
-    let dataSeries = [];
-    if (Array.isArray(d.series) && d.series.length) {
-      labels = d.series.map(s => s.date);
-      dataSeries = d.series.map(s=> s.sessions || 0);
-    } else {
-      // synthesize last N days
-      const days = Number(document.getElementById('period').value || 30);
-      labels = Array.from({length:days}, (_,i) => {
-        const dt = new Date(); dt.setDate(dt.getDate() - (days - 1 - i)); return dt.toISOString().split('T')[0];
-      });
-      const sCount = d.sessions || 0;
-      const avg = Math.max(0, Math.round(sCount / (labels.length || 1)));
-      dataSeries = labels.map((_,i) => Math.max(0, Math.round(avg * (0.85 + Math.random()*0.4))));
-    }
-
-    ensureDestroyed('time-trend');
-    createLine(document.getElementById('time-trend').getContext('2d'), labels, [{ label:'Sessions', data: dataSeries, backgroundColor: 'rgba(15,118,110,0.12)', borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), fill:true }]);
-
-    // Histogram: session length distribution buckets (0-3,4-6,7-10,11-20,21+)
-    const lengths = sessions.map(s => Math.round((s.seconds||0) / 60));
-    const buckets = ['0-3','4-6','7-10','11-20','21+'];
-    const counts = buckets.map((b, i) => {
-      if (i === 0) return lengths.filter(x=> x >= 0 && x <= 3).length;
-      if (i === 1) return lengths.filter(x=> x >= 4 && x <= 6).length;
-      if (i === 2) return lengths.filter(x=> x >= 7 && x <= 10).length;
-      if (i === 3) return lengths.filter(x=> x >= 11 && x <= 20).length;
-      return lengths.filter(x=> x >= 21).length;
-    });
-
-    ensureDestroyed('time-hist');
-    createBar(document.getElementById('time-hist').getContext('2d'), buckets, [{ label:'Sessions', data: counts, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() }]);
-
-  } catch (err) {
-    console.error('Time load error', err);
-  }
-}
-
-/* Financials */
-/* -------------------------
-  Financials — advanced implementation
-  Uses: API.financials (series: [{date, paid, unpaid, revenue}])
-  Drilldown uses: /ssearch (POST) with startDate/endDate
-   ------------------------- */
-
-function groupSeriesBy(series, granularity = 'daily') {
-  // series: [{date:'YYYY-MM-DD', paid, unpaid, revenue}, ...]
-  // return aggregated array sorted by date (iso)
-  if (!Array.isArray(series) || series.length === 0) return [];
-
-  // Helper to get week/month key
-  const weekKey = (isoDate) => {
-    const d = new Date(isoDate + 'T00:00:00');
-    // get ISO week year-week
-    const temp = new Date(d.valueOf());
-    temp.setHours(0,0,0,0);
-    // Thursday in current week decides year.
-    temp.setDate(temp.getDate() + 3 - ((temp.getDay() + 6) % 7));
-    const week1 = new Date(temp.getFullYear(), 0, 4);
-    const weekNo = 1 + Math.round(((temp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
-    return `${temp.getFullYear()}-W${String(weekNo).padStart(2,'0')}`;
-  };
-  const monthKey = (isoDate) => isoDate.slice(0,7); // YYYY-MM
-
-  const map = {};
-  series.forEach(s => {
-    const key = (granularity === 'daily') ? s.date : (granularity === 'weekly') ? weekKey(s.date) : monthKey(s.date);
-    map[key] = map[key] || { key, paid:0, unpaid:0, revenue:0, dates: [] };
-    map[key].paid += Number(s.paid || 0);
-    map[key].unpaid += Number(s.unpaid || 0);
-    map[key].revenue += Number(s.revenue || (s.paid || 0));
-    map[key].dates.push(s.date);
-  });
-
-  // sort keys chronologically by the earliest date
-  const arr = Object.values(map).map(v => {
-    v.start = v.dates.slice().sort()[0];
-    return v;
-  }).sort((a,b) => new Date(a.start) - new Date(b.start));
-
-  return arr;
-}
-
-function movingAverage(arr, windowSize = 7, accessor = x => x) {
-  const res = [];
-  for (let i = 0; i < arr.length; i++) {
-    const start = Math.max(0, i - windowSize + 1);
-    const window = arr.slice(start, i + 1).map(accessor);
-    const s = window.reduce((a,b)=> a + b, 0);
-    res.push(window.length ? s / window.length : 0);
-  }
-  return res;
-}
-
-function percentChange(current, previous) {
-  if (previous === 0) return null;
-  return ((current - previous) / Math.abs(previous)) * 100;
-}
-
-/* exports CSV helper */
-function exportCSV(filename, rows) {
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-}
-
-/* Download canvas as image */
-function downloadCanvasPNG(canvas, filename='chart.png') {
-  const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png', 1.0);
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-}
-
-/* Enhanced loadFinancialsPanel */
-async function loadFinancialsPanel() {
-  try {
-    // read UI preferences
-    const gran = document.getElementById('fin-granularity').value || 'daily';
-    const displayMode = document.getElementById('fin-display-mode').value || 'stacked';
-
-    // fetch
-    const d = await apiGet(API.financials);
-
-    // KPIs
-    setText('fin-total', fmtNum(d.total_revenue, {currency:true}));
-    setText('fin-unpaid', fmtNum(d.total_unpaid, {currency:true}));
-    setText('fin-avg-patient', fmtNum(d.avg_revenue_per_patient, {currency:true}));
-    setText('fin-unpaid-ratio', d.unpaid_ratio ? (d.unpaid_ratio + '%') : '—');
-
-    // prepare series: prefer server series, otherwise synthesize single period
-    let series = Array.isArray(d.series) ? d.series.map(s => ({
-      date: s.date,
-      paid: Number(s.paid || 0),
-      unpaid: Number(s.unpaid || 0),
-      revenue: Number(s.revenue || (s.paid || 0))
-    })) : [];
-
-    if (!series.length) {
-      // server didn't return series — synthesize a single-period aggregate
-      series = [{ date: (new Date()).toISOString().split('T')[0], paid: d.total_revenue || 0, unpaid: d.total_unpaid || 0, revenue: d.total_revenue || 0 }];
-    }
-
-    // aggregate by granularity
-    const grouped = groupSeriesBy(series, gran); // [{key, paid, unpaid, revenue, start}, ...]
-    const labels = grouped.map(g => g.key);
-    const paidSeries = grouped.map(g => Number(g.paid || 0));
-    const unpaidSeries = grouped.map(g => Number(g.unpaid || 0));
-    const revenueSeries = grouped.map(g => Number(g.revenue || 0));
-    const cumulative = revenueSeries.reduce((acc,cur,i) => { acc.push((acc[i-1] || 0) + cur); return acc; }, []);
-
-    // moving average (use original resolution if daily, else on grouped)
-    const maWindow = (gran === 'daily') ? 7 : (gran === 'weekly' ? 4 : 3);
-    const revenueMA = movingAverage(revenueSeries, maWindow, x => x);
-
-    // growth: compare last period vs previous (last value vs previous of same gran)
-    let growthText = '—';
-    if (revenueSeries.length >= 2) {
-      const last = revenueSeries[revenueSeries.length - 1];
-      const prev = revenueSeries[revenueSeries.length - 2];
-      const pct = percentChange(last, prev);
-      if (pct === null) growthText = 'N/A';
-      else growthText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-    }
-    // show growth next to Total Revenue KPI (append small note)
-    const totalEl = document.getElementById('fin-total');
-    if (totalEl) totalEl.innerHTML = `${fmtNum(d.total_revenue, {currency:true})} <span class="muted" style="font-weight:600; font-size:12px; display:block; margin-top:6px">Growth: ${growthText}</span>`;
-
-    // Build the trend chart: revenue (area) with moving average (line) + cumulative (transparent)
-    ensureDestroyed('fin-trend');
-    const ctxTrend = document.getElementById('fin-trend').getContext('2d');
-    charts['fin-trend'] = new Chart(ctxTrend, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          { label: 'Revenue', data: revenueSeries, backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim(), 0.12), borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim(), fill: true, tension: 0.2, yAxisID: 'y' },
-          { label: `${maWindow}-period MA`, data: revenueMA, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), borderDash: [4,4], fill:false, tension: 0.2, yAxisID: 'y' },
-          { label: 'Cumulative', data: cumulative, borderColor: '#999', backgroundColor: hexToRgba('#999999', 0.06), fill:false, hidden: true, yAxisID: 'y1' }
-        ]
-      },
-      options: Object.assign({}, defaultOptions, {
-        scales: {
-          x: { stacked:false },
-          y: { position:'left', title: { display:true, text:'Revenue' } },
-          y1: { position:'right', display: false }
-        },
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label(evt) {
-                const v = evt.parsed.y;
-                return `${evt.dataset.label}: ${fmtNum(v, {currency:true})}`;
-              }
-            }
-          }
-        },
-        onClick(evt, activeEls) {
-          // allow drilldown: clicking a point opens drilldown for that period
-          if (activeEls && activeEls.length) {
-            const idx = activeEls[0].index;
-            const group = grouped[idx];
-            // determine period to pass to ssearch: use earliest and latest date in group.dates
-            const start = group.dates ? group.dates.slice().sort()[0] : group.start;
-            const end = group.dates ? group.dates.slice().sort().slice(-1)[0] : group.start;
-            openFinancialDrilldown(start, end, group.key);
-          }
-        }
-      })
-    });
-
-    // Paid vs Unpaid — stacked or grouped
-    ensureDestroyed('fin-stacked');
-    const ctxStack = document.getElementById('fin-stacked').getContext('2d');
-
-    const datasets = [
-      { label: 'Paid', data: paidSeries, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() },
-      { label: 'Unpaid', data: unpaidSeries, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() }
-    ];
-    const stackedOpts = Object.assign({}, defaultOptions, { scales: { x: { stacked: (displayMode === 'stacked') }, y: { stacked: (displayMode === 'stacked'), beginAtZero:true } } });
-
-    charts['fin-stacked'] = new Chart(ctxStack, { type: 'bar', data: { labels, datasets }, options: Object.assign({}, stackedOpts, {
-      onClick(evt, activeEls) {
-        if (activeEls && activeEls.length) {
-          const idx = activeEls[0].index;
-          const group = grouped[idx];
-          const start = group.dates ? group.dates.slice().sort()[0] : group.start;
-          const end = group.dates ? group.dates.slice().sort().slice(-1)[0] : group.start;
-          openFinancialDrilldown(start, end, group.key);
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label(ctx) { return `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y, {currency:true})}`; }
-          }
-        }
-      }
-    })});
-
-    // Aging preview — prefer server-provided aging but fallback to computed buckets if no aging provided
-    const aging = d.aging || null;
-    const ap = document.getElementById('aging-preview');
-    ap.innerHTML = '';
-    if (aging && typeof aging === 'object') {
-      // server returned aging bucket map
-      Object.keys(aging).forEach(k => {
-        const v = aging[k];
-        const el = document.createElement('div');
-        el.style.flex = '1';
-        el.style.padding = '12px';
-        el.style.background = 'linear-gradient(90deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01))';
-        el.style.borderRadius = '8px';
-        el.innerHTML = `<div class="muted">${k}</div><div style="font-weight:700">${fmtNum(v, {currency:true})}</div>`;
-        ap.appendChild(el);
-      });
-    } else {
-      // fallback: compute rough aging from series unpaid (only approximate, because real aging needs invoice dates)
-      // We'll compute 0-30 = unpaid in last 30 days, 31-60 last 31-60, etc. (approx.)
-      const unpaidBuckets = { '0-30': 0, '31-60': 0, '61-90': 0, '90+': 0 };
-      // If original series contains per-day unpaid, assign to buckets by date distance
-      const today = new Date();
-      series.forEach(s => {
-        const daysAgo = Math.round((today - new Date(s.date + 'T00:00:00')) / 86400000);
-        if (daysAgo <= 30) unpaidBuckets['0-30'] += s.unpaid || 0;
-        else if (daysAgo <= 60) unpaidBuckets['31-60'] += s.unpaid || 0;
-        else if (daysAgo <= 90) unpaidBuckets['61-90'] += s.unpaid || 0;
-        else unpaidBuckets['90+'] += s.unpaid || 0;
-      });
-      Object.keys(unpaidBuckets).forEach(k => {
-        const v = unpaidBuckets[k];
-        const el = document.createElement('div');
-        el.style.flex = '1';
-        el.style.padding = '12px';
-        el.style.background = 'linear-gradient(90deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01))';
-        el.style.borderRadius = '8px';
-        el.innerHTML = `<div class="muted">${k}</div><div style="font-weight:700">${fmtNum(v, {currency:true})}</div>`;
-        ap.appendChild(el);
-      });
-    }
-
-    // Wire export CSV button for series
-    document.getElementById('fin-export-series').onclick = () => {
-      const rows = [['period','paid','unpaid','revenue']];
-      grouped.forEach(g => rows.push([g.key, g.paid, g.unpaid, g.revenue]));
-      exportCSV(`financials_series_${gran}_${new Date().toISOString().slice(0,10)}.csv`, rows);
-    };
-
-    // Download chart button (downloads the trend canvas)
-    document.getElementById('fin-download-chart').onclick = () => {
-      const canvas = document.getElementById('fin-trend');
-      downloadCanvasPNG(canvas, `revenue_trend_${gran}_${new Date().toISOString().slice(0,10)}.png`);
-    };
-
-    // Drilldown hide button
-    document.getElementById('fin-drilldown-hide').onclick = () => {
-      document.getElementById('fin-drilldown').style.display = 'none';
-      document.getElementById('fin-drilldown-table').querySelector('tbody').innerHTML = '';
-    };
-
-    // Drilldown export CSV
-    document.getElementById('fin-drilldown-export').onclick = () => {
-      const rows = [];
-      const tbody = document.getElementById('fin-drilldown-table').querySelector('tbody');
-      Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
-        const cols = Array.from(tr.children).map(td => td.textContent.trim());
-        rows.push(cols);
-      });
-      if (rows.length) exportCSV(`financials_drilldown_${new Date().toISOString().slice(0,10)}.csv`, [['patient','visits','debit','paid'], ...rows]);
-      else alert('No drilldown rows to export');
-    };
-
-  } catch (err) {
-    console.error('Financials load error', err);
-    showModal('Financials error', `<div class="muted">Failed to load financials: ${err.message}</div>`);
-  }
-}
-
-/* Open drilldown: calls /ssearch with startDate/endDate and shows patient rows */
-async function openFinancialDrilldown(startDate, endDate, label) {
-  try {
-    // Show loader/modal
-    document.getElementById('fin-drilldown').style.display = 'block';
-    document.getElementById('fin-drilldown-title').textContent = `Drilldown — ${label} (${startDate}${startDate !== endDate ? ' → ' + endDate : ''})`;
-    const tbody = document.getElementById('fin-drilldown-table').querySelector('tbody');
-    tbody.innerHTML = `<tr><td colspan="4" class="muted">Loading…</td></tr>`;
-
-    // POST to /ssearch with start and end
-    const payload = { startDate, endDate, details: document.getElementById('searchFilter').value || '', showDate: true };
-    const res = await fetch('/ssearch', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload), credentials:'same-origin' });
-    if (!res.ok) {
-      const txt = await res.text().catch(()=>null);
-      throw new Error(`Server ${res.status}: ${txt || res.statusText}`);
-    }
-    const json = await res.json();
-
-    // json expected: { total_customers, unpaid_customers, total_debit, total_payed, patients: [...] }
-    tbody.innerHTML = '';
-    const patients = Array.isArray(json.patients) ? json.patients : (Array.isArray(json) ? json : []);
-    if (!patients.length) tbody.innerHTML = `<tr><td colspan="4" class="muted">No patients found for this period.</td></tr>`;
-    else {
-      // Iterate and compute totals per patient for that date range (filter visits whose visit_date in [start,end])
-      patients.forEach(p => {
-        const visits = (p.visits || []).filter(v => {
-          const d = (v.visit_date || '').slice(0,10);
-          if (!d) return false;
-          if (startDate && endDate) return d >= startDate && d <= endDate;
-          if (startDate) return d >= startDate;
-          if (endDate) return d <= endDate;
-          return true;
-        });
-        const debit = visits.reduce((acc, v) => acc + (Number(v.debit || 0)), 0);
-        const payed = visits.reduce((acc, v) => acc + (Number(v.payed || 0)), 0);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${p.name || p.id || '—'}</td><td>${visits.length}</td><td>${fmtNum(debit, {currency:true})}</td><td>${fmtNum(payed, {currency:true})}</td>`;
-        tbody.appendChild(tr);
-      });
-    }
-
-  } catch (err) {
-    console.error('Drilldown error', err);
-    const tbody = document.getElementById('fin-drilldown-table').querySelector('tbody');
-    tbody.innerHTML = `<tr><td colspan="4" class="muted">Error loading drilldown: ${err.message}</td></tr>`;
-  }
-}
-
-/* Hook granularity/display controls to reload */
-document.getElementById('fin-granularity').addEventListener('change', () => {
-  const active = tabs.find(t => t.getAttribute('aria-selected') === 'true').dataset.tab;
-  if (active === 'financials') loadFinancialsPanel();
-});
-document.getElementById('fin-display-mode').addEventListener('change', () => {
-  const active = tabs.find(t => t.getAttribute('aria-selected') === 'true').dataset.tab;
-  if (active === 'financials') loadFinancialsPanel();
-});
-
-/* Patients */
-async function loadPatientsPanel() {
-  try {
-    const d = await apiGet(API.patients);
-    setText('pat-total', fmtNum(d.total_patients));
-    setText('pat-new', fmtNum(d.new_patients_month));
-    setText('pat-return', fmtNum(d.returning_patients));
-    setText('pat-debt', fmtNum(d.debt_patients));
-    setText('pat-retention', d.retention_rate ? d.retention_rate + '%' : '—');
-    setText('pat-debt-ratio', d.debt_ratio ? d.debt_ratio + '%' : '—');
-
-    // small trend: if series exists
-    let labels = [], newS = [], returning = [];
-    if (Array.isArray(d.series) && d.series.length) {
-      labels = d.series.map(s=>s.date);
-      newS = d.series.map(s=>s.new || 0);
-      returning = d.series.map(s=>s.returning || 0);
-    } else {
-      labels = ['Period'];
-      newS = [d.new_patients_month || 0];
-      returning = [d.returning_patients || 0];
-    }
-
-    ensureDestroyed('pat-trend');
-    createLine(document.getElementById('pat-trend').getContext('2d'), labels, [
-      { label:'New', data:newS, backgroundColor: 'rgba(15,118,110,0.12)', borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), fill:true },
-      { label:'Returning', data:returning, backgroundColor: 'rgba(206,122,53,0.12)', borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim(), fill:true }
-    ]);
-
-    ensureDestroyed('pat-donut');
-    createDoughnut(document.getElementById('pat-donut').getContext('2d'), ['Retention','Debt'], [d.retention_rate || 0, d.debt_ratio || 0]);
-
-  } catch (err) {
-    console.error('Patients load error', err);
-  }
-}
-
-/* ROI */
-async function loadRoiPanel() {
-  try {
-    const d = await apiGet(API.roi);
-    setText('roi-plan', d.plan);
-    setText('roi-sub', fmtNum(d.subscription_cost, {currency:true}));
-    setText('roi-hours', fmtNum(d.hours_saved));
-    setText('roi-usd', fmtNum(d.roi_usd, {currency:true}));
-
-    // counts chart
-    const counts = [d.searches || 0, d.patients_added || 0, d.visits_created || 0];
-    ensureDestroyed('roi-counts');
-    createBar(document.getElementById('roi-counts').getContext('2d'), ['Searches','Patients added','Visits created'], [{ label:'Counts', data:counts, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() }]);
-
-    ensureDestroyed('roi-donut');
-    createDoughnut(document.getElementById('roi-donut').getContext('2d'), ['Subscription','ROI positive'], [Math.max(0,d.subscription_cost||0), Math.max(0,Math.abs(d.roi_usd)||0)]);
-    setText('roi-note', 'Tip: ROI shown is hours_saved * avg_rate - subscription_cost');
-
-  } catch (err) {
-    console.error('ROI load error', err);
-  }
-}
-
-/* Impact */
-async function loadImpactPanel() {
-  try {
-    const d = await apiGet(API.impact);
-    setText('imp-pat-added', fmtNum(d.patients_added));
-    setText('imp-visits', fmtNum(d.visits_created));
-    setText('imp-binder', d.binder_speed_min ? d.binder_speed_min + ' min' : '—');
-    setText('imp-eff', d.efficiency_gain_percent ? d.efficiency_gain_percent + '%' : '—');
-
-    ensureDestroyed('imp-bar');
-    createBar(document.getElementById('imp-bar').getContext('2d'), ['Binder','Paper'], [{ label:'Minutes', data:[d.binder_speed_min || 1.2, d.paper_speed_min || 3.5], backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim()] }]);
-
-    ensureDestroyed('imp-donut');
-    createDoughnut(document.getElementById('imp-donut').getContext('2d'), ['Errors Reduced','Remaining'], [d.errors_reduced_percent || 75, Math.max(0, 100 - (d.errors_reduced_percent || 75))]);
-
-  } catch (err) {
-    console.error('Impact load error', err);
-  }
-}
-
-/* Drilldown loader: show patients/visits for a date */
-async function loadDrilldownForDate(dateStr) {
-  try {
-    // call your existing search endpoint or ssearch with date filters
-    // we'll fetch the /ssearch endpoint with start/end set to the date
-    const url = '/ssearch';
-    const body = { startDate: dateStr, endDate: dateStr, details: document.getElementById('searchFilter').value || '' };
-    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials:'same-origin' });
-    if (!res.ok) throw new Error('Drilldown fetch failed');
-    const data = await res.json();
-    // build HTML
-    let html = `<div class="muted">Results for <strong>${dateStr}</strong> — ${data.total_customers || 0} patients / total debit ${fmtNum(data.total_debit,{currency:true})}</div>`;
-    html += `<div style="margin-top:10px;"><table class="table"><thead><tr><th>Name</th><th>Visits</th><th>Debit</th><th>Revenue</th></tr></thead><tbody>`;
-    (data.patients || []).slice(0,100).forEach(p => {
-      const visits = p.visits ? p.visits.filter(v => (v.visit_date || '').startsWith(dateStr)) : [];
-      const debit = visits.reduce((acc,v)=> acc + (Number(v.debit||0)), 0);
-      const payed = visits.reduce((acc,v)=> acc + (Number(v.payed||0)), 0);
-      html += `<tr><td>${p.name || p.id || '—'}</td><td>${visits.length}</td><td>${fmtNum(debit,{currency:true})}</td><td>${fmtNum(payed,{currency:true})}</td></tr>`;
-    });
-    html += `</tbody></table></div>`;
-    showModal(`Drilldown — ${dateStr}`, html);
-  } catch (err) {
-    console.error('Drilldown error', err);
-    showModal('Drilldown error', `<div class="muted">Could not load drilldown: ${err.message}</div>`);
-  }
-}
-
-/* -------------------------
-  Tab wiring & init
-   ------------------------- */
-const tabs = Array.from(document.querySelectorAll('.nav-btn'));
-const panels = { overview: document.getElementById('overview'), time: document.getElementById('time'), financials: document.getElementById('financials'), patients: document.getElementById('patients'), roi: document.getElementById('roi'), impact: document.getElementById('impact') };
-
-tabs.forEach(btn => {
-  btn.addEventListener('click', async () => {
-    tabs.forEach(b => b.setAttribute('aria-selected', 'false'));
-    btn.setAttribute('aria-selected', 'true');
-    Object.values(panels).forEach(p => p.classList.add('hidden'));
-    const tab = btn.dataset.tab;
-    panels[tab].classList.remove('hidden');
-    // load the chosen tab
-    switch(tab) {
-      case 'overview': await loadOverview(); break;
-      case 'time': await loadTimePanel(); break;
-      case 'financials': await loadFinancialsPanel(); break;
-      case 'patients': await loadPatientsPanel(); break;
-      case 'roi': await loadRoiPanel(); break;
-      case 'impact': await loadImpactPanel(); break;
-    }
-  });
-});
-
-document.getElementById('refreshBtn').addEventListener('click', () => {
-  const active = tabs.find(t => t.getAttribute('aria-selected') === 'true');
-  active.click();
-});
-document.getElementById('period').addEventListener('change', () => {
-  const active = tabs.find(t => t.getAttribute('aria-selected') === 'true');
-  active.click();
-});
-document.getElementById('exportAllCSV').addEventListener('click', async () => {
-  // export overview KPIs + current panel data
-  const active = tabs.find(t => t.getAttribute('aria-selected') === 'true').dataset.tab;
-  let rows = [['metric','value']];
-  try {
-    if (active === 'overview') {
-      const d1 = await apiGet(API.financials);
-      const d2 = await apiGet(API.time);
-      rows.push(['total_revenue', d1.total_revenue||0]);
-      rows.push(['total_unpaid', d1.total_unpaid||0]);
-      rows.push(['total_hours', d2.total_hours||0]);
-      rows.push(['sessions', d2.sessions||0]);
-    } else {
-      const d = await apiGet(API[active]);
-      Object.keys(d).forEach(k => rows.push([k, JSON.stringify(d[k])]));
-    }
-    const csv = rows.map(r => r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type:'text/csv' });
-    const link = document.createElement('a'); link.href = URL.createObjectURL(blob);
-    link.download = `gaia_binder_${active}_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link); link.click(); link.remove();
-  } catch (err) {
-    console.error('Export error', err);
-    alert('Export failed: ' + err.message);
-  }
-});
-
-/* init default */
-document.addEventListener('DOMContentLoaded', () => {
-  // set plan label
-  try { document.getElementById('planLabel').textContent = '{{plan}}' || 'starter'; } catch(e){}
-
-  // default: overview
-  tabs[0].click();
-});
-</script>
+    initCharts();
+    loadAll();
+  </script>
 </body>
 </html>

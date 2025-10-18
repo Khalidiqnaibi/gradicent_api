@@ -41,6 +41,7 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 import uuid
+from collections import Counter
 
 ##############
 #~ Immortal ~#
@@ -2455,7 +2456,8 @@ def ssearch():
 
             # Add patient to matched_patients if they meet the criteria
             matched_patients.append(patient)
-
+        
+        log_event(google_id, "stats")
         return jsonify({
             'total_customers': total_customers,
             'unpaid_customers': unpaid_customers,
@@ -2584,7 +2586,8 @@ def searchh_stats():
 
             # Add patient to matched_patients if they meet the criteria
             matched_patients.append(patient)
-
+        
+        log_event(google_id, "stats_patient")
         return jsonify(matched_patients), 200#return jsonify(matched_patients), 200
 
     except Exception as e:
@@ -2722,7 +2725,8 @@ def get_patient_by_number(number):
 
     # Save patient number in the session
     session['patientno'] = patient['no']-1
-
+    
+    log_event(session['google_id'], "search")
     return jsonify(patient), 200
 
 @app.route('/auto_search_by_number', methods=['POST'])
@@ -2858,6 +2862,278 @@ def appointment_count():
 
 ########### Gaia First Look ############
 
+@app.route("/gaia_dashboard")
+@login_is_required
+def gaia_dashboard_page():
+    # renders the template above; your session & auth flow remains unchanged
+    return render_template("gaia_dashboard.html")
+
+# ROI: hours saved, binder ROI, payback, tasks automated
+@app.route("/api/gaia/roi", methods=["GET"])
+@login_is_required
+def api_gaia_roi():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error":"not logged in"}), 401
+
+    # 1) time saved: reuse /time_tracking (same table used by track_time)
+    time_logs = db.reference('/time_tracking').get() or {}
+    total_seconds = 0.0
+    for k, rec in (time_logs.items() if isinstance(time_logs, dict) else []):
+        try:
+            if rec.get("user") == google_id:
+                total_seconds += float(rec.get("seconds", 0) or 0)
+        except Exception:
+            continue
+    hours_saved = round(total_seconds / 3600.0, 2)
+
+    # 2) tasks automated: count event types in /analytics for this user
+    analytics = db.reference('/analytics').get() or {}
+    tasks_counter = Counter()
+    for k, ev in (analytics.items() if isinstance(analytics, dict) else []):
+        try:
+            if ev.get("user") == google_id:
+                typ = ev.get("type", "other")
+                tasks_counter[typ] += 1
+        except Exception:
+            continue
+
+    # 3) estimate money saved: use avg hourly rate (allow override via query param)
+    try:
+        avg_hourly = float(request.args.get("avg_hourly", 40))  # default $40/h
+    except Exception:
+        avg_hourly = 40.0
+
+    # 4) subscription price: infer from user plan (fallback to starter_price/pro_price/ultra_price)
+    user_doc = db.reference(f'/drs/{google_id}').get() or {}
+    plan = user_doc.get('plan', 'free')
+    plan_price_map = {"starter": starter_price, "pro": pro_price, "ultra": ultra_price, "basic": basicprice}
+    subscription_price = float(plan_price_map.get(plan, 0))
+
+    binder_roi = round(hours_saved * avg_hourly - subscription_price, 2)
+    payback_days = None
+    if hours_saved > 0 and avg_hourly > 0:
+        daily_hours = hours_saved / max(1, ( (datetime.now() - datetime.now()).days or 1 ))  # fallback safe; better: use recent-window logic
+        # simpler: estimate days to recoup by dividing subscription by daily saving (assume saving per month -> convert)
+        daily_savings = (hours_saved * avg_hourly) / max(1, 30)  # distribute monthly saving across 30 days
+        payback_days = int(subscription_price / (daily_savings or 1)) if daily_savings > 0 else None
+
+    return jsonify({
+        "hours_saved": hours_saved,
+        "binder_roi": binder_roi,
+        "subscription_price": subscription_price,
+        "payback_days": payback_days,
+        "tasks": dict(tasks_counter)
+    })
+
+# Productivity metrics
+@app.route("/api/gaia/productivity", methods=["GET"])
+@login_is_required
+def api_gaia_productivity():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error":"not logged in"}), 401
+
+    # gather time logs and analytics
+    time_logs = db.reference('/time_tracking').get() or {}
+    analytics = db.reference('/analytics').get() or {}
+
+    # total minutes
+    total_seconds = sum(float(l.get("seconds", 0) or 0) for k,l in (time_logs.items() if isinstance(time_logs, dict) else []) if l.get("user") == google_id)
+    total_minutes = round(total_seconds / 60.0, 2)
+
+    # sessions: naive grouping by timestamp date -> count
+    session_dates = set()
+    for k,l in (time_logs.items() if isinstance(time_logs, dict) else []):
+        if l.get("user") != google_id: continue
+        ts = l.get("timestamp")
+        if ts:
+            try:
+                d = datetime.fromisoformat(ts).date().isoformat()
+                session_dates.add(d)
+            except Exception:
+                continue
+    session_count = max(1, len(session_dates))
+    avg_per_session = round(total_minutes / session_count, 2)
+
+    # productive time heuristic: between 08:00 and 18:00 as working hours
+    productive_seconds = 0.0
+    for k,l in (time_logs.items() if isinstance(time_logs, dict) else []):
+        if l.get("user") != google_id: continue
+        ts = l.get("timestamp")
+        if not ts: continue
+        try:
+            t = datetime.fromisoformat(ts)
+            if 8 <= t.hour < 18:
+                productive_seconds += float(l.get("seconds", 0) or 0)
+        except Exception:
+            continue
+    percent_productive = round((productive_seconds / (total_seconds or 1)) * 100, 1)
+
+    # visits created and visits per active hour
+    visits = sum(1 for k,ev in (analytics.items() if isinstance(analytics, dict) else []) if ev.get("user")==google_id and ev.get("type")=="add_visit")
+    # active hours = total_seconds / 3600
+    active_hours = max(0.01, total_seconds/3600.0)
+    visits_per_active_hour = round(visits / active_hours, 2)
+
+    # time vs patients series (last 30 days)
+    now = datetime.now()
+    by_day = {}
+    for k,l in (time_logs.items() if isinstance(time_logs, dict) else []):
+        if l.get("user") != google_id: continue
+        try:
+            d = datetime.fromisoformat(l.get("timestamp")).date()
+        except Exception:
+            continue
+        if (now.date() - d).days <= 30:
+            by_day.setdefault(d.isoformat(), {"minutes":0, "patients":0})
+            by_day[d.isoformat()]["minutes"] += float(l.get("seconds",0) or 0) / 60.0
+    for k,ev in (analytics.items() if isinstance(analytics, dict) else []):
+        if ev.get("user")!=google_id: continue
+        try:
+            d = datetime.fromisoformat(ev.get("timestamp")).date().isoformat()
+        except Exception:
+            continue
+        if d in by_day and ev.get("type")=="add_patient":
+            by_day[d]["patients"] += 1
+
+    labels = sorted(by_day.keys())
+    minutes = [ round(by_day[d]["minutes"],2) for d in labels ]
+    patients = [ by_day[d]["patients"] for d in labels ]
+
+    return jsonify({
+        "total_time_minutes": total_minutes,
+        "avg_time_per_session_minutes": avg_per_session,
+        "percent_productive": percent_productive,
+        "visits_per_active_hour": visits_per_active_hour,
+        "time_vs_patients": {"labels": labels, "minutes": minutes, "patients": patients}
+    })
+
+# Finance metrics
+@app.route("/api/gaia/finance", methods=["GET"])
+@login_is_required
+def api_gaia_finance():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error":"not logged in"}), 401
+
+    dr = db.reference(f'/drs/{google_id}').get() or {}
+    patients = dr.get('patients', []) if isinstance(dr.get('patients', []), list) else []
+    total_revenue = 0.0
+    total_unpaid = 0.0
+    patient_revenue = {}
+
+    # iterate visits
+    for p in patients:
+        pid = p.get('id') or p.get('name','unknown')
+        for v in p.get('visits', []) or []:
+            payed = float(v.get('payed', 0) or 0)
+            debit = float(v.get('debit', 0) or 0)
+            total_revenue += payed
+            total_unpaid += debit
+            patient_revenue[pid] = patient_revenue.get(pid,0) + payed
+
+    avg_per_patient = round(total_revenue / (len(patients) or 1), 2)
+
+    # trend: aggregate by visit_date
+    trend_map = {}
+    for p in patients:
+        for v in p.get('visits', []) or []:
+            d = v.get('visit_date')
+            if not d: continue
+            trend_map.setdefault(d, {"rev":0.0, "unpaid":0.0})
+            trend_map[d]['rev'] += float(v.get('payed',0) or 0)
+            trend_map[d]['unpaid'] += float(v.get('debit',0) or 0)
+    trend_labels = sorted(trend_map.keys())
+    trend_revenue = [ round(trend_map[d]['rev'],2) for d in trend_labels ]
+    trend_unpaid = [ round(trend_map[d]['unpaid'],2) for d in trend_labels ]
+
+    return jsonify({
+        "total_revenue": round(total_revenue, 2),
+        "total_unpaid": round(total_unpaid, 2),
+        "avg_revenue_per_patient": avg_per_patient,
+        "trend": {"labels": trend_labels, "revenue": trend_revenue, "unpaid": trend_unpaid}
+    })
+
+# Patients metrics
+@app.route("/api/gaia/patients", methods=["GET"])
+@login_is_required
+def api_gaia_patients():
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error":"not logged in"}), 401
+
+    dr = db.reference(f'/drs/{google_id}').get() or {}
+    patients = dr.get('patients', []) if isinstance(dr.get('patients', []), list) else []
+
+    total_patients = len(patients)
+    returning = 0
+    visits_counts = []
+    new_this_month = 0
+    now = datetime.now()
+
+    diag_counter = Counter()
+    treatment_counter = Counter()
+    debt_patients = 0
+
+    weekly_map = {}  # week-start -> count
+    for p in patients:
+        vcount = len(p.get('visits', []) or [])
+        visits_counts.append(vcount)
+        if vcount > 1:
+            returning += 1
+        first_visit_date = None
+        if vcount:
+            # attempt to infer first visit date
+            try:
+                first_visit_date = p.get('visits', [])[0].get('visit_date')
+            except Exception:
+                first_visit_date = None
+        if first_visit_date:
+            try:
+                d = datetime.fromisoformat(first_visit_date).date()
+                if (now.date() - d).days <= 30:
+                    new_this_month += 1
+                # week label (ISO week start)
+                week_start = (d - timedelta(days=d.weekday())).isoformat()
+                weekly_map[week_start] = weekly_map.get(week_start, 0) + 1
+            except Exception:
+                pass
+
+        # debt check & top diagnoses
+        owes = False
+        for v in p.get('visits', []) or []:
+            if float(v.get('debit',0) or 0) > 0:
+                owes = True
+            diag = v.get('diagnosis')
+            treat = v.get('treatment')
+            if diag: diag_counter[diag] += 1
+            if treat: treatment_counter[treat] += 1
+        if owes:
+            debt_patients += 1
+
+    avg_visits_per_patient = round(sum(visits_counts) / (total_patients or 1), 2)
+
+    weekly_labels = sorted(weekly_map.keys())[-12:]  # last 12 weeks
+    weekly_counts = [weekly_map.get(l,0) for l in weekly_labels]
+
+    top_diagnoses = [{"name":k, "count":v} for k,v in diag_counter.most_common(8)]
+    top_treatments = [{"name":k, "count":v} for k,v in treatment_counter.most_common(8)]
+
+    return jsonify({
+        "total_patients": total_patients,
+        "returning_patients": returning,
+        "new_patients_month": new_this_month,
+        "avg_visits_per_patient": avg_visits_per_patient,
+        "weekly": {"labels": weekly_labels, "counts": weekly_counts},
+        "debt_patients": debt_patients,
+        "debt_ratio": round((debt_patients / (total_patients or 1)) * 100, 1),
+        "top_diagnoses": top_diagnoses,
+        "top_treatments": top_treatments,
+        "top_diagnoses_raw": top_diagnoses
+    })
+
+
 @app.route("/api/stats/roi", methods=["GET"])
 @login_is_required
 def api_stats_roi():
@@ -2897,7 +3173,6 @@ def api_stats_roi():
         "avg_hourly_rate": avg_hourly_rate
     })
 
-from datetime import datetime, timedelta
 @app.route("/api/stats/time", methods=["GET"])
 @login_is_required
 def api_stats_time_extended():
@@ -3400,6 +3675,9 @@ def get_visit_by_date():
         visit_data['payed']=visit_data['payed']*10
         visit_data['debit']=visit_data['debit']*10
         visit_data['coast']=visit_data['coast']*10
+
+    log_event(google_id, "search visit")
+    
     return jsonify(visit_data), 200
 
 @app.route('/insertVisit', methods=['POST'])
@@ -3684,6 +3962,7 @@ def gidupload_file(gid,patient_no):
 
         os.remove(file_path)  # Remove the local file
 
+        log_event(google_id, "file_upload")
         return jsonify({"message": "File uploaded successfully", "file_info": file_info}), 200
 
     except Exception as e:
