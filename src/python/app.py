@@ -2862,61 +2862,150 @@ def appointment_count():
 
 ########### Gaia First Look ############
 
-@app.route("/gaia_dashboard")
-@login_is_required
-def gaia_dashboard_page():
-    # renders the template above; your session & auth flow remains unchanged
-    return render_template("gaia_dashboard.html")
+def _parse_date_or_timestamp(s, default=None):
+    """Parse ISO date/datetime or unix timestamp string -> datetime.
+       Return default if parsing fails or s is falsy."""
+    if not s:
+        return default
+    # try ISO / fromisoformat first
+    try:
+        return datetime.fromisoformat(s)
+    except Exception:
+        pass
+    # try as date only (YYYY-MM-DD)
+    try:
+        return datetime.fromisoformat(s + "T00:00:00")
+    except Exception:
+        pass
+    # try numeric unix timestamp (seconds)
+    try:
+        ts = float(s)
+        return datetime.fromtimestamp(ts)
+    except Exception:
+        return default
 
-# ROI: hours saved, binder ROI, payback, tasks automated
+def _in_range_dt(dt, start_dt, end_dt):
+    if dt is None:
+        return False
+    return (start_dt is None or dt >= start_dt) and (end_dt is None or dt <= end_dt)
+
+def _patient_matches(patient_filter, obj):
+    """Return True if object matches patient filter. obj may be dict with various keys."""
+    if not patient_filter:
+        return True
+    if obj is None:
+        return False
+    # possible keys to check
+    for k in ("id", "patient_id", "patient", "name"):
+        v = obj.get(k) if isinstance(obj, dict) else None
+        if v is None:
+            # maybe obj is str
+            continue
+        if str(v) == str(patient_filter):
+            return True
+    # also check top-level string if obj is a string
+    if isinstance(obj, str) and obj == str(patient_filter):
+        return True
+    return False
+
+# --- ROI endpoint ---
 @app.route("/api/gaia/roi", methods=["GET"])
 @login_is_required
 def api_gaia_roi():
+    start = request.args.get("from")
+    end   = request.args.get("to")
+    patient = request.args.get("patient")
     google_id = session.get("google_id")
     if not google_id:
         return jsonify({"error":"not logged in"}), 401
 
-    # 1) time saved: reuse /time_tracking (same table used by track_time)
+    # parse date range; if none given, treat as unbounded (None)
+    start_dt = _parse_date_or_timestamp(start, None)
+    end_dt = _parse_date_or_timestamp(end, None)
+    if end_dt and start_dt and end_dt < start_dt:
+        # swap if reversed
+        start_dt, end_dt = end_dt, start_dt
+
+    # 1) time saved: filter by user, date-range and patient if provided
     time_logs = db.reference('/time_tracking').get() or {}
     total_seconds = 0.0
     for k, rec in (time_logs.items() if isinstance(time_logs, dict) else []):
         try:
-            if rec.get("user") == google_id:
-                total_seconds += float(rec.get("seconds", 0) or 0)
+            if rec.get("user") != google_id:
+                continue
+            # check patient match (if provided)
+            if patient:
+                # allow rec to include 'patient' or 'patient_id' or nested
+                if not any(str(rec.get(pk)) == str(patient) for pk in ("patient", "patient_id", "id", "name")):
+                    # try nested context
+                    if not _patient_matches(patient, rec):
+                        continue
+
+            # parse timestamp of the log (try iso or numeric)
+            ts = rec.get("timestamp")
+            ts_dt = _parse_date_or_timestamp(ts, None)
+            # include if within range (if no start/end then include)
+            if start_dt or end_dt:
+                if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
+                    continue
+
+            total_seconds += float(rec.get("seconds", 0) or 0)
         except Exception:
             continue
     hours_saved = round(total_seconds / 3600.0, 2)
 
-    # 2) tasks automated: count event types in /analytics for this user
+    # 2) tasks automated: count event types in /analytics for this user (filtered by date & patient)
     analytics = db.reference('/analytics').get() or {}
     tasks_counter = Counter()
     for k, ev in (analytics.items() if isinstance(analytics, dict) else []):
         try:
-            if ev.get("user") == google_id:
-                typ = ev.get("type", "other")
-                tasks_counter[typ] += 1
+            if ev.get("user") != google_id:
+                continue
+            # patient filter
+            if patient:
+                # support ev.patient, ev.patient_id, ev.get('meta',{}).get('patient')
+                if not any(str(ev.get(pk)) == str(patient) for pk in ("patient", "patient_id", "id", "name")):
+                    # try nested
+                    if not _patient_matches(patient, ev):
+                        continue
+
+            # date filter
+            ts = ev.get("timestamp")
+            ts_dt = _parse_date_or_timestamp(ts, None)
+            if start_dt or end_dt:
+                if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
+                    continue
+
+            typ = ev.get("type", "other")
+            tasks_counter[typ] += 1
         except Exception:
             continue
 
-    # 3) estimate money saved: use avg hourly rate (allow override via query param)
+    # 3) estimate money saved: avg hourly override allowed
     try:
-        avg_hourly = float(request.args.get("avg_hourly", 40))  # default $40/h
+        avg_hourly = float(request.args.get("avg_hourly", 40))
     except Exception:
         avg_hourly = 40.0
 
-    # 4) subscription price: infer from user plan (fallback to starter_price/pro_price/ultra_price)
+    # 4) subscription price
     user_doc = db.reference(f'/drs/{google_id}').get() or {}
     plan = user_doc.get('plan', 'free')
     plan_price_map = {"starter": starter_price, "pro": pro_price, "ultra": ultra_price, "basic": basicprice}
     subscription_price = float(plan_price_map.get(plan, 0))
 
     binder_roi = round(hours_saved * avg_hourly - subscription_price, 2)
-    payback_days = None
-    if hours_saved > 0 and avg_hourly > 0:
-        daily_hours = hours_saved / max(1, ( (datetime.now() - datetime.now()).days or 1 ))  # fallback safe; better: use recent-window logic
-        # simpler: estimate days to recoup by dividing subscription by daily saving (assume saving per month -> convert)
-        daily_savings = (hours_saved * avg_hourly) / max(1, 30)  # distribute monthly saving across 30 days
-        payback_days = int(subscription_price / (daily_savings or 1)) if daily_savings > 0 else None
+
+    # payback_days: compute using the date window length (if provided) or assume 30 days
+    window_days = None
+    if start_dt and end_dt:
+        # include both endpoints
+        window_days = max(1, (end_dt.date() - start_dt.date()).days)
+    else:
+        window_days = 30  # fallback
+
+    # daily savings = (hours_saved * avg_hourly) distributed across the window_days
+    daily_savings = (hours_saved * avg_hourly) / max(1, window_days)
+    payback_days = int(subscription_price / (daily_savings or 1)) if daily_savings > 0 else None
 
     return jsonify({
         "hours_saved": hours_saved,
@@ -2926,76 +3015,154 @@ def api_gaia_roi():
         "tasks": dict(tasks_counter)
     })
 
-# Productivity metrics
+
+# --- Productivity endpoint ---
 @app.route("/api/gaia/productivity", methods=["GET"])
 @login_is_required
 def api_gaia_productivity():
+    start = request.args.get("from")
+    end   = request.args.get("to")
+    patient = request.args.get("patient")
     google_id = session.get("google_id")
     if not google_id:
         return jsonify({"error":"not logged in"}), 401
+
+    start_dt = _parse_date_or_timestamp(start, None)
+    end_dt = _parse_date_or_timestamp(end, None)
+    if end_dt and start_dt and end_dt < start_dt:
+        start_dt, end_dt = end_dt, start_dt
 
     # gather time logs and analytics
     time_logs = db.reference('/time_tracking').get() or {}
     analytics = db.reference('/analytics').get() or {}
 
-    # total minutes
-    total_seconds = sum(float(l.get("seconds", 0) or 0) for k,l in (time_logs.items() if isinstance(time_logs, dict) else []) if l.get("user") == google_id)
+    # total minutes (filtered)
+    total_seconds = 0.0
+    for k,l in (time_logs.items() if isinstance(time_logs, dict) else []):
+        if l.get("user") != google_id: continue
+        # patient filter:
+        if patient:
+            if not any(str(l.get(pk)) == str(patient) for pk in ("patient","patient_id","id","name")):
+                if not _patient_matches(patient, l):
+                    continue
+        ts = l.get("timestamp")
+        ts_dt = _parse_date_or_timestamp(ts, None)
+        if start_dt or end_dt:
+            if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
+                continue
+        total_seconds += float(l.get("seconds", 0) or 0)
     total_minutes = round(total_seconds / 60.0, 2)
 
-    # sessions: naive grouping by timestamp date -> count
+    # sessions: grouping by date of logs within window (or all logs if no window)
     session_dates = set()
     for k,l in (time_logs.items() if isinstance(time_logs, dict) else []):
         if l.get("user") != google_id: continue
         ts = l.get("timestamp")
-        if ts:
-            try:
-                d = datetime.fromisoformat(ts).date().isoformat()
-                session_dates.add(d)
-            except Exception:
+        ts_dt = _parse_date_or_timestamp(ts, None)
+        if start_dt or end_dt:
+            if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
                 continue
+        if ts_dt:
+            session_dates.add(ts_dt.date().isoformat())
     session_count = max(1, len(session_dates))
     avg_per_session = round(total_minutes / session_count, 2)
 
-    # productive time heuristic: between 08:00 and 18:00 as working hours
+    # productive time heuristic: between 08:00 and 18:00
     productive_seconds = 0.0
     for k,l in (time_logs.items() if isinstance(time_logs, dict) else []):
         if l.get("user") != google_id: continue
+        # patient filter
+        if patient:
+            if not any(str(l.get(pk)) == str(patient) for pk in ("patient","patient_id","id","name")):
+                if not _patient_matches(patient, l):
+                    continue
         ts = l.get("timestamp")
-        if not ts: continue
-        try:
-            t = datetime.fromisoformat(ts)
-            if 8 <= t.hour < 18:
-                productive_seconds += float(l.get("seconds", 0) or 0)
-        except Exception:
-            continue
+        ts_dt = _parse_date_or_timestamp(ts, None)
+        if start_dt or end_dt:
+            if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
+                continue
+        if not ts_dt: continue
+        if 8 <= ts_dt.hour < 18:
+            productive_seconds += float(l.get("seconds", 0) or 0)
     percent_productive = round((productive_seconds / (total_seconds or 1)) * 100, 1)
 
     # visits created and visits per active hour
-    visits = sum(1 for k,ev in (analytics.items() if isinstance(analytics, dict) else []) if ev.get("user")==google_id and ev.get("type")=="add_visit")
-    # active hours = total_seconds / 3600
+    visits = 0
+    for k,ev in (analytics.items() if isinstance(analytics, dict) else []):
+        if ev.get("user") != google_id: continue
+        if ev.get("type") != "add_visit": continue
+        # patient filter
+        if patient:
+            matched = False
+            for pk in ("patient", "patient_id", "id", "name"):
+                if str(ev.get(pk)) == str(patient):
+                    matched = True
+                    break
+            if not matched and not _patient_matches(patient, ev):
+                continue
+        # date filter
+        ts = ev.get("timestamp")
+        ts_dt = _parse_date_or_timestamp(ts, None)
+        if start_dt or end_dt:
+            if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
+                continue
+        visits += 1
+
+    # active hours
     active_hours = max(0.01, total_seconds/3600.0)
     visits_per_active_hour = round(visits / active_hours, 2)
 
-    # time vs patients series (last 30 days)
+    # time vs patients series (use provided range or last 30 days)
     now = datetime.now()
     by_day = {}
+    # collect time logs into by_day
     for k,l in (time_logs.items() if isinstance(time_logs, dict) else []):
         if l.get("user") != google_id: continue
+        # patient filter
+        if patient:
+            if not any(str(l.get(pk)) == str(patient) for pk in ("patient","patient_id","id","name")):
+                if not _patient_matches(patient, l):
+                    continue
         try:
-            d = datetime.fromisoformat(l.get("timestamp")).date()
+            ts_dt = _parse_date_or_timestamp(l.get("timestamp"), None)
+            if not ts_dt:
+                continue
+            if start_dt or end_dt:
+                if not _in_range_dt(ts_dt, start_dt, end_dt):
+                    continue
+            # if no explicit range, limit to last 30 days
+            if not (start_dt or end_dt) and (now.date() - ts_dt.date()).days > 30:
+                continue
+            key = ts_dt.date().isoformat()
+            by_day.setdefault(key, {"minutes":0, "patients":0})
+            by_day[key]["minutes"] += float(l.get("seconds",0) or 0) / 60.0
         except Exception:
             continue
-        if (now.date() - d).days <= 30:
-            by_day.setdefault(d.isoformat(), {"minutes":0, "patients":0})
-            by_day[d.isoformat()]["minutes"] += float(l.get("seconds",0) or 0) / 60.0
+
+    # collect patient adds per-day from analytics
     for k,ev in (analytics.items() if isinstance(analytics, dict) else []):
-        if ev.get("user")!=google_id: continue
-        try:
-            d = datetime.fromisoformat(ev.get("timestamp")).date().isoformat()
-        except Exception:
+        if ev.get("user") != google_id: continue
+        if ev.get("type") != "add_patient": continue
+        # patient filter (if provided, only count if matches)
+        if patient:
+            matched = False
+            for pk in ("patient","patient_id","id","name"):
+                if str(ev.get(pk)) == str(patient):
+                    matched = True
+                    break
+            if not matched and not _patient_matches(patient, ev):
+                continue
+        ts_dt = _parse_date_or_timestamp(ev.get("timestamp"), None)
+        if not ts_dt:
             continue
-        if d in by_day and ev.get("type")=="add_patient":
-            by_day[d]["patients"] += 1
+        if start_dt or end_dt:
+            if not _in_range_dt(ts_dt, start_dt, end_dt):
+                continue
+        if not (start_dt or end_dt) and (now.date() - ts_dt.date()).days > 30:
+            continue
+        key = ts_dt.date().isoformat()
+        by_day.setdefault(key, {"minutes":0, "patients":0})
+        by_day[key]["patients"] += 1
 
     labels = sorted(by_day.keys())
     minutes = [ round(by_day[d]["minutes"],2) for d in labels ]
@@ -3009,13 +3176,23 @@ def api_gaia_productivity():
         "time_vs_patients": {"labels": labels, "minutes": minutes, "patients": patients}
     })
 
-# Finance metrics
+
+# --- Finance endpoint ---
 @app.route("/api/gaia/finance", methods=["GET"])
 @login_is_required
 def api_gaia_finance():
+    start = request.args.get("from")
+    end   = request.args.get("to")
+    patient = request.args.get("patient")
+
     google_id = session.get("google_id")
     if not google_id:
         return jsonify({"error":"not logged in"}), 401
+
+    start_dt = _parse_date_or_timestamp(start, None)
+    end_dt = _parse_date_or_timestamp(end, None)
+    if end_dt and start_dt and end_dt < start_dt:
+        start_dt, end_dt = end_dt, start_dt
 
     dr = db.reference(f'/drs/{google_id}').get() or {}
     patients = dr.get('patients', []) if isinstance(dr.get('patients', []), list) else []
@@ -3023,27 +3200,50 @@ def api_gaia_finance():
     total_unpaid = 0.0
     patient_revenue = {}
 
-    # iterate visits
+    # iterate patients and visits, apply date & patient filters
     for p in patients:
         pid = p.get('id') or p.get('name','unknown')
+        # if a patient filter exists and doesn't match this patient, skip entirely
+        if patient and str(pid) != str(patient) and str(p.get('name','')) != str(patient):
+            # also allow matching nested keys
+            if not _patient_matches(patient, p):
+                continue
         for v in p.get('visits', []) or []:
+            # filter by visit_date if provided
+            vdate = v.get('visit_date')
+            v_dt = _parse_date_or_timestamp(vdate, None)
+            if start_dt or end_dt:
+                if v_dt is None:
+                    # if visit has no date and a date filter is provided, skip it
+                    continue
+                if not _in_range_dt(v_dt, start_dt, end_dt):
+                    continue
+            # include this visit
             payed = float(v.get('payed', 0) or 0)
             debit = float(v.get('debit', 0) or 0)
             total_revenue += payed
             total_unpaid += debit
             patient_revenue[pid] = patient_revenue.get(pid,0) + payed
 
-    avg_per_patient = round(total_revenue / (len(patients) or 1), 2)
+    avg_per_patient = round(total_revenue / (len(patient_revenue) or 1), 2)
 
-    # trend: aggregate by visit_date
+    # trend: aggregate by visit_date (filtered)
     trend_map = {}
     for p in patients:
+        # skip patient if patient filter specified and doesn't match
+        if patient and not _patient_matches(patient, p):
+            continue
         for v in p.get('visits', []) or []:
             d = v.get('visit_date')
             if not d: continue
-            trend_map.setdefault(d, {"rev":0.0, "unpaid":0.0})
-            trend_map[d]['rev'] += float(v.get('payed',0) or 0)
-            trend_map[d]['unpaid'] += float(v.get('debit',0) or 0)
+            d_dt = _parse_date_or_timestamp(d, None)
+            if start_dt or end_dt:
+                if not d_dt or not _in_range_dt(d_dt, start_dt, end_dt):
+                    continue
+            key = d_dt.date().isoformat() if d_dt else d
+            trend_map.setdefault(key, {"rev":0.0, "unpaid":0.0})
+            trend_map[key]['rev'] += float(v.get('payed',0) or 0)
+            trend_map[key]['unpaid'] += float(v.get('debit',0) or 0)
     trend_labels = sorted(trend_map.keys())
     trend_revenue = [ round(trend_map[d]['rev'],2) for d in trend_labels ]
     trend_unpaid = [ round(trend_map[d]['unpaid'],2) for d in trend_labels ]
@@ -3055,18 +3255,28 @@ def api_gaia_finance():
         "trend": {"labels": trend_labels, "revenue": trend_revenue, "unpaid": trend_unpaid}
     })
 
-# Patients metrics
+
+# --- Patients endpoint ---
 @app.route("/api/gaia/patients", methods=["GET"])
 @login_is_required
 def api_gaia_patients():
+    start = request.args.get("from")
+    end   = request.args.get("to")
+    patient = request.args.get("patient")
     google_id = session.get("google_id")
     if not google_id:
         return jsonify({"error":"not logged in"}), 401
 
+    start_dt = _parse_date_or_timestamp(start, None)
+    end_dt = _parse_date_or_timestamp(end, None)
+    if end_dt and start_dt and end_dt < start_dt:
+        start_dt, end_dt = end_dt, start_dt
+
     dr = db.reference(f'/drs/{google_id}').get() or {}
     patients = dr.get('patients', []) if isinstance(dr.get('patients', []), list) else []
 
-    total_patients = len(patients)
+    # If a date range or patient filter is specified, consider only visits that match
+    total_patients_set = set()
     returning = 0
     visits_counts = []
     new_this_month = 0
@@ -3074,35 +3284,55 @@ def api_gaia_patients():
 
     diag_counter = Counter()
     treatment_counter = Counter()
-    debt_patients = 0
+    debt_patients_set = set()
 
     weekly_map = {}  # week-start -> count
+
     for p in patients:
-        vcount = len(p.get('visits', []) or [])
+        pid = p.get('id') or p.get('name','unknown')
+        # if patient filter present and doesn't match, skip full patient unless we want to include their visits only
+        if patient and not _patient_matches(patient, p):
+            continue
+
+        # filter this patient's visits by date window (if provided)
+        filtered_visits = []
+        for v in p.get('visits', []) or []:
+            vdate = v.get('visit_date')
+            v_dt = _parse_date_or_timestamp(vdate, None)
+            if start_dt or end_dt:
+                if not v_dt:
+                    # skip visits without date when a date filter is present
+                    continue
+                if not _in_range_dt(v_dt, start_dt, end_dt):
+                    continue
+            # if no explicit range, include all visits (behavior preserved)
+            filtered_visits.append((v, v_dt))
+
+        if not filtered_visits:
+            # if user asked to filter by patient explicitly, we still want to count patient if no date filter?
+            # We'll only count patients that have visits in the filtered window to be consistent.
+            continue
+
+        total_patients_set.add(pid)
+        vcount = len(filtered_visits)
         visits_counts.append(vcount)
         if vcount > 1:
             returning += 1
-        first_visit_date = None
-        if vcount:
-            # attempt to infer first visit date
-            try:
-                first_visit_date = p.get('visits', [])[0].get('visit_date')
-            except Exception:
-                first_visit_date = None
-        if first_visit_date:
-            try:
-                d = datetime.fromisoformat(first_visit_date).date()
-                if (now.date() - d).days <= 30:
-                    new_this_month += 1
-                # week label (ISO week start)
-                week_start = (d - timedelta(days=d.weekday())).isoformat()
-                weekly_map[week_start] = weekly_map.get(week_start, 0) + 1
-            except Exception:
-                pass
 
-        # debt check & top diagnoses
+        # first_visit_date: use earliest visit in filtered_visits
+        try:
+            first_dt = min((vd for (_, vd) in filtered_visits if vd is not None), default=None)
+            if first_dt:
+                if (now.date() - first_dt.date()).days <= 30:
+                    new_this_month += 1
+                week_start = (first_dt.date() - timedelta(days=first_dt.weekday())).isoformat()
+                weekly_map[week_start] = weekly_map.get(week_start, 0) + 1
+        except Exception:
+            pass
+
+        # diag, treatment, debt checks limited to filtered_visits
         owes = False
-        for v in p.get('visits', []) or []:
+        for v, v_dt in filtered_visits:
             if float(v.get('debit',0) or 0) > 0:
                 owes = True
             diag = v.get('diagnosis')
@@ -3110,15 +3340,18 @@ def api_gaia_patients():
             if diag: diag_counter[diag] += 1
             if treat: treatment_counter[treat] += 1
         if owes:
-            debt_patients += 1
+            debt_patients_set.add(pid)
 
+    total_patients = len(total_patients_set)
     avg_visits_per_patient = round(sum(visits_counts) / (total_patients or 1), 2)
 
-    weekly_labels = sorted(weekly_map.keys())[-12:]  # last 12 weeks
+    weekly_labels = sorted(weekly_map.keys())[-12:]  # last 12 weeks in filtered window
     weekly_counts = [weekly_map.get(l,0) for l in weekly_labels]
 
     top_diagnoses = [{"name":k, "count":v} for k,v in diag_counter.most_common(8)]
     top_treatments = [{"name":k, "count":v} for k,v in treatment_counter.most_common(8)]
+
+    debt_patients = len(debt_patients_set)
 
     return jsonify({
         "total_patients": total_patients,
@@ -3131,245 +3364,6 @@ def api_gaia_patients():
         "top_diagnoses": top_diagnoses,
         "top_treatments": top_treatments,
         "top_diagnoses_raw": top_diagnoses
-    })
-
-
-@app.route("/api/stats/roi", methods=["GET"])
-@login_is_required
-def api_stats_roi():
-    google_id = session.get("google_id")
-    if not google_id:
-        return jsonify({"error": "not logged in"}), 401
-
-    # Get time tracking
-    time_logs = db.reference('/time_tracking').get() or {}
-    user_logs = [v for v in time_logs.values() if v.get("user") == google_id]
-
-    total_seconds = sum(v.get("seconds", 0) for v in user_logs)
-    hours_saved = round(total_seconds / 3600 * 0.35, 2)  # assume 35% time saved
-    avg_hourly_rate = 40  # USD/hour
-    plan_prices = {"starter": 5, "pro": 25, "ultra": 125}
-
-    dr_ref = db.reference(f"/drs/{google_id}").get() or {}
-    plan = dr_ref.get("plan", "starter")
-    sub_price = plan_prices.get(plan, 5)
-    roi_value = round((hours_saved * avg_hourly_rate) - sub_price, 2)
-
-    # Analytics
-    analytics = db.reference('/analytics').get() or {}
-    events = [v for v in analytics.values() if v.get("user") == google_id]
-    searches = len([e for e in events if e.get("type") == "search"])
-    patients_added = len([e for e in events if e.get("type") == "add_patient"])
-    visits_created = len([e for e in events if e.get("type") == "add_visit"])
-
-    return jsonify({
-        "plan": plan,
-        "subscription_cost": sub_price,
-        "hours_saved": hours_saved,
-        "roi_usd": roi_value,
-        "searches": searches,
-        "patients_added": patients_added,
-        "visits_created": visits_created,
-        "avg_hourly_rate": avg_hourly_rate
-    })
-
-@app.route("/api/stats/time", methods=["GET"])
-@login_is_required
-def api_stats_time_extended():
-    google_id = session.get("google_id")
-    if not google_id:
-        return jsonify({"error":"not logged in"}), 401
-
-    time_logs = db.reference('/time_tracking').get() or {}
-    user_logs = []
-    daily_sessions = {}
-    for v in time_logs.values():
-        if v.get("user") == google_id and "timestamp" in v:
-            try:
-                ts = datetime.fromisoformat(v["timestamp"])
-            except Exception:
-                continue
-            day = ts.date()
-            daily_sessions.setdefault(day, []).append((ts, v))
-
-    # merge consecutive sessions as you currently do
-    merged_logs = []
-    for day, sessions in daily_sessions.items():
-        sessions.sort()
-        merged=[]
-        for ts, v in sessions:
-            if not merged:
-                merged.append({"start": ts, "end": ts, "seconds": v.get("seconds",0)})
-            else:
-                prev = merged[-1]
-                gap = (ts - prev["end"]).total_seconds()
-                if gap <= 600:
-                    prev["end"] = ts
-                    prev["seconds"] += v.get("seconds",0)
-                else:
-                    merged.append({"start": ts, "end": ts, "seconds": v.get("seconds",0)})
-        merged_logs.extend(merged)
-
-    # build sessions array to return
-    sessions_out = []
-    for s in merged_logs:
-        sessions_out.append({
-            "start": s["start"].isoformat(),
-            "seconds": s.get("seconds",0),
-            "minutes": round(s.get("seconds",0)/60,1)
-        })
-
-    # build last-30-days daily series
-    today = datetime.utcnow().date()
-    days = [today - timedelta(days=i) for i in range(29, -1, -1)]
-    series = []
-    for d in days:
-        day_str = d.isoformat()
-        s = [x for x in merged_logs if x["start"].date() == d]
-        series.append({"date": day_str, "sessions": len(s), "total_seconds": sum(x.get("seconds",0) for x in s)})
-
-    total_seconds = sum(s.get("seconds",0) for s in merged_logs)
-    total_hours = round(total_seconds / 3600, 2)
-    sessions_count = len(merged_logs)
-    avg_session_minutes = round((total_seconds / sessions_count)/60 if sessions_count else 0, 1)
-
-    # visits_created (recomputed from analytics)
-    analytics = db.reference('/analytics').get() or {}
-    events = [v for v in analytics.values() if v.get("user") == google_id]
-    visits_created = len([e for e in events if e.get("type") == "add_visit"])
-
-    return jsonify({
-        "total_hours": total_hours,
-        "sessions": sessions_count,
-        "avg_session_minutes": avg_session_minutes,
-        "visits_per_hour": round(visits_created / (total_hours or 1), 2),
-        "visits_created": visits_created,
-        "sessions": sessions_out,   # array for client table
-        "series": series            # daily series for charts
-    })
-
-@app.route("/api/stats/financials", methods=["GET"])
-@login_is_required
-def api_stats_financials_series():
-    google_id = session.get("google_id")
-    if not google_id:
-        return jsonify({"error":"not logged in"}), 401
-
-    doctor_data = db.reference(f"/drs/{google_id}/patients").get() or []
-    # compute totals
-    total_revenue = 0.0
-    total_unpaid = 0.0
-    patients_count = len(doctor_data)
-    visits_count = 0
-
-    daily = {}
-    for patient in doctor_data:
-        visits = patient.get("visits", [])
-        for v in visits:
-            dstr = v.get("visit_date", "")[:10]
-            paid = float(v.get("payed", 0) or 0)
-            debit = float(v.get("debit", 0) or 0)
-            total_revenue += paid
-            total_unpaid += debit
-            visits_count += 1
-            daily.setdefault(dstr, {"paid":0.0,"unpaid":0.0, "revenue":0.0})
-            daily[dstr]["paid"] += paid
-            daily[dstr]["unpaid"] += debit
-            daily[dstr]["revenue"] += paid
-
-    # last 30 days series
-    from datetime import date, timedelta
-    today = date.today()
-    days = [(today - timedelta(days=i)).isoformat() for i in range(29, -1, -1)]
-    series = []
-    for d in days:
-        s = daily.get(d, {"paid":0.0,"unpaid":0.0,"revenue":0.0})
-        series.append({"date":d, "paid": round(s["paid"],2), "unpaid": round(s["unpaid"],2), "revenue": round(s["revenue"],2)})
-
-    avg_revenue_per_patient = round(total_revenue / (patients_count or 1), 2)
-    avg_revenue_per_visit = round(total_revenue / (visits_count or 1), 2)
-    unpaid_ratio = round((total_unpaid / (total_unpaid + total_revenue + 1e-6)) * 100, 1)
-
-    return jsonify({
-        "total_revenue": round(total_revenue,2),
-        "total_unpaid": round(total_unpaid,2),
-        "avg_revenue_per_patient": avg_revenue_per_patient,
-        "avg_revenue_per_visit": avg_revenue_per_visit,
-        "patients_count": patients_count,
-        "visits_count": visits_count,
-        "unpaid_ratio": unpaid_ratio,
-        "series": series
-    })
-
-@app.route("/api/stats/patients", methods=["GET"])
-@login_is_required
-def api_stats_patients():
-    google_id = session.get("google_id")
-    if not google_id:
-        return jsonify({"error": "not logged in"}), 401
-
-    doctor_data = db.reference(f"/drs/{google_id}/patients").get() or {}
-
-    total_patients = len(doctor_data)
-    new_patients_month = 0
-    returning_patients = 0
-    debt_patients = 0
-    now = datetime.now()
-
-    for patient in doctor_data:
-        visits = patient.get("visits", [])
-        if not visits:
-            continue
-        first_visit = visits[0].get("visit_date")
-        if first_visit:
-            try:
-                dt = datetime.fromisoformat(first_visit)
-                if dt.month == now.month and dt.year == now.year:
-                    new_patients_month += 1
-            except Exception:
-                pass
-        if len(visits) > 1:
-            returning_patients += 1
-        if any(float(v.get("debit", 0)) > 0 for v in visits):
-            debt_patients += 1
-
-    return jsonify({
-        "total_patients": total_patients,
-        "new_patients_month": new_patients_month,
-        "returning_patients": returning_patients,
-        "debt_patients": debt_patients,
-        "retention_rate": round((returning_patients / (total_patients or 1)) * 100, 1),
-        "debt_ratio": round((debt_patients / (total_patients or 1)) * 100, 1)
-    })
-
-@app.route("/api/stats/impact", methods=["GET"])
-@login_is_required
-def api_stats_impact():
-    google_id = session.get("google_id")
-    if not google_id:
-        return jsonify({"error": "not logged in"}), 401
-
-    # Hypothetical “efficiency” values based on app usage
-    analytics = db.reference('/analytics').get() or {}
-    events = [v for v in analytics.values() if v.get("user") == google_id]
-    visits_created = len([e for e in events if e.get("type") == "add_visit"])
-    patients_added = len([e for e in events if e.get("type") == "add_patient"])
-    searches = len([e for e in events if e.get("type") == "search"])
-
-    binder_speed = 1.2  # minutes per patient
-    paper_speed = 3.5
-    efficiency_gain = round(((paper_speed - binder_speed) / paper_speed) * 100, 1)
-
-    return jsonify({
-        "patients_added": patients_added,
-        "visits_created": visits_created,
-        "searches": searches,
-        "binder_speed_min": binder_speed,
-        "paper_speed_min": paper_speed,
-        "efficiency_gain_percent": efficiency_gain,
-        "avg_time_saved_per_patient_min": round(paper_speed - binder_speed, 2),
-        "errors_reduced_percent": 75,
-        "avg_patients_per_day_gain": 78
     })
 
 @app.route('/tst')
