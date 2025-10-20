@@ -124,6 +124,15 @@
   </main>
 
   <script>
+    function hexToRgba(hex, alpha=1) {
+      if (!hex) return `rgba(0,0,0,${alpha})`;
+      const h = hex.replace('#','').trim();
+      const bigint = parseInt(h.length === 3 ? h.split('').map(ch=>ch+ch).join('') : h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
     // ===== Utilities =====
     const fmtMoney = v => typeof v === 'number' ? '$' + v.toFixed(2) : v;
 
@@ -133,6 +142,20 @@
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
       return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // read CSS variable
+    function getCssVar(name, fallback = '') {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(name);
+      return (val || fallback).trim();
+    }
+
+    // build a gradient from any 2d context and a hex color
+    function makeGradientFromCtx(ctx, hex) {
+      const g = ctx.createLinearGradient(0, 0, 0, 220);
+      g.addColorStop(0, hexToRgba(hex, 0.92));
+      g.addColorStop(1, hexToRgba(hex, 0.08));
+      return g;
     }
 
     // ===== Default filter object (will be set to last 7 days) =====
@@ -197,7 +220,6 @@
           });
         } else {
           // fallback: if /api/gaia/patients returns aggregated object, try to extract patient keys
-          // (safe no-op if not present)
           const maybePatients = (data?.patients || data?.top_patients || []);
           if (Array.isArray(maybePatients)) {
             maybePatients.forEach(p=>{
@@ -233,7 +255,9 @@
       const el = document.getElementById(id);
       if (!el) return null;
       if (charts[id]) return charts[id];
-      charts[id] = new Chart(el.getContext('2d'), Object.assign({ type, data:{labels:[], datasets:[]}}, opts||{}));
+      // Chart.js requires a canvas context
+      const ctx = el.getContext('2d');
+      charts[id] = new Chart(ctx, Object.assign({ type, data:{labels:[], datasets:[]}}, opts||{}));
       return charts[id];
     }
 
@@ -241,6 +265,7 @@
     async function loadTab(tab) {
       const qs = buildQsFromFilters();
       const url = `/api/gaia/${tab}${qs ? '?' + qs : ''}`;
+
       try {
         const res = await fetch(url);
         if (!res.ok) {
@@ -267,36 +292,84 @@
           document.getElementById('prod-avg-session').innerText = (data.avg_time_per_session_minutes || 0) + ' mins';
           document.getElementById('prod-productive').innerText = (data.percent_productive || 0) + '%';
           document.getElementById('prod-visits-hour').innerText = (data.visits_per_active_hour || 0) + ' visits/hr';
+
           const ch = ensureChart('prod-time-vs-patients', 'line', { options: { responsive: true, maintainAspectRatio: false } });
-          ch.data.labels = data.time_vs_patients?.labels || [];
-          ch.data.datasets = [
-            { label: 'Minutes', data: data.time_vs_patients?.minutes || [], borderWidth: 2 },
-            { label: 'Patients Added', data: data.time_vs_patients?.patients || [], borderWidth: 2 }
-          ];
-          ch.update();
+          if (ch) {
+            ch.data.labels = data.time_vs_patients?.labels || [];
+            // make gradients using the chart's canvas context
+            const ctx = ch.canvas.getContext('2d');
+            const secondaryColor = getCssVar('--secondary', '#78cee6');
+            const accentColor = getCssVar('--accent', '#ce7a35');
+            const lineGradDebit = makeGradientFromCtx(ctx, secondaryColor);
+            const lineGradPayed = makeGradientFromCtx(ctx, accentColor);
+
+            ch.data.datasets = [
+              { label: 'Minutes', data: data.time_vs_patients?.minutes || [], borderWidth: 2,
+                borderColor: hexToRgba(secondaryColor, 1),
+                backgroundColor: lineGradDebit, fill: true },
+              { label: 'Patients Added', data: data.time_vs_patients?.patients || [], borderWidth: 2,
+                borderColor: hexToRgba(accentColor, 1),
+                backgroundColor: lineGradPayed, fill: true }
+            ];
+            ch.update();
+          }
         }
 
         if (tab === 'finance') {
           document.getElementById('fin-total-rev').innerText = fmtMoney(data.total_revenue || 0);
           document.getElementById('fin-unpaid').innerText = fmtMoney(data.total_unpaid || 0);
           document.getElementById('fin-avg-per-patient').innerText = fmtMoney(data.avg_revenue_per_patient || 0);
+
           const ch = ensureChart('fin-revenue-trend', 'line', { options: { responsive: true, maintainAspectRatio: false } });
-          ch.data.labels = data.trend?.labels || [];
-          ch.data.datasets = [
-            { label: 'Revenue', data: data.trend?.revenue || [], borderWidth: 2, fill: true },
-            { label: 'Unpaid', data: data.trend?.unpaid || [], borderWidth: 2, fill: true }
-          ];
-          ch.update();
+          if (ch) {
+            ch.data.labels = data.trend?.labels || [];
+            const ctx = ch.canvas.getContext('2d');
+            const secondaryColor = getCssVar('--secondary', '#78cee6');
+            const accentColor = getCssVar('--accent', '#ce7a35');
+            const lineGradDebit = makeGradientFromCtx(ctx, secondaryColor);
+            const lineGradPayed = makeGradientFromCtx(ctx, accentColor);
+
+            ch.data.datasets = [
+              { label: 'Revenue', data: data.trend?.revenue || [], borderWidth: 2, fill: true,
+                borderColor: hexToRgba(secondaryColor, 1),
+                backgroundColor: lineGradDebit },
+              { label: 'Unpaid', data: data.trend?.unpaid || [], borderWidth: 2, fill: true,
+                borderColor: hexToRgba(accentColor, 1),
+                backgroundColor: lineGradPayed }
+            ];
+            ch.update();
+          }
         }
 
         if (tab === 'patients') {
           document.getElementById('pat-total').innerText = data.total_patients || 0;
           document.getElementById('pat-returning').innerText = data.returning_patients || 0;
           document.getElementById('pat-avg-visits').innerText = (data.avg_visits_per_patient || 0).toFixed(2);
+
           const ch = ensureChart('pat-weekly', 'bar', { options: { responsive: true, maintainAspectRatio: false } });
-          ch.data.labels = data.weekly?.labels || [];
-          ch.data.datasets = [{ label: 'New Patients', data: data.weekly?.counts || [], borderWidth: 1 }];
-          ch.update();
+          if (ch) {
+            ch.data.labels = data.weekly?.labels || [];
+            const ctx = ch.canvas.getContext('2d');
+            const secondaryColor = getCssVar('--secondary', '#78cee6');
+            const accentColor = getCssVar('--accent', '#ce7a35');
+            const lineGradDebit = makeGradientFromCtx(ctx, secondaryColor);
+            const lineGradPayed = makeGradientFromCtx(ctx, accentColor);
+
+            // returning patients per week: prefer an array from the API, else fallback to a same-length array of the scalar returning_patients
+            const returningWeekly = data.weekly?.returning_counts ||
+              (Array.isArray(data.weekly?.counts) ? new Array(data.weekly.counts.length).fill(data.returning_patients || 0) : []);
+
+            ch.data.datasets = [
+              { label: 'New Patients', data: data.weekly?.counts || [], borderWidth: 1 , fill: true,
+                borderColor: hexToRgba(secondaryColor, 1),
+                backgroundColor: lineGradDebit },
+              { label: 'Returning Patients', data: returningWeekly, borderWidth: 1, fill: true,
+                borderColor: hexToRgba(accentColor, 1),
+                backgroundColor: lineGradPayed }
+            ];
+            ch.update();
+          }
+
           const list = document.getElementById('pat-top-list'); list.innerHTML = '';
           (data.top_diagnoses || []).forEach(x => {
             const e = document.createElement('div'); e.innerText = `${x.name} — ${x.count}`; list.appendChild(e);
