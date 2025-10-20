@@ -1354,7 +1354,7 @@ def done():
             if 'sec' in session:
                 return redirect("/check_bcode")
             else:
-                log_event(session['google_id'], "login", {"binder": session.get("binder")})
+                log_event(session['google_id'], "Login", {"binder": session.get("binder")})
                 return redirect("/home_page")
         except Exception as e:
             return render_template("errors.html",msg=str(e),err='Unexpected')
@@ -2340,7 +2340,7 @@ def add_patient():
 
     drs_ref.child(google_id).set(user_data)
 
-    log_event(session['google_id'], "new_patient", {"patient_id": nno})
+    log_event(session['google_id'], "New Patient", {"patient_id": nno})
     return jsonify({"message": "Patient added successfully"}), 200
 
 @app.route('/ssearch', methods=['POST']) #'''need place holder if the typee is not drs'''
@@ -2456,8 +2456,8 @@ def ssearch():
 
             # Add patient to matched_patients if they meet the criteria
             matched_patients.append(patient)
-        
-        log_event(google_id, "stats")
+
+        log_event(google_id, "Stats Shown")
         return jsonify({
             'total_customers': total_customers,
             'unpaid_customers': unpaid_customers,
@@ -2586,8 +2586,8 @@ def searchh_stats():
 
             # Add patient to matched_patients if they meet the criteria
             matched_patients.append(patient)
-        
-        log_event(google_id, "stats_patient")
+
+        log_event(google_id, "Stats Patients Shown")
         return jsonify(matched_patients), 200#return jsonify(matched_patients), 200
 
     except Exception as e:
@@ -2862,25 +2862,17 @@ def appointment_count():
 
 ########### Gaia First Look ############
 
-def _parse_date_or_timestamp(s, default=None):
-    """Parse ISO date/datetime or unix timestamp string -> datetime.
-       Return default if parsing fails or s is falsy."""
-    if not s:
+def _parse_date_or_timestamp(value, default=None):
+    if not value:
         return default
-    # try ISO / fromisoformat first
     try:
-        return datetime.fromisoformat(s)
-    except Exception:
-        pass
-    # try as date only (YYYY-MM-DD)
-    try:
-        return datetime.fromisoformat(s + "T00:00:00")
-    except Exception:
-        pass
-    # try numeric unix timestamp (seconds)
-    try:
-        ts = float(s)
-        return datetime.fromtimestamp(ts)
+        if isinstance(value, (int, float)):
+            return datetime.fromtimestamp(float(value))
+        if isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value.replace("Z", "+00:00"))
+            except Exception:
+                return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
     except Exception:
         return default
 
@@ -2917,77 +2909,88 @@ def api_gaia_roi():
     patient = request.args.get("patient")
     google_id = session.get("google_id")
     if not google_id:
-        return jsonify({"error":"not logged in"}), 401
+        return jsonify({"error": "not logged in"}), 401
 
-    # parse date range; if none given, treat as unbounded (None)
+    # Parse date range
     start_dt = _parse_date_or_timestamp(start, None)
     end_dt = _parse_date_or_timestamp(end, None)
+
+    # if only a date (no time) was provided, make end_dt include the whole day
+    if end_dt and end_dt.time() == datetime.min.time():
+        end_dt = end_dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+
     if end_dt and start_dt and end_dt < start_dt:
-        # swap if reversed
         start_dt, end_dt = end_dt, start_dt
 
-    # 1) time saved: filter by user, date-range and patient if provided
+    IGNORED_TYPES = ["page viewed"]
+
+    # 1) Time saved
     time_logs = db.reference('/time_tracking').get() or {}
     total_seconds = 0.0
     for k, rec in (time_logs.items() if isinstance(time_logs, dict) else []):
         try:
             if rec.get("user") != google_id:
                 continue
-            # check patient match (if provided)
-            if patient:
-                # allow rec to include 'patient' or 'patient_id' or nested
-                if not any(str(rec.get(pk)) == str(patient) for pk in ("patient", "patient_id", "id", "name")):
-                    # try nested context
-                    if not _patient_matches(patient, rec):
-                        continue
+            if rec.get("type") in IGNORED_TYPES:
+                continue
 
-            # parse timestamp of the log (try iso or numeric)
+            # ✅ Only check patient match if record has patient fields
+            if patient:
+                patient_fields = [rec.get(pk) for pk in ("patient", "patient_id", "id", "name")]
+                if any(patient_fields):  # only filter if patient info exists
+                    if not any(str(v) == str(patient) for v in patient_fields if v):
+                        if not _patient_matches(patient, rec):
+                            continue
+
+            # Date filtering
             ts = rec.get("timestamp")
             ts_dt = _parse_date_or_timestamp(ts, None)
-            # include if within range (if no start/end then include)
-            if start_dt or end_dt:
-                if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
-                    continue
+            if (start_dt or end_dt) and (not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt)):
+                continue
 
             total_seconds += float(rec.get("seconds", 0) or 0)
         except Exception:
             continue
+
     hours_saved = round(total_seconds / 3600.0, 2)
 
-    # 2) tasks automated: count event types in /analytics for this user (filtered by date & patient)
+    # 2) Tasks automated
     analytics = db.reference('/analytics').get() or {}
     tasks_counter = Counter()
     for k, ev in (analytics.items() if isinstance(analytics, dict) else []):
         try:
             if ev.get("user") != google_id:
                 continue
-            # patient filter
-            if patient:
-                # support ev.patient, ev.patient_id, ev.get('meta',{}).get('patient')
-                if not any(str(ev.get(pk)) == str(patient) for pk in ("patient", "patient_id", "id", "name")):
-                    # try nested
-                    if not _patient_matches(patient, ev):
-                        continue
+            if ev.get("type") in IGNORED_TYPES:
+                continue
 
-            # date filter
+            # ✅ Only apply patient filter if event has patient info
+            if patient:
+                patient_fields = [ev.get(pk) for pk in ("patient", "patient_id", "id", "name")]
+                if any(patient_fields):  # event has patient info
+                    if not any(str(v) == str(patient) for v in patient_fields if v):
+                        if not _patient_matches(patient, ev):
+                            continue
+                # else: event has no patient info → keep it
+
+            # Date filter
             ts = ev.get("timestamp")
             ts_dt = _parse_date_or_timestamp(ts, None)
-            if start_dt or end_dt:
-                if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
-                    continue
+            if (start_dt or end_dt) and (not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt)):
+                continue
 
             typ = ev.get("type", "other")
             tasks_counter[typ] += 1
         except Exception:
             continue
 
-    # 3) estimate money saved: avg hourly override allowed
+    # 3) Money saved
     try:
-        avg_hourly = float(request.args.get("avg_hourly", 40))
+        avg_hourly = float(request.args.get("avg_hourly", 50))
     except Exception:
-        avg_hourly = 40.0
+        avg_hourly = 50.0
 
-    # 4) subscription price
+    # 4) Subscription price
     user_doc = db.reference(f'/drs/{google_id}').get() or {}
     plan = user_doc.get('plan', 'free')
     plan_price_map = {"starter": starter_price, "pro": pro_price, "ultra": ultra_price, "basic": basicprice}
@@ -2995,15 +2998,12 @@ def api_gaia_roi():
 
     binder_roi = round(hours_saved * avg_hourly - subscription_price, 2)
 
-    # payback_days: compute using the date window length (if provided) or assume 30 days
-    window_days = None
+    # Payback period
     if start_dt and end_dt:
-        # include both endpoints
         window_days = max(1, (end_dt.date() - start_dt.date()).days)
     else:
-        window_days = 30  # fallback
+        window_days = 30
 
-    # daily savings = (hours_saved * avg_hourly) distributed across the window_days
     daily_savings = (hours_saved * avg_hourly) / max(1, window_days)
     payback_days = int(subscription_price / (daily_savings or 1)) if daily_savings > 0 else None
 
@@ -3014,7 +3014,6 @@ def api_gaia_roi():
         "payback_days": payback_days,
         "tasks": dict(tasks_counter)
     })
-
 
 # --- Productivity endpoint ---
 @app.route("/api/gaia/productivity", methods=["GET"])
@@ -3090,7 +3089,7 @@ def api_gaia_productivity():
     visits = 0
     for k,ev in (analytics.items() if isinstance(analytics, dict) else []):
         if ev.get("user") != google_id: continue
-        if ev.get("type") != "add_visit": continue
+        if ev.get("type") != "New Visit": continue
         # patient filter
         if patient:
             matched = False
@@ -3142,7 +3141,7 @@ def api_gaia_productivity():
     # collect patient adds per-day from analytics
     for k,ev in (analytics.items() if isinstance(analytics, dict) else []):
         if ev.get("user") != google_id: continue
-        if ev.get("type") != "add_patient": continue
+        if ev.get("type") != "New Patient": continue
         # patient filter (if provided, only count if matches)
         if patient:
             matched = False
@@ -3670,7 +3669,7 @@ def get_visit_by_date():
         visit_data['debit']=visit_data['debit']*10
         visit_data['coast']=visit_data['coast']*10
 
-    log_event(google_id, "search visit")
+    log_event(google_id, "Search Visit")
     
     return jsonify(visit_data), 200
 
@@ -3708,7 +3707,7 @@ def insert_visit():
     
     drs_ref.child(google_id).set(user_data)
 
-    log_event(session['google_id'], "new_visit", {"patient_id": patient_no})
+    log_event(session['google_id'], "New Visit", {"patient_id": patient_no})
     return jsonify({"message": "Visit added successfully"}), 200
 
 @app.route('/updateVisit', methods=['POST'])
@@ -3809,7 +3808,7 @@ def kprint():
     patient['dr']=dr['settings'].get("drname", dr['name'])
     file_stream, filename = create_patient_document(patient)
 
-    log_event(session['google_id'], "print_document", {"type": "patient"})
+    log_event(session['google_id'], "Printed Document", {"type": "patient"})
     # Send the file to the user for download without saving it to disk
     return send_file(file_stream, as_attachment=True, download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
@@ -3841,7 +3840,7 @@ def kkprint():
     
     v_ref.set(visit)
 
-    log_event(session['google_id'], "print_document", {"type": "visit"})
+    log_event(session['google_id'], "Printed Document", {"type": "visit"})
     # Send the file to the user for download
     return send_file(file_stream, as_attachment=True, download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
@@ -3956,7 +3955,7 @@ def gidupload_file(gid,patient_no):
 
         os.remove(file_path)  # Remove the local file
 
-        log_event(google_id, "file_upload")
+        log_event(google_id, "File Upload")
         return jsonify({"message": "File uploaded successfully", "file_info": file_info}), 200
 
     except Exception as e:
