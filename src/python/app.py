@@ -2906,6 +2906,10 @@ def _patient_matches(patient_filter, obj):
 def api_gaia_roi():
     start = request.args.get("from")
     end   = request.args.get("to")
+    
+    session["startDate"] = start
+    session["endDate"] = end
+
     patient = request.args.get("patient")
     google_id = session.get("google_id")
     if not google_id:
@@ -3021,6 +3025,8 @@ def api_gaia_roi():
 def api_gaia_productivity():
     start = request.args.get("from")
     end   = request.args.get("to")
+    session["startDate"] = start
+    session["endDate"] = end
     patient = request.args.get("patient")
     google_id = session.get("google_id")
     if not google_id:
@@ -3182,6 +3188,8 @@ def api_gaia_productivity():
 def api_gaia_finance():
     start = request.args.get("from")
     end   = request.args.get("to")
+    session["startDate"] = start
+    session["endDate"] = end
     patient = request.args.get("patient")
 
     google_id = session.get("google_id")
@@ -3261,6 +3269,8 @@ def api_gaia_finance():
 def api_gaia_patients():
     start = request.args.get("from")
     end   = request.args.get("to")
+    session["startDate"] = start
+    session["endDate"] = end
     patient = request.args.get("patient")
     google_id = session.get("google_id")
     if not google_id:

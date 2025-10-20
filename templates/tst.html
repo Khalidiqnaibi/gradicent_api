@@ -1,12 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>GAIA Analytics — Binder Medical Dashboard</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <title>Binder Medical</title>
 
-  <!-- Tailwind + Chart.js -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -61,7 +64,7 @@
   </style>
 </head>
 <body>
-
+  <main>
   <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
@@ -119,9 +122,8 @@
     </div>
   </div>
 
-  <main>
     <header class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3">
-      <h1 class="text-2xl font-semibold">Stats & Analytics</h1>
+      <h1 class="text-2xl font-semibold"></h1>
     </header>
 
     <!-- Tabs -->
@@ -142,12 +144,6 @@
         <label class="flex items-center gap-1 text-sm">
           <span>To:</span>
           <input type="date" id="dateTo" class="border rounded p-1 text-sm">
-        </label>
-        <label class="flex items-center gap-1 text-sm">
-          <span>Patient:</span>
-          <select id="patientSelect" class="border rounded p-1 text-sm">
-            <option value="">All</option>
-          </select>
         </label>
         <button type="submit" class="px-3 py-1 rounded bg-[var(--accent)] text-white text-sm">Apply</button>
       </form>
@@ -210,7 +206,7 @@
       </div>
     </section>
 
-    <footer class="mt-6 text-sm text-gray-700 text-center">Stats powered by GAIA Analytics</footer>
+    <footer class="mt-6 text-sm text-gray-700 text-center">Powered by GAIA Analytics</footer>
   </main>
 
   <script>
@@ -218,6 +214,14 @@
     function showpats() {
       window.location.href = `/search_stats`;
     }
+
+    setInterval(() => {
+      fetch("/track_time", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({seconds: 60})
+      });
+    }, 60000); // log 1 min active time
 
     function hexToRgba(hex, alpha=1) {
       if (!hex) return `rgba(0,0,0,${alpha})`;
@@ -268,8 +272,6 @@
       filters.to = toStr;
       document.getElementById('dateFrom').value = fromStr;
       document.getElementById('dateTo').value = toStr;
-      // patient remains null/unset until user picks
-      document.getElementById('patientSelect').value = '';
     }
 
     // wire form submit to update filters and reload

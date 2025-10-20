@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -9,28 +9,22 @@
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    :root{
-      --bg-main: #D9C4B0;
-      --accent:  #ce7a35;
+    :root {
+      --bg-main:#D9C4B0;
+      --accent:#ce7a35;
       --secondary:#78cee6;
-      --w: white;
-      --text: #2b2b2b;
+      --text:#2b2b2b;
     }
-
-    /* Global layout fixes to prevent overflow */
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body { height: 100%; overflow-x: hidden; }
     body {
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: linear-gradient(180deg, var(--bg-main) 0%, #E6D6C0 60%);
-      color: var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto;
+      background: linear-gradient(180deg, var(--bg-main), #E6D6C0);
+      color:var(--text);
+      min-height:100vh;
     }
-
     /* Hamburger + slide menu */
     .menu__btn span,
     .menu__btn span::before,
@@ -61,38 +55,16 @@
     .menu-active .menu__btn span::before { top:0; transform: rotate(90deg); }
     .menu-active .menu__btn span::after { opacity:0; }
 
-    /* Small niceties for chart canvases in older CSS-only layout */
-    canvas { border-radius: 10px; }
-
-    /* Toggle styles tuned to palette */
-    .checkbox-wrapper-3 .toggle:before {
-      background: #9A9999;
-    }
-    .checkbox-wrapper-3 #show-date:checked + .toggle:before,
-    .checkbox-wrapper-3 #show-visit-info:checked + .toggle:before {
-      background: var(--secondary);
-    }
-    .checkbox-wrapper-3 #show-date:checked + .toggle span,
-    .checkbox-wrapper-3 #show-visit-info:checked + .toggle span {
-      background: #fff;
-      transform: translateX(20px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    }
-
-    /* Decorative card style */
-    .decorative-card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.68));
-      border: 1px solid rgba(0,0,0,0.04);
-      box-shadow: 0 8px 28px rgba(18,18,18,0.06);
-    }
-    main {
-        max-height: 100%;
-        overflow-y: auto;
-    }
+    .tab-btn { padding:.6rem 1rem; border-radius:999px; cursor:pointer; transition:.2s; }
+    .active-tab { background:var(--accent); color:#fff; }
+    .card { background:rgba(255,255,255,0.92); border-radius:12px; padding:1rem; box-shadow:0 4px 14px rgba(0,0,0,0.05); }
+    .card h3 { font-weight:600; font-size:.9rem; }
+    main { padding:2rem; max-width:1250px; margin:auto; }
+    canvas { max-height:320px; }
   </style>
 </head>
 <body>
-
+  <main>
   <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
@@ -150,122 +122,98 @@
     </div>
   </div>
 
-  <!-- Page content container -->
-  <main class="min-h-screen flex flex-col items-center pt-24 px-6 pb-12">
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3">
+      <h1 class="text-2xl font-semibold"></h1>
+    </header>
 
-    <!-- Controls (top area) -->
-    <section id="topp-frame" class="w-full max-w-4xl mb-6">
-      <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 decorative-card border border-[rgba(0,0,0,0.04)] shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="flex-1">
-            <label for="details-entry" class="block text-sm font-semibold mb-1">Visit Details</label>
-            <input id="details-entry" type="text" class="w-full rounded-xl px-4 py-2 border border-[var(--secondary)] focus:ring-2 focus:ring-[var(--accent)] bg-white/90" placeholder="Search inside visit details..." />
-          </div>
-
-          <div class="flex items-center gap-4">
-            <div class="checkbox-wrapper-3 flex items-center gap-2">
-              <label for="show-date" class="text-sm">Date</label>
-              <input type="checkbox" id="show-date" class="hidden" />
-              <label for="show-date" class="toggle inline-block w-10 h-6 rounded-full bg-gray-300 relative cursor-pointer">
-                <span class="block absolute left-0 top-0 w-6 h-6 rounded-full bg-white shadow-md transition-transform"></span>
-              </label>
-            </div>
-
-            <div class="checkbox-wrapper-3 flex items-center gap-2">
-              <label for="show-visit-info" class="text-sm">Visit Info</label>
-              <input type="checkbox" id="show-visit-info" class="hidden" />
-              <label for="show-visit-info" class="toggle inline-block w-10 h-6 rounded-full bg-gray-300 relative cursor-pointer">
-                <span class="block absolute left-0 top-0 w-6 h-6 rounded-full bg-white shadow-md transition-transform"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Search options (dates / visit info) -->
-    <section id="mm-frame" class="w-full max-w-4xl mb-6">
-      <div id="search-entries" class="hidden bg-white/70 backdrop-blur-sm rounded-2xl p-4 mb-4 border border-[rgba(0,0,0,0.04)]">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-semibold mb-1" for="start-date-entry">Start Date</label>
-            <input id="start-date-entry" type="date" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90 focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold mb-1" for="end-date-entry">End Date</label>
-            <input id="end-date-entry" type="date" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90 focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-        </div>
-      </div>
-
-      <div id="dropp-frame" class="hidden bg-white/70 backdrop-blur-sm rounded-2xl p-4 mb-4 border border-[rgba(0,0,0,0.04)]">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-semibold mb-1" for="loc">Location</label>
-            <input id="loc" type="text" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90 focus:ring-2 focus:ring-[var(--accent)]" />
-            <label class="block text-sm font-semibold mt-3 mb-1" for="treatment">Treatment</label>
-            <input id="treatment" type="text" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90 focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold mb-1" for="diagnosis">Diagnosis</label>
-            <input id="diagnosis" type="text" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90 focus:ring-2 focus:ring-[var(--accent)]" />
-            <label class="block text-sm font-semibold mt-3 mb-1" for="lab">Lab</label>
-            <input id="lab" type="text" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90 focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Results summary -->
-    <section id="result-frame" class="w-full max-w-4xl bg-white/85 backdrop-blur-sm rounded-2xl p-4 mb-6 border border-[rgba(0,0,0,0.04)] flex flex-col sm:flex-row gap-4 justify-between">
-      <div class="flex flex-col gap-3 w-full sm:w-1/2">
-        <div>
-          <label class="block text-sm font-semibold mb-1" for="totalPatients">Total Patients</label>
-          <input id="totalPatients" type="text" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90" readonly />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1" for="patientsWithDebit">Patients With Debit</label>
-          <input id="patientsWithDebit" type="text" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90" readonly />
-        </div>
-      </div>
-
-      <div id="mo" class="flex flex-col gap-3 w-full sm:w-1/2">
-        <div>
-          <label class="block text-sm font-semibold mb-1" for="totalDebit">Total Debit</label>
-          <input id="totalDebit" type="text" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90" readonly />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1" for="totalPayed">Total Revenue</label>
-          <input id="totalPayed" type="text" class="w-full rounded-xl px-3 py-2 border border-[var(--secondary)] bg-white/90" readonly />
-        </div>
-      </div>
-    </section>
-
-    <!-- Charts -->
-    <section id="chart-frame" class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-      <div class="bg-white/85 p-4 rounded-2xl border border-[rgba(0,0,0,0.04)]">
-        <canvas id="myChart" height="220"></canvas>
-      </div>
-      <div class="bg-white/85 p-4 rounded-2xl border border-[rgba(0,0,0,0.04)]">
-        <canvas id="mymyChart" height="220"></canvas>
-      </div>
-    </section>
-
-    <!-- Actions -->
-    <div class="lmaooo flex gap-4">
-      <button id="patients" class="px-4 py-2 rounded-xl bg-[var(--secondary)] text-white font-semibold shadow-md hidden">See patients</button>
-      <button id="searchButton" class="px-4 py-2 rounded-xl bg-[var(--accent)] text-[var(--text)] font-semibold shadow-md hidden">Search</button>
+    <!-- Tabs -->
+    <div class="filters gap-4 mb-6 flex flex-row flex-wrap items-center justify-between">
+      <nav class="flex flex-wrap gap-3 items-center bg-white bg-opacity-50 p-2 rounded-xl">
+        <button class="tab-btn active-tab" data-tab="roi">ROI</button>
+        <button class="tab-btn" data-tab="productivity">Productivity</button>
+        <button class="tab-btn" data-tab="finance">Finance</button>
+        <button class="tab-btn" data-tab="patients">Patients</button>
+      </nav>
+      <!-- Filter bar -->
+      <form id="filters" class="flex flex-wrap gap-3 items-center bg-white bg-opacity-50 p-2 rounded-xl">
+        <button id="patients" class="px-4 py-2 rounded-xl bg-[var(--secondary)] text-white font-semibold shadow-md">See patients</button>
+        <label class="flex items-center gap-1 text-sm">
+          <span>From:</span>
+          <input type="date" id="dateFrom" class="border rounded p-1 text-sm">
+        </label>
+        <label class="flex items-center gap-1 text-sm">
+          <span>To:</span>
+          <input type="date" id="dateTo" class="border rounded p-1 text-sm">
+        </label>
+        <button type="submit" class="px-3 py-1 rounded bg-[var(--accent)] text-white text-sm">Apply</button>
+      </form>
     </div>
+
+    <!-- ROI Tab -->
+    <section id="tab-roi" class="tab-panel">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card"><h3>Hours Saved</h3><div id="roi-hours" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Binder ROI</h3><div id="roi-dollar" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Payback Period</h3><div id="roi-payback" class="text-2xl mt-2">—</div></div>
+      </div>
+      <div class="card mb-6">
+        <h3 class="mb-2">Tasks Automated</h3>
+        <div id="roi-tasks" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- Productivity Tab -->
+    <section id="tab-productivity" class="tab-panel hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card"><h3>Total Time in Binder</h3><div id="prod-total-time" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Avg Time / Session</h3><div id="prod-avg-session" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>% Productive Time</h3><div id="prod-productive" class="text-2xl mt-2">—</div></div>
+      </div>
+      <div class="card mb-6">
+        <h3 class="mb-2">Visits per Active Hour</h3>
+        <div id="prod-visits-hour" class="text-xl mb-4">—</div>
+        <canvas id="prod-time-vs-patients"></canvas>
+      </div>
+    </section>
+
+    <!-- Finance Tab -->
+    <section id="tab-finance" class="tab-panel hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card"><h3>Total Revenue</h3><div id="fin-total-rev" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Total Unpaid</h3><div id="fin-unpaid" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Avg Revenue / Patient</h3><div id="fin-avg-per-patient" class="text-2xl mt-2">—</div></div>
+      </div>
+      <div class="card mb-6">
+        <h3 class="mb-2">Revenue vs Unpaid Trend</h3>
+        <canvas id="fin-revenue-trend"></canvas>
+      </div>
+    </section>
+
+    <!-- Patients Tab -->
+    <section id="tab-patients" class="tab-panel hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card"><h3>Total Patients</h3><div id="pat-total" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Returning Patients</h3><div id="pat-returning" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Avg Visits / Patient</h3><div id="pat-avg-visits" class="text-2xl mt-2">—</div></div>
+      </div>
+      <div class="card mb-6">
+        <h3 class="mb-2">New Patients / Week</h3>
+        <canvas id="pat-weekly"></canvas>
+      </div>
+      <div class="card">
+        <h3 class="mb-2">Top Diagnoses / Treatments</h3>
+        <div id="pat-top-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <footer class="mt-6 text-sm text-gray-700 text-center">Powered by GAIA Analytics</footer>
   </main>
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Page JS (keeps original logic & endpoints; chart colors updated to theme) -->
   <script>
-    const plan = '{{plan}}';
-    let patss = [];
+    
+    function showpats() {
+      window.location.href = `/search_stats`;
+    }
 
     setInterval(() => {
       fetch("/track_time", {
@@ -275,7 +223,6 @@
       });
     }, 60000); // log 1 min active time
 
-    /* Utility: convert hex to rgba string */
     function hexToRgba(hex, alpha=1) {
       if (!hex) return `rgba(0,0,0,${alpha})`;
       const h = hex.replace('#','').trim();
@@ -285,37 +232,274 @@
       const b = bigint & 255;
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
+    // ===== Utilities =====
+    const fmtMoney = v => typeof v === 'number' ? '$' + v.toFixed(2) : v;
 
-    function toggleDateEntries() {
-      const showDateCheckbox = document.getElementById("show-date");
-      const showVisitInfoCheckbox = document.getElementById("show-visit-info");
-      const droppFrame = document.getElementById("dropp-frame");
-      const dateFrame = document.getElementById("search-entries");
-      const resultFrame = document.getElementById("result-frame");
-      const searchButton = document.getElementById("searchButton");
+    function formatDateInput(d) {
+      // returns YYYY-MM-DD using local date parts
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
 
-      if (showDateCheckbox.checked && showVisitInfoCheckbox.checked) {
-        dateFrame.classList.remove('hidden');
-        droppFrame.classList.remove('hidden');
-        resultFrame.classList.remove('hidden');
-        searchButton.classList.remove('hidden');
-      } else if (showDateCheckbox.checked) {
-        dateFrame.classList.remove('hidden');
-        droppFrame.classList.add('hidden');
-        resultFrame.classList.remove('hidden');
-        searchButton.classList.remove('hidden');
-      } else if (showVisitInfoCheckbox.checked) {
-        dateFrame.classList.add('hidden');
-        droppFrame.classList.remove('hidden');
-        resultFrame.classList.remove('hidden');
-        searchButton.classList.remove('hidden');
-      } else {
-        dateFrame.classList.add('hidden');
-        droppFrame.classList.add('hidden');
-        resultFrame.classList.remove('hidden');
-        searchButton.classList.remove('hidden');
+    // read CSS variable
+    function getCssVar(name, fallback = '') {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(name);
+      return (val || fallback).trim();
+    }
+
+    // build a gradient from any 2d context and a hex color
+    function makeGradientFromCtx(ctx, hex) {
+      const g = ctx.createLinearGradient(0, 0, 0, 220);
+      g.addColorStop(0, hexToRgba(hex, 0.92));
+      g.addColorStop(1, hexToRgba(hex, 0.08));
+      return g;
+    }
+
+    // ===== Default filter object (will be set to last 7 days) =====
+    const filters = { from: null, to: null, patient: null };
+
+    // set date inputs to last 7 days and update filters
+    function setFiltersToLastWeek() {
+      const today = new Date();
+      const to = new Date(today.getFullYear(), today.getMonth(), today.getDate()); // midnight local
+      const from = new Date(to);
+      from.setDate(to.getDate() - 6); // include today => 7 days total (from .. to)
+      const fromStr = formatDateInput(from);
+      const toStr = formatDateInput(to);
+      filters.from = fromStr;
+      filters.to = toStr;
+      document.getElementById('dateFrom').value = fromStr;
+      document.getElementById('dateTo').value = toStr;
+    }
+
+    // wire form submit to update filters and reload
+    document.getElementById('filters').addEventListener('submit', e=>{
+      e.preventDefault();
+      const f = document.getElementById('dateFrom').value;
+      const t = document.getElementById('dateTo').value;
+      filters.from = f || null;
+      filters.to = t || null;
+      filters.patient = document.getElementById('patientSelect').value || null;
+      reloadCurrentTab();
+    });
+
+    // builds a query string only with present filters
+    function buildQsFromFilters() {
+      const params = new URLSearchParams();
+      if (filters.from) params.append('from', filters.from);
+      if (filters.to) params.append('to', filters.to);
+      if (filters.patient) params.append('patient', filters.patient);
+      return params.toString();
+    }
+
+    // ===== Load patients list (optionally within date range) =====
+    async function loadPatientsList() {
+      try {
+        const qs = buildQsFromFilters();
+        const url = qs ? `/api/gaia/patients/list?${qs}` : `/api/gaia/patients/list`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.warn('patients list fetch returned', res.status);
+          return;
+        }
+        const data = await res.json();
+        const sel = document.getElementById('patientSelect');
+        sel.innerHTML = '<option value="">All</option>';
+        // expect data = [{id:'...', name:'...'}, ...]
+        if (Array.isArray(data)) {
+          data.forEach(p=>{
+            const opt = document.createElement('option');
+            opt.value = p.id ?? p.name ?? '';
+            opt.textContent = p.name ?? p.id ?? String(p);
+            sel.appendChild(opt);
+          });
+        } else {
+          // fallback: if /api/gaia/patients returns aggregated object, try to extract patient keys
+          const maybePatients = (data?.patients || data?.top_patients || []);
+          if (Array.isArray(maybePatients)) {
+            maybePatients.forEach(p=>{
+              const opt = document.createElement('option');
+              opt.value = p.id ?? p.name ?? '';
+              opt.textContent = p.name ?? p.id ?? String(p);
+              sel.appendChild(opt);
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error loading patients list:', err);
       }
     }
+
+    // ===== Tabs wiring =====
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active-tab'));
+        btn.classList.add('active-tab');
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
+        document.getElementById('tab-'+tab).classList.remove('hidden');
+        currentTab = tab;
+        loadTab(tab);
+      });
+    });
+    let currentTab = 'roi';
+
+    // ===== Charts cache =====
+    let charts = {};
+    function ensureChart(id, type, opts) {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      if (charts[id]) return charts[id];
+      // Chart.js requires a canvas context
+      const ctx = el.getContext('2d');
+      charts[id] = new Chart(ctx, Object.assign({ type, data:{labels:[], datasets:[]}}, opts||{}));
+      return charts[id];
+    }
+
+    // ===== Data loader for each tab =====
+    async function loadTab(tab) {
+      const qs = buildQsFromFilters();
+      const url = `/api/gaia/${tab}${qs ? '?' + qs : ''}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.error('API error', res.status, await res.text());
+          return;
+        }
+        const data = await res.json();
+
+        if (tab === 'roi') {
+          document.getElementById('roi-hours').innerText = (data.hours_saved || 0).toFixed(2) + ' hrs';
+          document.getElementById('roi-dollar').innerText = fmtMoney(data.binder_roi || 0);
+          document.getElementById('roi-payback').innerText = data.payback_days ? data.payback_days + ' days' : '—';
+          const tasksEl = document.getElementById('roi-tasks'); tasksEl.innerHTML = '';
+          console.log('ROI tasks data:', data.tasks);
+          for (var [k, v] of Object.entries(data.tasks || {})) {
+            const d = document.createElement('div');
+            d.className = 'p-2 border rounded text-center';
+            if (k === "new_patient") {
+              k = "New Patient";
+            }
+            d.innerHTML = `<div class="text-sm">${k}</div><div class="font-semibold">${v}</div>`;
+            tasksEl.appendChild(d);
+          }
+        }
+
+        if (tab === 'productivity') {
+          document.getElementById('prod-total-time').innerText = (data.total_time_minutes || 0) + ' mins';
+          document.getElementById('prod-avg-session').innerText = (data.avg_time_per_session_minutes || 0) + ' mins';
+          document.getElementById('prod-productive').innerText = (data.percent_productive || 0) + '%';
+          document.getElementById('prod-visits-hour').innerText = (data.visits_per_active_hour || 0) + ' visits/hr';
+
+          const ch = ensureChart('prod-time-vs-patients', 'line', { options: { responsive: true, maintainAspectRatio: false } });
+          if (ch) {
+            ch.data.labels = data.time_vs_patients?.labels || [];
+            // make gradients using the chart's canvas context
+            const ctx = ch.canvas.getContext('2d');
+            const secondaryColor = getCssVar('--secondary', '#78cee6');
+            const accentColor = getCssVar('--accent', '#ce7a35');
+            const lineGradDebit = makeGradientFromCtx(ctx, secondaryColor);
+            const lineGradPayed = makeGradientFromCtx(ctx, accentColor);
+
+            ch.data.datasets = [
+              { label: 'Minutes', data: data.time_vs_patients?.minutes || [], borderWidth: 2,
+                borderColor: hexToRgba(secondaryColor, 1),
+                backgroundColor: lineGradDebit, fill: true },
+              { label: 'Patients Added', data: data.time_vs_patients?.patients || [], borderWidth: 2,
+                borderColor: hexToRgba(accentColor, 1),
+                backgroundColor: lineGradPayed, fill: true }
+            ];
+            ch.update();
+          }
+        }
+
+        if (tab === 'finance') {
+          document.getElementById('fin-total-rev').innerText = fmtMoney(data.total_revenue || 0);
+          document.getElementById('fin-unpaid').innerText = fmtMoney(data.total_unpaid || 0);
+          document.getElementById('fin-avg-per-patient').innerText = fmtMoney(data.avg_revenue_per_patient || 0);
+
+          const ch = ensureChart('fin-revenue-trend', 'line', { options: { responsive: true, maintainAspectRatio: false } });
+          if (ch) {
+            ch.data.labels = data.trend?.labels || [];
+            const ctx = ch.canvas.getContext('2d');
+            const secondaryColor = getCssVar('--secondary', '#78cee6');
+            const accentColor = getCssVar('--accent', '#ce7a35');
+            const lineGradDebit = makeGradientFromCtx(ctx, secondaryColor);
+            const lineGradPayed = makeGradientFromCtx(ctx, accentColor);
+
+            ch.data.datasets = [
+              { label: 'Revenue', data: data.trend?.revenue || [], borderWidth: 2, fill: true,
+                borderColor: hexToRgba(secondaryColor, 1),
+                backgroundColor: lineGradDebit },
+              { label: 'Unpaid', data: data.trend?.unpaid || [], borderWidth: 2, fill: true,
+                borderColor: hexToRgba(accentColor, 1),
+                backgroundColor: lineGradPayed }
+            ];
+            ch.update();
+          }
+        }
+
+        if (tab === 'patients') {
+          document.getElementById('pat-total').innerText = data.total_patients || 0;
+          document.getElementById('pat-returning').innerText = data.returning_patients || 0;
+          document.getElementById('pat-avg-visits').innerText = (data.avg_visits_per_patient || 0).toFixed(2);
+
+          const ch = ensureChart('pat-weekly', 'bar', { options: { responsive: true, maintainAspectRatio: false } });
+          if (ch) {
+            ch.data.labels = data.weekly?.labels || [];
+            const ctx = ch.canvas.getContext('2d');
+            const secondaryColor = getCssVar('--secondary', '#78cee6');
+            const accentColor = getCssVar('--accent', '#ce7a35');
+            const lineGradDebit = makeGradientFromCtx(ctx, secondaryColor);
+            const lineGradPayed = makeGradientFromCtx(ctx, accentColor);
+
+            // returning patients per week: prefer an array from the API, else fallback to a same-length array of the scalar returning_patients
+            const returningWeekly = data.weekly?.returning_counts ||
+              (Array.isArray(data.weekly?.counts) ? new Array(data.weekly.counts.length).fill(data.returning_patients || 0) : []);
+
+            ch.data.datasets = [
+              { label: 'New Patients', data: data.weekly?.counts || [], borderWidth: 1 , fill: true,
+                borderColor: hexToRgba(secondaryColor, 1),
+                backgroundColor: lineGradDebit },
+              { label: 'Returning Patients', data: returningWeekly, borderWidth: 1, fill: true,
+                borderColor: hexToRgba(accentColor, 1),
+                backgroundColor: lineGradPayed }
+            ];
+            ch.update();
+          }
+
+          const list = document.getElementById('pat-top-list'); list.innerHTML = '';
+          (data.top_diagnoses || []).forEach(x => {
+            const e = document.createElement('div'); e.innerText = `${x.name} — ${x.count}`; list.appendChild(e);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading tab', tab, err);
+      }
+    }
+
+    function reloadCurrentTab() { loadTab(currentTab); }
+
+    // ===== Initialization: set last-week filters, populate patient list, and load ROI tab =====
+    (function init() {
+      setFiltersToLastWeek();
+      // Load patients for that range, then load the default/current tab (roi)
+      loadPatientsList().finally(()=> {
+        // prefer to show ROI tab on load
+        currentTab = 'roi';
+        // ensure UI tab button is active
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+        const activeBtn = document.querySelector('.tab-btn[data-tab="roi"]');
+        if (activeBtn) activeBtn.classList.add('active-tab');
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById('tab-roi').classList.remove('hidden');
+
+        loadTab('roi');
+      });
+    })();
 
     document.addEventListener("DOMContentLoaded", function() {
       const menuBtn = document.querySelector('.hamburger-menu');
@@ -326,299 +510,10 @@
         menuBar.classList.toggle('menu-active');
       });
 
-      if (plan === 'sec') {
-        document.getElementById('mo').style.display = 'none';
-        document.getElementById('mymyChart').style.display = 'none';
-        document.getElementById('result-frame').style.justifyContent = 'center';
-      }
-
-      document.getElementById("patients").style.display = 'none';
-
       document.getElementById("patients").addEventListener("click", function () {
-        if (patss.length > 0) {
-          showpats();
-        }
+        showpats();
       });
-
-      document.getElementById("searchButton").addEventListener("click", function () {
-        ssearch();
-      });
-
-      const showDateCheckbox = document.getElementById("show-date");
-      const showVisitInfoCheckbox = document.getElementById("show-visit-info");
-
-      const droppFrame = document.getElementById("dropp-frame");
-      const dateFrame = document.getElementById("search-entries");
-      const resultFrame = document.getElementById("result-frame");
-      const searchButton = document.getElementById("searchButton");
-
-      // initial visibility (use the toggle function so behavior is centralized)
-      // Attach listeners to the checkboxes so the UI updates when the user toggles them
-      showDateCheckbox.addEventListener('change', toggleDateEntries);
-      showVisitInfoCheckbox.addEventListener('change', toggleDateEntries);
-
-      // call once at load to set the correct visibility based on initial checkbox state
-      toggleDateEntries();
-
-      // Chart.js initialization for financial data (themed)
-      const styles = getComputedStyle(document.documentElement);
-      const accent = styles.getPropertyValue('--accent').trim() || '#BBDCE5';
-      const secondary = styles.getPropertyValue('--secondary').trim() || '#CFAB8D';
-      const bgMain = styles.getPropertyValue('--bg-main').trim() || '#D9C4B0';
-      const textColor = styles.getPropertyValue('--text').trim() || '#2b2b2b';
-
-      const cctx = document.getElementById('mymyChart').getContext('2d');
-      const lineGradDebit = cctx.createLinearGradient(0, 0, 0, 220);
-      lineGradDebit.addColorStop(0, hexToRgba(secondary, 0.92));
-      lineGradDebit.addColorStop(1, hexToRgba(secondary, 0.08));
-
-      const lineGradPayed = cctx.createLinearGradient(0, 0, 0, 220);
-      lineGradPayed.addColorStop(0, hexToRgba(accent, 0.95));
-      lineGradPayed.addColorStop(1, hexToRgba(accent, 0.08));
-
-      const mycChart = new Chart(cctx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'Total Debit',
-            data: [],
-            borderColor: hexToRgba(secondary, 1),
-            backgroundColor: lineGradDebit,
-            borderWidth: 2,
-            tension: 0.28,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            fill: true
-          }, {
-            label: 'Total Revenue',
-            data: [],
-            borderColor: hexToRgba(accent, 1),
-            backgroundColor: lineGradPayed,
-            borderWidth: 2,
-            tension: 0.28,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: { color: textColor, boxWidth: 12, boxHeight: 6, padding: 12 }
-            },
-            tooltip: {
-              titleColor: textColor,
-              bodyColor: textColor,
-              backgroundColor: '#ffffff',
-              borderColor: hexToRgba(accent, 0.9),
-              borderWidth: 1,
-              padding: 10,
-              usePointStyle: true
-            }
-          },
-          scales: {
-            x: {
-              ticks: { color: textColor },
-              grid: { color: 'rgba(0,0,0,0.04)' }
-            },
-            y: {
-              ticks: { color: textColor },
-              grid: { color: 'rgba(0,0,0,0.04)' },
-              beginAtZero: true
-            }
-          }
-        }
-      });
-
-      function updatecChart(patients, searchParams) {
-        const visitsData = [];
-        const startDate = showDateCheckbox.checked && searchParams.startDate ? new Date(searchParams.startDate) : null;
-        const endDate = showDateCheckbox.checked && searchParams.endDate ? new Date(searchParams.endDate) : null;
-
-        patients.forEach(patient => {
-          (patient.visits || []).forEach(visit => {
-            const visitDate = new Date(visit.visit_date);
-            const isWithinDateRange = (!startDate || visitDate >= startDate) && (!endDate || visitDate <= endDate);
-            const isDetailsMatched = !searchParams.details || (visit.details || "").includes(searchParams.details);
-            const isLocationMatched = !searchParams.location || (patient.location || "").includes(searchParams.location);
-            const isTreatmentMatched = !searchParams.treatment || (visit.treatment || "").includes(searchParams.treatment);
-            const isDiagnosisMatched = !searchParams.diagnosis || (visit.diagnosis || "").includes(searchParams.diagnosis);
-            const isLabMatched = !searchParams.lab || (visit.lab || "").includes(searchParams.lab);
-
-            if ((!showDateCheckbox.checked || isWithinDateRange) &&
-                isDetailsMatched &&
-                (!showVisitInfoCheckbox.checked || (isLocationMatched && isTreatmentMatched && isDiagnosisMatched && isLabMatched))) {
-              visitsData.push({
-                visitDate: visitDate.toISOString().split('T')[0],
-                debit: parseFloat(visit.debit || 0),
-                payed: parseFloat(visit.payed || 0)
-              });
-            }
-          });
-        });
-
-        const aggregated = visitsData.reduce((acc, curr) => {
-          acc[curr.visitDate] = acc[curr.visitDate] || { debit: 0, payed: 0 };
-          acc[curr.visitDate].debit += curr.debit;
-          acc[curr.visitDate].payed += curr.payed;
-          return acc;
-        }, {});
-
-        const sorted = Object.keys(aggregated).map(d => ({ date: new Date(d), debit: aggregated[d].debit, payed: aggregated[d].payed }))
-          .sort((a,b) => a.date - b.date);
-
-        mycChart.data.labels = sorted.map(s => s.date.toISOString().split('T')[0]);
-        mycChart.data.datasets[0].data = sorted.map(s => s.debit);
-        mycChart.data.datasets[1].data = sorted.map(s => s.payed);
-        mycChart.update();
-      }
-
-      // Bar chart (patient counts)
-      const ctx = document.getElementById('myChart').getContext('2d');
-
-      // Create bar gradients
-      const barGradA = ctx.createLinearGradient(0, 0, 0, 220);
-      barGradA.addColorStop(0, hexToRgba(accent, 0.95));
-      barGradA.addColorStop(1, hexToRgba(accent, 0.12));
-
-      const barGradB = ctx.createLinearGradient(0, 0, 0, 220);
-      barGradB.addColorStop(0, hexToRgba(secondary, 0.95));
-      barGradB.addColorStop(1, hexToRgba(secondary, 0.12));
-
-      const myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'Total Patients',
-            data: [],
-            borderColor: hexToRgba(accent, 1),
-            backgroundColor: barGradA,
-            borderWidth: 1
-          }, {
-            label: 'Patients with Debit',
-            data: [],
-            borderColor: hexToRgba(secondary, 1),
-            backgroundColor: barGradB,
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: { color: textColor, boxWidth: 12, boxHeight: 6, padding: 12 }
-            },
-            tooltip: {
-              titleColor: textColor,
-              bodyColor: textColor,
-              backgroundColor: '#ffffff',
-              borderColor: hexToRgba(secondary, 0.9),
-              borderWidth: 1,
-              padding: 10
-            }
-          },
-          scales: {
-            x: {
-              ticks: { color: textColor },
-              grid: { color: 'rgba(0,0,0,0.04)' }
-            },
-            y: {
-              ticks: { color: textColor },
-              grid: { color: 'rgba(0,0,0,0.04)' },
-              beginAtZero: true
-            }
-          }
-        }
-      });
-
-      function updateChart(patients, searchParams) {
-        const datePatientCount = {};
-        const datePatientWithDebitCount = {};
-        const { startDate, endDate, details, location, treatment, diagnosis, lab } = searchParams;
-        const start = showDateCheckbox.checked && startDate ? new Date(startDate) : null;
-        const end = showDateCheckbox.checked && endDate ? new Date(endDate) : null;
-
-        patients.forEach(patient => {
-          (patient.visits || []).forEach(visit => {
-            const visitDate = new Date(visit.visit_date);
-            const isWithinDateRange = (!start || visitDate >= start) && (!end || visitDate <= end);
-
-            if (!showDateCheckbox.checked || isWithinDateRange) {
-              if ((!details || (visit.details || "").includes(details)) &&
-                  (!showVisitInfoCheckbox.checked || (!location || (patient.location || "").includes(location)) &&
-                   (!treatment || (visit.treatment || "").includes(treatment)) &&
-                   (!diagnosis || (visit.diagnosis || "").includes(diagnosis)) &&
-                   (!lab || (visit.lab || "").includes(lab)))) {
-
-                const dStr = visitDate.toISOString().split('T')[0];
-                datePatientCount[dStr] = (datePatientCount[dStr] || 0) + 1;
-                if ((visit.debit || 0) > 0) datePatientWithDebitCount[dStr] = (datePatientWithDebitCount[dStr] || 0) + 1;
-              }
-            }
-          });
-        });
-
-        const sortedDates = Object.keys(datePatientCount).map(date => ({
-          date: new Date(date),
-          totalPatients: datePatientCount[date],
-          patientsWithDebit: datePatientWithDebitCount[date] || 0
-        })).sort((a,b) => a.date - b.date);
-
-        myChart.data.labels = sortedDates.map(d => d.date.toISOString().split('T')[0]);
-        myChart.data.datasets[0].data = sortedDates.map(d => d.totalPatients);
-        myChart.data.datasets[1].data = sortedDates.map(d => d.patientsWithDebit);
-        myChart.update();
-      }
-
-      function getSearchParams() {
-        return {
-          startDate: document.getElementById("start-date-entry").value,
-          endDate: document.getElementById("end-date-entry").value,
-          details: document.getElementById("details-entry").value,
-          location: document.getElementById("loc").value,
-          treatment: document.getElementById("treatment").value,
-          diagnosis: document.getElementById("diagnosis").value,
-          lab: document.getElementById("lab").value,
-          showDate: showDateCheckbox.checked,
-          showVisitInfo: showVisitInfoCheckbox.checked
-        };
-      }
-
-      function showpats() {
-        window.location.href = `/search_stats`;
-      }
-
-      function ssearch() {
-        const searchParams = getSearchParams();
-        fetch('/ssearch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(searchParams)
-        })
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('totalPatients').value = data.total_customers;
-          document.getElementById('patientsWithDebit').value = data.unpaid_customers;
-          document.getElementById('totalDebit').value = data.total_debit;
-          document.getElementById('totalPayed').value = data.total_payed;
-          document.getElementById("patients").style.display = 'block';
-          patss = data.patients || [];
-
-          updateChart(patss, getSearchParams());
-          updatecChart(patss, getSearchParams());
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Search failed — see console for details.');
-        });
-      }
-
-    }); // DOMContentLoaded
+    });
   </script>
 </body>
 </html>
