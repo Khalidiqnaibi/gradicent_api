@@ -178,10 +178,12 @@ def load_app_data():
 
         return app_data
 
+########### wrappers ###########
+
 def login_is_required(function):
     def wrapper(*args, **kwargs):
         if "google_id" not in session:
-            return abort(401)
+            return redirect("/logme")
         return function(*args, **kwargs)
     wrapper.__name__ = function.__name__  # force Flask to see the right name
     return wrapper
@@ -194,6 +196,8 @@ def admin_required(func):
         return func(*args, **kwargs)
     wrapper.__name__ = func.__name__
     return wrapper
+
+################################
 
 def iscode(code):
     # Reference to the Firebase Realtime Database
@@ -569,7 +573,7 @@ def get_client_token(customer_id=None):
 
 fernet = create_fernet()
 
-"""riasoftware api"""
+"""Binder Software api"""
 
 @app.route("/")
 def home():
@@ -1014,7 +1018,7 @@ def basic_successar():
             # Return a response indicating success
             bPay=False
             #return render_template("pay_sucsess - ar.html")
-            return redirect("/acc")
+            return redirect("/home_page")
         else:
             bPay=False
             # Return a response indicating that the user information is not found
@@ -1046,7 +1050,7 @@ def basic_successar():
                 # Return a response indicating success
                 bPay=False
                 #return render_template("pay_sucsess - ar.html")
-                return redirect("/acc")
+                return redirect("/home_page")
             else:
                 bPay=False
                 # Return a response indicating that the user information is not found
@@ -1085,7 +1089,7 @@ def basic_success():
             # Return a response indicating success
             bPay=False
             #return render_template("pay_sucsess.html")
-            return redirect("/acc")
+            return redirect("/home_page")
         else:
             bPay=False
             # Return a response indicating that the user information is not found
@@ -1117,7 +1121,7 @@ def basic_success():
                 # Return a response indicating success
                 bPay=False
                 #return render_template("pay_sucsess.html")
-                return redirect("/acc")
+                return redirect("/home_page")
             else:
                 bPay=False
                 # Return a response indicating that the user information is not found
@@ -1342,28 +1346,24 @@ def savesign():
 
 @app.route("/protected_area")
 @login_is_required
-def done():
-    logged_in = "google_id" in session
-    if logged_in:
-        google_id = session.get("google_id")
-        name = session.get("name")
-        info={"google_id":google_id,"name":name}
-        try:
-            #log_me_in(info)
-            #quittab()
-            if 'sec' in session:
-                return redirect("/check_bcode")
-            else:
-                log_event(session['google_id'], "Login", {"binder": session.get("binder")})
-                return redirect("/home_page")
-        except Exception as e:
-            return render_template("errors.html",msg=str(e),err='Unexpected')
-
-    return render_template("errors.html",msg='User not loged in',err='Unexpected')
+def protected(): 
+    google_id = session.get("google_id")
+    name = session.get("name")
+    info={"google_id":google_id,"name":name}
+    try:
+        #log_me_in(info)
+        #quittab()
+        if 'sec' in session:
+            return redirect("/check_bcode")
+        else:
+            log_event(session['google_id'], "Login", {"binder": session.get("binder")})
+            return redirect("/home_page")
+    except Exception as e:
+        return render_template("errors.html",msg=str(e),err='Unexpected')
 
 @app.route("/protected_area_ar")
 @login_is_required
-def donear():
+def protectedar():
     logged_in = "google_id" in session
     if logged_in:
         google_id = session.get("google_id")
@@ -1496,7 +1496,7 @@ def get_userD(google_id):
                                             "treatment":"",
                                             "visit_date":f"{year}-01-01",
                                             "drname":'',
-                                            "printed":False,#fe hal alteba3a la yumkin ta5eer al ma3lomat
+                                            "printed":False,#if the visit is printed u cant change the data
                                             "vno" :1 
                                         }
                                     ],
@@ -1512,9 +1512,7 @@ def get_userD(google_id):
 @app.route('/fetchUserData')
 def fetch_user_data():
     logged_in = "google_id" in session
-    if logged_in:
-        google_id = session.get("google_id")
-    else:
+    if not logged_in:
         return redirect("/logme")
 
     #session["user_data"]=user_data
@@ -1522,8 +1520,8 @@ def fetch_user_data():
         return redirect('/Binder_medical')
     elif "binder" in session and session["binder"] == 'lab':
         return redirect('/Binder_labratory')
-    
-@app.route('/get_userD')
+
+@app.route('/get_userD')#**
 def get_userDD():
     if "google_id" in session:
         gid = session["google_id"]
@@ -1782,14 +1780,14 @@ def get_last_page():
     else:
         return  render_template(f"{page}.html",user_data=user_data,binder=binder)
 
-@app.route('/acc')
+@app.route('/acc')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def accc():
     session["page"]='acc'
     return redirect("/fetchUserData")
     #return render_template("acc.html",user_data=user_data,price=medprice)
 
-@app.route('/home_page')
+@app.route('/home_page')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def homeeeepage():
     session["page"]='home'
@@ -1814,7 +1812,7 @@ def homeeeepage():
     else:
         return redirect("/fetchUserData")
 
-@app.route('/support')
+@app.route('/support')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def support():
     session["page"]='support'
@@ -1840,7 +1838,7 @@ def support():
     else:
         return redirect("/fetchUserData")
 
-@app.route('/settings')
+@app.route('/settings')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def settingssss():
 
@@ -1881,7 +1879,7 @@ def settingssss():
     else:
         return redirect("/fetchUserData")
 
-@app.route('/stats')
+@app.route('/stats')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def statsss():
     session["page"]='stats'
@@ -1907,7 +1905,7 @@ def statsss():
     else:
         return redirect("/fetchUserData")
 
-@app.route('/srch')
+@app.route('/srch')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def srchhhhh():
     session["page"]='srch'
@@ -1933,7 +1931,7 @@ def srchhhhh():
         session["autoo"]='nope'
         return redirect("/fetchUserData")
 
-@app.route('/back')
+@app.route('/back')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def backkkk():
     session["page"]='srch'
@@ -1960,7 +1958,7 @@ def backkkk():
         session["stat"]='nope'
         return redirect("/fetchUserData")
 
-@app.route('/meddata')
+@app.route('/meddata')# make these all just wrappers to check the trail and the plan
 def meddata():
     if "google_id" in session:
         gid = session["google_id"]
@@ -1990,7 +1988,7 @@ def meddata():
 def lab():
     return render_template("Labratory.html")
 
-@app.route('/lab_page')
+@app.route('/lab_page')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def lab_page():
     session["page"]='lab'
@@ -2016,7 +2014,7 @@ def lab_page():
     else:
         return redirect("/fetchUserData")
     
-@app.route('/srchlab')
+@app.route('/srchlab')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def srchlabbb():
     session["page"]='lab_req'
@@ -2042,7 +2040,7 @@ def srchlabbb():
     else:
         return redirect("/fetchUserData")
 
-@app.route('/getlab')
+@app.route('/getlab')# make these all just wrappers to check the trail and the plan
 @login_is_required
 def getlab():
     google_id = session["google_id"]
@@ -2114,7 +2112,7 @@ def delete_lab_request():
 
     return jsonify({"success": "Lab request deleted."})
 
-@app.route('/radio_page')
+@app.route('/radio_page')# make these all just wrappers to check the trail and the plan
 def radio_page():
     session["page"]='radio'
 
@@ -2139,7 +2137,7 @@ def radio_page():
     else:
         return redirect("/fetchUserData")
 
-@app.route('/pharma_page')
+@app.route('/pharma_page')# make these all just wrappers to check the trail and the plan
 def pharma_page():
     session["page"]='pharma'
 
@@ -2164,7 +2162,7 @@ def pharma_page():
     else:
         return redirect("/fetchUserData")
     
-@app.route('/getradio')
+@app.route('/getradio')# make these all just wrappers to check the trail and the plan
 def getradio():
     google_id = session["google_id"]
     patient_id = session.get('patientno')
@@ -2176,7 +2174,7 @@ def getradio():
     else:
         return jsonify({'k':"bruh",'numm':f"{google_id[:6]}-{patient_id+1}"})
     
-@app.route('/getpharma')
+@app.route('/getpharma')# make these all just wrappers to check the trail and the plan
 def getpharma():
     google_id = session["google_id"]
     patient_id = session.get('patientno')
@@ -2861,7 +2859,7 @@ def appointment_count():
     return jsonify({"appointment_count": count}), 200
 
 ########### Gaia First Look ############
-
+# make it more of an engine not just functions
 def _parse_date_or_timestamp(value, default=None):
     if not value:
         return default
@@ -3262,7 +3260,6 @@ def api_gaia_finance():
         "trend": {"labels": trend_labels, "revenue": trend_revenue, "unpaid": trend_unpaid}
     })
 
-
 # --- Patients endpoint ---
 @app.route("/api/gaia/patients", methods=["GET"])
 @login_is_required
@@ -3375,13 +3372,13 @@ def api_gaia_patients():
         "top_diagnoses_raw": top_diagnoses
     })
 
-@app.route('/tst')
+@app.route('/tst') #**
 @login_is_required
 def tst():
     return render_template('tst.html')
 
 ########################################
-@app.route('/nnn')
+@app.route('/nnn') #** not necessary
 @login_is_required
 def nnn():
     if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
@@ -4054,7 +4051,7 @@ def get_file(file_id):
 
 logging.basicConfig(level=logging.INFO)
 
-@app.route('/deleteFile', methods=['DELETE'])
+@app.route('/deleteFile', methods=['DELETE']) # make it soft delete not hard delete the data
 def delete_file():
     try:
         file_url = request.args.get('url')
@@ -4080,7 +4077,7 @@ def delete_file():
 @app.route('/gid')
 @login_is_required
 def giid():
-    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
+    if session["google_id"] not in ['101597446369752496399']:
         return jsonify({"message": "Access denied"}), 403
     session['google_id']="108738109636203771652"
     if 'PLAN' in session:
@@ -4093,15 +4090,15 @@ def giid():
 @app.route('/giid/<google_id>')
 @login_is_required
 def giiid(google_id):
-    if "google_id" in session and session["google_id"] not in ['101597446369752496399']:
+    if session["google_id"] not in ['101597446369752496399']:
         return jsonify({"message": "Access denied"}), 403
     session["google_id"] = google_id
     session["lang"] = 'en'
     session["donee"]=True
-    if "binder" in session and session["binder"] == 'med':
+    if "binder" in session and session["binder"] == 'lab':
+        return redirect('/Binder_labratory') 
+    else:
         return redirect('/Binder_medical')
-    elif "binder" in session and session["binder"] == 'lab':
-        return redirect('/Binder_labratory')
 
 @app.route('/pgiid/<google_id>/<name>')
 def pgiiid(google_id, name):
@@ -4159,10 +4156,8 @@ def log_event(google_id, event_type, metadata=None):
     ref.push(event)
 
 @app.route("/track_time", methods=["POST"])
+@login_is_required
 def track_time():
-    if "google_id" not in session:
-        return jsonify({"error": "not logged in"}), 401
-
     data = request.get_json()
     seconds_spent = data.get("seconds", 0)
     ref = db.reference('/time_tracking')
@@ -4174,10 +4169,8 @@ def track_time():
     return jsonify({"message": "time logged"})
 
 @app.route("/pay_starter")
+@login_is_required
 def pay_starter():
-    if "google_id" not in session:
-        return redirect("/fetchUserData")
-
     gid = session["google_id"]
     user_data = get_userD(gid)
 
@@ -4210,10 +4203,8 @@ def pay_starter():
         return f"Error creating payment: {payment.error}"
 
 @app.route("/pay_pro")
+@login_is_required
 def pay_pro():
-    if "google_id" not in session:
-        return redirect("/fetchUserData")
-
     gid = session["google_id"]
     user_data = get_userD(gid)
 
@@ -4246,10 +4237,8 @@ def pay_pro():
         return f"Error creating payment: {payment.error}"
 
 @app.route("/pay_ultra")
+@login_is_required
 def pay_ultra():
-    if "google_id" not in session:
-        return redirect("/fetchUserData")
-
     gid = session["google_id"]
     user_data = get_userD(gid)
 
@@ -4282,26 +4271,26 @@ def pay_ultra():
         return f"Error creating payment: {payment.error}"
 
 @app.route("/<plan>_success")
+@login_is_required
 def payment_success(plan):
-    if "google_id" not in session:
-        return redirect("/fetchUserData")
-
     gid = session["google_id"]
-    plan = session.get("pending_plan", plan)
+    plan = session.get("pending_plan")
+    if not plan:
+        return jsonify({"error": "Unauthorized"}), 403
 
     drs_ref = db.reference(f'/drs/{gid}')
     user_data = drs_ref.get()
     if not user_data:
         return jsonify({"error": "User not found"}), 404
+    
+    price = starter_price if plan == "starter" else pro_price if plan == "pro" else ultra_price
 
     user_data["plan"] = plan
-    user_data["payed"] = user_data.get("payed", 0) + (
-        starter_price if plan == "starter" else pro_price if plan == "pro" else ultra_price
-    )
+    user_data["payed"] = user_data.get("payed", 0) + price
     user_data["first"] = datetime.now().isoformat()
     drs_ref.update(user_data)
 
-    return render_template("pay_success.html", plan=plan, price=user_data["payed"])
+    return render_template("pay_success.html", plan=plan, price=price)
 
 @app.route("/<plan>_cancel")
 def payment_cancel(plan):
@@ -4556,7 +4545,7 @@ def api_dashboard_daily_report():
         return jsonify({"message":"saved","data":payload})
 
 ''' restrictions
-user_plan = session.get("plan", "free")
+user_plan = session.get("plan", "free") wrapper 
 
 # restrict Starter users
 if user_plan == "starter":
@@ -4569,7 +4558,11 @@ if user_plan == "starter":
         
 # try :
 Quick calculator to show how much time and money Binder can save your practice or org each month.
-l
+
+
+# fix: 
+the currant  dashboard for bindersoftware gets the new drs data from the first tag in thier data 
+but that tag changes into the first date of the plan not the first time for the user to sign in
 '''
 
 if __name__ == "__main__":
