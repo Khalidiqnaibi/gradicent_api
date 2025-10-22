@@ -3377,7 +3377,42 @@ def api_gaia_patients():
 def tst():
     return render_template('tst.html')
 
+########## testing new gaia ############
+from .gaia.engine import GaiaEngine
+from .gaia.adapters.firebase_adapter import FirebaseAdapter
+
+firebase_adapter = FirebaseAdapter()
+engine = GaiaEngine(adapter=firebase_adapter, config={
+    "default_avg_hourly": 50,
+    "plan_price_map": {"starter": 29, "pro": 99, "ultra": 199, "free": 0}
+})
+
+
+@app.route("/api/gaia/<metric>", methods=["GET"])
+@login_is_required
+def gaia_metrics(metric):
+    """
+    Unified endpoint for all Binder (DRS) analytics stats:
+    - /api/gaia/roi
+    - /api/gaia/productivity
+    - /api/gaia/finance
+    - /api/gaia/patients
+    """
+    google_id = session.get("google_id")
+    if not google_id:
+        return jsonify({"error": "not logged in"}), 401
+
+    params = request.args.to_dict()
+    try:
+        result = engine.compute(metric, google_id, params)
+        return jsonify(result)
+    except KeyError:
+        return jsonify({"error": f"metric '{metric}' not found"}), 404
+    except Exception as e:
+        return jsonify({"error": "internal_error", "detail": str(e)}), 500
+
 ########################################
+
 @app.route('/nnn') #** not necessary
 @login_is_required
 def nnn():
