@@ -4544,7 +4544,20 @@ def api_dashboard_daily_report():
         # optionally push to Slack / send email - omitted here (we added earlier examples)
         return jsonify({"message":"saved","data":payload})
 
-''' restrictions
+'''      
+# try :
+Quick calculator to show how much time and money Binder can save your practice or org each month.
+
+
+# fix: 
+the currant  dashboard for bindersoftware gets the new drs data from the first tag in thier data 
+but that tag changes into the first date of the plan not the first time for the user to sign in
+
+# TODO:
+- re do the equation for the roi of binder medical 
+- make the plans for the payments with stripe 
+- make restrictions for the diffrant plans knowing the this is what we have in mind now :
+
 user_plan = session.get("plan", "free") wrapper 
 
 # restrict Starter users
@@ -4555,14 +4568,9 @@ if user_plan == "starter":
 
     if action in ["print", "upload"]:
         return render_template("upgrade.html", msg="Printing and uploads are Pro features.")
-        
-# try :
-Quick calculator to show how much time and money Binder can save your practice or org each month.
 
+- refactor with the new code standards
 
-# fix: 
-the currant  dashboard for bindersoftware gets the new drs data from the first tag in thier data 
-but that tag changes into the first date of the plan not the first time for the user to sign in
 '''
 
 if __name__ == "__main__":
