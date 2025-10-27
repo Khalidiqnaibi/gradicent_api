@@ -1509,7 +1509,7 @@ def get_userD(google_id):
             #doc_ref.set(user_data)
         return user_data
 
-@app.route('/fetchUserData')
+@app.route('/fetchUserData') # ths should be changed to a /redirect 
 def fetch_user_data():
     logged_in = "google_id" in session
     if not logged_in:
