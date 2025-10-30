@@ -1,46 +1,58 @@
 """
 Binder
-----------------
-Provides the abstract BaseBinder class that combines the Binder interfaces.
-Implements dependency injection for adapters and user context.
+---------------
+Provides the BaseBinder class that composes the small service interfaces
+and defines shared CRUD helpers for Firebase or similar adapters.
 """
 
-from abc import ABC
-from typing import Any, Optional
-from binder_interface import IUserService, IClientService, IInteractionService
+from typing import Any, Dict, Optional
+from .binder_interface import (
+    IUserService, IClientService, IEmployeeService,
+    IProductService, IServiceService, IInteractionService, ITransactionService
+)
 
 
-class Binder(IUserService, IClientService, IInteractionService, ABC):
+class Binder(
+    IUserService,
+    IClientService,
+    IEmployeeService,
+    IProductService,
+    IServiceService,
+    IInteractionService,
+    ITransactionService
+):
     """
-    Base class that combines all Binder services.
-
-    Follows:
-      - Single Responsibility: each subclass handles one domain.
-      - Dependency Inversion: depends on adapter interface, not concrete DB.
+    Binder implements common logic and CRUD helpers used across domains.
     """
 
-    def __init__(self, adapter: Any):
-        if not adapter:
-            raise ValueError("Adapter cannot be None")
-
+    def __init__(self, adapter: Any, gaia_engine: Optional[Any] = None):
+        if adapter is None:
+            raise ValueError("adapter cannot be None")
         self._adapter = adapter
+        self._gaia_engine = gaia_engine
         self._current_user: Optional[str] = None
 
-    # --- Properties (Encapsulation) ---
+    # -------- Properties --------
     @property
     def adapter(self) -> Any:
-        """Data adapter for persistence (Firebase, SQL, etc.)."""
         return self._adapter
 
     @adapter.setter
-    def adapter(self, adapter: Any) -> None:
-        if not adapter:
-            raise ValueError("Adapter cannot be None")
-        self._adapter = adapter
+    def adapter(self, value: Any) -> None:
+        if value is None:
+            raise ValueError("adapter cannot be None")
+        self._adapter = value
+
+    @property
+    def gaia_engine(self) -> Optional[Any]:
+        return self._gaia_engine
+
+    @gaia_engine.setter
+    def gaia_engine(self, engine: Any) -> None:
+        self._gaia_engine = engine
 
     @property
     def current_user(self) -> Optional[str]:
-        """Currently active user (google_id or user_id)."""
         return self._current_user
 
     @current_user.setter
@@ -48,6 +60,19 @@ class Binder(IUserService, IClientService, IInteractionService, ABC):
         self._current_user = user_id
 
     def _require_user(self) -> None:
-        """Guard clause: ensures operations happen within a user context."""
         if not self._current_user:
-            raise RuntimeError("No current user set in binder context")
+            raise RuntimeError("Current user is not set")
+
+    # -------- Common CRUD Helpers --------
+    def _create(self, path: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        self.adapter.push(path, data)
+        return data
+
+    def _read(self, path: str) -> Optional[Dict[str, Any]]:
+        return self.adapter.get(path)
+
+    def _update(self, path: str, patch: Dict[str, Any]) -> None:
+        self.adapter.update(path, patch)
+
+    def _delete(self, path: str) -> None:
+        self.adapter.delete(path)

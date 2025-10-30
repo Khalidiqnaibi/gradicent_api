@@ -1,97 +1,148 @@
 """
 Binder Business
 ------------------
-Concrete implementation of Binder for general business domain.
+Concrete Binder implementation for any business type (product, service, or hybrid).
+Includes full CRUD for users, clients, employees, products, services, interactions, and transactions.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from binder import Binder
+from typing import Dict, Any, List, Optional
+from .binder import Binder
 
 
-class BusinessBinder(Binder):
-    """Concrete Binder for managing companies, clients, and interactions."""
+def _ts() -> str:
+    return datetime.now().isoformat()
 
-    ROOT_PATH = "/Busines"
 
-    # -------------------- USERS --------------------
-    def add_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
-        if "id" not in user_data:
-            raise ValueError("user_data must include 'id'")
+class BinderBusiness(Binder):
+    ROOT = "/Business"
 
-        user_id = user_data["id"]
-        user_data.setdefault("created_at", datetime.now().isoformat())
-        user_data.setdefault("clients", [])
-        self.adapter.set(f"{self.ROOT_PATH}/{user_id}", user_data)
-        return user_data
+    # -------- USERS CRUD --------
+    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        if "id" not in data:
+            raise ValueError("User must have an 'id'")
+        path = f"{self.ROOT}/{data['id']}"
+        data.setdefault("created_at", _ts())
+        data.setdefault("clients", [])
+        data.setdefault("employees", [])
+        data.setdefault("products", [])
+        data.setdefault("services", [])
+        self._create(path, data)
+        return data
 
-    def get_user(self, user_id: str) -> Optional[Dict[str, Any]]:
-        return self.adapter.get(f"{self.ROOT_PATH}/{user_id}")
+    def read(self, entity_id: str) -> Optional[Dict[str, Any]]:
+        return self._read(f"{self.ROOT}/{entity_id}")
 
-    def update_user(self, user_id: str, patch: Dict[str, Any]) -> None:
-        self.adapter.update(f"{self.ROOT_PATH}/{user_id}", patch)
+    def update(self, entity_id: str, patch: Dict[str, Any]) -> None:
+        self._update(f"{self.ROOT}/{entity_id}", patch)
 
-    # -------------------- CLIENTS --------------------
-    def add_client(self, client_data: Dict[str, Any]) -> Dict[str, Any]:
+    def delete(self, entity_id: str) -> None:
+        self._delete(f"{self.ROOT}/{entity_id}")
+
+    # -------- CLIENTS CRUD --------
+    def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._require_user()
-        path = f"{self.ROOT_PATH}/{self._current_user}/clients"
-        client_data.setdefault("interactions", [])
-        client_data.setdefault("id", int(datetime.now().timestamp()))
-        self.adapter.push(path, client_data)
-        return client_data
+        path = f"{self.ROOT}/{self._current_user}/clients"
+        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
+        data.setdefault("created_at", _ts())
+        data.setdefault("interactions", [])
+        data.setdefault("transactions", [])
+        return self._create(path, data)
 
-    def get_client(self, client_id: str) -> Optional[Dict[str, Any]]:
+    def read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
         self._require_user()
-        clients = self.adapter.get_list(f"{self.ROOT_PATH}/{self._current_user}/clients")
-        for c in clients:
-            if str(c.get("id")) == str(client_id) or c.get("name") == client_id:
-                return c
-        return None
+        clients = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/clients")
+        return next((c for c in clients if str(c.get("id")) == str(client_id)), None)
 
     def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
         self._require_user()
-        base = f"{self.ROOT_PATH}/{self._current_user}/clients"
-        clients = self.adapter.get(base)
-        if not clients:
-            return
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}"
+        self._update(path, patch)
 
-        if isinstance(clients, dict):
-            for key, c in clients.items():
-                if str(c.get("id")) == str(client_id):
-                    merged = {**c, **patch}
-                    self.adapter.set_child_by_key(base, key, merged)
-                    return
-
-    # -------------------- INTERACTIONS --------------------
-    def add_interaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def delete_client(self, client_id: str) -> None:
         self._require_user()
-        client = self.get_client(client_id)
-        if not client:
-            raise ValueError("Client not found")
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}"
+        self._delete(path)
 
-        data.setdefault("timestamp", datetime.now().isoformat())
-        data.setdefault("ino", len(client.get("interactions", [])) + 1)
-        client["interactions"].append(data)
-        self.update_client(client_id, {"interactions": client["interactions"]})
-        return data
-
-    def update_interaction(self, client_id: str, idx: int, patch: Dict[str, Any]) -> None:
+    # -------- EMPLOYEES CRUD --------
+    def create_employee(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._require_user()
-        client = self.get_client(client_id)
-        if not client:
-            raise ValueError("Client not found")
+        path = f"{self.ROOT}/{self._current_user}/employees"
+        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
+        data.setdefault("created_at", _ts())
+        return self._create(path, data)
 
-        interactions = client.get("interactions", [])
-        if idx >= len(interactions):
-            raise IndexError("Invalid interaction index")
-        interactions[idx].update(patch)
-        self.update_client(client_id, {"interactions": interactions})
+    def read_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:
+        self._require_user()
+        emps = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/employees")
+        return next((e for e in emps if str(e.get("id")) == str(employee_id)), None)
 
-    def get_interactions(self, client_id: str, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-        client = self.get_client(client_id)
-        if not client:
-            return []
-        interactions = client.get("interactions", [])
+    def update_employee(self, employee_id: str, patch: Dict[str, Any]) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/employees/{employee_id}"
+        self._update(path, patch)
+
+    def delete_employee(self, employee_id: str) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/employees/{employee_id}"
+        self._delete(path)
+
+    # -------- PRODUCTS CRUD --------
+    def create_product(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/products"
+        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
+        return self._create(path, data)
+
+    def read_product(self, product_id: str) -> Optional[Dict[str, Any]]:
+        self._require_user()
+        prods = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/products")
+        return next((p for p in prods if str(p.get("id")) == str(product_id)), None)
+
+    def update_product(self, product_id: str, patch: Dict[str, Any]) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/products/{product_id}"
+        self._update(path, patch)
+
+    def delete_product(self, product_id: str) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/products/{product_id}"
+        self._delete(path)
+
+    # -------- SERVICES CRUD --------
+    def create_service(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/services"
+        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
+        return self._create(path, data)
+
+    def read_service(self, service_id: str) -> Optional[Dict[str, Any]]:
+        self._require_user()
+        servs = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/services")
+        return next((s for s in servs if str(s.get("id")) == str(service_id)), None)
+
+    def update_service(self, service_id: str, patch: Dict[str, Any]) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/services/{service_id}"
+        self._update(path, patch)
+
+    def delete_service(self, service_id: str) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/services/{service_id}"
+        self._delete(path)
+
+    # -------- INTERACTIONS CRUD --------
+    def create_interaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        self._require_user()
+        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
+        data.setdefault("timestamp", _ts())
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/interactions"
+        return self._create(path, data)
+
+    def list(self, client_id: str, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/interactions"
+        interactions = self.adapter.get_list(path)
         if not filters:
             return interactions
         start, end = filters.get("from"), filters.get("to")
@@ -105,3 +156,36 @@ class BusinessBinder(Binder):
                 and (not end_dt or dt.fromisoformat(i["timestamp"]) <= end_dt)
             ]
         return interactions
+
+    def update_interaction(self, client_id: str, interaction_id: str, patch: Dict[str, Any]) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/interactions/{interaction_id}"
+        self._update(path, patch)
+
+    def delete_interaction(self, client_id: str, interaction_id: str) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/interactions/{interaction_id}"
+        self._delete(path)
+
+    # -------- TRANSACTIONS CRUD --------
+    def create_transaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        self._require_user()
+        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
+        data.setdefault("timestamp", _ts())
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/transactions"
+        return self._create(path, data)
+
+    def read_transaction(self, client_id: str, txn_id: str) -> Optional[Dict[str, Any]]:
+        self._require_user()
+        txns = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/clients/{client_id}/transactions")
+        return next((t for t in txns if str(t.get("id")) == str(txn_id)), None)
+
+    def update_transaction(self, client_id: str, txn_id: str, patch: Dict[str, Any]) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/transactions/{txn_id}"
+        self._update(path, patch)
+
+    def delete_transaction(self, client_id: str, txn_id: str) -> None:
+        self._require_user()
+        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/transactions/{txn_id}"
+        self._delete(path)
