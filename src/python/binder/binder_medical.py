@@ -1,77 +1,60 @@
 """
-Binder Medical
-------------------
-Concrete Binder implementation for any business type (product, service, or hybrid).
-Includes full CRUD for users, clients, employees, products, services, interactions, and transactions.
+medical_binder.py
+-----------------
+Implements user (doctor), client (patient), and interaction (visit)
+CRUD operations for the medical domain, using Firebase or similar adapters.
 """
 
 from datetime import datetime
-from typing import Dict, Any, List, Optional
-from .binder import Binder
+from typing import Any, Dict, Optional, List
+from .interfaces.binder_interface import IUserService, IClientService, IInteractionService
+from .interfaces.binder import Binder
 
-class MedicalBinder(Binder):
-    """Binder for the medical domain — manages doctors, patients, and visits."""
-    ROOT = "/drs"
 
-    # -------- USERS (Doctors) --------
-    def create_user(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        if "google_id" not in data:
-            raise ValueError("Doctor must include google_id")
-        path = f"{self.ROOT}/{data['google_id']}"
-        data.setdefault("created_at", datetime.utcnow().isoformat())
-        data.setdefault("patients", [])
-        return self._create(path, data)
+class BinderMedical(Binder, IUserService, IClientService, IInteractionService):
+    """Medical domain binder."""
+    
+    # user
+    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        self.adapter.set_user(data["id"], data)
+        self.set_current_user(data["id"])
+        return data
 
-    def read_user(self, google_id: str) -> Optional[Dict[str, Any]]:
-        return self._read(f"{self.ROOT}/{google_id}")
+    def read(self, entity_id: str) -> Dict[str, Any]:
+        return self.adapter.get_user(entity_id)
 
-    def update_user(self, google_id: str, patch: Dict[str, Any]) -> None:
-        self._update(f"{self.ROOT}/{google_id}", patch)
+    def update(self, entity_id: str, patch: Dict[str, Any]) -> None:
+        user = self.adapter.get_user(entity_id) or {}
+        user.update(patch)
+        self.adapter.set_user(entity_id, user)
 
-    def delete_user(self, google_id: str) -> None:
-        self._delete(f"{self.ROOT}/{google_id}")
+    def delete(self, entity_id: str) -> None:
+        self.adapter.delete_user(entity_id)
 
-    # -------- PATIENTS --------
-    def create_patient(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/patients"
-        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
-        data.setdefault("visits", [])
-        return self._create(path, data)
+    # patient
+    def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        return self._add_child("patients", data)
 
-    def read_patient(self, patient_id: str) -> Optional[Dict[str, Any]]:
-        self._require_user()
-        patients = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/patients")
-        return next((p for p in patients if str(p.get("id")) == str(patient_id)), None)
+    def read_client(self, client_id: str) -> Dict[str, Any]:
+        patients = self.adapter.list_children(self.current_user, "patients")
+        return next((p for p in patients if p["id"] == client_id), None)
 
-    def update_patient(self, patient_id: str, patch: Dict[str, Any]) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/patients/{patient_id}"
-        self._update(path, patch)
+    def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
+        self.adapter.update_child(self.current_user, "patients", client_id, patch)
 
-    def delete_patient(self, patient_id: str) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/patients/{patient_id}"
-        self._delete(path)
+    def delete_client(self, client_id: str) -> None:
+        self.adapter.delete_child(self.current_user, "patients", client_id)
 
-    # -------- VISITS --------
+    # visits (nested)
     def create_visit(self, patient_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/patients/{patient_id}/visits"
-        data.setdefault("vno", str(int(datetime.utcnow().timestamp())))
-        data.setdefault("visit_date", datetime.utcnow().isoformat())
-        return self._create(path, data)
+        self.adapter.add_nested(self.current_user, "patients", patient_id, "visits", data)
+        return data
 
-    def read_visits(self, patient_id: str) -> List[Dict[str, Any]]:
-        self._require_user()
-        return self.adapter.get_list(f"{self.ROOT}/{self._current_user}/patients/{patient_id}/visits")
+    def list(self, patient_id: str) -> List[Dict[str, Any]]:
+        return self.adapter.list_nested(self.current_user, "patients", patient_id, "visits")
 
     def update_visit(self, patient_id: str, visit_id: str, patch: Dict[str, Any]) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/patients/{patient_id}/visits/{visit_id}"
-        self._update(path, patch)
+        self.adapter.update_nested(self.current_user, "patients", patient_id, "visits", visit_id, patch)
 
     def delete_visit(self, patient_id: str, visit_id: str) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/patients/{patient_id}/visits/{visit_id}"
-        self._delete(path)
+        self.adapter.delete_nested(self.current_user, "patients", patient_id, "visits", visit_id)

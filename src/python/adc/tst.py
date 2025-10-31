@@ -1,31 +1,21 @@
-from gaia.adapters.firebase_crud_adapter import FirebaseCrudAdapter
-from gaia.engine import GaiaEngine
+# simple wiring example (dev)
+from ..binder.adapters.inmemory_adapter import InMemoryAdapter
 from ..binder.binder_business import BinderBusiness
+from ..binder.gaia.gaia_engine import GaiaEngine
 
-firebase = FirebaseCrudAdapter()
-engine = GaiaEngine(adapter=firebase, config={})
-binder = BinderBusiness(adapter=firebase, gaia_engine=engine)
+adapter = InMemoryAdapter()
+binder = BinderBusiness(adapter)
+binder.create_user({"id": "company_1", "name": "Acme", "email": "a@acme.com"})
+binder.current_user = "company_1"
 
-binder.current_user = "google_id_123"
+# create client
+c = binder.create_client({"id": "client_1", "name": "John Doe"})
+# add transaction
+t = binder.create_transaction("client_1", {"id": "txn_1", "amount": 300.0, "method": "card"})
+# add interaction with time_saved metadata (for ROI)
+binder.create_interaction("client_1", {"id": "i1", "type": "onboarding", "metadata": {"time_saved_hours": 2}})
 
-# Add client
-client = binder.create_client({"name": "Acme Inc."})
-
-# Update client info
-binder.update_client(client["id"], {"location": "New York"})
-
-# Add product and service
-binder.create_product({"name": "Widget", "price": 150.0})
-binder.create_service({"name": "Consultation", "hourly_rate": 75.0})
-
-# Add employee
-employee = binder.create_employee({"name": "Aisha", "role": "Manager"})
-
-# Create interaction and transaction
-binder.create_interaction(client["id"], {"type": "meeting", "note": "Quarterly review"})
-binder.create_transaction(client["id"], {"amount": 300.0, "method": "credit"})
-
-# Read, update, delete examples
-binder.read_client(client["id"])
-binder.update_employee(employee["id"], {"role": "Director"})
-binder.delete_transaction(client["id"], "txn_123")
+# analytics
+gaia = GaiaEngine(binder, config={"default_avg_hourly": 60, "plan_price_map":{"default": 100}})
+print(gaia.finance())
+print(gaia.roi())

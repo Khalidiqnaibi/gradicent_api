@@ -1,191 +1,85 @@
 """
 Binder Business
-------------------
-Concrete Binder implementation for any business type (product, service, or hybrid).
-Includes full CRUD for users, clients, employees, products, services, interactions, and transactions.
+------------------------------
+BinderBusiness: storage-agnostic implementation using StorageAdapter.
+All methods return / accept model dicts (uniform schema).
 """
 
-from datetime import datetime
-from typing import Dict, Any, List, Optional
-from .binder import Binder
+from typing import Any, Dict, Optional
+from .storage_adapter import StorageAdapter
 
+class BinderBusiness(
+    BaseBinder,
+    IUserService,
+    IClientService,
+    IEmployeeService,
+    IProductService,
+    IServiceService,
+    IInteractionService,
+    ITransactionService,
+):
+    """
+    Binder Business that stores and reads uniform model dicts.
+    Uses StorageAdapter interface so any DB backend can be plugged.
+    """
 
-def _ts() -> str:
-    return datetime.now().isoformat()
-
-
-class BinderBusiness(Binder):
-    ROOT = "/Business"
-
-    # -------- USERS CRUD --------
+    # user CRUD
     def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        if "id" not in data:
-            raise ValueError("User must have an 'id'")
-        path = f"{self.ROOT}/{data['id']}"
-        data.setdefault("created_at", _ts())
-        data.setdefault("clients", [])
-        data.setdefault("employees", [])
-        data.setdefault("products", [])
-        data.setdefault("services", [])
-        self._create(path, data)
+        self.adapter.set_user(data["id"], data)
+        self.set_current_user(data["id"])
         return data
 
-    def read(self, entity_id: str) -> Optional[Dict[str, Any]]:
-        return self._read(f"{self.ROOT}/{entity_id}")
+    def read(self, entity_id: str) -> Dict[str, Any]:
+        return self.adapter.get_user(entity_id)
 
     def update(self, entity_id: str, patch: Dict[str, Any]) -> None:
-        self._update(f"{self.ROOT}/{entity_id}", patch)
+        user = self.adapter.get_user(entity_id) or {}
+        user.update(patch)
+        self.adapter.set_user(entity_id, user)
 
     def delete(self, entity_id: str) -> None:
-        self._delete(f"{self.ROOT}/{entity_id}")
+        self.adapter.delete_user(entity_id)
 
-    # -------- CLIENTS CRUD --------
+    # clients
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/clients"
-        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
-        data.setdefault("created_at", _ts())
-        data.setdefault("interactions", [])
-        data.setdefault("transactions", [])
-        return self._create(path, data)
+        return self._add_child("clients", data)
 
-    def read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
-        self._require_user()
-        clients = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/clients")
-        return next((c for c in clients if str(c.get("id")) == str(client_id)), None)
+    def read_client(self, client_id: str) -> Dict[str, Any]:
+        return next(
+            (c for c in self.adapter.list_children(self.current_user, "clients") if c["id"] == client_id),
+            None,
+        )
 
     def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}"
-        self._update(path, patch)
+        self.adapter.update_child(self.current_user, "clients", client_id, patch)
 
     def delete_client(self, client_id: str) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}"
-        self._delete(path)
+        self.adapter.delete_child(self.current_user, "clients", client_id)
 
-    # -------- EMPLOYEES CRUD --------
-    def create_employee(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/employees"
-        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
-        data.setdefault("created_at", _ts())
-        return self._create(path, data)
+    # employees, products, services (same structure)
+    def create_employee(self, data): return self._add_child("employees", data)
+    def update_employee(self, emp_id, patch): self.adapter.update_child(self.current_user, "employees", emp_id, patch)
+    def delete_employee(self, emp_id): self.adapter.delete_child(self.current_user, "employees", emp_id)
 
-    def read_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:
-        self._require_user()
-        emps = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/employees")
-        return next((e for e in emps if str(e.get("id")) == str(employee_id)), None)
+    def create_product(self, data): return self._add_child("products", data)
+    def update_product(self, prod_id, patch): self.adapter.update_child(self.current_user, "products", prod_id, patch)
+    def delete_product(self, prod_id): self.adapter.delete_child(self.current_user, "products", prod_id)
 
-    def update_employee(self, employee_id: str, patch: Dict[str, Any]) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/employees/{employee_id}"
-        self._update(path, patch)
+    def create_service(self, data): return self._add_child("services", data)
+    def update_service(self, svc_id, patch): self.adapter.update_child(self.current_user, "services", svc_id, patch)
+    def delete_service(self, svc_id): self.adapter.delete_child(self.current_user, "services", svc_id)
 
-    def delete_employee(self, employee_id: str) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/employees/{employee_id}"
-        self._delete(path)
-
-    # -------- PRODUCTS CRUD --------
-    def create_product(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/products"
-        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
-        return self._create(path, data)
-
-    def read_product(self, product_id: str) -> Optional[Dict[str, Any]]:
-        self._require_user()
-        prods = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/products")
-        return next((p for p in prods if str(p.get("id")) == str(product_id)), None)
-
-    def update_product(self, product_id: str, patch: Dict[str, Any]) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/products/{product_id}"
-        self._update(path, patch)
-
-    def delete_product(self, product_id: str) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/products/{product_id}"
-        self._delete(path)
-
-    # -------- SERVICES CRUD --------
-    def create_service(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/services"
-        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
-        return self._create(path, data)
-
-    def read_service(self, service_id: str) -> Optional[Dict[str, Any]]:
-        self._require_user()
-        servs = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/services")
-        return next((s for s in servs if str(s.get("id")) == str(service_id)), None)
-
-    def update_service(self, service_id: str, patch: Dict[str, Any]) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/services/{service_id}"
-        self._update(path, patch)
-
-    def delete_service(self, service_id: str) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/services/{service_id}"
-        self._delete(path)
-
-    # -------- INTERACTIONS CRUD --------
+    # interactions / transactions (nested)
     def create_interaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        self._require_user()
-        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
-        data.setdefault("timestamp", _ts())
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/interactions"
-        return self._create(path, data)
+        self.adapter.add_nested(self.current_user, "clients", client_id, "interactions", data)
+        return data
 
-    def list(self, client_id: str, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/interactions"
-        interactions = self.adapter.get_list(path)
-        if not filters:
-            return interactions
-        start, end = filters.get("from"), filters.get("to")
-        if start or end:
-            from datetime import datetime as dt
-            start_dt = dt.fromisoformat(start) if start else None
-            end_dt = dt.fromisoformat(end) if end else None
-            return [
-                i for i in interactions
-                if (not start_dt or dt.fromisoformat(i["timestamp"]) >= start_dt)
-                and (not end_dt or dt.fromisoformat(i["timestamp"]) <= end_dt)
-            ]
-        return interactions
+    def list(self, client_id: str) -> List[Dict[str, Any]]:
+        return self.adapter.list_nested(self.current_user, "clients", client_id, "interactions")
 
-    def update_interaction(self, client_id: str, interaction_id: str, patch: Dict[str, Any]) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/interactions/{interaction_id}"
-        self._update(path, patch)
-
-    def delete_interaction(self, client_id: str, interaction_id: str) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/interactions/{interaction_id}"
-        self._delete(path)
-
-    # -------- TRANSACTIONS CRUD --------
     def create_transaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        self._require_user()
-        data.setdefault("id", str(int(datetime.utcnow().timestamp())))
-        data.setdefault("timestamp", _ts())
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/transactions"
-        return self._create(path, data)
+        self.adapter.add_nested(self.current_user, "clients", client_id, "transactions", data)
+        return data
 
-    def read_transaction(self, client_id: str, txn_id: str) -> Optional[Dict[str, Any]]:
-        self._require_user()
-        txns = self.adapter.get_list(f"{self.ROOT}/{self._current_user}/clients/{client_id}/transactions")
-        return next((t for t in txns if str(t.get("id")) == str(txn_id)), None)
-
-    def update_transaction(self, client_id: str, txn_id: str, patch: Dict[str, Any]) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/transactions/{txn_id}"
-        self._update(path, patch)
-
-    def delete_transaction(self, client_id: str, txn_id: str) -> None:
-        self._require_user()
-        path = f"{self.ROOT}/{self._current_user}/clients/{client_id}/transactions/{txn_id}"
-        self._delete(path)
+    def list_transactions(self, client_id: str) -> List[Dict[str, Any]]:
+        return self.adapter.list_nested(self.current_user, "clients", client_id, "transactions")

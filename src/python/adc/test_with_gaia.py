@@ -1,25 +1,22 @@
-from gaia.engine import GaiaEngine
-from medical_binder import MedicalBinder
 from gaia.adapters.firebase_crud_adapter import FirebaseCrudAdapter
+from ..binder.binder_medical import BinderMedical
 
+adapter = FirebaseCrudAdapter()
+binder = BinderMedical(adapter)
 
-class MedicalService:
-    """Connects MedicalBinder with GaiaEngine analytics."""
+binder.current_user = "google_id_123"
 
-    def __init__(self):
-        adapter = FirebaseCrudAdapter()
-        self.gaia = GaiaEngine(adapter)
-        self.binder = MedicalBinder(adapter, self.gaia)
+# Create a doctor account
+binder.create({"google_id": "google_id_123", "name": "Dr. Aisha"})
 
-    def set_current_user(self, google_id: str):
-        self.binder.current_user = google_id
+# Add a patient
+patient = binder.create_client({"name": "John Doe", "age": 45})
 
-    def get_finance_stats(self, start=None, end=None):
-        data = self.gaia.compute_finance(self.binder.current_user, start, end)
-        return data
+# Add a visit
+binder.create_interaction(patient["id"], {"diagnosis": "Flu", "treatment": "Rest + fluids"})
 
-    def get_productivity_stats(self, start=None, end=None):
-        return self.gaia.compute_productivity(self.binder.current_user, start, end)
+# Update patient info
+binder.update_client(patient["id"], {"location": "New York"})
 
-    def get_roi_stats(self, start=None, end=None):
-        return self.gaia.compute_roi(self.binder.current_user, start, end)
+# List visits
+visits = binder.list(patient["id"])
