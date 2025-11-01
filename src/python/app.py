@@ -4555,6 +4555,7 @@ but that tag changes into the first date of the plan not the first time for the 
 
 # TODO:
 - re do the equation for the roi of binder medical 
+- make the payment with paypal temp
 - make the plans for the payments with stripe 
 - make restrictions for the diffrant plans knowing the this is what we have in mind now :
 
@@ -4570,6 +4571,11 @@ if user_plan == "starter":
         return render_template("upgrade.html", msg="Printing and uploads are Pro features.")
 
 - refactor with the new code standards
+
+# NOTE: 
+- we will start with the paypal for payments untill we get the EIN from the IRS
+- when we do we will change the payment and subsribtion to be handled all by stripe
+- we might change the payment method in the really far futuer
 
 '''
 

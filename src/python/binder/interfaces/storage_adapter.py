@@ -1,5 +1,5 @@
 """
-Storage Adapter
+storage_adapter.py
 ------------------------------
 Adapter protocol for data storage. Implementations must be storage-agnostic.
 """

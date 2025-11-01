@@ -1,8 +1,8 @@
-from gaia.adapters.firebase_crud_adapter import FirebaseCrudAdapter
-from ..binder.binder_medical import BinderMedical
+from ..binder import *
 
-adapter = FirebaseCrudAdapter()
+adapter = FirebaseCrudAdapter("drs")
 binder = BinderMedical(adapter)
+GAIA= GaiaEngine(binder)
 
 binder.current_user = "google_id_123"
 
