@@ -5,11 +5,21 @@ BinderBusiness: storage-agnostic implementation using StorageAdapter.
 All methods return / accept model dicts (uniform schema).
 """
 
-from typing import Any, Dict, Optional
-from .storage_adapter import StorageAdapter
+from typing import Any, Dict, Optional , List
+from .interfaces.storage_adapter import StorageAdapter
+from .interfaces.binder import Binder
+from .interfaces.binder_interface import (
+    IUserService,
+    IClientService,
+    IEmployeeService,
+    IProductService,
+    IServiceService,
+    IInteractionService,
+    ITransactionService,
+)
 
 class BinderBusiness(
-    BaseBinder,
+    Binder,
     IUserService,
     IClientService,
     IEmployeeService,
