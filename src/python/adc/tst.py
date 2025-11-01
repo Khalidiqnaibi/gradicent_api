@@ -1,7 +1,7 @@
 # simple wiring example (dev)
-from ..binder.adapters.inmemory_adapter import InMemoryAdapter
-from ..binder.binder_business import BinderBusiness
-from ..binder.gaia.gaia_engine import GaiaEngine
+from binder import InMemoryAdapter
+from binder import BinderBusiness
+from gaia import GaiaEngine
 
 adapter = InMemoryAdapter()
 binder = BinderBusiness(adapter)

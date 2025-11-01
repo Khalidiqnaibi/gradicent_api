@@ -20,11 +20,13 @@ from ..binder.interfaces.binder_interface import (
     IUserService
 )
 from ..binder.gaia.gaia_engine import GaiaEngine
+from ..binder.adapters.inmemory_adapter import InMemoryAdapter
 
 __all__ = [
     "inmemory_adapter","firebase_crud_adapter","binder_business","binder_medical",
     "binder_interface","binder","storage_adapter","models","medical_service","gaia_engine",
     "FirebaseCrudAdapter","BinderBusiness","BinderMedical","Binder","IClientService",
     "ICrudService","IEmployeeService","IInteractionService","INestedCrudService",
-    "IProductService","IServiceService", "ITransactionService","IUserService","GaiaEngine"
+    "IProductService","IServiceService", "ITransactionService","IUserService","GaiaEngine",
+    "InMemoryAdapter"
 ]
