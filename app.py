@@ -7,7 +7,16 @@ Initializes Flask, Firebase, and registers domain routes.
 
 from flask import Flask
 from firebase_admin import credentials, initialize_app
+from BinderSoftware_api.services.subscription_service import SubscriptionService
 from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness
+
+from auth.auth_service import AuthService
+from services.user_service import UserService
+from payments.payment_provider import PaymentProviderFactory
+from routes.gaia_routes import gaia_blueprint
+from routes.binder_routes import binder_blueprint
+from routes.payments_routes import payments_blueprint
+import config
 
 # App & Firebase initialization
 app = Flask(__name__)
@@ -19,22 +28,42 @@ initialize_app(cred, {
     'storageBucket': 'monydb-f2cdb.appspot.com'
 })
 
-# Adapter + domain binders
-firebase_adapter_business = FirebaseCrudAdapter(root_path="business")
-firebase_adapter_medical = FirebaseCrudAdapter(root_path="drs")
 
-binders = {
-    "medical": BinderMedical(firebase_adapter_medical),
-    "business": BinderBusiness(firebase_adapter_business),
-}
+def create_app(config_name: str = 'default') -> Flask:
+    app = Flask(__name__, template_folder='templates', static_folder='static')
+    app.config.from_object(config.DefaultConfig)
+    
+    # Adapter + domain binders
+    firebase_adapter_business = FirebaseCrudAdapter(root_path="business")
+    firebase_adapter_medical = FirebaseCrudAdapter(root_path="drs")
 
-# Route registration
-from routes.gaia_routes import gaia_blueprint
-from routes.binder_routes import binder_blueprint
+    binders = {
+        "medical": BinderMedical(firebase_adapter_medical),
+        "business": BinderBusiness(firebase_adapter_business),
+    }
 
-app.register_blueprint(gaia_blueprint, url_prefix="/api/gaia")
-app.register_blueprint(binder_blueprint, url_prefix="/api/binder")
+    # services/adapters
+    storage = FirebaseCrudAdapter(firebase_config=app.config['FIREBASE'])
+    user_service = UserService(storage)
+    payment_provider = PaymentProviderFactory.create(app.config['PAYMENT_PROVIDER'], config=app.config)
+    subscription_service = SubscriptionService(storage, payment_provider)
 
-# Run the app
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Auth
+    auth_service = AuthService(client_secrets_path=app.config['GOOGLE_SECRETS'], redirect_uri=app.config['OAUTH_REDIRECT'])
+
+    # register blueprints and pass factories via app extensions
+    app.register_blueprint(gaia_blueprint, url_prefix='/api/gaia')
+    app.register_blueprint(binder_blueprint, url_prefix='/api/binder')
+    app.register_blueprint(payments_blueprint, url_prefix='/api/payments')
+
+    # Attach services for controllers to pull from app context
+    app.extensions['services'] = {
+        'user_service': user_service,
+        'auth_service': auth_service,
+        'subscription_service': subscription_service,
+        'payment_provider': payment_provider
+    }
+    return app
+
+if __name__ == '__main__':
+    create_app().run(host=H, port=5000, debug=True)
