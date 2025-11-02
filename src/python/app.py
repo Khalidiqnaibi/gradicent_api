@@ -1509,6 +1509,13 @@ def get_userD(google_id):
             #doc_ref.set(user_data)
         return user_data
 
+@app.route("/api/get_plan", methods=["POST"])
+@login_is_required
+def user_get_plan():
+    google_id = session['google_id']
+    plan = get_userD(google_id)['plan']
+    return  jsonify({ "status": "success", "data": {"plan":plan}, "message": "" }),200
+
 @app.route('/fetchUserData') # ths should be changed to a /redirect 
 def fetch_user_data():
     logged_in = "google_id" in session
