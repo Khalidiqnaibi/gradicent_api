@@ -8,7 +8,7 @@ Initializes Flask, Firebase, and registers domain routes.
 from flask import Flask
 from firebase_admin import credentials, initialize_app
 from BinderSoftware_api.services.subscription_service import SubscriptionService
-from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness
+from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness,UserRepository
 
 from auth.auth_service import AuthService
 from services.user_service import UserService
@@ -16,6 +16,7 @@ from payments.payment_provider import PaymentProviderFactory
 from routes.gaia_routes import gaia_blueprint
 from routes.binder_routes import binder_blueprint
 from routes.payments_routes import payments_blueprint
+from routes.auth_routes import auth_blueprint
 import config
 
 # App & Firebase initialization
@@ -48,6 +49,9 @@ def create_app(config_name: str = 'default') -> Flask:
     payment_provider = PaymentProviderFactory.create(app.config['PAYMENT_PROVIDER'], config=app.config)
     subscription_service = SubscriptionService(storage, payment_provider)
 
+    dr_user_repository =UserRepository(firebase_adapter_medical)
+    business_user_repository =UserRepository(firebase_adapter_business)
+
     # Auth
     auth_service = AuthService(client_secrets_path=app.config['GOOGLE_SECRETS'], redirect_uri=app.config['OAUTH_REDIRECT'])
 
@@ -55,14 +59,19 @@ def create_app(config_name: str = 'default') -> Flask:
     app.register_blueprint(gaia_blueprint, url_prefix='/api/gaia')
     app.register_blueprint(binder_blueprint, url_prefix='/api/binder')
     app.register_blueprint(payments_blueprint, url_prefix='/api/payments')
+    app.register_blueprint(auth_blueprint, url_prefix="/api/auth")
 
     # Attach services for controllers to pull from app context
-    app.extensions['services'] = {
-        'user_service': user_service,
-        'auth_service': auth_service,
-        'subscription_service': subscription_service,
-        'payment_provider': payment_provider
-    }
+    app.extensions.setdefault("services", {})
+    app.extensions["services"].update({
+        "user_service": user_service,
+        "dr_user_repository": dr_user_repository,
+        "business_user_repository":business_user_repository,
+        "auth_service": auth_service,
+        "subscription_service": subscription_service,
+        "payment_provider": payment_provider,
+        "binders": binders,
+    })
     return app
 
 if __name__ == '__main__':
