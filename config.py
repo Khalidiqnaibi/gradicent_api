@@ -14,6 +14,12 @@ STARTER_PRICE = os.getenv("STARTER_PRICE","5")
 PRO_PRICE = os.getenv("PRO_PRICE","25")
 ULTRA_PRICE = os.getenv("ULTRA_PRICE","125")
 PACKAGE_PRICE = os.getenv("PACKAGE_PRICE","1000")
+PLANS = {
+    "starter": float(STARTER_PRICE),
+    "pro": float(PRO_PRICE),
+    "ultra": float(ULTRA_PRICE),
+    "package": float(PACKAGE_PRICE),
+}
 
 # payment providers
 PADDLE_VENDOR_ID = os.getenv("PADDLE_VENDOR_ID","")

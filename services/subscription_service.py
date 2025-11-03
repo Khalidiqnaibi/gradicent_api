@@ -1,38 +1,50 @@
-'''
+"""
 subscription_service.py
-----------------
-Subscription service module for managing user subscriptions and trial periods.    
-'''
+------------------------
+Handles subscription logic and payment plan management.
+Follows SOLID and Gradicent code standards.
 
-from typing import Dict
-from binder import storage_adapter
-from ..payments.payment_provider import IPaymentProvider
+- SRP: Manages only subscription domain logic.
+- DIP: Depends on adapter and payment provider abstractions.
+"""
+
+from typing import Dict, Any, Optional
+from binder.repositories.user_repository import UserRepository
+from config import PLANS
+
 
 class SubscriptionService:
     """
-    Handles plan checks, payback/trial and plan upgrades.
-    
-    expects
-        storage (StorageAdapter): Storage adapter for user data.
-        payment_provider (PaymentProvider): Payment provider for handling payments.
-    outputs
-        get_user_plan(user_id: str) -> str: Returns the current plan of the user.
-        start_checkout(user_id: str, plan: str, provider: str) -> dict: Starts a checkout session for the user.
-        complete_webhook(payload: dict) -> None: Completes the webhook process for payment confirmation.
+    Handles subscription upgrades, downgrades, and cancellations.
     """
 
-    def __init__(self, storage: storage_adapter.StorageAdapter, payment_provider: IPaymentProvider):
-        self.storage = storage
-        self.payment_provider = payment_provider
+    def __init__(self, adapter, payment_service):
+        self.user_repo = UserRepository(adapter)
+        self.payment_service = payment_service
 
-    def get_user_plan(self, user_id: str) -> str:
-        user = self.storage.get(f"users/{user_id}")
-        return user.get("plan", "free")
+    def get_plan_price(self, plan_name: str) -> float:
+        """Retrieve the cost of a plan."""
+        return PLANS.get(plan_name.lower())
 
-    def start_checkout(self, user_id: str, plan: str, provider: str) -> dict:
-        price = self._plan_price(plan)
-        return self.payment_provider.create_payment(amount=price, currency='USD', metadata={"user_id": user_id, "plan": plan})
+    def subscribe_user(self, user_id: str, plan_name: str, payment_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Subscribes a user to a selected plan.
+        """
+        plan_price = self.get_plan_price(plan_name)
+        if not plan_price:
+            raise ValueError("Invalid plan selected.")
 
-    def complete_webhook(self, payload: dict) -> None:
-        # called by webhook route to finalize subscription (update DB)
-        pass
+        payment_result = self.payment_service.process_payment(payment_data, plan_price)
+
+        if payment_result["status"] == "success":
+            self.user_repo.update_user_metadata(user_id,"plan", plan_name)
+            return {"status": "success", "data":{"plan": plan_name, "price": plan_price},
+                    "message": f"Payment successfull. Amount: {plan_price} , Id: {user_id}"}
+        else:
+            return {"status": "failed","data":{}, "message": "Payment failed."}
+
+    def cancel_subscription(self, user_id: str) -> None:
+        """
+        Cancels user's subscription and updates metadata.
+        """
+        self.user_repo.update_user_metadata(user_id, "plan", "canceled")

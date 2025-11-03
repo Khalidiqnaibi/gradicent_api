@@ -56,17 +56,13 @@ class FirebaseCrudAdapter(StorageAdapter):
         return ref if not nested_id else ref.child(nested_id)
 
     # User-level operations
-    def add_user(self, user_id: str, user: Dict) -> None:
+    def set_user(self, user_id: str, user: Dict) -> None:
         """Create or replace a user entry."""
         self._user_ref(user_id).set(user)
 
     def get_user(self, user_id: str) -> Optional[Dict]:
         """Retrieve user data."""
         return self._user_ref(user_id).get()
-
-    def update_user(self, user_id: str, user: Dict) -> None:
-        """Create or replace a user entry."""
-        self._user_ref(user_id).set(user)
 
     def delete_user(self, user_id: str) -> None:
         """Remove a user and all related data."""

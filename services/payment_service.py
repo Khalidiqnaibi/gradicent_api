@@ -1,36 +1,26 @@
 """
-Payment service module for handling different payment providers.
+payment_service.py
+-------------------
+Manages payment operations across providers (Stripe, PayPal, Paddle).
+
+- SRP: Handles only payment orchestration.
+- OCP: New providers can be added without modifying core logic.
+- DIP: Depends on provider interface, not specific SDK.
 """
-from abc import ABC, abstractmethod
+
 from typing import Dict, Any
-
-
-class IPaymentProvider(ABC):
-    @abstractmethod
-    def create_checkout(self, amount: float, return_url: str, cancel_url: str, **meta) -> Dict[str,str]:
-        pass
-
-    @abstractmethod
-    def verify_payment(self, payment_id: str, **kwargs) -> bool:
-        pass
-
-class PaddleProvider(IPaymentProvider):
-    def __init__(self, api_key): ...
-    def create_checkout(...): ...
-    def verify_payment(...): ...
-
-class PayPalProvider(IPaymentProvider):
-    def __init__(self, client_id, secret): ...
-    def create_checkout(...): ...
-    def verify_payment(...): ...
+from payments.payment_provider import IPaymentProvider
 
 class PaymentService:
-    def __init__(self, providers: Dict[str, IPaymentProvider]):
-        self.providers = providers
+    """
+    Abstract payment orchestrator that supports multiple providers.
+    """
 
-    def checkout(self, provider_name: str, **kwargs):
-        provider = self.providers[provider_name]
-        return provider.create_checkout(**kwargs)
+    def __init__(self, provider: IPaymentProvider):
+        self.provider = provider
 
-    def confirm(self, provider_name: str, payment_id: str, **kwargs) -> bool:
-        return self.providers[provider_name].verify_payment(payment_id, **kwargs)
+    def process_payment(self, payment_data: Dict[str, Any], amount: float) -> Dict[str, Any]:
+        """
+        Processes a payment request through the selected provider.
+        """
+        return self.provider.create_payment(amount, payment_data)

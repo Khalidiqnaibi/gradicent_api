@@ -11,11 +11,25 @@ from typing import Dict, List, Any, Optional
 
 
 def now_iso() -> str:
-    return datetime.utcnow().isoformat()
+    return datetime.now().isoformat()
 
 
 @dataclass
 class User:
+    '''
+    user dataclass
+
+    expects:
+        id: str
+        name: str
+        email: Optional[str] 
+        created_at: str 
+        metadata: Dict[str, Any] 
+        clients: List[Dict[str, Any]] 
+        employees: List[Dict[str, Any]]
+        products: List[Dict[str, Any]] 
+        services: List[Dict[str, Any]]
+    '''
     id: str
     name: str
     email: Optional[str] = None
