@@ -41,7 +41,7 @@ def start_oauth():
     try:
         auth_url = auth_service.get_authorization_url(provider, state)
     except KeyError:
-        return jsonify({"status": "error", "message": f"unknown provider '{provider}'"}), 400
+        return jsonify({"status": "error","data":None, "message": f"unknown provider '{provider}'"}), 400
     return redirect(auth_url)
 
 
@@ -59,7 +59,7 @@ def oauth_callback():
     code = request.args.get("code")
     error = request.args.get("error")
     if error:
-        return jsonify({"status": "error", "message": error}), 400
+        return jsonify({"status": "error","data":None, "message": error}), 400
     if not code:
         raise BadRequest("missing 'code' in callback request")
 
@@ -68,14 +68,14 @@ def oauth_callback():
         user, tokens = auth_service.handle_provider_callback(provider, code)
     except Exception as exc:
         # return a safe error message
-        return jsonify({"status": "error", "message": str(exc)}), 500
+        return jsonify({"status": "error","data":None, "message": str(exc)}), 500
 
     # Browser flow: store session and minimal jwt
     session.permanent = True
     session["user_id"] = user.get("id")
     session["jwt"] = tokens.get("access_token")
 
-    return jsonify({"status": "success", "data": {"user": user, "tokens": tokens}})
+    return jsonify({"status": "success", "data": {"user": user, "tokens": tokens},"message":"got token"})
 
 
 @auth_blueprint.route("/signout", methods=["POST"])
@@ -93,7 +93,7 @@ def sign_out():
         # non-fatal: continue to clear session
         pass
     session.clear()
-    return jsonify({"status": "success", "message": "signed out"})
+    return jsonify({"status": "success","data":None, "message": "signed out"})
 
 
 @auth_blueprint.route("/me", methods=["GET"])
@@ -111,8 +111,8 @@ def current_user():
 
     user = auth_service.verify_token_and_get_user(token)
     if not user:
-        return jsonify({"status": "error", "message": "unauthenticated"}), 401
-    return jsonify({"status": "success", "data": user})
+        return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
+    return jsonify({"status": "success", "data": user,"message":"got user"})
 
 
 @auth_blueprint.route("/refresh", methods=["POST"])
@@ -130,6 +130,6 @@ def refresh_tokens():
 
     new_tokens = auth_service.refresh_tokens(refresh_token)
     if not new_tokens:
-        return jsonify({"status": "error", "message": "invalid or expired refresh token"}), 401
+        return jsonify({"status": "error","data":None, "message": "invalid or expired refresh token"}), 401
 
-    return jsonify({"status": "success", "data": new_tokens})
+    return jsonify({"status": "success", "data": new_tokens,"message":"refreshed"})

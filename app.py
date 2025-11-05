@@ -12,7 +12,7 @@ from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness,UserReposit
 
 from auth.auth_service import AuthService
 from services.user_service import UserService
-from payments.payment_provider import PaymentProviderFactory
+from payments.stripe_provider import StripePaymentProvider
 from routes.gaia_routes import gaia_blueprint
 from routes.binder_routes import binder_blueprint
 from routes.payments_routes import payments_blueprint
@@ -29,10 +29,12 @@ initialize_app(cred, {
     'storageBucket': 'monydb-f2cdb.appspot.com'
 })
 
+CONFIG=config.DefaultConfig()
+
 
 def create_app(config_name: str = 'default') -> Flask:
     app = Flask(__name__, template_folder='templates', static_folder='static')
-    app.config.from_object(config.DefaultConfig)
+    app.config.from_object(CONFIG)
     
     # Adapter + domain binders
     firebase_adapter_business = FirebaseCrudAdapter(root_path="business")
@@ -43,10 +45,12 @@ def create_app(config_name: str = 'default') -> Flask:
         "business": BinderBusiness(firebase_adapter_business),
     }
 
+    app.config.setdefault("BINDERS", binders)
+
     # services/adapters
     storage = FirebaseCrudAdapter(firebase_config=app.config['FIREBASE'])
     user_service = UserService(storage)
-    payment_provider = PaymentProviderFactory.create(app.config['PAYMENT_PROVIDER'], config=app.config)
+    payment_provider = StripePaymentProvider(CONFIG["STRIPE_API_KEY"])
     subscription_service = SubscriptionService(storage, payment_provider)
 
     dr_user_repository =UserRepository(firebase_adapter_medical)
@@ -72,7 +76,7 @@ def create_app(config_name: str = 'default') -> Flask:
         "payment_provider": payment_provider,
         "binders": binders,
     })
-    return app
+    return app 
 
 if __name__ == '__main__':
-    create_app().run(host=config.HOST, port=config.PORT, debug=config.DEBUG)
+    create_app().run(host=CONFIG["HOST"], port=CONFIG["PORT"], debug=CONFIG["DEBUG"])
