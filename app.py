@@ -60,10 +60,10 @@ def create_app(config_name: str = 'default') -> Flask:
     auth_service = AuthService(client_secrets_path=app.config['GOOGLE_SECRETS'], redirect_uri=app.config['OAUTH_REDIRECT'])
 
     # register blueprints and pass factories via app extensions
-    app.register_blueprint(gaia_blueprint, url_prefix='/api/gaia')
-    app.register_blueprint(binder_blueprint, url_prefix='/api/binder')
-    app.register_blueprint(payments_blueprint, url_prefix='/api/payments')
-    app.register_blueprint(auth_blueprint, url_prefix="/api/auth")
+    app.register_blueprint(gaia_blueprint, url_prefix=CONFIG["GAIA_ROUTE_PREFIX"])
+    app.register_blueprint(binder_blueprint, url_prefix=CONFIG["BINDER_ROUTE_PREFIX"])
+    app.register_blueprint(payments_blueprint, url_prefix=CONFIG["PAYMENT_ROUTE_PREFIX"])
+    app.register_blueprint(auth_blueprint, url_prefix=CONFIG["AUTH_ROUTE_PREFIX"])
 
     # Attach services for controllers to pull from app context
     app.extensions.setdefault("services", {})
