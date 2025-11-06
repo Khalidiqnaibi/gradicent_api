@@ -104,10 +104,10 @@ binder.create_transaction(client["id"], {"amount": 200.0, "status": "paid"})
 **Example:**
 
 ```python
-from gaia.engine import GaiaEngine
+from gaia import GaiaEngine
 
 engine = GaiaEngine()
-results = engine.compute(binder, "roi", from="2025-01-01", to="2025-02-01")
+results = engine.compute(binder, "roi", From="2025-01-01", To="2025-02-01")
 print(results)
 ```
 
