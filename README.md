@@ -77,8 +77,7 @@ gradicent-api/
 **Example:**
 
 ```python
-from binder.adapters.firebase_crud_adapter import FirebaseCrudAdapter
-from binder.binder_business import BinderBusiness
+from binder import FirebaseCrudAdapter,BinderBusiness
 
 adapter = FirebaseCrudAdapter()
 binder = BinderBusiness(adapter)
