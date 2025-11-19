@@ -17,7 +17,7 @@ class BinderMedical(Binder, IUserService, IClientService, IInteractionService):
     # user
     def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self.adapter.set_user(data["id"], data)
-        self.set_current_user(data["id"])
+        self.current_user=data["id"]
         return data
 
     def read(self, entity_id: str) -> Dict[str, Any]:

@@ -99,13 +99,17 @@ class BinderService:
 
         Args:
             user_id (str): non-empty user identifier.
-
-        Side effects:
-            - Calls underlying binder.set_current_user.
         """
+        
         if not user_id:
             raise BinderServiceError("user_id cannot be empty")
-        self._wrap_and_log("set_current_user", self._binder.set_current_user, user_id)
+
+        # Use the binder's property setter correctly
+        def _setter(uid):
+            self._binder.current_user = uid
+
+        # Keep logging / wrapper behavior intact
+        self._wrap_and_log("set_current_user", _setter, user_id)
 
     # ------- Public API: Client / Patient operations -------
 
