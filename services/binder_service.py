@@ -90,7 +90,7 @@ class BinderService:
         self._ensure_id(user, "id")
         created = self._wrap_and_log("create_user", self._binder.create, user)
         # set current user to avoid hidden state surprises in downstream code
-        self._wrap_and_log("set_current_user_after_create", self._binder.set_current_user, user["id"])
+        self.set_current_user(user["id"])
         return created
 
     def set_current_user(self, user_id: str) -> None:

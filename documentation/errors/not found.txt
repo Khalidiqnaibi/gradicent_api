@@ -1,4 +1,4 @@
-this : localhost:5000/api/binder/clients/4?domain=medical&user_id=101597446369752496399
+this :GET localhost:5000/api/binder/clients/4?domain=medical&user_id=101597446369752496399
 
 made this error : {
     "data": null,

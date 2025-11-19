@@ -1,0 +1,12 @@
+this : POST localhost:5000/api/binder/create_user
+
+gave this : 
+{
+    "data": {
+        "id": "0"
+    },
+    "message": "User created successfully.",
+    "status": "success"
+}
+
+but i cant see the added user if it was
