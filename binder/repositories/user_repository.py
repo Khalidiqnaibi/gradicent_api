@@ -5,7 +5,9 @@ Handles user-specific data operations and extensions.
 """
 
 from typing import Dict, Any, Optional
-from binder import User, BaseRepository
+
+from ..models.models import User 
+from ..interfaces.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository):

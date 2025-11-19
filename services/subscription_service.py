@@ -9,7 +9,7 @@ Follows SOLID and Gradicent code standards.
 """
 
 from typing import Dict, Any, Optional
-from binder.repositories.user_repository import UserRepository
+from binder import UserRepository
 from config import PLANS
 
 

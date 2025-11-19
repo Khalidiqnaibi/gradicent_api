@@ -6,7 +6,7 @@ All repositories inherit from this.
 """
 
 from typing import Any, Dict, List, Optional, Type
-from binder.interfaces.storage_adapter import StorageAdapter
+from .storage_adapter import StorageAdapter
 
 
 class BaseRepository:

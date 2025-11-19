@@ -5,7 +5,8 @@ Repository for client data management.
 """
 
 from typing import Dict, Any
-from binder import Client,  BaseRepository
+from ..models.models import Client  
+from ..interfaces.base_repository import BaseRepository
 
 
 class ClientRepository(BaseRepository):

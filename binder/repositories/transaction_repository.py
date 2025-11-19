@@ -5,7 +5,9 @@ Handles all financial transaction persistence.
 """
 
 from typing import Dict, Any
-from binder import Transaction,BaseRepository
+
+from ..models.models import Transaction
+from ..interfaces.base_repository import BaseRepository
 
 
 class TransactionRepository(BaseRepository):

@@ -5,7 +5,9 @@ Repository for service data management.
 """
 
 from typing import Dict, Any
-from binder import Service,  BaseRepository
+
+from ..models.models import  Service
+from ..interfaces.base_repository import BaseRepository
 
 
 class ServiceRepository(BaseRepository):

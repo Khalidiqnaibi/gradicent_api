@@ -5,7 +5,9 @@ Manages client interaction history.
 """
 
 from typing import Dict, Any
-from binder import Interaction,BaseRepository
+
+from ..models.models import  Interaction
+from ..interfaces.base_repository import BaseRepository
 
 
 class InteractionRepository(BaseRepository):

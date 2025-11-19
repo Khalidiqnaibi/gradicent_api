@@ -3,8 +3,8 @@ employee_repository.py
 ----------------------
 Repository for employee records.
 """
-
-from binder import Employee, BaseRepository
+from ..models.models import Employee  
+from ..interfaces.base_repository import BaseRepository
 
 
 class EmployeeRepository(BaseRepository):

@@ -10,8 +10,7 @@ Follows SOLID principles:
 """
 
 from typing import Dict, Any, Optional
-from binder.repositories.user_repository import UserRepository
-from binder.models.models import User
+from binder import UserRepository,User
 
 
 class UserService:

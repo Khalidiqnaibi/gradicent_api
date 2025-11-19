@@ -5,7 +5,9 @@ Repository for product data management.
 """
 
 from typing import Dict, Any
-from binder import Product,  BaseRepository
+
+from ..models.models import Product
+from ..interfaces.base_repository import BaseRepository
 
 
 class ProductRepository(BaseRepository):
