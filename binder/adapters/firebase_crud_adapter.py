@@ -77,7 +77,18 @@ class FirebaseCrudAdapter(StorageAdapter):
         """Return all child objects under a given collection."""
         ref = self._child_ref(user_id, collection)
         children = ref.get() or {}
-        return [dict({"id": k}, **v) if isinstance(v, dict) else {"id": k, "value": v} for k, v in children.items()]
+
+        # Normalize list -> dict
+        if isinstance(children, list):
+            children = {str(i): v for i, v in enumerate(children)}
+
+        result = []
+        for k, v in children.items():
+            if isinstance(v, dict):
+                result.append({"id": k, **v})
+            else:
+                result.append({"id": k, "value": v})
+        return result
 
     def add_child(self, user_id: str, collection: str, obj: Dict) -> str:
         """Add a new child object (e.g., client, product)."""
@@ -99,10 +110,18 @@ class FirebaseCrudAdapter(StorageAdapter):
         """Return all nested objects under a specific child."""
         ref = self._nested_ref(user_id, collection, child_id, nested)
         nested_objs = ref.get() or {}
-        return [
-            dict({"id": k}, **v) if isinstance(v, dict) else {"id": k, "value": v}
-            for k, v in nested_objs.items()
-        ]
+
+        # Normalize list -> dict
+        if isinstance(nested_objs, list):
+            nested_objs = {str(i): v for i, v in enumerate(nested_objs)}
+
+        result = []
+        for k, v in nested_objs.items():
+            if isinstance(v, dict):
+                result.append({"id": k, **v})
+            else:
+                result.append({"id": k, "value": v})
+        return result
 
     def add_nested(
         self,
