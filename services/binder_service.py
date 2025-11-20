@@ -104,11 +104,10 @@ class BinderService:
         if not user_id:
             raise BinderServiceError("user_id cannot be empty")
 
-        # Use the binder's property setter correctly
+
         def _setter(uid):
             self._binder.current_user = uid
 
-        # Keep logging / wrapper behavior intact
         self._wrap_and_log("set_current_user", _setter, user_id)
 
     # ------- Public API: Client / Patient operations -------

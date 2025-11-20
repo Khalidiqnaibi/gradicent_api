@@ -16,7 +16,7 @@ class BinderMedical(Binder, IUserService, IClientService, IInteractionService):
     
     # user
     def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.adapter.set_user(data["id"], data)
+        self.adapter.add_user(data["id"], data)
         self.current_user=data["id"]
         return data
 
@@ -26,18 +26,23 @@ class BinderMedical(Binder, IUserService, IClientService, IInteractionService):
     def update(self, entity_id: str, patch: Dict[str, Any]) -> None:
         user = self.adapter.get_user(entity_id) or {}
         user.update(patch)
-        self.adapter.set_user(entity_id, user)
+        self.adapter.update_user(entity_id, user)
 
     def delete(self, entity_id: str) -> None:
         self.adapter.delete_user(entity_id)
 
     # patient
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return self._add_child("patients", data)
+        client_id = self.adapter.add_child(self.current_user, "patients", data)
+        return {"id": client_id, **data}
 
     def read_client(self, client_id: str) -> Dict[str, Any]:
         patients = self.adapter.list_children(self.current_user, "patients")
-        return next((p for p in patients if p["id"] == client_id), None)
+        client = patients[int(client_id)] 
+        if client:
+            return patients[int(client_id)] 
+        else:
+            return None
 
     def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(self.current_user, "patients", client_id, patch)

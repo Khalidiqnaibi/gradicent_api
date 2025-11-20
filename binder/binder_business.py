@@ -35,7 +35,7 @@ class BinderBusiness(
 
     # user CRUD
     def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.adapter.set_user(data["id"], data)
+        self.adapter.add_user(data["id"], data)
         self.current_user=data["id"]
         return data
 
@@ -45,20 +45,24 @@ class BinderBusiness(
     def update(self, entity_id: str, patch: Dict[str, Any]) -> None:
         user = self.adapter.get_user(entity_id) or {}
         user.update(patch)
-        self.adapter.set_user(entity_id, user)
+        self.adapter.update_user(entity_id, user)
 
     def delete(self, entity_id: str) -> None:
         self.adapter.delete_user(entity_id)
 
     # clients
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return self._add_child("clients", data)
+        client_id = self.adapter.add_child(self.current_user, "clients", data)
+        return {"id": client_id, **data}
+
 
     def read_client(self, client_id: str) -> Dict[str, Any]:
-        return next(
-            (c for c in self.adapter.list_children(self.current_user, "clients") if c["id"] == client_id),
-            None,
-        )
+        clients = self.adapter.list_children(self.current_user, "clients")
+        client = clients[int(client_id)] 
+        if client:
+            return clients[int(client_id)] 
+        else:
+            return None
 
     def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(self.current_user, "clients", client_id, patch)

@@ -92,9 +92,8 @@ class FirebaseCrudAdapter(StorageAdapter):
 
     def add_child(self, user_id: str, collection: str, obj: Dict) -> str:
         """Add a new child object (e.g., client, product)."""
-        ref = self._child_ref(user_id, collection).push(obj)
-        child_id = ref.key
-        ref.update({"id": child_id})
+        child_id = obj["id"]
+        self._child_ref(user_id, collection, child_id).set(obj)
         return child_id
 
     def update_child(self, user_id: str, collection: str, child_id: str, patch: Dict) -> None:

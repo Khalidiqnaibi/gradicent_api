@@ -1,0 +1,28 @@
+this: GET localhost:5000/api/binder/set_current_user
+
+with this body: 
+{
+    "domain": "business",
+    "user_id": "0"
+}
+
+
+made this error:
+<!doctype html>
+<html lang=en>
+<title>405 Method Not Allowed</title>
+<h1>Method Not Allowed</h1>
+<p>The method is not allowed for the requested URL.</p>
+
+keep in mind that the other test said that the user with id 0 was created for that domain
+===========================
+
+fixed :
+the method is a POST not GET
+
+this was the output now:
+{
+    "data": null,
+    "message": "Current user set.",
+    "status": "success"
+}

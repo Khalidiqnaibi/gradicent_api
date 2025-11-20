@@ -1,5 +1,12 @@
 this : POST localhost:5000/api/binder/create_user
 
+with the body:
+{
+    "domain": "business",
+    "user": { "id": "0" }
+}
+
+
 gave this : 
 {
     "data": {
@@ -9,4 +16,8 @@ gave this :
     "status": "success"
 }
 
-but i cant see the added user if it was
+but the user was not added to the db.
+
+
+==================================
+fixed: errors were in the firebase adapter (NAMING MISMATCH)

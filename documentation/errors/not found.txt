@@ -5,3 +5,60 @@ made this error : {
     "message": "404 Not Found: Client 4 not found",
     "status": "error"
 }
+
+========================
+another error: 
+after some fixes to the way the binder service searches for the client
+but this error came up :
+
+{
+    "data": null,
+    "message": "Error performing 'read_client': dictionary update sequence element #0 has length 16; 2 is required",
+    "status": "error"
+}
+
+============================
+fixed :
+ it was an error of me forgetting to delete dict() from the solve from other things i tried
+
+new output:
+{
+    "data": {
+        "age": "2",
+        "allergies": "gfdgfdg",
+        "btype": "",
+        "debit": "0",
+        "div": "",
+        "id": "6757",
+        "location": "ghfh",
+        "name": "uoijgfd",
+        "next": "2024-08-10",
+        "no": 1,
+        "payed": "0",
+        "phone": "0592840353",
+        "pmh": "hg",
+        "printed": true,
+        "sex": "",
+        "visits": [
+            {
+                "coast": 1000.0,
+                "debit": 111.2,
+                "details": "vcc",
+                "diagnosis": "",
+                "div": "",
+                "drname": "khalid",
+                "height": "173",
+                "lab": "non",
+                "payed": 888.8,
+                "treatment": "",
+                "visit_date": "2024-02-07",
+                "vno": 1,
+                "wight": "74"
+            }
+        ]
+    },
+    "message": "",
+    "status": "success"
+}
+
+which is correct.

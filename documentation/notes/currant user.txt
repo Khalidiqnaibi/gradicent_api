@@ -1,0 +1,2 @@
+im not sure if the currant logic for the curannt user setting and use is the right one and im pretty
+sure it will break when we have more than one user using it at the same time

@@ -36,6 +36,9 @@ class Binder(ABC):
 
     @current_user.setter
     def current_user(self, user_id: str) -> None:
+        user = self._adapter.get_user(user_id)
+        if not user:
+            raise Exception(f"User {user_id} does not exist")
         self._current_user = user_id
 
     def _require_user(self) -> None:

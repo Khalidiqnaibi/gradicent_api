@@ -1,0 +1,37 @@
+this : POST localhost:5000/api/binder/set_current_user
+
+with this body :
+{
+    "domain": "business",
+    "user_id": "10"
+}
+
+gave this success message:
+{
+    "data": null,
+    "message": "Current user set.",
+    "status": "success"
+}
+
+but it shouldnt work because the user with id 10 is not in the db
+
+====================
+fixed :
+added a checker in the main binder interface to check the db before setting it
+
+now it correctly gives : 
+{
+    "data": null,
+    "message": "Error performing 'set_current_user': User 0 does not exist",
+    "status": "error"
+}
+when a user is not in the db.
+this was the req:POST localhost:5000/api/binder/set_current_user
+
+with the body :
+{
+    "domain": "medical",
+    "user_id": "0"
+}
+
+which is correct
