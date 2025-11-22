@@ -60,8 +60,8 @@ class MatchedEntitiesMetric(IMetric):
 
         raw_entities = binder.adapter.list_children(
             binder.current_user, entity_key
-        ) or {}
-        entities = list(raw_entities.values())
+        ) or []
+        entities = list(raw_entities)
 
         if domain == "medical":
             matched = filter_patients(entities, kwargs)
