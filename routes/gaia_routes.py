@@ -66,7 +66,7 @@ def compute_metric():
         return make_response({}, f"Unknown domain '{domain}'.", "error")
 
     # Set user context
-    binder.set_current_user(user_id)
+    binder.current_user = user_id
 
     # Collect dynamic params for the metric
     params = {k: v for k, v in request.args.items() if k not in {"metric", "domain", "user_id"}}

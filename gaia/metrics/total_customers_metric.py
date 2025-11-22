@@ -30,20 +30,25 @@ class TotalCustomersMetric(IMetric):
 
         Args:
             binder: Gaia binder with adapter and current_user.
-            **kwargs: filter options (startDate / start_date, endDate, details, etc.)
-            for medical: 
-                kwargs = {
-                    "domain" = "medical" or None,"start_date","end_date","details"
-                    "location","treatment","diagnosis",
-                    "lab","show_date","show_visit_info"
-                }
 
-            for business: 
-                kwargs = {
-                    "domain" = "business" (not optional),"start_date","end_date","details"
-                    "location","product","service",
-                    "show_date","show_visit_info"
-                }
+            **kwargs (filter options):
+                Common:
+                    domain (str): "medical" | "business" | "education" | optional
+                    start_date (str): "YYYY-MM-DD"
+                    end_date   (str): "YYYY-MM-DD"
+                    details    (str): free text
+                    location   (str): free text
+                    show_date (bool): filter by date
+                    show_visit_info (bool): enable visit/transaction filtering
+
+                Medical-only:
+                    treatment (str)
+                    diagnosis (str)
+                    lab (str)
+
+                Business-only:
+                    product (str)
+                    service (str)
 
         Returns:
             dict: {"total_customers": int}
@@ -51,13 +56,13 @@ class TotalCustomersMetric(IMetric):
         # collect patients and normalize to a list
         DOMAIN = kwargs.get("domain","medical")
         if DOMAIN in ["medical"]:
-            raw_clients= binder.adapter.list_children(binder.current_user, DOMAIN_ENTITY_MAP[DOMAIN]) or {}
-            clients = list(raw_clients.values())
+            raw_clients= binder.adapter.list_children(binder.current_user, DOMAIN_ENTITY_MAP[DOMAIN]) or []
+            clients = list(raw_clients)
             matched = filter_patients(clients, kwargs)
             total = len(matched)
         elif DOMAIN in ["business"]:
-            raw_clients= binder.adapter.list_children(binder.current_user, DOMAIN_ENTITY_MAP[DOMAIN]) or {}
-            clients = list(raw_clients.values())
+            raw_clients= binder.adapter.list_children(binder.current_user, DOMAIN_ENTITY_MAP[DOMAIN]) or []
+            clients = list(raw_clients)
             matched = filter_clients(clients, kwargs)
             total = len(matched)
         

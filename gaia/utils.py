@@ -32,6 +32,12 @@ def filter_clients(clients, filters):
     show_date  = filters.get("show_date", False)
     show_visit_info = filters.get("show_visit_info", False)
 
+    if start_date or start_date:
+        show_date = True
+
+    if location or service or product:
+        show_visit_info = True
+
     matched = []
 
     for patient in clients:
@@ -76,6 +82,12 @@ def filter_patients(patients, filters):
     lab        = filters.get("lab", "").lower()
     show_date  = filters.get("show_date", False)
     show_visit_info = filters.get("show_visit_info", False)
+
+    if start_date or start_date:
+        show_date = True
+
+    if location or treatment or diagnosis or lab:
+        show_visit_info = True
 
     matched = []
 

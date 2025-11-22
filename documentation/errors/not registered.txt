@@ -1,0 +1,16 @@
+this: GET localhost:5000/api/gaia/compute?metric=total_customers&domain=medical&start_date=2025-10-01&end_date=2025-10-31&user_id=101597446369752496399
+
+
+
+
+
+made this error: 
+{
+    "data": {},
+    "message": "Error computing metric 'total_customers': Metric 'total_customers' not registered.",
+    "status": "error"
+}
+
+========================
+fixed: 
+added the new metrics to the __init__.py for gaia
