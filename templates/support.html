@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="/static/images/w3.jpg" />
+  <title>Support — Binder Medical</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --w: #e6ded9;
+      --text: #2b2b2b;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:linear-gradient(180deg,var(--bg-main),#f6efe6 60%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Hamburger lines */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background-color: var(--accent);
+      position: relative;
+      border-radius: 6px;
+      transition: 0.3s ease;
+    }
+    .menu__btn span::before,
+    .menu__btn span::after {
+      content: "";
+      position: absolute;
+      left: 0;
+    }
+    .menu__btn span::before { top: -8px; }
+    .menu__btn span::after { top: 8px; }
+
+    /* Toggle open */
+    .menu-active .menu__btn span {
+      transform: rotate(45deg);
+      background-color: var(--accent);
+    }
+    .menu-active .menu__btn span::before {
+      transform: rotate(90deg);
+      top: 0;
+    }
+    .menu-active .menu__btn span::after {
+      opacity: 0;
+    }
+
+    /* Menu transitions */
+    .menu__box {
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    .menu-active .menu__box {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    /* layout */
+    main{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:4rem 1rem; }
+    .card { width:100%; max-width:920px; padding:2rem; }
+    .contact-row{ display:flex; gap:1rem; align-items:center; justify-content:space-between; padding:0.75rem 0.5rem; border-bottom:1px solid rgba(0,0,0,0.04) }
+    .contact-row:last-child{ border-bottom:0 }
+    .muted{ color:rgba(0,0,0,0.55); font-size:.95rem }
+    @media (max-width:768px){
+      .contact-row{ flex-direction:column; align-items:flex-start; gap:.5rem }
+      .menu__box{ width:78vw }
+    }
+  </style>
+</head>
+<body>
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <main>
+    <section class="decorative-card card">
+      <header class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-4">
+          <img src="/static/images/w3.jpg" alt="logo" class="w-14 h-14 rounded-full shadow-sm" />
+          <div>
+            <h1 class="text-xl font-semibold">Customer Support</h1>
+            <p class="muted">We’ll help with accounts, billing, and technical issues.</p>
+          </div>
+        </div>
+      </header>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="contact-row">
+            <div>
+              <div class="font-medium">General email</div>
+              <div class="muted">for inquiries, partnerships</div>
+            </div>
+            <a href="mailto:bindersoftware.com@gmail.com" class="text-[var(--accent)] font-medium">bindersoftware.com@gmail.com</a>
+          </div>
+
+          <div class="contact-row">
+            <div>
+              <div class="font-medium">Direct / Founder</div>
+              <div class="muted">fast replies for urgent matters</div>
+            </div>
+            <a href="mailto:khalidqnabi@gmail.com" class="text-[var(--accent)] font-medium">khalidqnabi@gmail.com</a>
+          </div>
+
+          <div class="contact-row">
+            <div>
+              <div class="font-medium">Phone</div>
+              <div class="muted">call or SMS</div>
+            </div>
+            <a href="tel:+970592840353" class="text-[var(--accent)] font-medium">+970 592 840 353</a>
+          </div>
+
+          <div class="contact-row">
+            <div>
+              <div class="font-medium">WhatsApp</div>
+              <div class="muted">quick chat</div>
+            </div>
+            <a href="https://wa.me/970592840353" target="_blank" class="text-[var(--accent)] font-medium">Chat on WhatsApp</a>
+          </div>
+    </section>
+  </main>
+
+  <script>
+    setInterval(() => {
+      fetch("/track_time", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({seconds: 60})
+      });
+    }, 60000); // log 1 min active time
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
+      menuBtn.addEventListener('click', () => menuBar.classList.toggle('menu-active'));
+
+      // binder lab mode (keeps parity with other pages)
+      const binder = '{{ binder }}';
+      const appa = document.getElementById('appa');
+      const appimg = document.getElementById('appimg');
+      const apph6 = document.getElementById('apph6');
+      const link = document.querySelector("link[rel~='icon']");
+      if (binder === 'lab') {
+        appa.title = 'Search Lab';
+        appa.href = '/srchlab';
+        appimg.src = '/static/images/srchlab.png';
+        document.title = 'Binder Laboratory';
+        if (link) link.href = '/static/images/binderlab.jpg';
+        apph6.textContent = 'Search Lab';
+      }
+    });
+  </script>
+</body>
+</html>

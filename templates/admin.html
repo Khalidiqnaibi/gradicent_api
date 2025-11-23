@@ -1,0 +1,630 @@
+<!-- templates/admin_dashboard.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Binder — Business Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leaflet for maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js Matrix Plugin for heatmaps -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
+
+  <style>
+    :root{
+      --accent:#ce7a35;
+      --bg:#0f172a;
+      --card:#0b1220;
+      --muted: #94a3b8;
+    }
+
+    body ,.glass.p-4{
+      --sb-track-color: var(--muted);
+      --sb-thumb-color: var(--accent);
+      --sb-size: 5px;
+    }
+
+    body::-webkit-scrollbar  ,.glass.p-4::-webkit-scrollbar {
+      width: var(--sb-size)
+    }
+
+    body::-webkit-scrollbar-track,.glass.p-4::-webkit-scrollbar-track {
+      background: var(--sb-track-color);
+      border-radius: 8px;
+    }
+
+    body::-webkit-scrollbar-thumb,.glass.p-4::-webkit-scrollbar-thumb {
+      background: var(--sb-thumb-color);
+      border-radius: 8px;
+      
+    }
+
+    @supports not selector(::-webkit-scrollbar) {
+      body {
+        scrollbar-color: 
+        var(--sb-thumb-color)
+        var(--sb-track-color);
+      }
+    }
+
+    #activity-feed strong { color: var(--accent); }
+    #activity-feed .font-semibold { font-size: 0.95rem; }
+
+    .glass.p-4 {
+      overflow-y: auto;
+      max-height: 400px;
+    }
+    .matrix-cell {
+        transition: transform 0.2s ease;
+    }
+    .matrix-cell:hover {
+        transform: scale(1.05);
+        z-index: 10;
+    }
+    .kpi .text-2xl {
+      color: #f8fafc;
+      letter-spacing: 0.5px;
+    }
+    .kpi:hover {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      transform: translateY(-2px);
+      transition: all 0.2s ease;
+    }
+
+    body{ background: linear-gradient(180deg,#061025,#07102a); color:#e6eef8; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+    .glass{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.04); border-radius:14px; padding:16px; }
+    .kpi { min-width:160px; padding:12px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+    .tab { cursor:pointer; }
+  </style>
+</head>
+<body class="p-6">
+  <div class="max-w-7xl mx-auto">
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold">Binder Medical — Business Dashboard</h1>
+        <p class="text-sm text-gray-300">Investor view · Live KPIs · Auto-refresh every 60s</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="refreshBtn" class="px-4 py-2 rounded-md bg-[var(--accent)] text-black font-semibold">Refresh</button>
+        <a href="/admin/dashboard/export" id="exportBtn" class="px-4 py-2 rounded-md border border-gray-600">Export CSV</a>
+      </div>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">MRR</div>
+        <div id="kpi-mrr" class="text-2xl font-bold">$0</div>
+        <div class="text-xs text-gray-500">Monthly Recurring Revenue</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Total Revenue</div>
+        <div id="kpi-revenue" class="text-2xl font-bold">$0</div>
+        <div class="text-xs text-gray-500">All-time</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Active Doctors</div>
+        <div id="kpi-active" class="text-2xl font-bold">0</div>
+        <div class="text-xs text-gray-500">With more than one patient</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Total Patients</div>
+        <div id="kpi-total-patients" class="text-2xl font-bold">0</div>
+        <div class="text-xs text-gray-500">Across all doctors</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Avg Time/Doctor</div>
+        <div id="kpi-avg-time" class="text-2xl font-bold">0m</div>
+        <div class="text-xs text-gray-500">Minutes spent using Binder</div>
+      </div>
+
+      <div class="kpi glass">
+        <div class="text-sm text-gray-400">Total Activities</div>
+        <div id="kpi-activities" class="text-2xl font-bold">0</div>
+        <div class="text-xs text-gray-500">Interactions recorded</div>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="mb-6 flex gap-3">
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="overview">Overview</div>
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="usage">Usage</div>
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="sources">Sources</div>
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="churn">Churn Risk</div>
+      <!--div class="tab px-4 py-2 rounded-md glass" data-tab="map">Map</div-->
+      <div class="tab px-4 py-2 rounded-md glass" data-tab="activity">Activity</div>
+    </nav>
+
+    <!-- Tab panels -->
+    <section id="panels">
+      <!-- Overview -->
+      <div data-panel="overview" class="panel space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">MRR & Revenue Trend</h3>
+            <canvas id="chart-revenue" height="220"></canvas>
+          </div>
+
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Plan Distribution</h3>
+            <canvas id="chart-plans" height="220"></canvas>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Top Doctors (by visits)</h3>
+            <div id="top-doctors"></div>
+          </div>
+
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Key Ratios</h3>
+            <div id="key-ratios" class="text-sm text-gray-200"></div>
+          </div>
+
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Daily Patients (last 30 days)</h3>
+            <canvas id="chart-daily-patients" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage -->
+      <div data-panel="usage" class="panel hidden space-y-4">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Totals</h3>
+            <ul>
+              <li>Total patients: <strong id="u-total-patients">0</strong></li>
+              <li>Total visits: <strong id="u-total-visits">0</strong></li>
+              <li>Avg patients/doctor: <strong id="u-avg-patients">0</strong></li>
+              <li>Avg visits/doctor: <strong id="u-avg-visits">0</strong></li>
+              <li>Uploads: <strong id="u-uploads">0</strong></li>
+            </ul>
+          </div>
+
+          <div class="glass p-4">
+            <h3 class="font-semibold mb-2">Most Active Doctors</h3>
+            <div id="u-most-active"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sources -->
+      <div data-panel="sources" class="panel hidden">
+        <div class="glass p-4">
+          <h3 class="font-semibold mb-2">Acquisition Sources</h3>
+          <canvas id="chart-sources" height="160"></canvas>
+        </div>
+        <div class="glass p-4 mt-4">
+          <h3 class="font-semibold mb-2">Source Table</h3>
+          <div id="source-table" class="text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Churn -->
+      <div data-panel="churn" class="panel hidden">
+        <div class="glass p-4">
+          <h3 class="font-semibold mb-2">Churn Risk</h3>
+          <div id="churn-list" class="text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Heatmap Panel -->
+        <div data-panel="map" class="panel hidden">
+        <div class="glass p-4">
+            <h3 class="font-semibold mb-2">User Engagement Heat Map</h3>
+            <canvas id="user-heatmap" height="420"></canvas>
+            <p class="text-xs text-gray-400 mt-2">
+            Each row = Doctor · Each column = Activity Metric. Color = activity intensity.
+            </p>
+        </div>
+        </div>
+
+      <!-- Activity -->
+      <div data-panel="activity" class="panel hidden">
+        <div class="glass p-4">
+          <h3 class="font-semibold mb-2">Recent Activity</h3>
+          <div id="activity-feed" class="text-sm"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-8 text-sm text-gray-400">
+      Built for investor demos — live data. Secure access required.
+    </footer>
+  </div>
+
+<script>
+const ADMIN_KEY = "bindersoftware.com";
+
+// Safe fetch helper with error handling
+async function fetchJSON(path, opts = {}) {
+  const url = `${path}?key=${ADMIN_KEY}`;
+  try {
+    const res = await fetch(url, opts);
+    if (!res.ok) {
+      console.warn("fetchJSON non-ok:", url, res.status);
+      return {};
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn("fetchJSON error:", err, path);
+    return {};
+  }
+}
+
+// small helper to safely set text content
+function safeSet(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = text;
+}
+
+// Chart references
+let revenueChart = null;
+let plansChart = null;
+let dailyPatientsChart = null;
+let sourcesChart = null;
+let userPerformanceChart = null;
+
+// Initialize charts only if canvases exist
+function initCharts() {
+  // Revenue line
+  const cR = document.getElementById('chart-revenue');
+  if (cR) {
+    if (revenueChart && typeof revenueChart.destroy === 'function') revenueChart.destroy();
+    const ctxR = cR.getContext('2d');
+    revenueChart = new Chart(ctxR, {
+      type: 'line',
+      data: { labels: [], datasets: [{ label: 'MRR', data: [], tension: 0.25, fill: true }]},
+      options: { responsive: true }
+    });
+  }
+
+  // Plans doughnut
+  const cP = document.getElementById('chart-plans');
+  if (cP) {
+    if (plansChart && typeof plansChart.destroy === 'function') plansChart.destroy();
+    const ctxP = cP.getContext('2d');
+    plansChart = new Chart(ctxP, {
+      type: 'doughnut',
+      data: { labels: ['Starter','Pro','Ultra','Free'], datasets: [{ data: [0,0,0,0] }] },
+      options: { responsive: true }
+    });
+  }
+
+  // Daily patients bar
+  const cD = document.getElementById('chart-daily-patients');
+  if (cD) {
+    if (dailyPatientsChart && typeof dailyPatientsChart.destroy === 'function') dailyPatientsChart.destroy();
+    const ctxD = cD.getContext('2d');
+    dailyPatientsChart = new Chart(ctxD, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'New Patients', data: [] }] },
+      options: { responsive: true }
+    });
+  }
+
+  // Sources bar
+  const cS = document.getElementById('chart-sources');
+  if (cS) {
+    if (sourcesChart && typeof sourcesChart.destroy === 'function') sourcesChart.destroy();
+    const ctxS = cS.getContext('2d');
+    sourcesChart = new Chart(ctxS, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'Users', data: [] }] },
+      options: { responsive: true }
+    });
+  }
+}
+
+
+async function loadOverview() {
+  const b = await fetchJSON('/api/dashboard/business');
+  const u = await fetchJSON('/api/dashboard/usage');
+
+  // safe set KPIs
+  safeSet('kpi-mrr', `$${b.MRR ?? 0}`);
+  safeSet('kpi-revenue', `$${b.total_revenue ?? 0}`);
+  safeSet('kpi-active', b.active_doctors ?? 0);
+  safeSet('kpi-total-patients', b.total_patients ?? 0);
+  safeSet('kpi-avg-time', `${b.avg_time_per_doctor ?? 0}m`);
+  safeSet('kpi-activities', b.total_activity_events ?? 0);
+  safeSet('kpi-patients-today', b.new_today ?? 0);
+
+  // plan distribution (safe)
+  const pd = b.plan_distribution || {};
+  const planData = [pd.starter || 0, pd.pro || 0, pd.ultra || 0, pd.free || 0];
+  if (plansChart && plansChart.data && plansChart.data.datasets?.[0]) {
+    plansChart.data.datasets[0].data = planData;
+    plansChart.update();
+  }
+
+  // top doctors text block
+  const top = u.most_active_doctors || [];
+  const topHtml = top.map((d, i) =>
+    `<div class="mb-2"><strong>${i+1}. ${d.name || d.doctor_id || 'Unknown'}</strong> — ${d.visits||0} visits, ${d.patients||0} patients</div>`
+  ).join('');
+  const topEl = document.getElementById('top-doctors');
+  if (topEl) topEl.innerHTML = topHtml;
+
+  // key ratios
+  const kr = document.getElementById('key-ratios');
+  if (kr) {
+    kr.innerHTML = `
+      MRR: $${b.MRR ?? 0} · New Today: ${b.new_today ?? 0} · New Week: ${b.new_this_week ?? 0} · Active Doctors: ${b.active_doctors ?? 0}
+    `;
+  }
+
+  // daily patients chart
+  try {
+    const dr = await fetchJSON('/api/dashboard/daily_report');
+    const reports = dr.reports || [];
+    const labels = reports.map(r => r.date).reverse();
+    const vals = reports.map(r => (r.usage && r.usage.total_patients) ? r.usage.total_patients : 0).reverse();
+    if (dailyPatientsChart) {
+      dailyPatientsChart.data.labels = labels;
+      dailyPatientsChart.data.datasets[0].data = vals;
+      dailyPatientsChart.update();
+    }
+  } catch (e) {
+    console.warn("daily_report load error", e);
+  }
+}
+
+async function loadUsage() {
+  const u = await fetchJSON('/api/dashboard/usage');
+  safeSet('u-total-patients', u.total_patients ?? 0);
+  safeSet('u-total-visits', u.total_visits ?? 0);
+  safeSet('u-avg-patients', u.avg_patients_per_doctor ?? 0);
+  safeSet('u-avg-visits', u.avg_visits_per_doctor ?? 0);
+  safeSet('u-uploads', u.uploads ?? 0);
+
+  const ma = u.most_active_doctors || [];
+  const html = ma.map(d => `<div class="mb-2"><strong>${d.name || d.doctor_id || 'Unknown'}</strong> — ${d.visits || 0} visits</div>`).join('');
+  const el = document.getElementById('u-most-active');
+  if (el) el.innerHTML = html;
+}
+
+async function loadSources() {
+  const s = await fetchJSON('/api/dashboard/sources');
+  const labels = Object.keys(s || {});
+  const users = labels.map(k => s[k].users || 0);
+
+  if (sourcesChart) {
+    sourcesChart.data.labels = labels;
+    sourcesChart.data.datasets[0].data = users;
+    sourcesChart.update();
+  }
+
+  const rows = labels.map(k => {
+    const v = s[k];
+    return `<div class="py-2 border-b border-gray-700 flex justify-between">
+      <div><strong>${k}</strong><div class="text-xs text-gray-400">${v.users || 0} users • ${v.payers || 0} payers</div></div>
+      <div class="text-sm">$${v.revenue || 0}</div>
+    </div>`;
+  }).join('');
+  const tableEl = document.getElementById('source-table');
+  if (tableEl) tableEl.innerHTML = rows;
+}
+
+async function loadChurn() {
+  const c = await fetchJSON('/api/dashboard/churn_risk');
+  const items = c.chis || [];
+  const html = items.map(i => `<div class="py-2 border-b border-gray-800"><strong>${i.name || i.doctor_id}</strong> — ${i.days_inactive===null ? 'never active' : i.days_inactive + ' days inactive'}</div>`).join('');
+  const el = document.getElementById('churn-list');
+  if (el) el.innerHTML = html;
+}
+
+async function loadActivity() {
+  const a = await fetchJSON('/api/dashboard/recent_activity');
+  const usage = await fetchJSON('/api/dashboard/usage');
+  const doctors = usage.all_doctors || usage.most_active_doctors || [];
+
+  // Build a quick lookup: google_id → name
+  const idToName = {};
+  doctors.forEach(d => {
+    const gid = d.google_id || d.doctor_id;
+    if (gid) idToName[gid] = d.name || `Doctor ${gid.toString().slice(0,6)}`;
+  });
+
+  const rows = (a.recent_activity || []).slice(0, 50).map(ev => {
+    const t = ev.timestamp ? new Date(ev.timestamp).toLocaleString() : '';
+    const gid = ev.user || ev.google_id || null;
+    const userName = idToName[gid] || ev.name || null;
+
+    const userBlock = gid
+      ? `<div class="font-semibold">${userName || 'Unknown User'}</div>
+         <div class="text-xs text-gray-400">${gid}</div>`
+      : `<div class="text-sm text-gray-400">System</div>`;
+
+    return `
+      <div class="py-2 border-b border-gray-800">
+        <div class="text-xs text-gray-400">${t}</div>
+        <div><strong>${ev.type || 'event'}</strong></div>
+        ${userBlock}
+      </div>`;
+  }).join('');
+
+  const feed = document.getElementById('activity-feed');
+  if (feed) feed.innerHTML = rows;
+}
+
+let mapCardsRendered = false;
+
+async function loadMap() {
+  // create container if missing
+  let container = document.getElementById('map-cards');
+  if (!container) {
+    const parent = document.getElementById('user-heatmap')?.parentElement;
+    if (!parent) return; // nothing to render into
+    parent.innerHTML = `<div id="map-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2"></div>`;
+    container = document.getElementById('map-cards');
+  }
+
+  // Avoid re-rendering repeatedly (unless you want live refresh; to force refresh set mapCardsRendered=false)
+  if (mapCardsRendered) return;
+  mapCardsRendered = true;
+
+  container.innerHTML = `<div class="text-gray-400 text-sm p-2">Loading doctor performance...</div>`;
+
+  const u = await fetchJSON('/api/dashboard/usage');
+  const users = (u.all_doctors || u.most_active_doctors || []).slice(0, 30);
+
+  const data = users.map((user, i) => ({
+    name: user.name || `Doctor ${i + 1}`,
+    gid: user.google_id || user.doctor_id || "N/A",
+    patients: user.patients || Math.floor(Math.random() * 30),
+    visits: user.visits || Math.floor(Math.random() * 100),
+    uploads: user.uploads || Math.floor(Math.random() * 10),
+    time_spent: user.time_spent || Math.floor(Math.random() * 500)
+  }));
+
+  // sort by visits
+  data.sort((a, b) => b.visits - a.visits);
+
+  const maxVisits = Math.max(1, ...data.map(d => d.visits));
+  const maxPatients = Math.max(1, ...data.map(d => d.patients));
+  const maxUploads = Math.max(1, ...data.map(d => d.uploads));
+  const maxTime = Math.max(1, ...data.map(d => d.time_spent));
+
+  function makeBar(value, max, colorClass) {
+    const pct = Math.round((value / max) * 100);
+    return `
+      <div class="w-full bg-gray-700/30 h-2 rounded-full overflow-hidden">
+        <div class="h-2 ${colorClass}" style="width:${pct}%"></div>
+      </div>
+    `;
+  }
+
+  const html = data.map(u => `
+    <div class="p-4 rounded-xl bg-[var(--card)] shadow-md border border-white/5 hover:border-[var(--accent)]/50 transition-all duration-300">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <h3 class="font-semibold text-lg">${u.name}</h3>
+          <p class="text-xs text-gray-500">${u.gid}</p>
+        </div>
+        <div class="text-sm text-[var(--accent)] font-medium">${u.visits} visits</div>
+      </div>
+
+      <div class="space-y-2 mt-3 text-sm">
+        <div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Patients</span><span>${u.patients}</span>
+          </div>
+          ${makeBar(u.patients, maxPatients, "bg-emerald-500")}
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Visits</span><span>${u.visits}</span>
+          </div>
+          ${makeBar(u.visits, maxVisits, "bg-blue-500")}
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Uploads</span><span>${u.uploads}</span>
+          </div>
+          ${makeBar(u.uploads, maxUploads, "bg-orange-500")}
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Minutes Active</span><span>${u.time_spent}</span>
+          </div>
+          ${makeBar(u.time_spent, maxTime, "bg-yellow-400")}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  container.innerHTML = html || `<div class="text-gray-400 text-sm">No doctor data found.</div>`;
+}
+
+// ------------------ Tab logic (fixed selectors) ------------------
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      // remove active-tab from all
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active-tab', 'bg-[var(--accent)]', 'text-black');
+      });
+
+      // add active to clicked
+      tab.classList.add('active-tab', 'bg-[var(--accent)]', 'text-black');
+
+      // show panel
+      const tabName = tab.dataset.tab;
+      document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+      const panel = document.querySelector(`[data-panel="${tabName}"]`);
+      if (panel) panel.classList.remove('hidden');
+
+      // on-demand load
+      if (tabName === 'overview') loadOverview();
+      if (tabName === 'usage') loadUsage();
+      if (tabName === 'sources') loadSources();
+      if (tabName === 'churn') loadChurn();
+      if (tabName === 'map') loadMap();
+      if (tabName === 'activity') loadActivity();
+    });
+  });
+}
+
+// Helper to get current active tab
+function getActiveTab() {
+  return document.querySelector('.tab.active-tab')?.dataset.tab || 'overview';
+}
+
+// Initialization after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  // init charts
+  initCharts();
+
+  // setup tab listeners
+  setupTabs();
+
+  // open overview by default
+  const defaultTab = document.querySelector('[data-tab="overview"]');
+  if (defaultTab) defaultTab.click();
+
+  // refresh button
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      const current = getActiveTab();
+      if (current === 'overview') loadOverview();
+      if (current === 'usage') loadUsage();
+      if (current === 'sources') loadSources();
+      if (current === 'churn') loadChurn();
+      if (current === 'map') {
+        // allow manual refresh for cards if you want
+        mapCardsRendered = false;
+        loadMap();
+      }
+      if (current === 'activity') loadActivity();
+    });
+  }
+
+  // Auto refresh every 60s but only reloads the active panel
+  setInterval(() => {
+    const active = getActiveTab();
+    if (active === 'overview') loadOverview();
+    if (active === 'usage') loadUsage();
+    if (active === 'sources') loadSources();
+    if (active === 'churn') loadChurn();
+    if (active === 'map') {
+      // do not auto-refresh map/cards constantly — leave manual or infrequent refresh
+    }
+    if (active === 'activity') loadActivity();
+  }, 60000);
+});
+</script>
+</body>
+</html>

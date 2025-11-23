@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Binder Medical</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg" />
+
+  <style>
+    :root{
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --muted: #7f7f7f;
+    }
+
+    body {
+      background-color: var(--bg-main);
+    }
+
+    /* Hamburger lines */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display: block;
+      width: 26px;
+      height: 3px;
+      background-color: var(--accent);
+      position: relative;
+      border-radius: 6px;
+      transition: 0.28s ease;
+    }
+    .menu__btn span::before,
+    .menu__btn span::after {
+      content: "";
+      position: absolute;
+      left: 0;
+    }
+    .menu__btn span::before { top: -8px; }
+    .menu__btn span::after { top: 8px; }
+
+    /* Toggle open */
+    .menu-active .menu__btn span {
+      transform: rotate(45deg);
+      background-color: var(--accent);
+    }
+    .menu-active .menu__btn span::before {
+      transform: rotate(90deg);
+      top: 0;
+    }
+    .menu-active .menu__btn span::after {
+      opacity: 0;
+    }
+
+    /* Menu slide */
+    .menu__box {
+      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity 0.2s;
+      transform: translateX(-110%);
+      opacity: 0;
+    }
+    .menu-active .menu__box {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .bbg{
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.72));
+    }
+
+    .center-plan{
+      display: flex;
+      align-content: flex-start;
+      align-items: center;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 260px;
+      max-width: 350px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      font-size: 0.95rem;
+      font-weight: 500;
+      animation: slideIn 0.4s ease, fadeOut 0.6s ease 3.4s forwards;
+    }
+    .toast-success { background: #d1fae5; color: #065f46; border-left: 6px solid #10b981; }
+    .toast-error   { background: #fee2e2; color: #991b1b; border-left: 6px solid #ef4444; }
+    .toast-info    { background: #dbeafe; color: #1e3a8a; border-left: 6px solid #3b82f6; }
+  </style>
+</head>
+<body class="min-h-screen text-gray-800">
+
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== Page content ===== -->
+  <main class="min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-md w-full">
+      <!-- Account Card -->
+      <section class="bbg rounded-3xl shadow-xl p-6 md:p-8 border border-[var(--secondary)]">
+        <div class="flex flex-col items-center text-center gap-4">
+          <img id="avatar" src="/static/images/w3.jpg" alt="avatar" class="w-24 h-24 rounded-2xl object-cover border-2 border-white shadow-sm"/>
+          <h1 id="hello" class="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">Account</h1>
+          <p id="msg" class="text-sm text-[var(--muted)]">Thank you for supporting us</p>
+
+          <div class="center-plan flex-wrap justify-center gap-2 mt-2">
+            <span id="planBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-[var(--secondary)]/20 text-[var(--secondary)]">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Free trial
+            </span>
+            <span id="trialDays" class="text-xs text-[var(--muted)]">7 days left</span>
+          </div>
+
+          <!-- action buttons -->
+          <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3 w-full">
+            <button id="btn1" onclick="opentab(btn1herf)" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-[var(--accent)] text-gray-900 font-semibold shadow hover:scale-[1.02] transition transform">
+              Get full version
+            </button>
+            <button id="btn2" onclick="opentab(btn2herf)" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-[var(--secondary)] text-white font-medium shadow hover:opacity-95 transition">
+              Switch account
+            </button>
+          </div>
+
+          <!-- helpful cards -->
+          <div class="mt-6 grid grid-cols-2 gap-3 w-full">
+            <div class="bg-white p-4 rounded-lg bg-[var(--bg-main)]/10 border border-[var(--secondary)] text-center">
+              <div class="text-xs text-[var(--muted)]">Patients</div>
+              <div id="patientsCount" class="text-xl font-bold">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg bg-[var(--bg-main)]/10 border border-[var(--secondary)] text-center">
+              <div class="text-xs text-[var(--muted)]">Appointments</div>
+              <div id="appointmentsCount" class="text-xl font-bold">0</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  
+  <div id="toast-container" class="fixed top-4 right-4 z-[9999] space-y-3"></div>
+  <script>
+    // Links used by buttons (updated later by user_data logic)
+    var btn1herf = 'https://www.google.com';
+    var btn2herf = "https://www.google.com/search?q=potato&tbm=isch";
+
+    setInterval(() => {
+      fetch("/track_time", { // will change to a start stop way of testing or more efficant way
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({seconds: 60})
+      });
+    }, 60000); // log 1 min active time
+    
+    function opentab(url){
+      if(!url) return;
+      window.location.href = url;
+    }
+
+    function isoToday() {
+      const t = new Date();
+      const tzOffset = t.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(t - tzOffset)).toISOString().slice(0,10);
+      return localISOTime;
+    }
+
+    function toast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      container.appendChild(toast);
+
+      // auto remove after animation
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
+    }
+
+    function calculateTrialDaysLeft(plan, firstDateStr){
+      try{
+        if(!firstDateStr) return 0;
+        const firstDate = new Date(firstDateStr);
+        const today = new Date();
+        const trialDays = plan === 'basic' ? 30 : 7;
+        const trialEnd = new Date(firstDate.getTime() + (trialDays * 24*60*60*1000));
+        return Math.max(0, Math.ceil((trialEnd - today) / (1000*60*60*24)));
+      }catch(e){ return 0; }
+    }
+
+    async function get_appointments_count(){
+      var date = isoToday();
+      try {
+        const res = await fetch(`/get_appointments/${date}`); // now /api/binder/get_appointments/<date>?userid=<user_id>
+        if (!res.ok) throw new Error('Network response not ok');
+        const data = await res.json();
+        // Accept both array and { appointments: [...] } shapes
+        appointments = Array.isArray(data) ? data : (data.appointments || []);
+        // ensure msg property exists
+        appointments = appointments.map(a => ({ ...a, msg: a.msg ?? '' }));
+        document.getElementById('appointmentsCount').textContent = appointments.length;
+      } catch (err) {
+        console.error(err);
+        appointments = [];
+        document.getElementById('appointmentsCount').textContent = 0;
+        toast('Failed to load appointments', 'error');
+      }
+    }
+
+    function get_patients_count(){
+      fetch('/api/patient_count') // now /api/gaia/compute?metric=total_customers&domain=medical
+        .then(response => response.json())
+        .then(data => {
+          if(data && typeof data.patient_count === 'number'){
+            document.getElementById('patientsCount').textContent = data.patient_count;
+          }
+        })
+        .catch(error => {
+          toast(`Error fetching patients count`, "error");
+          console.log(`Error fetching patients count:`,error);
+        });
+    }
+
+    // initialize page with server-provided user_data (keeps your template placeholders)
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const userData = JSON.parse('{{ user_data | tojson | safe }}');
+        const { name, first, payed, plan, google_id } = userData || {};
+        const binder = '{{ binder }}';
+
+        const menuBtn = document.querySelector('.hamburger-menu');
+        const menuBar = document.getElementById('menuBar');
+
+        // Toggle menu (keeps same interaction as previous)
+        menuBtn.addEventListener('click', () => {
+            menuBar.classList.toggle('menu-active');
+        });
+
+        // fetch counts
+        get_appointments_count();
+        get_patients_count();
+
+        // update avatar/hello/message/buttons
+        const hello = document.getElementById('hello');
+        const msg = document.getElementById('msg');
+        const planBadge = document.getElementById('planBadge');
+        const trialDaysEl = document.getElementById('trialDays');
+
+        // compute trial
+        const daysLeft = calculateTrialDaysLeft(plan, first);
+        if(daysLeft > 0){
+          planBadge.innerHTML = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="ml-1">Trial</span>';
+          trialDaysEl.textContent = `${daysLeft} day${daysLeft>1? 's':''} left`;
+        } else {
+          planBadge.innerHTML = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg><span class="ml-1">Active</span>';
+          trialDaysEl.textContent = `No trial`;
+        }
+
+        // set header + buttons for special cases
+        if(google_id === 1){
+          hello.textContent = "Please sign up with Google";
+          msg.textContent = "";
+          document.getElementById('btn1').textContent = "Sign Up with Google";
+          btn1herf = "/logme";
+          document.getElementById('btn2').style.display = 'none';
+        } else {
+          hello.textContent = name ? `Welcome, ${name}` : 'Welcome';
+          msg.textContent = plan ? `Plan: ${plan}` : 'Thank you for supporting us';
+          btn1herf = "/logout";
+          btn2herf = "/logme";
+        }
+
+        // binder type customizations (lab variant)
+        if(binder === 'lab'){
+          const appa = document.getElementById('appa');
+          const appimg = document.getElementById('appimg');
+          const apph6 = document.getElementById('apph6');
+          const link = document.querySelector("link[rel~='icon']");
+          appa.title='Search Lab';
+          appa.href='/srchlab';
+          appimg.src='/static/images/srchlab.png';
+          document.title= 'Binder Laboratory';
+          if(link) link.href = '/static/images/binderlab.jpg';
+          if(apph6) apph6.textContent = 'Search Lab';
+        }
+
+      } catch (error) {
+        toast("Failed to initialize user data", "error");
+        console.error('Failed to initialize user data:', error);
+      }
+    });
+  </script>
+</body>
+</html>

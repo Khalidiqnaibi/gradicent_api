@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+
+  <!-- bootstrap core css -->
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css" />
+  <!--owl slider stylesheet -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+
+  <!-- font awesome style -->
+  <link href="/static/css/font-awesome.min.css" rel="stylesheet" />
+
+  <!-- Custom styles for this template -->
+  <link href="/static/css/style.css" rel="stylesheet" />
+  <!-- responsive style -->
+  <link href="/static/css/responsive.css" rel="stylesheet" />
+  <meta name="author" content="" /><link rel="shortcut icon" href="/static/icn/B.ico" type="image/x-icon">
+  <style>
+
+    img {
+      vertical-align: middle;
+      border-style: none;
+      border-radius: 5px;
+      border: 1.5px solid #ffaf0f;
+    }
+
+    #main_loo {
+      height: 45px;
+      width: 115px;
+      border: 0px solid #ffaf0f;
+    }
+
+    .slider_section .carousel-indicators li.active {
+      width: 23px;
+      height: 23px;
+      background-color: #ffaf0f;
+    }
+
+    .slider_section .detail-box .btn-box .btn1 {
+      display: inline-block;
+      padding: 12px 15px;
+      background-color: #ffaf0f;
+      color: #1b427a;
+      border-radius: 5px;
+      -webkit-transition: all 0.3s;
+      transition: all 0.3s;
+      border: 1px solid #ffaf0f;
+    }
+
+    .slider_section {
+      -webkit-box-flex: 1;
+      -ms-flex: 1;
+      flex: 1;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      padding: 45px 0;
+      background-color: #ffaf0f;
+      border-radius: 0 0 0 250px;
+      background: #1b427a;
+    }
+
+    .hero_area .hero_social a {
+      color: #1b427a;
+      margin: 5px 0;
+    }
+
+    .contact_section{
+      margin-top: 40px;
+    }
+
+    .client_section .box {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+      flex-direction: column;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      margin: 45px 0;
+      text-align: center;
+      background-color: #1b427a;
+      color: #ffffff;
+      border-radius: 15px;
+      padding: 25px;
+    }
+
+    .client_section .box .client_info .client_name h6 {
+      color: #ffaf0f;
+      font-weight: normal;
+      font-size: 15px;
+      text-transform: uppercase;
+    }
+
+    .client_section .box .client_info .client_name h6 {
+      color: #ffaf0f;
+      font-weight: normal;
+      font-size: 15px;
+      text-transform: uppercase;
+    }
+
+    .contact_section button {
+      font-family: "Poppins", sans-serif;
+      display: inline-block;
+      padding: 10px 65px;
+      background-color: #ffaf0f;
+      color: #ffffff;
+      border-radius: 3px;
+      -webkit-transition: all 0.3s;
+      transition: all 0.3s;
+      border: 1px solid #ffaf0f;
+      color: #1b427a;
+      margin-top: 10px;
+    }
+
+    .client_section .box .img-box {
+      width: 125px;
+      height: 125px;
+      min-width: 125px;
+      position: relative;
+      border: 2px dashed #ffaf0f;
+      border-radius: 100%;
+      padding: 5px;
+      margin-bottom: 15px;
+    }
+
+    .client_section .owl-carousel .owl-nav .owl-prev, .client_section .owl-carousel .owl-nav .owl-next {
+      width: 45px;
+      height: 45px;
+      background-color: #ffaf0f;
+      color: #ffffff;
+      outline: none;
+      bottom: 0px;
+      font-size: 24px;
+      margin: 0 5px;
+    }
+
+    .footer_section {
+      background-color: #1b427a;
+      color: #ffffff;
+      padding-top: 30px;
+    }
+
+    .footer_section .footer_contact .contact_link_box a:hover {
+      color: #ffaf0f;
+    }
+
+    .footer_section .footer_social a:hover {
+      color: #ffaf0f;
+    }
+
+    .footer_section .footer-info p a {
+      color: #ffaf0f;
+    }
+
+    .footer_section .footer_contact .contact_link_box a {
+      margin: 5px 0;
+      color: #ffffff;
+      display: flex;
+      align-items: baseline;
+    }
+
+    .footer_section .footer_social a {
+      color: #1b427a;
+    }
+
+  </style>
+
+  <title>Binder Software — Save Time. Run Smarter.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --brand-navy: #1b427a; --brand-orange: #ffaf0f; }
+    .carousel-item { display: none; }
+    .carousel-item.active { display: block; }
+    .indicator { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+    .indicator.active { background: var(--brand-orange); width: 20px; height: 20px; }
+  </style>
+</head>
+<body class="bg-white text-slate-800">
+  <div class="hero_area">
+    <div class="hero_social">
+      <a  target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/share/AqfHc9bC87HPo9Hb/?mibextid=qi2Omg">
+        <i class="fa fa-facebook" aria-hidden="true"></i>
+      </a>
+      <a  target="_blank" rel="noopener noreferrer" href="https://x.com/Binder_software">
+        <i class="fa fa-twitter" aria-hidden="true"></i>
+      </a>
+      <a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/@bindersoftware">
+        <i class="fa fa-youtube" aria-hidden="true"></i>
+      </a>
+      <a target="_blank" rel="noopener noreferrer" href="mailto:bindersoftware.com@gmail.com">
+        <i class="fa fa-envelope-o" aria-hidden="true"></i>
+      </a>
+    </div>
+    <!-- header section strats -->
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container ">
+          <a class="navbar-brand" href="/">
+            <img id="main_loo" src="/static/images/logoo.png" alt="">
+          </a>
+
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class=""> </span>
+          </button>
+
+          <div class="navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav">
+              <li class="nav-item active">
+                <a class="nav-link text-black" href="/">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-black" href="/products"> Products </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-black" href="#why"> About </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-black" href="/contact">Contact Us</a>
+              </li>
+            </ul>
+            <div class="user_option-box">
+              <div class="fa okk"></div>
+            </div>
+          </div>
+          <!-- end header section
+          <div id="ahh">
+          </div>-->
+        </nav>
+      </div>
+    </header>
+    <!-- end header section -->
+    <!-- slider section -->
+    <section class="slider_section ">
+      <div id="customCarousel1" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="container-fluid ">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-box ">
+                    <h1 class="text-3xl text-white font-bold">
+                      Run Your Clinic 10x Faster.
+                    </h1>
+                    <p class="text-white">
+                      Binder Medical replaces spreadsheets and chaos. Manage patients, visits, and reports in one clean dashboard.
+                    </p>
+                    <div class="btn-box">
+                      <a href="/med" class="btn1">
+                        Try Now!
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-3">
+                  <div class="img-box">
+                    <img id="bii1" src="/static/images/w3.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="container-fluid ">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-box">
+                    <h1 class="text-3xl text-white font-bold">
+                      Your Data. Your Decisions.
+                    </h1>
+                    <p class="text-white">
+                      Gaia Analytics turns your business data into insights and predictions instantly. No data team needed.
+                    </p>
+                    <div class="btn-box">
+                      <a href="mailto:bindersoftware.com@gmail.com" class="btn1">
+                        Book Demo
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-3">
+                  <div class="img-box">
+                    <img id="bii1" src="/static/images/image_2025-10-13_102430800.png" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item ">
+            <div class="container-fluid ">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-box">
+                    <h1 class="text-3xl text-white font-bold">
+                      Give Us Your Feedback
+                    </h1>
+                    <p  class="text-white">
+                      Tell us your review of our products and about your experience.
+                    </p>
+                    <div class="btn-box">
+                      <a href="mailto:bindersoftware.com@gmail.com" class="btn1">
+                        Contact Us
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="img-box">
+                    <img id="bii3" src="/static/images/feedback.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item ">
+            <div class="container-fluid ">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-box">
+                    <h1 class="text-3xl text-white font-bold">
+                      Limited Offer: Get Pro for $5
+                    </h1>
+                    <p class="text-white">
+                      First 50 doctors get Binder Medical Pro for 2 months at the Starter price.
+                    </p>
+                    <div class="btn-box">
+                      <a href="" class="btn1">
+                        Claim Offer!
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="img-box">
+                    <img id="bii2" src="/static/images/join.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ol class="carousel-indicators">
+          <li data-target="#customCarousel1" data-slide-to="0" class="active"></li>
+          <li data-target="#customCarousel1" data-slide-to="1"></li>
+          <li data-target="#customCarousel1" data-slide-to="2"></li>
+          <li data-target="#customCarousel1" data-slide-to="3"></li>
+        </ol>
+      </div>
+
+    </section>
+    <!-- end slider section -->
+  </div>
+
+<section id="why" class="max-w-6xl mx-auto px-4 py-16 text-center">
+  <h2 class="text-3xl font-bold text-[var(--brand-navy)]">Why Binder?</h2>
+  <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">We help you store, manage, and understand your data. Whether you’re a doctor, business, or data-driven team — Binder makes it simple to work smarter, not harder.</p>
+  <div class="mt-8 grid md:grid-cols-3 gap-6">
+    <div class="p-6 border rounded-lg">
+      <h3 class="font-semibold text-[var(--brand-navy)]">Fast & Simple</h3>
+      <p class="mt-2 text-sm">Get organized instantly. Add patients or data, and search anything in seconds.</p>
+    </div>
+    <div class="p-6 border rounded-lg">
+      <h3 class="font-semibold text-[var(--brand-navy)]">AI-Powered</h3>
+      <p class="mt-2 text-sm">Our Ultra plan includes Diagnose AI for smart, accurate, instant analysis.</p>
+    </div>
+    <div class="p-6 border rounded-lg">
+      <h3 class="font-semibold text-[var(--brand-navy)]">Secure & Scalable</h3>
+      <p class="mt-2 text-sm">Encrypted, fast, and ready for teams or enterprises with advanced analytics.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section id="cta" class="max-w-6xl mx-auto px-4 py-16 text-center">
+  <h2 class="text-3xl font-bold text-[var(--brand-navy)]">Discover Our Products</h2>
+  <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">We build smart, simple tools for managing, analyzing, and understanding your data. Choose the right Binder for your field.</p>
+
+  <div class="mt-10 grid md:grid-cols-3 gap-6">
+    <div class="p-8 border rounded-lg hover:shadow-lg transition">
+      <img src="/static/images/w3.jpg" alt="Binder Medical" class="mx-auto rounded-md mb-4">
+      <h3 class="font-semibold text-xl text-[var(--brand-navy)]">Binder Medical</h3>
+      <p class="text-sm text-slate-600 mt-2">Manage patients, visits, and records effortlessly with Binder Medical — used by 50+ doctors.</p>
+      <a href="/med" class="mt-4 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-6 py-2 rounded-md font-semibold">Learn More</a>
+    </div>
+
+    <div class="p-8 border rounded-lg hover:shadow-lg transition">
+      <img src="/static/images/image_2025-10-13_102430800.png" alt="Gaia Analytics" class="mx-auto rounded-md mb-4">
+      <h3 class="font-semibold text-xl text-[var(--brand-navy)]">Gaia Analytics</h3>
+      <p class="text-sm text-slate-600 mt-2">AI dashboards and predictions for smarter decisions. Perfect for B2B insights.</p>
+      <a href="/gaia" class="mt-4 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-6 py-2 rounded-md font-semibold">Learn More</a>
+    </div>
+
+    <div class="p-8 border rounded-lg hover:shadow-lg transition">
+      <img src="/static/images/binderlab.jpg" alt="Binder Laboratory" class="mx-auto rounded-md mb-4">
+      <h3 class="font-semibold text-xl text-[var(--brand-navy)]">Binder Laboratory</h3>
+      <p class="text-sm text-slate-600 mt-2">Organize and track lab results with automation and easy data retrieval.</p>
+      <a href="/lab" class="mt-4 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-6 py-2 rounded-md font-semibold">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<!-- section id="pricing" class="bg-slate-50 py-16">
+  <div class="max-w-6xl mx-auto px-4 text-center">
+    <h2 class="text-3xl font-bold">Choose Your Plan</h2>
+    <p class="mt-2 text-slate-600">Start small or scale big — Binder grows with you.</p>
+
+    <div class="mt-10 grid md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-lg p-6 border">
+        <h3 class="font-bold text-lg">Starter</h3>
+        <p class="text-4xl font-extrabold mt-2">$5<span class="text-sm">/mo</span></p>
+        <ul class="mt-4 text-sm text-slate-600 space-y-1">
+          <li>✔ Basic patient management</li>
+          <li>✖ No file uploads</li>
+          <li>✖ No print visits</li>
+          <li>✖ Basic stats only</li>
+        </ul>
+        <a href="/med" class="mt-6 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-5 py-2 rounded-md font-semibold">Start Now</a>
+      </div>
+
+      <div class="bg-white rounded-lg p-6 border-2 border-[var(--brand-orange)]">
+        <h3 class="font-bold text-lg">Pro</h3>
+        <p class="text-4xl font-extrabold mt-2">$25<span class="text-sm">/mo</span></p>
+        <ul class="mt-4 text-sm text-slate-600 space-y-1">
+          <li>✔ All Starter features</li>
+          <li>✔ File uploads</li>
+          <li>✔ Print visits</li>
+          <li>✔ All stats</li>
+        </ul>
+        <a href="/med" class="mt-6 inline-block bg-[var(--brand-navy)] text-white px-5 py-2 rounded-md font-semibold">Get Pro</a>
+        <p class="mt-2 text-xs text-slate-500">Best for growing clinics</p>
+      </div>
+
+      <div class="bg-white rounded-lg p-6 border">
+        <h3 class="font-bold text-lg">Ultra</h3>
+        <p class="text-4xl font-extrabold mt-2">$125<span class="text-sm">/mo</span></p>
+        <ul class="mt-4 text-sm text-slate-600 space-y-1">
+          <li>✔ All Pro features</li>
+          <li>✔ Diagnose AI</li>
+          <li>✔ Priority support</li>
+          <li>✔ Enterprise-ready</li>
+        </ul>
+        <a href="mailto:bindersoftware.com@gmail.com" class="mt-6 inline-block bg-[var(--brand-orange)] text-[var(--brand-navy)] px-5 py-2 rounded-md font-semibold">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section -->
+
+<section id="gaia" class="bg-[var(--brand-navy)] mx-auto px-4 py-16 text-center text-white">
+  <h2 class="text-3xl font-bold">Gaia Analytics</h2>
+  <p class="mt-4 text-lg text-white-600 max-w-2xl mx-auto">Turn your company data into dashboards and AI predictions that help you make smarter decisions instantly.</p>
+  <a href="mailto:bindersoftware.com@gmail.com" class="mt-6 inline-block bg-[var(--brand-orange)] text-black px-6 py-3 rounded-md font-semibold">Book Demo</a>
+</section>
+
+<!-- contact section -->
+
+  <section class="contact_section margin-top-35" id="contact">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form_container">
+            <div class="heading_container">
+              <h2 class="text-3xl font-bold">
+                Contact Us
+              </h2>
+            </div>
+            <form action="">
+              <div>
+                <input type="text" placeholder="Full Name " />
+              </div>
+              <div>
+                <input type="email" placeholder="Email" />
+              </div>
+              <div>
+                <input type="text" placeholder="Phone number" />
+              </div>
+              <div>
+                <input type="text" class="message-box" placeholder="Message" />
+              </div>
+              <div class="d-flex ">
+                <button>
+                  SEND
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="img-box">
+            <img src="/static/images/cuss.JPG" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- client section -->
+  <section class="client_section layout_padding">
+    <div class="container">
+      <div class="heading_container heading_center">
+        <h2>
+          Testimonial
+        </h2>
+      </div>
+      <div class="carousel-wrap ">
+        <div class="owl-carousel client_owl-carousel">
+          <div class="item">
+            <div class="box">
+              <div class="img-box">
+                <img src="/static/images/c1.jpg" alt="">
+              </div>
+              <div class="detail-box">
+                <div class="client_info">
+                  <div class="client_name">
+                    <h5>
+                      Mark Thomas
+                    </h5>
+                    <h6>
+                      Customer
+                    </h6>
+                  </div>
+                  <i class="fa fa-quote-left" aria-hidden="true"></i>
+                </div>
+                <p>
+                  I've been using Binder for my accounting needs,
+                  and it has truly transformed the way I manage my finances.
+                  The user-friendly design makes it easy for me to navigate,
+                  even as someone who's not a finance expert.
+                  The time-saving features have been a game-changer –
+                  automating routine tasks,
+                  leaving me with more time to focus on strategic aspects of my business.
+                  What sets Binder apart is their commitment to user feedback;
+                  I suggested a feature, and they actually implemented it!
+                  Plus, their customer support is incredibly responsive.
+                  Binder is more than just accounting software;
+                  it's a partner in my business success
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="item">
+            <div class="box">
+              <div class="img-box">
+                <img src="/static/images/c2.jpg" alt="">
+              </div>
+              <div class="detail-box">
+                <div class="client_info">
+                  <div class="client_name">
+                    <h5>
+                      Alina Hans
+                    </h5>
+                    <h6>
+                      Customer
+                    </h6>
+                  </div>
+                  <i class="fa fa-quote-left" aria-hidden="true"></i>
+                </div>
+                <p>
+                  As a seasoned accountant,
+                  finding the right software that aligns with my workflow was crucial.
+                  Binder not only met but exceeded my expectations.
+                  The feature-rich platform caters to my specific needs,
+                  and the customizable options allow me to tailor it to my preferences.
+                  What I appreciate most is the responsive customer support –
+                  whenever I've had a question or needed assistance,
+                  they were quick to provide solutions.
+                  Binder's commitment to continuous improvement and innovation sets it apart from other accounting software.
+                  It's a tool that grows with me and adds tremendous value to my professional life.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end client section -->
+
+  <footer class="footer_section">
+        <div class="footer-info ">
+          <p id="rights">
+            &copy; <span id="displayYear"></span>
+            <a class="link" href="/">Binder Software</a> — Manage. Predict. Grow.
+          </p>
+        </div>
+  </footer>
+
+  
+  <!-- jQery -->
+  <script src="/static/js/jquery-3.4.1.min.js"></script>
+  <!-- popper js -->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+  </script>
+  <!-- bootstrap js -->
+  <script src="/static/js/bootstrap.js"></script>
+  <!-- owl slider -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
+  </script>
+  <!-- custom js -->
+  <script src="/static/js/custom.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+    $(document).ready(function(){
+        $('.client_owl-carousel').owlCarousel({
+        loop:true,
+        margin:10,
+        nav:true,
+        navText: [
+            '<i class="fa fa-angle-left" aria-hidden="true"></i>',
+            '<i class="fa fa-angle-right" aria-hidden="true"></i>'
+        ],
+        responsive:{
+            0:{
+            items:1
+            },
+            600:{
+            items:1
+            },
+            1000:{
+            items:2
+            }
+        }
+        });
+    });
+</script>
+</body>
+</html>

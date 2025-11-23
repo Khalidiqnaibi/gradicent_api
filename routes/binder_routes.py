@@ -19,6 +19,7 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.exceptions import BadRequest, NotFound
 
 from services.binder_service import BinderService, BinderServiceError
+from BinderSoftware_api.utils.get_appointments import get_appopintments
 
 binder_blueprint = Blueprint("binder", __name__)
 
@@ -218,3 +219,11 @@ def add_interaction(client_id: str):
 
     interaction = service.create_interaction(client_id, payload["interaction"])
     return make_response(data=interaction, message="Interaction created."), 201
+
+@binder_blueprint.route('/get_appointments/<date>', methods = ["GET"])
+def getappointments(date):
+    user_id = request.args.get("user_id")
+
+    appointments = get_appopintments(date,user_id)
+
+    return jsonify(appointments)

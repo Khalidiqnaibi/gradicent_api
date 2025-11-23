@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Welcome — Binder Medical</title>
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root{
+      --bg-main: #D9C4B0;  /* warm beige */
+      --accent:   #ce7a35; /* cool teal accent */
+      --secondary:#78cee6; /* warm secondary */
+      --card: rgba(255,255,255,0.92);
+      --muted: #6b6b6b;
+      --text: #1f2937;
+    }
+
+    html,body{height:100%; margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;}
+    body{
+      background: linear-gradient(180deg,var(--bg-main), #f7efe3 65%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* center card */
+    .onboard-wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px;
+    }
+
+    /* card */
+    .card {
+      width:100%;
+      max-width:920px;
+      background: var(--card);
+      border-radius:18px;
+      padding:28px;
+      box-shadow: 0 18px 50px rgba(9,10,10,0.06);
+      border:1px solid rgba(0,0,0,0.04);
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:22px;
+    }
+    @media (max-width:900px){
+      .card { grid-template-columns: 1fr; padding:20px; }
+    }
+
+    /* left panel */
+    .left-panel{
+      padding:18px;
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .logo {
+      width:56px; height:56px; border-radius:12px; object-fit:cover;
+      box-shadow: 0 8px 18px rgba(10,10,10,0.06);
+      border:1px solid rgba(0,0,0,0.04);
+      background: white;
+    }
+
+    .h1 { font-size:20px; font-weight:700; color:var(--text); }
+    .muted { color:var(--muted); font-size:13px; }
+
+    /* step indicator */
+    .step {
+      display:flex; gap:10px; align-items:center;
+    }
+    .step .dot{
+      width:10px; height:10px; border-radius:999px; background:var(--secondary); opacity:0.95;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+    .progress {
+      height:8px; background:rgba(0,0,0,0.05); border-radius:999px; width:100%;
+      overflow:hidden;
+    }
+    .progress > i { display:block; height:100%; width:66%; background: linear-gradient(90deg,var(--accent),var(--secondary)); }
+
+    /* form fields */
+    label.field { display:block; font-weight:600; margin-bottom:8px; color: #111827; font-size:14px; }
+    .input {
+      width:100%;
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:15px;
+      border:2px solid transparent;
+      background-image: linear-gradient(#fff,#fff), linear-gradient(90deg,var(--accent), var(--secondary));
+      background-origin: padding-box, border-box;
+      background-clip: padding-box, border-box;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.03);
+      outline:none;
+      transition: box-shadow .12s, transform .06s;
+      color:var(--text);
+    }
+    .input:focus{
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(11,20,23,0.06), 0 0 0 6px rgba(187,220,229,0.14);
+    }
+    textarea.input { min-height:110px; resize:vertical; }
+
+    /* specialty custom select */
+    .specialty {
+      position:relative;
+    }
+    .spec-button {
+      display:flex; align-items:center; gap:8px; width:100%;
+      padding:10px 12px; border-radius:12px; background:#fff; border:1px solid rgba(0,0,0,0.06);
+      cursor:pointer;
+    }
+    .spec-button img { width:18px; height:18px; opacity:0.9; }
+
+    .dropdown {
+      position:absolute;
+      top:calc(100% + 8px);
+      left:0;
+      right:0;
+      background:#fff;
+      border-radius:10px;
+      box-shadow: 0 14px 40px rgba(9,10,10,0.08);
+      z-index:40;
+      max-height:320px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      border:1px solid rgba(0,0,0,0.06);
+    }
+    .dropdown .search {
+      padding:10px;
+      border-bottom:1px solid rgba(0,0,0,0.04);
+    }
+    .dropdown .search input { width:100%; padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06); }
+    .dropdown .list { overflow:auto; padding:6px; }
+    .dropdown .list a {
+      display:block; padding:10px 12px; border-radius:8px; color:var(--text); cursor:pointer; text-decoration:none;
+    }
+    .dropdown .list a:hover { background: rgba(187,220,229,0.12); }
+
+    /* right panel (form area) */
+    .right-panel{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      justify-content:space-between;
+    }
+
+    .actions { display:flex; gap:12px; justify-content:flex-end; align-items:center; margin-top:6px; }
+    .btn-primary {
+      background: linear-gradient(90deg,var(--accent), rgba(207,171,141,0.9));
+      color:#072024; font-weight:700; padding:10px 16px; border-radius:12px; border:none; cursor:pointer;
+      box-shadow: 0 10px 30px rgba(11,20,23,0.06);
+      transition: transform .08s;
+    }
+    .btn-primary:hover{ transform: translateY(-3px); }
+
+    .btn-ghost {
+      background:transparent; border:1px solid rgba(0,0,0,0.07); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer;
+    }
+
+    /* small note */
+    .note { font-size:13px; color:var(--muted); }
+
+    /* toasts */
+    .toast-wrap { position:fixed; right:18px; bottom:18px; z-index:80; display:flex; flex-direction:column; gap:8px; }
+    .toast { background:#111827;color:white;padding:10px 14px;border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.25); font-size:14px; }
+
+  </style>
+</head>
+<body>
+  <div class="onboard-wrap">
+    <div class="card" role="main" aria-labelledby="welcome-title">
+
+      <!-- LEFT: intro + progress -->
+      <div class="left-panel" aria-hidden="false">
+        <img src="/static/images/w3.jpg" alt="Binder logo" class="logo" />
+        <div>
+          <div class="h1" id="welcome-title">Almost there — set up your clinic</div>
+          <div class="muted" style="margin-top:6px">Quick: tell us the clinic name, specialty, location and phone so patients can find you.</div>
+        </div>
+
+        <div class="step" style="width:100%; margin-top:8px;">
+          <div style="min-width:120px;">
+            <div class="muted">Account setup</div>
+            <div style="font-weight:700">Step 2 of 2</div>
+          </div>
+
+          <div style="flex:1;">
+            <div class="progress" aria-hidden="true"><i></i></div>
+          </div>
+        </div>
+        <p class="note" style="margin-top:10px;">By continuing you agree to our <a href="/terms" class="underline" style="color:var(--secondary)">Terms</a> and <a href="/privacy" class="underline" style="color:var(--secondary)">Privacy</a>.</p>
+        <!--div style="margin-top:6px" class="note">You can change these later in Settings. This helps us prefill your clinic profile.</div-->
+      </div>
+
+      <!-- RIGHT: form -->
+      <div class="right-panel">
+
+        <form id="signupForm" onsubmit="event.preventDefault(); sign();" novalidate>
+
+          <div>
+            <label class="field">Doctor / Clinic name</label>
+            <input id="drname" class="input" type="text" inputmode="text" autocomplete="organization" placeholder="Dr. Khalid — Binder Clinic" required />
+          </div>
+
+          <div>
+            <label class="field">Specialty</label>
+            <div class="specialty" id="specialtyRoot">
+              <button type="button" id="specBtn" class="spec-button" aria-haspopup="listbox" aria-expanded="false" onclick="toggleDropdown()">
+                <img src="/static/images/down.png" alt="" aria-hidden="true" />
+                <span id="specValue" class="muted">Family and General Medicine</span>
+                <div style="margin-left:auto; font-size:13px; color:var(--muted)">Choose / Search</div>
+              </button>
+
+              <!-- dropdown (hidden by default) -->
+              <div id="specDropdown" class="dropdown" role="listbox" aria-label="Specialty list" style="display:none;">
+                <div class="search">
+                  <input id="specSearch" type="search" placeholder="Search specialties…" aria-label="Search specialties" oninput="filterFunction()" />
+                </div>
+                <div class="list" id="specList" tabindex="0">
+                  <!-- specialty links inserted here (JS will populate) -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="field">Clinic location</label>
+            <input id="location" class="input" type="text" placeholder="Hebron, Palestine (street / area)" required />
+          </div>
+
+          <div>
+            <label class="field">Phone</label>
+            <input id="phone" class="input" type="tel" inputmode="tel" placeholder="+970 59 000 0000" required />
+          </div>
+
+          <div style="display:flex; gap:12px; align-items:center; margin-top:8px; flex-wrap:wrap;">
+            <button type="submit" class="btn-primary">Finish setup</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- toast container -->
+  <div id="toasts" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    // specialties array (keeps yours)
+    const specialties = [
+      "Accident and emergency medicine","Allergist","Anaesthetics","Cardiology","Child psychiatry","Clinical biology",
+      "Clinical chemistry","Clinical microbiology","Clinical neurophysiology","Craniofacial surgery","Dermatology",
+      "Endocrinology","Family and General Medicine","Gastroenterologic surgery","Gastroenterology","General Practice",
+      "General surgery","Geriatrics","Hematology","Immunology","Infectious diseases","Internal medicine",
+      "Laboratory medicine","Nephrology","Neuropsychiatry","Neurology","Neurosurgery","Nuclear medicine",
+      "Obstetrics and gynaecology","Occupational medicine","Oncology","Ophthalmology","Oral and maxillofacial surgery",
+      "Orthopaedics","Otorhinolaryngology","Paediatric surgery","Paediatrics","Pathology","Pharmacology",
+      "Physical medicine and rehabilitation","Plastic surgery","Podiatric surgery","Preventive medicine","Psychiatry",
+      "Public health","Radiation Oncology","Radiology","Respiratory medicine","Rheumatology","Stomatology",
+      "Thoracic surgery","Tropical medicine","Urology","Vascular surgery","Venereology"
+    ];
+
+    const specListEl = document.getElementById('specList');
+    const specDropdown = document.getElementById('specDropdown');
+    const specBtn = document.getElementById('specBtn');
+    const specValue = document.getElementById('specValue');
+    const specSearch = document.getElementById('specSearch');
+
+    // populate specialties
+    function buildSpecialtyList() {
+      specListEl.innerHTML = '';
+      specialties.forEach(s => {
+        const a = document.createElement('a');
+        a.setAttribute('role','option');
+        a.textContent = s;
+        a.href = 'javascript:void(0)';
+        a.addEventListener('click', () => {
+          selectSpecialty(s);
+        });
+        specListEl.appendChild(a);
+      });
+    }
+    buildSpecialtyList();
+
+    function toggleDropdown(open){
+      const isOpen = specDropdown.style.display !== 'none';
+      const show = (open===undefined) ? !isOpen : !!open;
+      specDropdown.style.display = show ? 'flex' : 'none';
+      specBtn.setAttribute('aria-expanded', show ? 'true' : 'false');
+      if(show){ specSearch.focus(); specSearch.select(); } else { specSearch.value=''; filterFunction(); }
+    }
+
+    function selectSpecialty(specialty){
+      specValue.textContent = specialty;
+      toggleDropdown(false);
+    }
+
+    function filterFunction(){
+      const q = specSearch.value.trim().toUpperCase();
+      Array.from(specListEl.children).forEach(a=>{
+        const txt = (a.textContent||'').toUpperCase();
+        a.style.display = txt.indexOf(q) > -1 ? '' : 'none';
+      });
+    }
+
+    // close dropdown when clicking outside or pressing Esc
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('specialtyRoot').contains(e.target)) toggleDropdown(false);
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleDropdown(false); });
+
+    // simple toast
+    function toast(msg, type='info'){
+      const wrap = document.getElementById('toasts');
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      if(type==='error') el.style.background = '#B91C1C';
+      if(type==='success') el.style.background = '#059669';
+      wrap.appendChild(el);
+      setTimeout(()=>{ el.style.opacity = '0'; el.style.transform='translateY(6px)'; setTimeout(()=>el.remove(),400); }, 3500);
+    }
+
+    // sign: validate and POST to /savesign
+    async function sign(){
+      const drname = document.getElementById('drname').value.trim();
+      const specialty = specValue.textContent.trim();
+      const location = document.getElementById('location').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if(!drname){ toast('Please enter a doctor/clinic name','error'); document.getElementById('drname').focus(); return; }
+      if(!specialty){ toast('Please choose a specialty','error'); toggleDropdown(true); return; }
+      if(!location){ toast('Please enter clinic location','error'); document.getElementById('location').focus(); return; }
+      if(!phone){ toast('Please enter phone number','error'); document.getElementById('phone').focus(); return; }
+
+      const payload = { drname: drname, specialty: specialty, location: location, phone: phone };
+
+      try{
+        toast('Saving…');
+        const res = await fetch('/savesign', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error('Network error');
+        // success — redirect to account (same as before)
+        toast('Profile saved — redirecting...', 'success');
+        setTimeout(()=> window.location.href = '/acc', 700);
+      } catch(err){
+        console.error(err);
+        toast('Failed to save. Try again.', 'error');
+      }
+    }
+
+    function skipStep(){
+      // allow skipping — redirect to account /acc
+      toast('Skipping setup — redirecting...', 'info');
+      setTimeout(()=> window.location.href = '/acc', 500);
+    }
+
+    // preserve the activation code checker you had
+    function checkActivationCode() {
+      const activationCode = document.getElementById('activationCodeInput')?.value;
+      if(!activationCode) { toast('Enter activation code', 'error'); return; }
+      fetch('/chk_bcode', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ code: activationCode })
+      }).then(r => r.json())
+        .then(data => {
+          if (data.result === 'accepted') { window.location.href = '/check_bcode'; }
+          else toast('Invalid activation code', 'error');
+        })
+        .catch(()=> toast('Activation check failed', 'error'));
+    }
+  </script>
+</body>
+</html>
