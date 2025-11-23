@@ -19,7 +19,7 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.exceptions import BadRequest, NotFound
 
 from services.binder_service import BinderService, BinderServiceError
-from BinderSoftware_api.utils.get_appointments import get_appopintments
+from utils.get_appointments import get_appopintments
 
 binder_blueprint = Blueprint("binder", __name__)
 
