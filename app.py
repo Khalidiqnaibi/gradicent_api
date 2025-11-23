@@ -17,6 +17,7 @@ from routes.gaia_routes import gaia_blueprint
 from routes.binder_routes import binder_blueprint
 from routes.payments_routes import payments_blueprint
 from routes.auth_routes import auth_blueprint
+from routes.frontend_routes import frontend_blueprint
 from config import DefaultConfig
 
 def create_app(config_name: str = 'default') -> Flask:
@@ -40,13 +41,11 @@ def create_app(config_name: str = 'default') -> Flask:
     app.config.setdefault("BINDERS", binders)
 
     # services/adapters
+    # NOTE: this doesnt make sense and i think it will be changed 
     storage = FirebaseCrudAdapter('tst')
     user_service = UserService(storage)
     payment_provider = StripePaymentProvider(app.config["STRIPE_API_KEY"])
     subscription_service = SubscriptionService(storage, payment_provider)
-
-    dr_user_repository =UserRepository(firebase_adapter_medical)
-    business_user_repository =UserRepository(firebase_adapter_business)
 
     # Auth
     #auth_service = AuthService(client_secrets_path=app.config['GOOGLE_SECRETS'], redirect_uri=app.config['OAUTH_REDIRECT'])
@@ -56,13 +55,12 @@ def create_app(config_name: str = 'default') -> Flask:
     app.register_blueprint(binder_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
     app.register_blueprint(payments_blueprint, url_prefix=app.config["PAYMENT_ROUTE_PREFIX"])
     app.register_blueprint(auth_blueprint, url_prefix=app.config["AUTH_ROUTE_PREFIX"])
+    app.register_blueprint(frontend_blueprint, url_prefix=app.config["FRONT_ROUTE_PREFIX"])
 
     # Attach services for controllers to pull from app context
     app.extensions.setdefault("services", {})
     app.extensions["services"].update({
         "user_service": user_service,
-        "dr_user_repository": dr_user_repository,
-        "business_user_repository":business_user_repository,
         #"auth_service": auth_service,
         "subscription_service": subscription_service,
         "payment_provider": payment_provider,

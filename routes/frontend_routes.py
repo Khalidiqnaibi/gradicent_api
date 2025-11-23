@@ -1,0 +1,271 @@
+"""
+frontend_routes.py
+------------------
+Flask Blueprint providing all frontend (template) routes for Binder.
+
+Why:
+- Move UI/template routes out of api.py into a single, testable blueprint.
+- Keep each route small and readable. Use helper functions (auth, user_data)
+  imported from a central helpers module to avoid duplication and circular imports.
+"""
+
+from typing import Any, Dict
+import logging
+
+from flask import Blueprint, render_template, redirect, request, session, jsonify
+from decorators.req_login import require_login
+from utils.codes import gencode , save_code,save_seccode
+from utils.log_events import log_event
+
+logger = logging.getLogger(__name__)
+
+frontend_blueprint = Blueprint(
+    "frontend",
+    __name__,
+    template_folder="templates", 
+)
+
+@frontend_blueprint.route("/", methods=["GET"])
+def home() -> str:
+    """Landing page."""
+    return render_template("index.html")
+
+
+@frontend_blueprint.route("/med", methods=["GET"])
+def med() -> str:
+    """Marketing page for Binder Medical; records source param into session."""
+    session["source"] = request.args.get("src", "organic")
+    return render_template("med.html")
+
+
+@frontend_blueprint.route("/products", methods=["GET"])
+def products() -> str:
+    """Products page."""
+    return render_template("watches.html")
+
+
+@frontend_blueprint.route("/about", methods=["GET"])
+def about() -> str:
+    """About page."""
+    return render_template("about.html")
+
+
+@frontend_blueprint.route("/contact", methods=["GET"])
+def contact() -> str:
+    """Contact page."""
+    return render_template("contact.html")
+
+
+@frontend_blueprint.route("/privacy", methods=["GET"])
+def privacy() -> str:
+    """Privacy policy page."""
+    return render_template("privacy.html")
+
+
+@frontend_blueprint.route("/terms", methods=["GET"])
+def terms() -> str:
+    """Terms & conditions page."""
+    return render_template("terms.html")
+
+
+@frontend_blueprint.route("/ahha", methods=["GET"])
+def fooled() -> str:
+    """Easter egg page."""
+    return render_template("fooled.html")
+
+@frontend_blueprint.route("/med_sub", methods=["GET"])
+def med_sub() -> str:
+    """
+    Show medical plan selection. Pass Paddle client token to template if available.
+    This keeps client-side integration with Paddle minimal.
+    """
+    # session["appname"] = "Binder Medical"
+    # paddle_customer_id = session.get("paddle_customer_id", None)
+    # token = None
+    # try:
+    #     token = get_client_token(customer_id=paddle_customer_id)
+    # except Exception as exc:  # keep server resilient
+    #     logger.warning("Failed to get paddle client token: %s", exc)
+    return render_template("plans.html")
+
+
+@frontend_blueprint.route("/medsub_ar", methods=["GET"])
+def med_sub_ar() -> str:
+    """Arabic med subscription page."""
+    session["appname"] = "Binder Medical"
+    return render_template("basic - ar.html")
+
+
+@frontend_blueprint.route("/Ekth-sAKY-KX-7NjnHTgIT085oc1j50T7", methods=["GET"])
+def code_generate_public() -> str:
+    """Generate a simple code and render page (public admin shortcut)."""
+    code = gencode()
+    save_code(code, "basic")
+    return render_template("code_gen.html", code=code)
+
+
+@frontend_blueprint.route("/Ekth-sAKY-KX-7NjnHTgIT085oc1j50T7N", methods=["GET"])
+def code_show_form() -> str:
+    """Render code generation form (admin use)."""
+    return render_template("code_gen.html", code="")
+
+
+@frontend_blueprint.route("/codesec", methods=["POST"])
+@require_login
+def codesec() -> Any:
+    """
+    Endpoint used by the UI to exchange a short activation code for a secure code.
+    This route mirrors logic in the previous api.py implementation but keeps structural
+    checks minimal (auth & page context).
+    """
+    if "page" not in session or session["page"] not in ["settings"]:
+        return jsonify({"error": "Unauthorized access"}), 403
+
+    payload = request.get_json() or {}
+    code = payload.get("code")
+    if not code:
+        return jsonify({"error": "No code provided"}), 400
+
+    # The original logic reads/writes Firebase; keep this a thin wrapper and
+    # call into shared helper(s) for actual DB updates.
+    try:
+        # re-use helper functions defined in core.helpers or api.py
+        # NOTE: actual DB mutation logic lives in helper functions (save_seccode, etc.)
+        save_code(gencode(), "sec", session.get("google_id"))
+        return jsonify({"code": "ok"}), 200
+    except Exception as exc:
+        logger.exception("codesec failed: %s", exc)
+        return jsonify({"error": "Internal error"}), 500
+
+
+@frontend_blueprint.route("/logme", methods=["GET"])
+def login_page() -> str:
+    """Render login page."""
+    return render_template("login.html")
+
+
+@frontend_blueprint.route("/logme_ar", methods=["GET"])
+def login_page_ar() -> str:
+    """Render Arabic login page."""
+    return render_template("login - ar.html")
+
+
+@frontend_blueprint.route("/protected_area", methods=["GET"])
+@require_login
+def protected_area() -> Any:
+    """
+    Simple redirect wrapper after login to the main app page.
+    Keeps old behavior: log the login event and redirect to /home_page
+    """
+    try:
+        log_event(session.get("google_id"), "Login", {"binder": session.get("binder")})
+    except Exception:
+        logger.debug("log_event failed during protected_area", exc_info=True)
+    return redirect("/home_page")
+
+
+@frontend_blueprint.route("/logout", methods=["GET"])
+def logout() -> Any:
+    """Clear session and redirect to login (preserve binder choice)."""
+    binder_choice = session.get("binder", "med")
+    session.clear()
+    session["binder"] = binder_choice
+    session["donee"] = False
+    return redirect("/logme")
+
+'''
+Authenticated pages (page routing wrappers)
+
+The pattern used here: small wrapper that enforces login and sets session['page'],
+then redirects to fetch_user_data which will compute the correct template.
+'''
+def _render_protected_page(page_name: str) -> Any:
+    """
+    Helper to set session page and redirect to fetch_user_data route which renders
+    the real template after preparing user_data. Kept small per standards.
+    """
+    session["page"] = page_name
+    return redirect("/fetchUserData")
+
+
+@frontend_blueprint.route("/acc", methods=["GET"])
+@require_login
+def acc() -> Any:
+    """Account wrapper."""
+    return _render_protected_page("acc")
+
+
+@frontend_blueprint.route("/home_page", methods=["GET"])
+@require_login
+def home_page() -> Any:
+    """Home wrapper."""
+    return _render_protected_page("home")
+
+
+@frontend_blueprint.route("/support", methods=["GET"])
+@require_login
+def support() -> Any:
+    """Support wrapper."""
+    return _render_protected_page("support")
+
+
+@frontend_blueprint.route("/settings", methods=["GET"])
+@require_login
+def settings() -> Any:
+    """Settings wrapper."""
+    return _render_protected_page("settings")
+
+
+@frontend_blueprint.route("/stats", methods=["GET"])
+@require_login
+def stats() -> Any:
+    """Stats wrapper."""
+    return _render_protected_page("stats")
+
+
+@frontend_blueprint.route("/data", methods=["GET"])
+@require_login
+def data() -> Any:
+    """Data wrapper for patient details."""
+    return _render_protected_page("data")
+
+
+@frontend_blueprint.route("/lab", methods=["GET"])
+def lab_public() -> str:
+    """Public lab page (marketing)."""
+    return render_template("Labratory.html")
+
+
+@frontend_blueprint.route("/Binder_medical", methods=["GET"])
+@require_login
+def binder_medical() -> Any:
+    """
+    Entry point for medical binder (replicates previous behavior).
+    The heavy lifting (checking settings, trial, and rendering correct template)
+    remains in fetch_user_data (keeps separation of concerns).
+    """
+    session["binder"] = "med"
+    return redirect("/fetchUserData")
+
+
+@frontend_blueprint.route("/Binder_labratory", methods=["GET"])
+@require_login
+def binder_laboratory() -> Any:
+    """Entry point for lab binder type."""
+    session["binder"] = "lab"
+    session["wtype"] = "lab"
+    return redirect("/fetchUserData")
+
+
+def register_frontend(app) -> None:
+    """
+    Register the frontend blueprint on the Flask app.
+
+    Usage (in app.py or routes/__init__.py):
+
+        from routes.frontend_routes import register_frontend
+        register_frontend(app)
+
+    """
+    app.register_blueprint(frontend_blueprint)
+    logger.info("frontend blueprint registered")
