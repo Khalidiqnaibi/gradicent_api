@@ -1,0 +1,14 @@
+ File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\app.py", line 51
+
+
+ when i ran the app :python app.py
+ it gave this error : TypeError: AuthService.__init__() got an unexpected keyword argument 'client_secrets_path'
+
+
+ the full error :"
+ Traceback (most recent call last):
+  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\app.py", line 72, in <module>
+    app =create_app()
+  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\app.py", line 51, in create_app
+    auth_service = AuthService(client_secrets_path=app.config['OAUTH_CLIENT_SECRETS_FILE'], redirect_uri=app.config['OAUTH_REDIRECT_URI'])
+TypeError: AuthService.__init__() got an unexpected keyword argument 'client_secrets_path'"

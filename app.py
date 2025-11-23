@@ -10,7 +10,7 @@ from firebase_admin import credentials, initialize_app
 from services.subscription_service import SubscriptionService
 from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness,UserRepository
 
-from auth.auth_service import AuthService
+from auth.new_auth_service import AuthService  # using the new AuthService
 from services.user_service import UserService
 from payments.stripe_provider import StripePaymentProvider
 from routes.gaia_routes import gaia_blueprint
@@ -48,7 +48,7 @@ def create_app(config_name: str = 'default') -> Flask:
     subscription_service = SubscriptionService(storage, payment_provider)
 
     # Auth
-    #auth_service = AuthService(client_secrets_path=app.config['GOOGLE_SECRETS'], redirect_uri=app.config['OAUTH_REDIRECT'])
+    auth_service = AuthService(client_secrets_path=app.config['OAUTH_CLIENT_SECRETS_FILE'], redirect_uri=app.config['OAUTH_REDIRECT_URI'])
 
     # register blueprints and pass factories via app extensions
     app.register_blueprint(gaia_blueprint, url_prefix=app.config["GAIA_ROUTE_PREFIX"])
@@ -61,7 +61,7 @@ def create_app(config_name: str = 'default') -> Flask:
     app.extensions.setdefault("services", {})
     app.extensions["services"].update({
         "user_service": user_service,
-        #"auth_service": auth_service,
+        "auth_service": auth_service,
         "subscription_service": subscription_service,
         "payment_provider": payment_provider,
         "binders": binders,

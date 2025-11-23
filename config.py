@@ -42,7 +42,8 @@ SESSION_LIFETIME_DAYS = int(os.getenv("SESSION_LIFETIME_DAYS","7"))
 USE_HTTPS = os.getenv("USE_HTTPS","False").lower() in ("true", "1", "t")
 
 # OAuth settings
-OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE","client_secrets.json")
+OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE",r'C:\Users\rasem\Desktop\Personal\BinderSoftware_api\client_secret1.json')
+OAUTH_GOOGLE_CLIENT_ID = os.getenv("OAUTH_GOOGLE_CLIENT_ID","107932074863-nlil9n5j9lmahqfb15cmn52u59evpse9.apps.googleusercontent.com")
 OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI","http://localhost:5000/api/auth/callback")
 OAUTH_SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
@@ -94,6 +95,7 @@ class DefaultConfig:
 
     OAUTH_CLIENT_SECRETS_FILE = OAUTH_CLIENT_SECRETS_FILE
     OAUTH_REDIRECT_URI = OAUTH_REDIRECT_URI
+    OAUTH_GOOGLE_CLIENT_ID = OAUTH_GOOGLE_CLIENT_ID
     OAUTH_SCOPES = OAUTH_SCOPES
 
     ACCESS_TOKEN_TTL_SECONDS = ACCESS_TOKEN_TTL_SECONDS
