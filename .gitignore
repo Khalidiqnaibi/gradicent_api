@@ -4,3 +4,7 @@ gaia/__pycache__/__init__.cpython-39.pyc
 /gaia/__pycache__
 /routes/__pycache__
 /gaia/metrics/__pycache__
+*.pyc
+*.pyc
+*.pyc
+*.pyc
