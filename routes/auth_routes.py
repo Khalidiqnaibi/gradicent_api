@@ -18,12 +18,20 @@ from werkzeug.exceptions import BadRequest
 auth_blueprint = Blueprint("auth", __name__)
 
 
-def _get_auth_service():
+def _get_auth_service(domain: str):
     services = current_app.extensions.get("services", {})
-    auth_service = services.get("auth_service")
-    if not auth_service:
-        raise RuntimeError("auth_service not registered in app.extensions['services']")
-    return auth_service
+    auth_services = services.get("auth_services")
+    if not auth_services:
+        raise RuntimeError("auth_services not registered in app.extensions['services']")
+    
+    if domain in ["medical"]:
+        auth_service = auth_services.get("medical")
+        return auth_service
+    elif domain in ["business"]:
+        auth_service = auth_services.get("business")
+        return auth_service
+    else:
+        raise RuntimeError("auth_service not registered in app.extensions['services']['auth_services']")
 
 
 @auth_blueprint.route("/start", methods=["GET"])
@@ -37,7 +45,9 @@ def start_oauth():
     """
     provider = request.args.get("provider", "google")
     state = request.args.get("state")
-    auth_service = _get_auth_service()
+    domain = request.args.get("domain",session.get("binder", "business"))
+    session["domain"] = domain
+    auth_service = _get_auth_service(domain)
     try:
         auth_url = auth_service.get_authorization_url(provider, state)
     except KeyError:
@@ -63,7 +73,8 @@ def oauth_callback():
     if not code:
         raise BadRequest("missing 'code' in callback request")
 
-    auth_service = _get_auth_service()
+    domain = request.args.get("domain",session.get("domain", session.get("binder", "business")))
+    auth_service = _get_auth_service(domain)
     try:
         user, tokens = auth_service.handle_provider_callback(provider, code)
     except Exception as exc:
@@ -84,7 +95,8 @@ def sign_out():
     Sign out the current session / revoke refresh token.
     Accepts optional JSON body: { "user_id": "..." } to sign out specific user.
     """
-    auth_service = _get_auth_service()
+    domain = request.json.get.get("domain", session.get("domain",session.get("binder", "business")))
+    auth_service = _get_auth_service(domain)
     user_id = request.json.get("user_id") if request.is_json else session.get("user_id")
     # revoke server-side refresh token
     try:
@@ -102,7 +114,8 @@ def current_user():
     Return the current authenticated user.
     Tries Bearer token first, then session cookie.
     """
-    auth_service = _get_auth_service()
+    domain = request.args.get("domain", session.get("domain",session.get("binder", "business")))
+    auth_service = _get_auth_service(domain)
     auth_header: Optional[str] = request.headers.get("Authorization")
     token = None
     if auth_header and auth_header.lower().startswith("bearer "):
@@ -122,8 +135,9 @@ def refresh_tokens():
     Body: { "refresh_token": "..." }
     Returns new tokens or 401 on failure.
     """
-    auth_service = _get_auth_service()
     payload = request.get_json(silent=True) or {}
+    domain = payload.get("domain", session.get("domain", session.get("binder", "business")))
+    auth_service = _get_auth_service(domain)
     refresh_token = payload.get("refresh_token") or request.headers.get("X-Refresh-Token")
     if not refresh_token:
         return jsonify({"status": "error", "message": "missing refresh_token"}), 400

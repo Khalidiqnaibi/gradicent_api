@@ -10,7 +10,7 @@ from firebase_admin import credentials, initialize_app
 from services.subscription_service import SubscriptionService
 from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness,UserRepository
 
-from auth.new_auth_service import AuthService  # using the new AuthService
+from auth.auth_service import AuthService  # using the new AuthService
 from services.user_service import UserService
 from payments.stripe_provider import StripePaymentProvider
 from routes.gaia_routes import gaia_blueprint
@@ -44,14 +44,6 @@ def create_app(config_name: str = 'default') -> Flask:
     }
 
     app.config.setdefault("BINDERS", binders)
-
-    # services/adapters
-    # NOTE: this doesnt make sense and i think it will be changed 
-    storage = FirebaseCrudAdapter('tst')
-    user_service = UserService(storage)
-    payment_provider = StripePaymentProvider(app.config["STRIPE_API_KEY"])
-    subscription_service = SubscriptionService(storage, payment_provider)
-
     # Auth
     google_config = {
         "client_secrets_path": app.config["OAUTH_CLIENT_SECRETS_FILE"],
@@ -59,12 +51,28 @@ def create_app(config_name: str = 'default') -> Flask:
         "scopes": app.config.get("OAUTH_SCOPES", ["openid", "email", "profile"]),
     }
 
-    auth_service = AuthService(
-        adapter=storage,
-        google_config=google_config,
-        jwt_secret=jwt_secret,
-        # optional: access_token_ttl=3600, refresh_token_ttl=2592000
-    )
+
+    auth_services = {
+        "medical": AuthService(
+            adapter=firebase_adapter_medical,
+            google_config=google_config,
+            jwt_secret=jwt_secret,
+            # optional: access_token_ttl=3600, refresh_token_ttl=2592000
+        ),
+        "business": AuthService(
+            adapter=firebase_adapter_business,
+            google_config=google_config,
+            jwt_secret=jwt_secret,
+            # optional: access_token_ttl=3600, refresh_token_ttl=2592000
+        ),
+    }
+
+    # services/adapters
+    # NOTE: this doesnt make sense and i think it will be changed 
+    storage = FirebaseCrudAdapter('tst')
+    user_service = UserService(storage)
+    payment_provider = StripePaymentProvider(app.config["STRIPE_API_KEY"])
+    subscription_service = SubscriptionService(storage, payment_provider)
 
     # register blueprints and pass factories via app extensions
     app.register_blueprint(gaia_blueprint, url_prefix=app.config["GAIA_ROUTE_PREFIX"])
@@ -77,7 +85,7 @@ def create_app(config_name: str = 'default') -> Flask:
     app.extensions.setdefault("services", {})
     app.extensions["services"].update({
         "user_service": user_service,
-        "auth_service": auth_service,
+        "auth_services": auth_services,
         "subscription_service": subscription_service,
         "payment_provider": payment_provider,
         "binders": binders,

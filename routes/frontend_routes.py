@@ -14,6 +14,7 @@ import logging
 
 from flask import Blueprint, render_template, redirect, request, session, jsonify
 from decorators.req_login import require_login
+from utils.is_plan_active import is_plan_active
 from utils.codes import gencode , save_code,save_seccode
 from utils.log_events import log_event
 
@@ -189,7 +190,11 @@ def _render_protected_page(page_name: str) -> Any:
     the real template after preparing user_data. Kept small per standards.
     """
     session["page"] = page_name
-    return redirect("/fetchUserData")
+    binder = session["binder"]
+    if binder in ["medical"]:
+        return redirect("/Binder_medical")
+    elif binder in ["business"]:
+        return redirect("/fetchUserData")
 
 
 @frontend_blueprint.route("/acc", methods=["GET"])
@@ -249,7 +254,8 @@ def binder_medical() -> Any:
     remains in fetch_user_data (keeps separation of concerns).
     """
     session["binder"] = "med"
-    return redirect("/fetchUserData")
+    page = session.get("page","home")
+    return render_template(f"{page}.html")
 
 
 @frontend_blueprint.route("/Binder_labratory", methods=["GET"])
@@ -257,7 +263,6 @@ def binder_medical() -> Any:
 def binder_laboratory() -> Any:
     """Entry point for lab binder type."""
     session["binder"] = "lab"
-    session["wtype"] = "lab"
     return redirect("/fetchUserData")
 
 

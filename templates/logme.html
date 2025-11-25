@@ -137,7 +137,7 @@
 
     loginButton.addEventListener("click", function() {
       if (termsCheckbox.checked) {
-        window.location.href = '/api/auth/start';
+        window.location.href = '/api/auth/start?domain=medical';
       } else {
         alert('Please agree to the Terms and Privacy Notice before continuing.');
       }

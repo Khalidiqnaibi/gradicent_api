@@ -28,6 +28,7 @@ from .models.models import(
     Transaction,
     Product,
 )
+from .models.legacy_user import LegacyUser
 from .repositories import(
     client_repository,
     user_repository,
@@ -56,5 +57,6 @@ __all__ = [
     "Transaction","Product","client_repository","user_repository","product_repository",
     "service_repository","employee_repository","interaction_repository","transaction_repository",
     "BaseRepository","BaseRepository", "ClientRepository","EmployeeRepository",
-    "InteractionRepository","ServiceRepository","ProductRepository", "UserRepository","TransactionRepository"
+    "InteractionRepository","ServiceRepository","ProductRepository", "UserRepository",
+    "TransactionRepository","LegacyUser"
 ]
