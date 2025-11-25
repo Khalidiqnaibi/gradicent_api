@@ -136,12 +136,16 @@ def codesec() -> Any:
     except Exception as exc:
         logger.exception("codesec failed: %s", exc)
         return jsonify({"error": "Internal error"}), 500
-
-
-@frontend_blueprint.route("/logme", methods=["GET"])
+    
+@frontend_blueprint.route("/login", methods=["GET"])
 def login_page() -> str:
     """Render login page."""
-    return render_template("login.html")
+    return render_template("logme.html")
+
+@frontend_blueprint.route("/logme", methods=["GET"])
+def logme_page() -> str:
+    """Render login page."""
+    return render_template("logme.html")
 
 
 @frontend_blueprint.route("/logme_ar", methods=["GET"])
