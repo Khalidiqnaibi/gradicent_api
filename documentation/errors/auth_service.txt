@@ -12,3 +12,54 @@
   File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\app.py", line 51, in create_app
     auth_service = AuthService(client_secrets_path=app.config['OAUTH_CLIENT_SECRETS_FILE'], redirect_uri=app.config['OAUTH_REDIRECT_URI'])
 TypeError: AuthService.__init__() got an unexpected keyword argument 'client_secrets_path'"
+
+===================================
+fixed : 
+the inputs for the auth were not as the class expected .. 
+fixed it and the routes for the log in in the front end
+
+the new output is this : 
+{
+  "data": {
+    "tokens": {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnb29nbGU6MTAyOTc4NTk1Mjc5MTQ4Mjk5NzQ3IiwiaWF0IjoxNzY0MDcyNzU2LCJleHAiOjE3NjQwNzYzNTZ9.xbdUG4ttTydvmr8Cbxz5PBi95bApPOfk4Ym2qkVAaSE",
+      "expires_in": 3600,
+      "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnb29nbGU6MTAyOTc4NTk1Mjc5MTQ4Mjk5NzQ3IiwiaWF0IjoxNzY0MDcyNzU2LCJleHAiOjE3NjY2NjQ3NTYsInR5cGUiOiJyZWZyZXNoIn0.uZPIbVbjoCP3UnJwarkZiDEDJKzOt9li8E-Bo86rcsA"
+    },
+    "user": {
+      "clients": [],
+      "created_at": "2025-11-25T14:12:36.533946",
+      "email": "khalidqnabi@gmail.com",
+      "employees": [],
+      "id": "google:102978595279148299747",
+      "metadata": {
+        "provider": "google",
+        "provider_id": "102978595279148299747",
+        "raw": {
+          "tokens": {
+            "access_token": "ya29.a0ATi6K2uqob0wZ6nEMKd7bFzcc9xi67YweT3QyC2riJB1LAeJsLuK0eXPJrzUY0hlNzjqfR9AzqKsgPhEfUt4k7wSOj1E7T-WFpDq-DL0rebI47PZBfDWDa_7Z9li0mjj_uCqZdXr8ZCqeEe9JuQ-mNpg7cVFn_Tiz2ZXv2qb80s3h7SRrozl76bmaCzIXoY9f71bGE8aCgYKAYQSARQSFQHGX2Mi1j5Q-dauoLWpP52ilFJQjg0206",
+            "expires_in": 3599,
+            "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjkzYTkzNThjY2Y5OWYxYmIwNDBiYzYyMjFkNTQ5M2UxZmZkOGFkYTEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIxMDc5MzIwNzQ4NjMtbmxpbDluNWo5bG1haHFmYjE1Y21uNTJ1NTlldnBzZTkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIxMDc5MzIwNzQ4NjMtbmxpbDluNWo5bG1haHFmYjE1Y21uNTJ1NTlldnBzZTkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDI5Nzg1OTUyNzkxNDgyOTk3NDciLCJlbWFpbCI6ImtoYWxpZHFuYWJpQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoiYVhVWlByOWJ2WE5oWkNualRUNDg0QSIsIm5hbWUiOiJLaGFsaWQgSXFuYWliaSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NKV3JJMHNNak5rZjFHN0lEczRJZWFhRzgtQkhUUk45aGxLRkhSLWJDbkEtLW1SMW1tdz1zOTYtYyIsImdpdmVuX25hbWUiOiJLaGFsaWQiLCJmYW1pbHlfbmFtZSI6IklxbmFpYmkiLCJpYXQiOjE3NjQwNzI3NTQsImV4cCI6MTc2NDA3NjM1NH0.LMPmUkF7Y1qFxww1AYecZxX3IH7kRQg8ViT1sf3UQLy4gr2xYgCSfEWb6KbDYRjy1vIQ2X-TNdsJxPO8sxjJjydbS8lFChw9_BL8vLOOvinJfjpdBxKjpVzlIqp2m-g_0wrcYQFPuqAUblvMPW3VA6_rj-dc_DbsmnZNJ2qZ6v37Fac1X2r9lSlARYVm7igr550fqiEmA_TKIGBcks53TH_m7L-_qFQ_A5ROo8MZtx0yTRiiuPDfW-JqLuRU36lQvBo4FKc-SWFCOdnflxCrAtzZ0ZCTOs-rSy01qnn5XYXTRh9ir1dfiR-u9kAvOXF0Wr0NrU1sDJ4Fx3oWKlrD1A",
+            "refresh_token": "1//03mIC4emNGz1nCgYIARAAGAMSNwF-L9IrMMWmgkrepgv84zr14w_Rq2TJvb-hUMv2FwEe82qHJIDVm2sHORRGFMDRRl2rvtuywPI",
+            "scope": "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid",
+            "token_type": "Bearer"
+          },
+          "userinfo": {
+            "email": "khalidqnabi@gmail.com",
+            "email_verified": true,
+            "family_name": "Iqnaibi",
+            "given_name": "Khalid",
+            "name": "Khalid Iqnaibi",
+            "picture": "https://lh3.googleusercontent.com/a/ACg8ocJWrI0sMjNkf1G7IDs4IeaaG8-BHTRN9hlKFHR-bCnA--mR1mmw=s96-c",
+            "sub": "102978595279148299747"
+          }
+        }
+      },
+      "name": "Khalid Iqnaibi",
+      "products": [],
+      "services": []
+    }
+  },
+  "message": "got token",
+  "status": "success"
+}
