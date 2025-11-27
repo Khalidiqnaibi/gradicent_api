@@ -1,22 +1,15 @@
 """
-leagcy_user.py
+old_leagcy_user.py
 ----------------    
 this module defines the LegacyUser dataclass for representing
 the old Firebase user structure. It includes methods to sanitize
+
+We dont use this module any more but kept for reference
 """
 
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-
-
-def sanitize_legacy_data(raw: dict, model) -> dict:
-    """
-    Keeps only fields that exist in the dataclass model.
-    This protects against random legacy fields.
-    """
-    allowed = model.__dataclass_fields__.keys()
-    return {k: v for k, v in raw.items() if k in allowed}
 
 
 @dataclass
@@ -38,15 +31,6 @@ class LegacyUser:
     plan: Optional[str] = None
     settings: Dict[str, Any] = field(default_factory=dict)
 
-    @classmethod
-    def from_raw(cls, raw: dict):
-        """
-        Creates a LegacyUser from raw Firebase data.
-        Unknown fields are ignored safely.
-        """
-        clean = sanitize_legacy_data(raw, cls)
-        return cls(**clean)
-
     def to_user(self) -> Dict[str, Any]:
         """
         Convert legacy structure to modern User-compatible dict.
@@ -57,11 +41,11 @@ class LegacyUser:
             "created_at": self.first or datetime.now().isoformat(),
             "email": None,
             "metadata": {
-                "provider": "google",
+                "provider":"google",
                 "legacy": True,
                 "plan": self.plan,
                 "settings": self.settings,
-                "msg": self.msg,
+                "msg":self.msg,
                 "phone": self.phone,
             },
             "clients": self.patients,
@@ -69,3 +53,10 @@ class LegacyUser:
             "products": [],
             "services": [],
         }
+
+
+
+
+
+
+
