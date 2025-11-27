@@ -81,7 +81,7 @@ class AuthService:
 
             #  LEGACY FORMAT
             if "google_id" in raw or "patients" in raw:
-                legacy_user = LegacyUser(**raw)
+                legacy_user = LegacyUser.from_raw(raw)
                 converted = legacy_user.to_user()
                 return User(**converted)
 
