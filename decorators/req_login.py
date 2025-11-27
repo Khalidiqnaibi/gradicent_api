@@ -11,7 +11,7 @@ def require_login(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         token = request.headers.get("Authorization", "").replace("Bearer ", "") or session.get("jwt")
-        auth_service: AuthService = current_app.extensions["services"]["auth_service"]
+        auth_service: AuthService = current_app.extensions["services"]["auth_services"].get(session.get("domain",session.get("binder","business")))
         user = auth_service.verify_token_and_get_user(token)
         if not user:
             return jsonify({"status": "error", "message": "unauthenticated"}), 401

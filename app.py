@@ -51,7 +51,6 @@ def create_app(config_name: str = 'default') -> Flask:
         "scopes": app.config.get("OAUTH_SCOPES", ["openid", "email", "profile"]),
     }
 
-
     auth_services = {
         "medical": AuthService(
             adapter=firebase_adapter_medical,
@@ -68,25 +67,25 @@ def create_app(config_name: str = 'default') -> Flask:
     }
 
     # services/adapters
-    # NOTE: this doesnt make sense and i think it will be changed 
-    storage = FirebaseCrudAdapter('tst')
-    user_service = UserService(storage)
     payment_provider = StripePaymentProvider(app.config["STRIPE_API_KEY"])
-    subscription_service = SubscriptionService(storage, payment_provider)
+    subscription_services = {
+        "medical": SubscriptionService(firebase_adapter_medical, payment_provider),
+        "business": SubscriptionService(firebase_adapter_business, payment_provider),
+    }
 
     # register blueprints and pass factories via app extensions
     app.register_blueprint(gaia_blueprint, url_prefix=app.config["GAIA_ROUTE_PREFIX"])
     app.register_blueprint(binder_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
     app.register_blueprint(payments_blueprint, url_prefix=app.config["PAYMENT_ROUTE_PREFIX"])
-    app.register_blueprint(frontend_blueprint, url_prefix=app.config["FRONT_ROUTE_PREFIX"])
     app.register_blueprint(auth_blueprint, url_prefix=app.config["AUTH_ROUTE_PREFIX"])
 
+    app.register_blueprint(frontend_blueprint, url_prefix=app.config["FRONT_ROUTE_PREFIX"])
+    
     # Attach services for controllers to pull from app context
     app.extensions.setdefault("services", {})
     app.extensions["services"].update({
-        "user_service": user_service,
         "auth_services": auth_services,
-        "subscription_service": subscription_service,
+        "subscription_services": subscription_services,
         "payment_provider": payment_provider,
         "binders": binders,
     })
