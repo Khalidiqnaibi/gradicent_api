@@ -192,51 +192,52 @@ def _render_protected_page(page_name: str) -> Any:
     session["page"] = page_name
     binder = session["binder"]
     if binder in ["medical"]:
-        return redirect("/Binder_medical")
+        res = "/Binder_medical"
     elif binder in ["business"]:
-        return redirect("/fetchUserData")
-
+        res = "/Binder_business"
+    
+    return res
 
 @frontend_blueprint.route("/acc", methods=["GET"])
 @require_login
 def acc() -> Any:
     """Account wrapper."""
-    return _render_protected_page("acc")
+    return redirect(_render_protected_page("acc"))
 
 
 @frontend_blueprint.route("/home_page", methods=["GET"])
 @require_login
 def home_page() -> Any:
     """Home wrapper."""
-    return _render_protected_page("home")
+    return redirect(_render_protected_page("home"))
 
 
 @frontend_blueprint.route("/support", methods=["GET"])
 @require_login
 def support() -> Any:
     """Support wrapper."""
-    return _render_protected_page("support")
+    return redirect(_render_protected_page("support"))
 
 
 @frontend_blueprint.route("/settings", methods=["GET"])
 @require_login
 def settings() -> Any:
     """Settings wrapper."""
-    return _render_protected_page("settings")
+    return redirect(_render_protected_page("settings"))
 
 
 @frontend_blueprint.route("/stats", methods=["GET"])
 @require_login
 def stats() -> Any:
     """Stats wrapper."""
-    return _render_protected_page("stats")
+    return redirect(_render_protected_page("stats"))
 
 
 @frontend_blueprint.route("/data", methods=["GET"])
 @require_login
 def data() -> Any:
     """Data wrapper for patient details."""
-    return _render_protected_page("data")
+    return redirect(_render_protected_page("data"))
 
 
 @frontend_blueprint.route("/lab", methods=["GET"])
@@ -253,7 +254,7 @@ def binder_medical() -> Any:
     The heavy lifting (checking settings, trial, and rendering correct template)
     remains in fetch_user_data (keeps separation of concerns).
     """
-    session["binder"] = "med"
+    session["binder"] = "medical"
     page = session.get("page","home")
     return render_template(f"{page}.html")
 
