@@ -8,7 +8,7 @@ Initializes Flask, Firebase, and registers domain routes.
 from flask import Flask
 from firebase_admin import credentials, initialize_app
 from services.subscription_service import SubscriptionService
-from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness,UserRepository
+from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness
 
 from auth.auth_service import AuthService  # using the new AuthService
 from services.user_service import UserService

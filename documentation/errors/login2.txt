@@ -10,3 +10,9 @@ i got this error :
   "message": "User.__init__() got an unexpected keyword argument 'first'",
   "status": "error"
 }"
+
+----------------
+patch : 
+the "first" key expected a list but actually the val is an iso string
+
+try it now and write if there is any errors or if its fixed 
