@@ -9,7 +9,6 @@ Follows SOLID and Gradicent code standards.
 """
 
 from typing import Dict, Any, Optional
-from binder import UserRepository
 from config import PLANS
 
 
@@ -19,7 +18,7 @@ class SubscriptionService:
     """
 
     def __init__(self, adapter, payment_service):
-        self.user_repo = UserRepository(adapter)
+        self.adapter = adapter
         self.payment_service = payment_service
 
     def get_plan_price(self, plan_name: str) -> float:
@@ -37,7 +36,7 @@ class SubscriptionService:
         payment_result = self.payment_service.process_payment(payment_data, plan_price)
 
         if payment_result["status"] == "success":
-            self.user_repo.update_user_metadata(user_id,"plan", plan_name)
+            self.adapter.update(user_id,"plan", plan_name)
             return {"status": "success", "data":{"plan": plan_name, "price": plan_price},
                     "message": f"Payment successfull. Amount: {plan_price} , Id: {user_id}"}
         else:
@@ -47,4 +46,4 @@ class SubscriptionService:
         """
         Cancels user's subscription and updates metadata.
         """
-        self.user_repo.update_user_metadata(user_id, "plan", "canceled")
+        self.adapter.update(user_id, "plan", "canceled")

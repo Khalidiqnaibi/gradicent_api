@@ -31,7 +31,7 @@ class LegacyUser:
     phone: Optional[str] = None
 
     # legacy fields
-    first: List[str] = field(default_factory=list)
+    first: str = datetime.now().isoformat()
     msg: Dict[str, Any] = field(default_factory=dict)
     patients: List[Dict[str, Any]] = field(default_factory=list)
     payed: Any = 0
@@ -54,7 +54,7 @@ class LegacyUser:
         return {
             "id": self.google_id,
             "name": self.name or self.google_id,
-            "created_at": self.first or datetime.now().isoformat(),
+            "created_at": self.first,
             "email": None,
             "metadata": {
                 "provider": "google",
