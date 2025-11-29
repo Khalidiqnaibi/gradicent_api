@@ -1,5 +1,5 @@
 '''
-is_plan_active.py
+get_plan_status.py
 ----------------
 Subscription service module for managing user subscriptions and trial periods.
 
@@ -14,9 +14,9 @@ outputs
 
 from datetime import datetime, timedelta
 
-def is_plan_active(plan, first_date_str):
+def get_plan_status(plan, first_date_str):
     if plan == "fam":
-        return  True
+        return  True, 0
     elif plan in ['free']:
         try:
            first_date = datetime.fromisoformat(first_date_str)
@@ -25,9 +25,9 @@ def is_plan_active(plan, first_date_str):
            trial_end_date = first_date + trial_duration
            days_left = (trial_end_date - today).days
            trial_status = True if days_left > 0 else False
-           return trial_status
+           return trial_status , days_left
         except ValueError:
-           return False
+           return False , 0
     else:
         try:
             first_date = datetime.fromisoformat(first_date_str)
@@ -36,6 +36,13 @@ def is_plan_active(plan, first_date_str):
             trial_end_date = first_date + trial_duration
             days_left = (trial_end_date - today).days
             trial_status = True if days_left > 0 else False
-            return trial_status
+            return trial_status, days_left
         except ValueError:
-            return False
+            return False , 0
+        
+    
+def get_plan_data(service):
+    data = service._binder.adapter.get_user(service._binder.current_user)
+    date =data.get("metadata",datetime.now().isoformat()).get("plan_started_at",datetime.now().isoformat())
+    plan = data.getdata.get("metadata","free").get("plan","free")
+    return plan , date

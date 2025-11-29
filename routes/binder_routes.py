@@ -15,11 +15,12 @@ Design notes:
 """
 
 from typing import Any, Dict, Optional
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app , session
 from werkzeug.exceptions import BadRequest, NotFound
 
 from services.binder_service import BinderService, BinderServiceError
 from utils.get_appointments import get_appopintments
+from utils.get_plan_status import get_plan_status, get_plan_data
 
 binder_blueprint = Blueprint("binder", __name__)
 
@@ -67,6 +68,31 @@ def handle_not_found(err: NotFound):
     return make_response(message=str(err), status="error"), 404
 
 # Routes (thin controllers)
+
+@binder_blueprint.route("/get_plan_status",methods=["GET"])
+def get_domain():
+    domain = request.args.get("domain", DEFAULT_DOMAIN)
+    payload ={
+        domain: "domain"
+    }
+    service = _get_domain_and_service(payload)
+
+    plan , first  = get_plan_data(service=service)
+    
+    status ,days = get_plan_status(plan,first)
+
+    result = {
+        "days": days,
+        "status":status,
+        "plan": plan
+    }
+    return make_response(data=result) , 200
+
+@binder_blueprint.route("/get_domain",methods=["GET"])
+def get_domain():
+    domain = session.get("domain", session.get("binder", "business"))
+    return make_response(data=domain) , 200
+
 @binder_blueprint.route("/create_user", methods=["POST"])
 def create_user():
     """

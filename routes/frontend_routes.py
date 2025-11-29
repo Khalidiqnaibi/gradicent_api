@@ -14,7 +14,7 @@ import logging
 
 from flask import Blueprint, render_template, redirect, request, session, jsonify
 from decorators.req_login import require_login
-from utils.is_plan_active import is_plan_active
+from utils.get_plan_status import get_plan_status
 from utils.codes import gencode , save_code,save_seccode
 from utils.log_events import log_event
 

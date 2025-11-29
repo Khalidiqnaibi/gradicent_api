@@ -238,16 +238,6 @@
       }, 4000);
     }
 
-    function calculateTrialDaysLeft(plan, firstDateStr){
-      try{
-        if(!firstDateStr) return 0;
-        const firstDate = new Date(firstDateStr);
-        const today = new Date();
-        const trialDays = plan === 'basic' ? 30 : 7;
-        const trialEnd = new Date(firstDate.getTime() + (trialDays * 24*60*60*1000));
-        return Math.max(0, Math.ceil((trialEnd - today) / (1000*60*60*24)));
-      }catch(e){ return 0; }
-    }
 
     async function get_appointments_count(){
       var date = isoToday();
@@ -269,7 +259,7 @@
     }
 
     function get_patients_count(){
-      fetch('/api/patient_count') // now /api/gaia/compute?metric=total_customers&domain=medical
+      fetch('/api/gaia/compute?metric=total_customers&domain=medical') // now /api/gaia/compute?metric=total_customers&domain=medical
         .then(response => response.json())
         .then(data => {
           if(data && typeof data.patient_count === 'number'){
@@ -282,12 +272,42 @@
         });
     }
 
+    function get_domain(){
+      var res = '';
+      fetch('/api/binder/get_domain') 
+        .then(response => response.json())
+        .then(data => {
+          res = data.data;
+        })
+        .catch(error => {
+          toast(`Error fetching patients count`, "error");
+          console.log(`Error fetching patients count:`,error);
+          res = data.data;
+        });
+        return res
+    }
+
+    function get_trial_days(){
+      var res = 0
+      fetch('/api/binder/get_plan_status') // now /api/gaia/compute?metric=total_customers&domain=medical
+        .then(response => response.json())
+        .then(data => {
+          res = data.data.days;
+        })
+        .catch(error => {
+          toast(`Error fetching patients count`, "error");
+          console.log(`Error fetching patients count:`,error);
+          res = -1;
+        });
+        return res
+    }
+
     // initialize page with server-provided user_data (keeps your template placeholders)
     window.addEventListener('DOMContentLoaded', () => {
       try {
-        const userData = JSON.parse('{{ user_data | tojson | safe }}');
-        const { name, first, payed, plan, google_id } = userData || {};
-        const binder = '{{ binder }}';
+        const { f, plan } = userData || {};
+        const binder = get_domain();
+
 
         const menuBtn = document.querySelector('.hamburger-menu');
         const menuBar = document.getElementById('menuBar');
@@ -308,7 +328,7 @@
         const trialDaysEl = document.getElementById('trialDays');
 
         // compute trial
-        const daysLeft = calculateTrialDaysLeft(plan, first);
+        const daysLeft = get_trial_days();
         if(daysLeft > 0){
           planBadge.innerHTML = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="ml-1">Trial</span>';
           trialDaysEl.textContent = `${daysLeft} day${daysLeft>1? 's':''} left`;
@@ -318,18 +338,12 @@
         }
 
         // set header + buttons for special cases
-        if(google_id === 1){
-          hello.textContent = "Please sign up with Google";
-          msg.textContent = "";
-          document.getElementById('btn1').textContent = "Sign Up with Google";
-          btn1herf = "/logme";
-          document.getElementById('btn2').style.display = 'none';
-        } else {
-          hello.textContent = name ? `Welcome, ${name}` : 'Welcome';
-          msg.textContent = plan ? `Plan: ${plan}` : 'Thank you for supporting us';
-          btn1herf = "/logout";
-          btn2herf = "/logme";
-        }
+        
+        hello.textContent = name ? `Welcome, ${name}` : 'Welcome';
+        msg.textContent = plan ? `Plan: ${plan}` : 'Thank you for supporting us';
+        btn1herf = "/logout";
+        btn2herf = "/logme";
+        
 
         // binder type customizations (lab variant)
         if(binder === 'lab'){
