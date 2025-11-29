@@ -76,15 +76,16 @@ class AuthService:
         raw = self.adapter.get_user(user_id)
         if raw:
             #  NEW FORMAT
-            if "metadata" in raw:
+            if "metadata" in raw and "first" not in raw:
                 return User(**raw)
 
             #  LEGACY FORMAT
             if "google_id" in raw or "patients" in raw:
                 legacy_user = LegacyUser.from_raw(raw)
                 converted = legacy_user.to_user()
+                print(converted)
                 return User(**converted)
-
+            
             # Unknown structure (fallback safe)
             return User(
                 id=user_id,
@@ -149,28 +150,6 @@ class AuthService:
             return None
 
 
-    def _save_refresh_token(self, user_id: str, token: Optional[str]):
-        raw = self.adapter.get_user(user_id)
-        if not raw:
-            return
-
-        # NEW FORMAT
-        if "metadata" in raw:
-            user = User(**raw)
-            user.metadata["refresh_token"] = token
-            self.adapter.update_user(user_id, user.to_dict())
-            return
-
-        # LEGACY FORMAT
-        if "google_id" in raw or "patients" in raw:
-            raw.setdefault("settings", {})
-            raw["settings"]["refresh_token"] = token
-            self.adapter.update_user(user_id, raw)
-            return
-
-        # Unknown format → do nothing safely
-        return
-
     def sign_out(self, user_id: str) -> None:
         self._save_refresh_token(user_id, None)
 
@@ -180,7 +159,7 @@ class AuthService:
             return
 
         # LEGACY SAFE
-        if "metadata" not in raw:
+        if "metadata" not in raw or "first" in raw:
             raw["metadata"] = {}
 
         raw["metadata"]["refresh_token"] = token
@@ -194,7 +173,7 @@ class AuthService:
             return None
 
         # NEW FORMAT
-        if "metadata" in raw:
+        if "metadata" in raw and "first" not in raw:
             return raw.get("metadata", {}).get("refresh_token")
 
         # LEGACY FORMAT
