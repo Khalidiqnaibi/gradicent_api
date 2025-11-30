@@ -215,13 +215,51 @@
       window.location.href = `/search_stats`;
     }
 
-    setInterval(() => {
-      fetch("/track_time", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({seconds: 60})
+    /**
+     * Tracks real active time on the page and sends ONLY one final value:
+     * { seconds: totalActiveSeconds }
+     *
+     * Usage:
+     * startUsageTracker("/track_time");
+     */
+    function startUsageTracker(endpoint) {
+
+      let totalActiveSeconds = 0;
+      let active = true;
+
+      // Count only when the page is visible & focused
+      document.addEventListener("visibilitychange", () => {
+        active = !document.hidden;
       });
-    }, 60000); // log 1 min active time
+
+      window.addEventListener("blur", () => { active = false; });
+      window.addEventListener("focus", () => { active = true; });
+
+      // Tick every second → adds to active use
+      setInterval(() => {
+        if (active) totalActiveSeconds += 1;
+      }, 1000);
+
+      // Send the final total when the session ends
+      function sendFinal() {
+        if (totalActiveSeconds <= 0) return;
+
+        const payload = JSON.stringify({ seconds: totalActiveSeconds });
+
+        // Use sendBeacon so it always sends before page unload
+        navigator.sendBeacon(endpoint, payload);
+      }
+
+      // On close / refresh / navigation
+      window.addEventListener("beforeunload", sendFinal);
+
+      // Return API for manual flush if needed
+      return {
+        getSeconds: () => totalActiveSeconds,
+        flush: sendFinal
+      };
+    }
+
 
     function hexToRgba(hex, alpha=1) {
       if (!hex) return `rgba(0,0,0,${alpha})`;
@@ -504,6 +542,8 @@
     document.addEventListener("DOMContentLoaded", function() {
       const menuBtn = document.querySelector('.hamburger-menu');
       const menuBar = document.getElementById('menuBar');
+
+      const usage = startUsageTracker("/track_time");
 
       // Toggle menu and spin transition
       menuBtn.addEventListener('click', () => {
