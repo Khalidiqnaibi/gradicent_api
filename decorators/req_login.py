@@ -4,7 +4,7 @@ require_login.py
 Decorator to require login for Flask routes.
 """
 from functools import wraps
-from flask import request, current_app, jsonify, session
+from flask import request, current_app, jsonify, session , redirect
 from auth.auth_service import AuthService
 
 def require_login(fn):
@@ -14,7 +14,7 @@ def require_login(fn):
         auth_service: AuthService = current_app.extensions["services"]["auth_services"].get(session.get("domain",session.get("binder","business")))
         user = auth_service.verify_token_and_get_user(token)
         if not user:
-            return jsonify({"status": "error", "message": "unauthenticated"}), 401
+            return redirect("/login") #jsonify({"status": "error", "message": "unauthenticated"}), 401
         # Attach user to request context for controllers
         request.current_user = user
         return fn(*args, **kwargs)

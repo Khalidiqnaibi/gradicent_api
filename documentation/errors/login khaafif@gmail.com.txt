@@ -1,0 +1,818 @@
+this gmail khaafif@gmail.com
+when tried to login with google this error came up : 
+{
+  "data": null,
+  "message": "'charmap' codec can't encode characters in position 48-51: character maps to <undefined>",
+  "status": "error"
+}
+
+this is how the user in the db looks like : 
+"101597446369752496399": {
+      "first": [
+        "2024-07-30T10:22:49.035386"
+      ],
+      "google_id": "101597446369752496399",
+      "metadata": {
+        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDE1OTc0NDYzNjk3NTI0OTYzOTkiLCJpYXQiOjE3NjQwNzk4NzgsImV4cCI6MTc2NjY3MTg3OCwidHlwZSI6InJlZnJlc2gifQ.QCdLmH8kd77jXYN5iFsI9MYQKi41pNHyqUyCKJLawDo"
+      },
+      "msg": {
+        "2024-08-29": [
+          {
+            "msg": "",
+            "name": "hhhh",
+            "no": 10,
+            "phone": ""
+          }
+        ],
+        "2024-10-09": [
+          {
+            "msg": "00:00",
+            "name": "Hadi",
+            "no": 6,
+            "phone": "056392"
+          }
+        ],
+        "2024-10-20": [
+          {
+            "msg": "21:16",
+            "name": "k",
+            "no": 2,
+            "phone": "222"
+          }
+        ],
+        "2025-09-16": [
+          {
+            "msg": "12:30",
+            "name": "k",
+            "no": 2,
+            "phone": "222"
+          }
+        ],
+        "2025-09-18": [
+          {
+            "msg": "12:30",
+            "name": "k",
+            "no": 2,
+            "phone": "222"
+          }
+        ],
+        "2025-09-20": [
+          {
+            "msg": "12:30",
+            "name": "k",
+            "no": 2,
+            "phone": "222"
+          }
+        ],
+        "2028-09-14": [
+          {
+            "msg": "12:30",
+            "name": "k",
+            "no": 2,
+            "phone": "222"
+          }
+        ]
+      },
+      "name": "Tera - تيرا",
+      "patients": [
+        {
+          "age": "2",
+          "allergies": "gfdgfdg",
+          "btype": "",
+          "debit": "0",
+          "div": "",
+          "id": "6757",
+          "location": "ghfh",
+          "name": "uoijgfd",
+          "next": "2024-08-10",
+          "no": 1,
+          "payed": "0",
+          "phone": "0592840353",
+          "pmh": "hg",
+          "printed": true,
+          "sex": "",
+          "visits": [
+            {
+              "coast": 1000,
+              "debit": 111.2,
+              "details": "vcc",
+              "diagnosis": "",
+              "div": "",
+              "drname": "khalid",
+              "height": "173",
+              "lab": "non",
+              "payed": 888.8,
+              "treatment": "",
+              "visit_date": "2024-02-07",
+              "vno": 1,
+              "wight": "74"
+            }
+          ]
+        },
+        {
+          "age": 4,
+          "allergies": "hhhh",
+          "btype": "B+",
+          "debit": 152,
+          "div": "",
+          "id": "412766724",
+          "lab": [
+            {
+              "date": "2024-10-05",
+              "msg": "",
+              "test": "Complete Blood Count (CBC)",
+              "time": "12:51:52"
+            },
+            {
+              "date": "2024-10-07",
+              "msg": "",
+              "test": "COVID-19 PCR Test",
+              "time": "08:39:04"
+            },
+            {
+              "date": "2024-10-13",
+              "msg": "HMM",
+              "test": "Basic Metabolic Panel (BMP)",
+              "time": "09:11:31"
+            }
+          ],
+          "location": "kjh",
+          "name": "k",
+          "next": "2028-09-14T12:30",
+          "no": 2,
+          "payed": 400,
+          "payload": {
+            "field_0": "k",
+            "field_1": "412766724",
+            "field_10": "4000",
+            "field_11": "1070",
+            "field_2": "222",
+            "field_3": "kjh",
+            "field_4": "hh",
+            "field_5": "hhhh",
+            "field_6": "4",
+            "field_7": "2024-10-20T21:16",
+            "field_8": "B+",
+            "field_9": "M"
+          },
+          "pharma": [
+            {
+              "date": "2024-10-03",
+              "msg": "",
+              "test": "Insulin",
+              "time": "17:50:30"
+            },
+            {
+              "date": "2024-10-03",
+              "msg": "",
+              "test": "Paracetamol",
+              "time": "17:51:19"
+            }
+          ],
+          "phone": "222",
+          "pmh": "hhbjk",
+          "printed": true,
+          "radio": [
+            {
+              "date": "2024-10-16",
+              "msg": "",
+              "test": "MRI (Magnetic Resonance Imaging)",
+              "time": "14:30:01"
+            },
+            {
+              "date": "2024-10-16",
+              "msg": "",
+              "test": "X-ray",
+              "time": "15:05:55"
+            },
+            {
+              "date": "2024-10-16",
+              "msg": "vbnd fdsg fgs sdfgs ",
+              "test": "Fluoroscopy",
+              "time": "15:06:08"
+            }
+          ],
+          "sex": "M",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 2,
+              "details": "huh",
+              "diagnosis": "",
+              "div": "",
+              "drname": "khalid",
+              "height": "0",
+              "lab": "non",
+              "payed": 0,
+              "printed": true,
+              "treatment": "potatoes",
+              "visit_date": "2024-02-07",
+              "vno": 1,
+              "wight": "0"
+            },
+            {
+              "debit": 50,
+              "details": "hoh",
+              "diagnosis": "",
+              "height": "0",
+              "lab": "non",
+              "printed": true,
+              "treatment": "potatoes",
+              "visit_date": "2024-06-12",
+              "vno": 2,
+              "wight": "0"
+            },
+            {
+              "coast": 500,
+              "debit": 100,
+              "details": "Details",
+              "diagnosis": "lmaooo",
+              "div": "",
+              "drname": "K",
+              "height": "0",
+              "lab": "",
+              "payed": 400,
+              "treatment": "",
+              "visit_date": "2024-12-09",
+              "vno": 3,
+              "wight": "0"
+            }
+          ]
+        },
+        {
+          "age": "54",
+          "allergies": "dgdg",
+          "debit": 500,
+          "id": "333",
+          "location": "fgdg",
+          "name": "pp",
+          "no": 3,
+          "payed": 0,
+          "phone": "33333",
+          "pmh": "gdgdf",
+          "visits": [
+            {
+              "coast": 5000,
+              "debit": 500,
+              "details": "lmaoo",
+              "diagnosis": "lol",
+              "lab": "",
+              "payed": 4500,
+              "treatment": "oh",
+              "visit_date": "2024-07-26",
+              "vno": 1
+            },
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": ":)",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-07-27",
+              "vno": 2
+            }
+          ]
+        },
+        {
+          "age": "3",
+          "allergies": "",
+          "debit": 50,
+          "id": "",
+          "location": "",
+          "name": "u",
+          "no": 4,
+          "payed": 10,
+          "phone": "",
+          "pmh": "",
+          "visits": [
+            {
+              "debit": 500,
+              "details": "",
+              "diagnosis": "",
+              "height": "0",
+              "lab": "",
+              "treatment": "",
+              "visit_date": "2025-08-07",
+              "vno": 1,
+              "wight": "0"
+            }
+          ]
+        },
+        {
+          "age": "6",
+          "allergies": "",
+          "debit": 100,
+          "id": "",
+          "location": "",
+          "name": "uu",
+          "no": 5,
+          "payed": 900,
+          "phone": "",
+          "pmh": "",
+          "visits": [
+            {
+              "coast": 1000,
+              "debit": 100,
+              "details": "",
+              "diagnosis": "",
+              "drname": "",
+              "height": "173",
+              "lab": "",
+              "payed": 900,
+              "treatment": "",
+              "visit_date": "2025-08-07",
+              "vno": 1,
+              "wight": "73"
+            }
+          ]
+        },
+        {
+          "age": "18",
+          "allergies": "",
+          "btype": "",
+          "debit": 65,
+          "div": "bruh",
+          "id": "1234",
+          "location": "Hebron",
+          "name": "Hadi",
+          "next": "2024-10-09",
+          "no": 6,
+          "payed": 105,
+          "payload": {
+            "field_0": "Hadi",
+            "field_1": "1234",
+            "field_10": "1000",
+            "field_11": "500",
+            "field_2": "056392",
+            "field_3": "Hebron",
+            "field_4": "",
+            "field_5": "",
+            "field_6": "18",
+            "field_7": "",
+            "field_8": "",
+            "field_9": ""
+          },
+          "phone": "056392",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 20,
+              "debit": 15,
+              "details": "",
+              "diagnosis": "",
+              "div": "",
+              "drname": "yo",
+              "height": "0",
+              "lab": "",
+              "payed": 5,
+              "treatment": "",
+              "visit_date": "2024-08-25",
+              "vno": 1,
+              "wight": "0"
+            },
+            {
+              "coast": 150,
+              "debit": 50,
+              "details": "",
+              "diagnosis": "",
+              "div": "",
+              "drname": "",
+              "height": "0",
+              "lab": "",
+              "payed": 100,
+              "treatment": "",
+              "visit_date": "2024-08-13",
+              "vno": 2,
+              "wight": "0"
+            }
+          ]
+        },
+        {
+          "age": "44",
+          "allergies": "",
+          "btype": "",
+          "debit": 0.1,
+          "div": "bruh",
+          "id": "",
+          "location": "",
+          "name": "bruhh",
+          "next": "2024-10-15",
+          "no": 7,
+          "payed": 99.9,
+          "payload": {
+            "field_0": "bruhh",
+            "field_1": "",
+            "field_10": "9990",
+            "field_11": "10",
+            "field_2": "",
+            "field_3": "",
+            "field_4": "iyyuiu",
+            "field_5": "",
+            "field_6": "44",
+            "field_7": "",
+            "field_8": "",
+            "field_9": ""
+          },
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 1000,
+              "debit": 1,
+              "details": "",
+              "diagnosis": "",
+              "div": "",
+              "drname": "Lmao",
+              "height": "0",
+              "lab": "",
+              "payed": 999,
+              "treatment": "",
+              "visit_date": "2024-08-24",
+              "vno": 1,
+              "wight": "0"
+            }
+          ]
+        },
+        {
+          "age": "44",
+          "allergies": "",
+          "debit": "0",
+          "drname": "oh",
+          "id": "",
+          "location": "",
+          "name": "jjj",
+          "next": "2024-08-26",
+          "no": 8,
+          "payed": 0,
+          "phone": "",
+          "pmh": "",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": " ",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-08-26",
+              "vno": 1
+            }
+          ]
+        },
+        {
+          "age": "22",
+          "allergies": "",
+          "btype": "",
+          "debit": 10,
+          "div": "bruh",
+          "id": "",
+          "location": "",
+          "name": "hmmm",
+          "next": "2024-10-10",
+          "no": 9,
+          "payed": 190,
+          "phone": "8000008",
+          "pmh": "",
+          "sex": "m",
+          "visits": [
+            {
+              "coast": 2000,
+              "debit": 100,
+              "details": "",
+              "diagnosis": "",
+              "drname": "khalid Iqnaibi",
+              "height": "0",
+              "lab": "",
+              "payed": 1900,
+              "treatment": "",
+              "visit_date": "2024-08-26",
+              "vno": 1,
+              "wight": "0"
+            },
+            {
+              "debit": 0,
+              "details": "",
+              "diagnosis": "",
+              "drname": "khalid",
+              "height": "0",
+              "lab": "",
+              "treatment": "",
+              "visit_date": "2025-01-02",
+              "vno": 2,
+              "wight": "0"
+            }
+          ]
+        },
+        {
+          "age": "22",
+          "allergies": "",
+          "btype": "",
+          "debit": 30,
+          "div": "aha",
+          "id": "",
+          "location": "bruhh",
+          "name": "hhhh",
+          "next": "2024-08-29",
+          "no": 10,
+          "payed": 103.3,
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 33.3,
+              "debit": 30,
+              "details": "",
+              "diagnosis": "",
+              "div": "",
+              "drname": "khalid Iqnaibi",
+              "height": "0",
+              "lab": "",
+              "payed": 3.3,
+              "treatment": "",
+              "visit_date": "2024-08-29",
+              "vno": 1,
+              "wight": "0"
+            },
+            {
+              "coast": 100,
+              "debit": 0,
+              "details": "",
+              "diagnosis": "",
+              "div": "",
+              "drname": "khalid",
+              "height": "0",
+              "lab": "",
+              "payed": 100,
+              "treatment": "",
+              "visit_date": "2024-12-30",
+              "vno": 2,
+              "wight": "0"
+            },
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": "",
+              "div": "",
+              "drname": "khalid Iqnaibi",
+              "height": "0",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-11-13",
+              "vno": 3,
+              "wight": "0"
+            },
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": "",
+              "div": "",
+              "drname": "",
+              "height": "0",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-12-29",
+              "vno": 4,
+              "wight": "0"
+            }
+          ]
+        },
+        {
+          "age": "",
+          "allergies": "",
+          "btype": "",
+          "debit": 0,
+          "div": "aha",
+          "id": "",
+          "location": "",
+          "name": "hi",
+          "next": "2024-09-14",
+          "no": 11,
+          "payed": 0,
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": " ",
+              "div": "",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-09-14",
+              "vno": 1
+            }
+          ]
+        },
+        {
+          "age": "",
+          "allergies": "",
+          "btype": "",
+          "debit": 0,
+          "div": "aha",
+          "id": "",
+          "location": "",
+          "name": "bro",
+          "next": "2024-09-14",
+          "no": 12,
+          "payed": 0,
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": " ",
+              "div": "",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-09-14",
+              "vno": 1
+            }
+          ]
+        },
+        {
+          "age": "",
+          "allergies": "",
+          "btype": "",
+          "debit": 0,
+          "div": "aha",
+          "id": "",
+          "location": "",
+          "name": "tst",
+          "next": "2024-09-14",
+          "no": 13,
+          "payed": 0,
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": " ",
+              "div": "",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-09-14",
+              "vno": 1
+            }
+          ]
+        },
+        {
+          "age": "2",
+          "allergies": "",
+          "btype": "",
+          "debit": 0,
+          "div": "aha",
+          "id": "",
+          "location": "",
+          "name": "Lmao",
+          "next": "2024-10-21",
+          "no": 14,
+          "payed": 0,
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": " ",
+              "div": "",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-10-21",
+              "vno": 1
+            }
+          ]
+        },
+        {
+          "age": "3",
+          "allergies": "",
+          "btype": "",
+          "debit": 0,
+          "div": "aha",
+          "id": "",
+          "location": "",
+          "name": "lmao",
+          "next": "2024-10-21",
+          "no": 15,
+          "payed": 0,
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": " ",
+              "div": "",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-10-21",
+              "vno": 1
+            }
+          ]
+        },
+        {
+          "age": "",
+          "allergies": "",
+          "btype": "",
+          "debit": 0,
+          "div": "aha",
+          "id": "",
+          "location": "",
+          "name": "hmmmm",
+          "next": "2024-10-22",
+          "no": 16,
+          "payed": 0,
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": " ",
+              "div": "",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-10-22",
+              "vno": 1
+            }
+          ]
+        },
+        {
+          "age": "",
+          "allergies": "",
+          "btype": "",
+          "debit": 0,
+          "div": "aha",
+          "id": "",
+          "location": "",
+          "name": "broo",
+          "next": "2024-10-22",
+          "no": 17,
+          "payed": 0,
+          "phone": "",
+          "pmh": "",
+          "sex": "",
+          "visits": [
+            {
+              "coast": 0,
+              "debit": 0,
+              "details": "",
+              "diagnosis": " ",
+              "div": "",
+              "lab": "",
+              "payed": 0,
+              "treatment": "",
+              "visit_date": "2024-10-22",
+              "vno": 1
+            }
+          ]
+        }
+      ],
+      "payed": 25,
+      "phone": "0592840353",
+      "plan": "free",
+      "settings": {
+        "ac": {
+          "code": "UnQW-8xjk-n97h",
+          "date": "2025-09-08",
+          "google_id": "101597446369752496399",
+          "plan": "sec",
+          "users": 9
+        },
+        "drname": "khalid",
+        "location": "hebron",
+        "msg": "Hi, this is just a reminder that you have an appointment. Thank you.",
+        "pkey": "+970",
+        "send": true,
+        "specialty": "Family and General Medicine"
+      }
+    },

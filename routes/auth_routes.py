@@ -86,7 +86,13 @@ def oauth_callback():
     session["user_id"] = user.get("id")
     session["jwt"] = tokens.get("access_token")
 
-    return jsonify({"status": "success", "data": {"user": user, "tokens": tokens},"message":"got token"})
+    domain = session.get("domain", session.get("binder"))
+    if domain in ["medical"]:
+        return redirect("/Binder_medical")
+    elif domain in ["business"]:
+        return redirect("/Binder_business")
+
+    return jsonify({"status": "success","ses":session, "data": {"user": user, "tokens": tokens},"message":"got token"})
 
 
 @auth_blueprint.route("/signout", methods=["POST"])

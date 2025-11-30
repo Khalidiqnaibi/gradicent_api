@@ -245,6 +245,16 @@
             menuBar.classList.toggle('menu-active');
         });
 
+        const menu_box = document.querySelector(".menu__box")
+        // close when clicking outside (improves UX)
+        document.addEventListener('click', (ev) => {
+          if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+            menuBar.classList.remove('menu-active');
+            toggle.setAttribute('aria-expanded', 'false');
+            menu_box.setAttribute('aria-hidden', 'true');
+          }
+        });
+
         const binder = '{{ binder }}';
         const appa = document.getElementById('appa');
         const appimg = document.getElementById('appimg');

@@ -70,7 +70,7 @@ def handle_not_found(err: NotFound):
 # Routes (thin controllers)
 
 @binder_blueprint.route("/get_plan_status",methods=["GET"])
-def get_domain():
+def get_plan_status():
     domain = request.args.get("domain", DEFAULT_DOMAIN)
     payload ={
         domain: "domain"
