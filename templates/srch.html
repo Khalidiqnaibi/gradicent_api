@@ -3,114 +3,147 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Binder — Search Clients</title>
+  <title>Binder — Search</title>
   <link rel="icon" href="/static/images/w3.jpg" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root{
-      --bg-main:#D9C4B0;
-      --accent:#ce7a35;
-      --secondary:#78cee6;
-      --muted:#6b7280;
-      --card:#fff;
+      --bg-1: #F8F5F2;
+      --card: #FFFFFF;
+      --accent: #ce7a35;
+      --muted: #6b7280;
+      --glass: rgba(255,255,255,0.85);
+      --shadow: 0 10px 30px rgba(2,6,23,0.06);
     }
-    html,body { height:100%; margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system, "Segoe UI", Roboto; background:linear-gradient(180deg,var(--bg-main), #E6D6C0); color:#111827; }
-    .layout { max-width:1100px; margin:48px auto; padding:18px; }
-    .card { background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)); border-radius:14px; padding:16px; box-shadow:0 8px 30px rgba(2,6,23,0.06); border:1px solid rgba(0,0,0,0.04); }
-    .big-input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,0,0.08); font-size:1rem; }
-    .big-btn { padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
-    .btn-primary { background:linear-gradient(90deg,var(--accent), #cfa174); color:#142022; border:none; }
-    .btn-secondary { background:linear-gradient(90deg,var(--secondary), #7ecbf5); color:#fff; border:none; }
-    .btn-ghost { background:transparent; border:1px solid rgba(0,0,0,0.06); color:var(--muted); }
-    .client-card { background:var(--card); border-radius:12px; padding:12px; margin-bottom:12px; border:1px solid rgba(0,0,0,0.03); }
-    .toast { position:fixed; top:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
-    .toast-item { padding:10px 12px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.12); font-weight:600; }
-    .toast-success { background:#dcfce7; color:#065f46; border-left:6px solid #10b981; }
-    .toast-error { background:#fee2e2; color:#991b1b; border-left:6px solid #ef4444; }
-    .toast-info { background:#dbeafe; color:#1e3a8a; border-left:6px solid #3b82f6; }
-    @media (max-width:900px) { .two-col { grid-template-columns: 1fr; } }
+
+    html,body { height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background: linear-gradient(180deg, #F2ECE6 0%, #E6D6C0 100%); color:#0f172a; -webkit-font-smoothing:antialiased; }
+
+    .wrap { max-width:1100px; margin:48px auto; padding:20px; }
+    header.sitehead { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+    .logo { width:56px; height:56px; border-radius:12px; object-fit:cover; box-shadow:0 6px 18px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.04); background:var(--card); }
+    h1.title { font-size:1.6rem; margin:0; letter-spacing:-0.02rem; }
+    p.lead { margin:0; color:var(--muted); font-size:0.95rem; }
+
+    .panel { background: linear-gradient(180deg,var(--glass), rgba(255,255,255,0.92)); border-radius:14px; padding:18px; box-shadow:var(--shadow); border:1px solid rgba(0,0,0,0.04); }
+
+    .search-row { display:flex; gap:12px; align-items:center; margin-top:10px; }
+    .search-input {
+      flex:1;
+      padding:14px 16px;
+      border-radius:12px;
+      border:1px solid rgba(15,23,42,0.06);
+      font-size:1rem;
+      background:transparent;
+      outline:none;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.02);
+    }
+    .search-btn {
+      padding:12px 18px;
+      border-radius:12px;
+      background:linear-gradient(90deg,var(--accent), #cfa174);
+      color:#071620;
+      font-weight:700;
+      border:none;
+      cursor:pointer;
+      box-shadow:0 8px 20px rgba(206,122,53,0.12);
+    }
+    .hint { margin-top:10px; color:var(--muted); font-size:0.9rem; }
+
+    .results { margin-top:18px; display:grid; gap:12px; }
+    .client-card {
+      background:var(--card);
+      border-radius:12px;
+      padding:12px 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      border:1px solid rgba(0,0,0,0.03);
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .client-card:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(2,6,23,0.06); }
+
+    .client-meta { min-width:0; }
+    .client-name { font-weight:700; font-size:1rem; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .client-sub { color:var(--muted); font-size:0.9rem; }
+
+    .card-actions { display:flex; gap:8px; align-items:center; }
+    .btn-ghost { padding:8px 12px; border-radius:10px; border:1px solid rgba(0,0,0,0.06); background:transparent; cursor:pointer; color:var(--muted); }
+    .btn-primary-small { padding:8px 12px; border-radius:10px; background:linear-gradient(90deg,var(--accent), #cfa174); color:#071620; font-weight:700; border:none; cursor:pointer; }
+
+    .detail-panel { margin-top:14px; padding:14px; border-radius:12px; background:linear-gradient(180deg, #fff, #fbfbfb); border:1px solid rgba(0,0,0,0.03); }
+
+    .toast-wrap { position:fixed; top:18px; right:18px; display:flex; flex-direction:column; gap:8px; z-index:9999; }
+
+    @media (max-width:760px) {
+      .search-row { flex-direction:column; align-items:stretch; }
+      .search-btn { width:100%; }
+    }
   </style>
 </head>
 <body>
-  <main class="layout">
-    <section class="card" aria-labelledby="page-title">
-      <div class="flex items-center gap-4 mb-4">
-        <img src="/static/images/w3.jpg" alt="Binder" class="w-14 h-14 rounded-lg shadow" />
-        <div>
-          <h1 id="page-title" class="text-2xl font-extrabold">Search Clients</h1>
-          <p class="text-sm text-[var(--muted)] mt-1">Search by name, phone, gov ID or numeric client id. Backend will choose the best strategy.</p>
+  <div class="wrap">
+    <header class="sitehead">
+      <img class="logo" src="/static/images/w3.jpg" alt="Binder" />
+      <div>
+        <h1 class="title">Search</h1>
+      </div>
+    </header>
+
+    <section class="panel" aria-labelledby="page-title">
+      <div id="controls">
+        <div class="search-row">
+          <input id="query_input" class="search-input" placeholder="Name, phone, gov ID or client id — press Enter to search" aria-label="Search query" />
+          <button id="search_btn" class="search-btn" title="Search">Search</button>
         </div>
       </div>
 
-      <div class="grid two-col" style="grid-template-columns:380px 1fr; gap:18px;">
-        <!-- controls -->
-        <div>
-          <label for="query_input" class="sr-only">Search query</label>
-          <input id="query_input" class="big-input" placeholder="Name, phone, gov ID, or id" aria-label="Search query" />
-
-          <div class="mt-4 flex gap-3 flex-wrap">
-            <button id="btn_search" class="big-btn btn-primary">Search</button>
-            <button id="btn_search_number" class="big-btn btn-secondary">Search by Number</button>
-            <button id="btn_search_gov" class="big-btn btn-ghost">Search by Gov ID</button>
-            <button id="btn_clear" class="big-btn btn-ghost">Clear</button>
-          </div>
-
-          <div class="mt-4 text-xs text-[var(--muted)]">
-            Tip: You can paste a gov ID (e.g. <code>G-222-333</code>) or a phone (<code>059123456</code>).
-            For legacy numeric IDs enter the number and press "Search by Number".
-          </div>
-        </div>
-
-        <!-- results -->
-        <div>
-          <div id="results" role="region" aria-live="polite"></div>
-        </div>
-      </div>
+      <div id="results" class="results" aria-live="polite"></div>
     </section>
-  </main>
+  </div>
 
-  <div id="toast_container" class="toast" aria-live="polite" aria-atomic="true"></div>
+  <div id="toasts" class="toast-wrap" aria-live="polite"></div>
 
   <script>
   /**
-   * srch.html
-   * - Single-file modular frontend following company standards.
-   * - Modules: utils, api, ui, controller.
-   * - Sends queries to unified backend: POST /api/binder/search
-   * - Supports auto-render and Gaia list rendering (server injects window.__AUTO_RENDER / window.__GAIA_LIST).
+   * srch.html — minimal, logical, and stylish.
+   * - Single input + single button (Enter works).
+   * - Calls unified backend: POST /api/binder/search { query, domain?, user_id? }.
+   * - Small modules: utils, api, ui, controller.
    * - Single-session usage tracker that sends final total to /track_time.
    */
 
-  /* =========================
+  /* ----------------------
      Constants & App State
-     ========================= */
+     ---------------------- */
+  const API_SEARCH = '/api/binder/search/client';
+  const API_GET_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
+  const API_PATCH_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
   const TRACK_ENDPOINT = '/track_time';
+
   const APP_STATE = {
     domain: null,
     user_id: null,
+    last_results: [],
+    last_query: '',
     usage_tracker: null
   };
 
-  /* =========================
-     Utils module
-     ========================= */
+  /* ----------------------
+     Utils
+     ---------------------- */
   const utils = (function () {
-    /**
-     * safe_fetch
-     * Simple wrapper for fetch that returns JSON or throws.
-     */
-    async function safe_fetch(url, opts = {}, timeout_ms = 10000) {
+    async function safe_fetch(url, opts = {}, timeout = 10000) {
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout_ms);
+      const id = setTimeout(() => controller.abort(), timeout);
       opts.signal = controller.signal;
-
       try {
         const res = await fetch(url, opts);
         clearTimeout(id);
         const text = await res.text().catch(() => '');
         const ct = res.headers.get('content-type') || '';
         if (!res.ok) {
-          const err = new Error(`HTTP ${res.status} ${res.statusText}`);
+          const err = new Error(`HTTP ${res.status}`);
           err.status = res.status;
           err.body = text;
           throw err;
@@ -123,353 +156,264 @@
       }
     }
 
-    function is_numeric(s) {
-      return /^\d+$/.test(String(s || '').trim());
-    }
-
-    function normalize_digits(s) {
-      return String(s || '').replace(/\D/g, '');
-    }
-
-    function normalize_gov_id(s) {
-      return String(s || '').replace(/[\s\-]/g, '').toUpperCase();
-    }
-
     function el(id) { return document.getElementById(id); }
 
-    return { safe_fetch, is_numeric, normalize_digits, normalize_gov_id, el };
-  })();
-
-  /* =========================
-     API module (network-only)
-     ========================= */
-  const api = (function (u) {
-    /**
-     * Unified search. Backend decides strategy.
-     * Request: { domain?, user_id?, query: string }
-     * Response: { status, data: { results: [...] }, message }
-     */
-    async function search(query, opts = {}) {
-      const body = { query, ...opts };
-      return u.safe_fetch('/api/binder/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-    }
-
-    async function get_client(id, opts = {}) {
-      const domain = opts.domain || undefined;
-      const url = `/api/binder/clients/${encodeURIComponent(id)}${domain? `?domain=${encodeURIComponent(domain)}` : ''}`;
-      return u.safe_fetch(url, { method: 'GET' });
-    }
-
-    async function patch_client(id, updates, opts = {}) {
-      const body = { updates, ...opts };
-      return u.safe_fetch(`/api/binder/clients/${encodeURIComponent(id)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-    }
-
-    async function get_ui_context() {
-      return u.safe_fetch('/api/binder/ui_context', { method: 'GET' });
-    }
-
-    async function get_gaia_list(metric) {
-      return u.safe_fetch(`/api/gaia/patient_list?metric=${encodeURIComponent(metric)}`, { method: 'GET' });
-    }
-
-    async function track_time(payload) {
-      // best-effort; not critical
-      return u.safe_fetch(TRACK_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(()=>null);
-    }
-
-    return { search, get_client, patch_client, get_ui_context, get_gaia_list, track_time };
-  })(utils);
-
-  /* =========================
-     UI module (DOM concerns)
-     ========================= */
-  const ui = (function (u) {
-    const results_el = u.el('results');
-    const toast_container = u.el('toast_container');
-
     function show_toast(message, type = 'info') {
-      const div = document.createElement('div');
-      div.className = `toast-item toast-${type}`;
-      div.textContent = message;
-      toast_container.appendChild(div);
-      setTimeout(() => div.remove(), 3600);
-    }
-
-    function clear_results() {
-      results_el.innerHTML = '';
-    }
-
-    function render_results_list(results = []) {
-      clear_results();
-      if (!Array.isArray(results) || results.length === 0) {
-        const p = document.createElement('div');
-        p.className = 'client-card';
-        p.textContent = 'No results';
-        results_el.appendChild(p);
-        return;
-      }
-
-      results.forEach(c => {
-        const card = document.createElement('div');
-        card.className = 'client-card';
-        card.innerHTML = `
-          <div class="flex justify-between items-start gap-4">
-            <div style="min-width:0">
-              <div class="font-semibold text-lg truncate">${escape_html(c.name || c.display_name || 'Unnamed')}</div>
-              <div class="text-sm text-[var(--muted)] mt-1">ID: ${escape_html(String(c.id ?? c.no ?? '-'))} • Gov ID: ${escape_html(c.gov_id ?? '-')}</div>
-              <div class="text-sm text-[var(--muted)] mt-1">Phone: ${escape_html(c.phone ?? '-')}</div>
-            </div>
-            <div class="flex flex-col gap-2 items-end">
-              <button class="big-btn btn-secondary open-btn" data-id="${escape_html(String(c.id ?? c.no ?? ''))}">Open</button>
-              <button class="big-btn btn-ghost view-visits-btn" data-id="${escape_html(String(c.id ?? c.no ?? ''))}">Visits</button>
-            </div>
-          </div>
-        `;
-        results_el.appendChild(card);
-      });
-
-      // wire buttons
-      results_el.querySelectorAll('.open-btn').forEach(b => {
-        b.addEventListener('click', (ev) => {
-          const id = ev.currentTarget.getAttribute('data-id');
-          controller.open_client(id);
-        });
-      });
-      results_el.querySelectorAll('.view-visits-btn').forEach(b => {
-        b.addEventListener('click', (ev) => {
-          const id = ev.currentTarget.getAttribute('data-id');
-          controller.open_client(id, { show_visits: true });
-        });
-      });
-    }
-
-    function render_client_detail(client) {
-      clear_results();
-      if (!client) {
-        show_toast('No client data to display', 'info');
-        return;
-      }
-
-      const container = document.createElement('div');
-      container.className = 'client-card';
-      container.innerHTML = `
-        <div class="font-bold text-lg">${escape_html(client.name || client.display_name || 'Unnamed')}</div>
-        <div class="text-sm text-[var(--muted)] mt-1">ID: ${escape_html(String(client.id ?? client.no ?? '-'))} • Gov ID: ${escape_html(client.gov_id ?? '-')}</div>
-        <div class="mt-3 grid gap-2">
-          <div><strong>Phone:</strong> ${escape_html(client.phone ?? '-')}</div>
-          <div><strong>Location:</strong> ${escape_html(client.location ?? '-')}</div>
-          <div><strong>Notes:</strong> <textarea id="client_notes" class="big-input" style="min-height:80px">${escape_html(client.notes ?? '')}</textarea></div>
-        </div>
-
-        <div class="mt-4 flex gap-3">
-          <button id="save_client_btn" class="big-btn btn-primary">Save</button>
-          <button id="back_to_list" class="big-btn btn-ghost">Back</button>
-        </div>
-
-        <div id="visits_container" class="mt-4"></div>
-      `;
-      results_el.appendChild(container);
-
-      const notes_el = document.getElementById('client_notes');
-      document.getElementById('save_client_btn').addEventListener('click', async () => {
-        const updates = { notes: notes_el.value };
-        try {
-          await controller.save_client(client.id, updates);
-          show_toast('Client saved', 'success');
-        } catch (err) {
-          show_toast('Save failed', 'error');
-        }
-      });
-
-      document.getElementById('back_to_list').addEventListener('click', () => {
-        // reset to previous list (controller stores lastResults)
-        controller.render_last_results();
-      });
-
-      // render visits if present
-      const visits_container = document.getElementById('visits_container');
-      if (Array.isArray(client.visits) && client.visits.length) {
-        const title = document.createElement('div');
-        title.className = 'font-semibold mt-2';
-        title.textContent = 'Visits';
-        visits_container.appendChild(title);
-
-        client.visits.forEach(v => {
-          const vcard = document.createElement('div');
-          vcard.className = 'client-card';
-          vcard.style.marginTop = '8px';
-          vcard.innerHTML = `<div><strong>${escape_html(String(v.date || v.when || '-'))}</strong></div>
-                             <div>Notes: ${escape_html(v.notes ?? '-')}</div>
-                             <div>Paid: ${escape_html(String(v.payed ?? '-'))} • Debit: ${escape_html(String(v.debit ?? '-'))}</div>`;
-          visits_container.appendChild(vcard);
-        });
-      }
+      const container = el('toasts');
+      const t = document.createElement('div');
+      t.className = 'toast-item';
+      t.style.padding = '10px 12px';
+      t.style.borderRadius = '10px';
+      t.style.fontWeight = 700;
+      t.textContent = message;
+      if (type === 'error') { t.style.background = '#fee2e2'; t.style.color = '#991b1b'; t.style.borderLeft = '6px solid #ef4444'; }
+      else if (type === 'success') { t.style.background = '#dcfce7'; t.style.color = '#065f46'; t.style.borderLeft = '6px solid #10b981'; }
+      else { t.style.background = '#dbeafe'; t.style.color = '#1e3a8a'; t.style.borderLeft = '6px solid #3b82f6'; }
+      container.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
     }
 
     function escape_html(s) {
       return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
-    return { show_toast, render_results_list, render_client_detail, clear_results, escape_html };
+    return { safe_fetch, el, show_toast, escape_html };
+  })();
+
+  /* ----------------------
+     API module
+     ---------------------- */
+  const api = (function (u) {
+    async function search(query, opts = {}) {
+      const body = { query, ...opts };
+      return u.safe_fetch(API_SEARCH, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+    }
+
+    async function get_client(id) {
+      return u.safe_fetch(API_GET_CLIENT(id), { method: 'GET' });
+    }
+
+    async function patch_client(id, updates) {
+      return u.safe_fetch(API_PATCH_CLIENT(id), {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ patch: updates })
+      });
+    }
+
+    async function track_time(payload) {
+      // best-effort
+      try {
+        await u.safe_fetch(TRACK_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+      } catch (e) { /* ignore */ }
+    }
+
+    return { search, get_client, patch_client, track_time };
   })(utils);
 
-  /* =========================
+  /* ----------------------
+     UI module
+     ---------------------- */
+  const ui = (function (u) {
+    const results_el = u.el('results');
+
+    function clear() { results_el.innerHTML = ''; }
+
+    function render_list(list) {
+      clear();
+      if (!Array.isArray(list) || list.length === 0) {
+        const no = document.createElement('div');
+        no.className = 'client-card';
+        no.textContent = 'No results';
+        results_el.appendChild(no);
+        return;
+      }
+
+      list.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'client-card';
+        const id = item.id ?? item.no ?? '-';
+        const gov = item.gov_id ?? '-';
+        const phone = item.phone ?? '-';
+        card.innerHTML = `
+          <div class="client-meta">
+            <div class="client-name">${u.escape_html(item.name ?? item.display_name ?? 'Unnamed')}</div>
+            <div class="client-sub">ID: ${u.escape_html(id)} • Gov: ${u.escape_html(gov)} • ${u.escape_html(phone)}</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-ghost view-btn" data-id="${u.escape_html(id)}">View</button>
+            <button class="btn-primary-small open-btn" data-id="${u.escape_html(id)}">Open</button>
+          </div>
+        `;
+        results_el.appendChild(card);
+      });
+
+      // wire handlers
+      results_el.querySelectorAll('.view-btn').forEach(b => b.addEventListener('click', ev => controller.view_client(ev.currentTarget.dataset.id)));
+      results_el.querySelectorAll('.open-btn').forEach(b => b.addEventListener('click', ev => controller.open_client(ev.currentTarget.dataset.id)));
+    }
+
+    function render_client_detail(client) {
+      clear();
+      if (!client) { u.show_toast('Client not found', 'error'); return; }
+      const id = client.id ?? client.no ?? '-';
+      const box = document.createElement('div');
+      box.className = 'detail-panel';
+      box.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+          <div>
+            <div style="font-weight:800">${u.escape_html(client.name ?? client.display_name ?? 'Unnamed')}</div>
+            <div style="color:${getComputedStyle(document.documentElement).getPropertyValue('--muted')}; margin-top:6px">ID: ${u.escape_html(id)} • Gov: ${u.escape_html(client.gov_id ?? '-')}</div>
+          </div>
+          <div>
+            <button id="back_btn" class="btn-ghost">Back</button>
+            <button id="save_btn" class="btn-primary-small">Save</button>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label style="font-weight:600">Phone</label>
+          <div style="margin-top:6px">${u.escape_html(client.phone ?? '-')}</div>
+
+          <label style="font-weight:600; display:block; margin-top:8px">Notes</label>
+          <textarea id="notes_area" class="search-input" style="min-height:86px; margin-top:6px">${u.escape_html(client.notes ?? '')}</textarea>
+        </div>
+      `;
+      ui.clear();
+      results_el.appendChild(box);
+
+      document.getElementById('back_btn').addEventListener('click', () => controller.render_last());
+      document.getElementById('save_btn').addEventListener('click', async () => {
+        const notes = document.getElementById('notes_area').value;
+        try {
+          await controller.save_client(id, { notes });
+          u.show_toast('Saved', 'success');
+        } catch (err) {
+          u.show_toast('Save failed', 'error');
+        }
+      });
+    }
+
+    return { render_list, render_client_detail, clear };
+  })(utils);
+
+  /* ----------------------
      Usage tracker (single final send)
-     ========================= */
+     ---------------------- */
   function start_usage_tracker(endpoint) {
-    let total_seconds = 0;
-    let is_active = true;
+    let seconds = 0;
+    let active = true;
+    document.addEventListener('visibilitychange', () => { active = !document.hidden; });
+    window.addEventListener('focus', () => active = true);
+    window.addEventListener('blur', () => active = false);
 
-    document.addEventListener('visibilitychange', () => { is_active = !document.hidden; });
-    window.addEventListener('focus', () => { is_active = true; });
-    window.addEventListener('blur', () => { is_active = false; });
-
-    const interval_id = setInterval(() => { if (is_active) total_seconds += 1; }, 1000);
+    const id = setInterval(() => { if (active) seconds += 1; }, 1000);
 
     function send_final() {
-      if (total_seconds < 1) return;
+      if (seconds < 1) return;
       try {
-        navigator.sendBeacon(endpoint, JSON.stringify({ seconds: total_seconds }));
-      } catch (err) {
-        // fallback (best-effort)
-        fetch(endpoint, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ seconds: total_seconds }) }).catch(()=>{});
+        navigator.sendBeacon(endpoint, JSON.stringify({ seconds }));
+      } catch (e) {
+        // best-effort fallback
+        fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ seconds }) }).catch(()=>{});
       } finally {
-        clearInterval(interval_id);
+        clearInterval(id);
       }
     }
     window.addEventListener('beforeunload', send_final);
-    return { get_seconds: () => total_seconds, flush: send_final };
+    return { get_seconds: () => seconds, flush: send_final };
   }
 
-  /* =========================
-     Controller (small & explicit)
-     ========================= */
+  /* ----------------------
+     Controller
+     ---------------------- */
   const controller = (function (api_mod, ui_mod, u_mod) {
     let last_results = [];
-    let last_query = '';
-
-    function render_last_results() {
-      ui_mod.render_results_list(last_results);
-    }
-
     async function init() {
-      // wire buttons
-      u_mod.el('btn_search').addEventListener('click', () => do_search(u_mod.el('query_input').value.trim()));
-      u_mod.el('btn_search_number').addEventListener('click', () => do_search(u_mod.el('query_input').value.trim(), { hint: 'number' }));
-      u_mod.el('btn_search_gov').addEventListener('click', () => do_search(u_mod.el('query_input').value.trim(), { hint: 'gov' }));
-      u_mod.el('btn_clear').addEventListener('click', () => { u_mod.el('query_input').value = ''; ui_mod.clear_results(); last_results = []; });
-
-      // Enter key for quick search
-      u_mod.el('query_input').addEventListener('keydown', (e) => { if (e.key === 'Enter') do_search(u_mod.el('query_input').value.trim()); });
+      // wire UI
+      u_mod.el('search_btn').addEventListener('click', () => do_search());
+      u_mod.el('query_input').addEventListener('keydown', (e) => { if (e.key === 'Enter') do_search(); });
 
       // start usage tracker
       APP_STATE.usage_tracker = start_usage_tracker(TRACK_ENDPOINT);
 
-      // fetch UI context (branding / permissions)
-      try {
-        const ctx = await api_mod.get_ui_context();
-        if (ctx && ctx.status === 'success' && ctx.data && ctx.data.branding && ctx.data.branding.title) {
-          document.title = ctx.data.branding.title;
-        }
-      } catch (err) {
-        // not critical
-        console.debug('ui_context fetch failed', err);
-      }
-
-      // auto-render path: server may inject window.__AUTO_RENDER = { client_id: '...', domain:'...' }
+      // auto-render if server injected data
       try {
         if (window.__AUTO_RENDER && window.__AUTO_RENDER.client_id) {
-          const client_id = window.__AUTO_RENDER.client_id;
-          await open_client(client_id, { domain: window.__AUTO_RENDER.domain });
-          return;
+          const resp = await api_mod.get_client(window.__AUTO_RENDER.client_id);
+          if (resp && resp.status === 'success') ui_mod.render_client_detail(resp.data.client);
         }
-      } catch (err) {
-        console.error('auto render failed', err);
-      }
-
-      // gaia list path: server may inject window.__GAIA_LIST = { metric: 'recent_unpaid' }
-      try {
         if (window.__GAIA_LIST && window.__GAIA_LIST.metric) {
-          const gl = await api_mod.get_gaia_list(window.__GAIA_LIST.metric);
-          if (gl && gl.status === 'success') {
-            last_results = gl.data.results || [];
-            ui_mod.render_results_list(last_results);
+          const res = await api_mod.search('', { metric: window.__GAIA_LIST.metric });
+          if (res && res.status === 'success') {
+            last_results = res.data.results || [];
+            ui_mod.render_list(last_results);
           }
         }
-      } catch (err) {
-        console.debug('gaia list fetch failed', err);
-      }
+      } catch (err) { console.debug('auto render error', err); }
     }
 
-    async function do_search(query, opts = {}) {
-      if (!query) {
-        ui_mod.show_toast('Please type a query', 'info');
-        return;
-      }
-      last_query = query;
+    async function do_search() {
+      const q = (u_mod.el('query_input').value || '').trim();
+      if (!q) { u_mod.show_toast('Please enter a query', 'info'); return; }
+      APP_STATE.last_query = q;
       try {
-        // we send optional metadata: domain, user_id if available in APP_STATE
-        const payloadOpts = {};
-        if (APP_STATE.domain) payloadOpts.domain = APP_STATE.domain;
-        if (APP_STATE.user_id) payloadOpts.user_id = APP_STATE.user_id;
-        // optional hint (frontend UI only) — backend can use or ignore
-        if (opts.hint) payloadOpts.hint = opts.hint;
+        const payload = {};
+        if (APP_STATE.domain) payload.domain = APP_STATE.domain;
+        if (APP_STATE.user_id) payload.user_id = APP_STATE.user_id;
 
-        const res = await api_mod.search(query, payloadOpts);
+        const res = await api_mod.search(q, payload);
         if (!res || res.status !== 'success') {
-          ui_mod.show_toast(res?.message || 'Search failed', 'error');
+          u_mod.show_toast(res?.message || 'Search failed', 'error');
           return;
         }
-
-        const results = res.data?.results || [];
-        last_results = results;
-        ui_mod.render_results_list(results);
+        last_results = res.data?.results || [];
+        APP_STATE.last_results = last_results;
+        ui_mod.render_list(last_results);
       } catch (err) {
-        console.error('search failed', err);
-        ui_mod.show_toast('Search request failed', 'error');
+        console.error('search error', err);
+        u_mod.show_toast('Search request failed', 'error');
       }
     }
 
-    async function open_client(client_id, opts = {}) {
-      if (!client_id) { ui_mod.show_toast('Invalid client id', 'error'); return; }
+    async function view_client(id) {
+      // for quick-view we can open client detail using get_client
       try {
-        const res = await api_mod.get_client(client_id, { domain: opts.domain || APP_STATE.domain });
-        if (!res || res.status !== 'success') {
-          ui_mod.show_toast(res?.message || 'Failed to load client', 'error'); return;
-        }
+        const res = await api_mod.get_client(id);
+        if (!res || res.status !== 'success') { u_mod.show_toast(res?.message || 'Failed to load', 'error'); return; }
         ui_mod.render_client_detail(res.data.client);
       } catch (err) {
-        console.error('open_client error', err);
-        ui_mod.show_toast('Failed to load client', 'error');
+        console.error('view error', err);
+        u_mod.show_toast('Failed to load client', 'error');
       }
     }
 
-    async function save_client(client_id, updates) {
-      if (!client_id) throw new Error('client_id required');
+    async function open_client(id) { return view_client(id); }
+
+    async function save_client(id, updates) {
       try {
-        const res = await api_mod.patch_client(client_id, updates, { domain: APP_STATE.domain, user_id: APP_STATE.user_id });
+        const res = await api_mod.patch_client(id, updates);
         if (!res || res.status !== 'success') throw new Error(res?.message || 'save failed');
         return res.data.client;
       } catch (err) {
-        console.error('save_client error', err);
+        console.error('save client error', err);
         throw err;
       }
     }
 
-    return { init, do_search, open_client, save_client, render_last_results };
+    function render_last() {
+      ui_mod.render_list(APP_STATE.last_results || []);
+    }
+
+    return { init, do_search, view_client, open_client, save_client, render_last };
   })(api, ui, utils);
 
   // bootstrap
