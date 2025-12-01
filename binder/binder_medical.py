@@ -50,6 +50,44 @@ class BinderMedical(Binder, IUserService, IClientService, IInteractionService):
     def delete_client(self, client_id: str) -> None:
         self.adapter.delete_child(self.current_user, "patients", client_id)
 
+    def search_clients(self, query: str) -> List[Dict[str, Any]]:
+        """
+        search over 'patients' collection for clients.
+        """
+        # reuse the same algorithm but target 'patients' collection
+        q = (query or "").strip()
+        if not q:
+            return []
+
+        import re
+        def _norm_gov(x): return re.sub(r'[\s\-]', '', (x or '')).upper()
+        def _digits(x): return re.sub(r'\D', '', (x or ''))
+
+        gov_norm = _norm_gov(q)
+        if gov_norm:
+            found = self.adapter.find_children_by_predicate(self.current_user, "patients", lambda c: _norm_gov(c.get("gov_id","")) == gov_norm)
+            if found: return found
+
+        if q.isdigit():
+            # id field
+            found = self.adapter.find_children_by_field(self.current_user, "patients", "id", q)
+            if found: return found
+            # numeric index
+            try:
+                idx = int(q) - 1
+                children = self.adapter.list_children(self.current_user, "patients")
+                if 0 <= idx < len(children):
+                    return [children[idx]]
+            except Exception:
+                pass
+
+        digits = _digits(q)
+        if digits:
+            found = self.adapter.find_by_phone(self.current_user, "patients", digits)
+            if found: return found
+
+        return self.adapter.find_by_name_substring(self.current_user, "patients", q)
+
     # visits (nested)
     def create_visit(self, patient_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         self.adapter.add_nested(self.current_user, "patients", patient_id, "visits", data)

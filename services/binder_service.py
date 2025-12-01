@@ -30,7 +30,7 @@ class BinderService:
     Service wrapper around a Binder implementation.
 
     Args:
-        binder_impl (BinderInterface): Concrete binder implementation injected by the caller.
+        binder_impl (Binder): Concrete binder implementation injected by the caller.
         logger (logging.Logger | None): Optional logger. If not provided a module logger will be used.
 
     Example:
@@ -183,8 +183,17 @@ class BinderService:
             raise BinderServiceError("client_id cannot be empty")
         self._wrap_and_log("delete_client", self._binder.delete_client, client_id)
 
+    def search_client(self, query: str) -> List[Dict[str, Any]]:
+        """
+        Unified search facade used by routes.
+        Delegates to binder implementation's `search_clients`.
+        """
+        if not query:
+            return []
+        # binder implementations implement search_clients(query)
+        return self.binder.search_clients(query)
+    
     # ------- Public API: Interactions (visits/transactions) -------
-
     def create_interaction(self, client_id: str, interaction: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create an interaction (visit, transaction) for a given client.

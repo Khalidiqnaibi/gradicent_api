@@ -47,3 +47,10 @@ class StorageAdapter(Protocol):
 
     def delete_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str) -> None:
         ...
+
+    def find_children_by_field(self, user_id: str, collection: str, field: str, value: Any) -> List[Dict]:
+        """
+        Return list of child documents under user_id/collection where child's field == value.
+        Implementations should normalize / index where possible for efficiency.
+        """
+        ...

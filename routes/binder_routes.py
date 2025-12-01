@@ -221,6 +221,28 @@ def remove_client(client_id: str):
     service.delete_client(client_id)
     return make_response(message="Client deleted."), 200
 
+@binder_blueprint.route("/search/client", methods=["POST"])
+def client_search():
+    """
+    Unified search for clients endpoint. Backend decides strategy (number vs name vs fuzzy).
+    Request JSON:
+      { "domain": "...", "user_id": "...", "query": "..." }
+    Response:
+      { status, data: { results: [...] }, message }
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    query = payload.get("query", "")
+    if not query:
+        raise BadRequest("Missing 'query' in request body")
+
+    service = _get_domain_and_service(payload)
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+
+    results = service.search_clients(query)
+    resp = make_response(data=results, message="Search completed.")
+    resp.status_code = 200
+    return resp
 
 # Example nested resource: create interaction / visit
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["POST"])

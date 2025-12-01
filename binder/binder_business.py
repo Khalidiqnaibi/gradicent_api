@@ -70,6 +70,60 @@ class BinderBusiness(
     def delete_client(self, client_id: str) -> None:
         self.adapter.delete_child(self.current_user, "clients", client_id)
 
+    def search_clients(self, query: str) -> List[Dict[str, Any]]:
+        """
+        Domain-agnostic client search:
+        - try gov_id exact (normalized)
+        - try numeric id (index)
+        - try phone (digits)
+        - fallback to name substring
+        """
+        q = (query or "").strip()
+        if not q:
+            return []
+
+        # helpers (small, explicit)
+        def _norm_gov(x: str) -> str:
+            import re
+            return re.sub(r'[\s\-]', '', (x or '')).upper()
+
+        def _digits(x: str) -> str:
+            import re
+            return re.sub(r'\D', '', (x or ''))
+
+        # 1) gov id
+        gov_norm = _norm_gov(q)
+        if gov_norm:
+            found = self.adapter.find_children_by_predicate(self.current_user, "clients", lambda c: _norm_gov(c.get("gov_id","")) == gov_norm)
+            if found:
+                return found
+
+        # 2) numeric id (legacy: client stored as list index or 'id' field)
+        if q.isdigit():
+            # try exact id field first
+            found = self.adapter.find_children_by_field(self.current_user, "clients", "id", q)
+            if found:
+                return found
+            # fallback to index-based lookup (if adapter stores list)
+            try:
+                idx = int(q) - 1
+                children = self.adapter.list_children(self.current_user, "clients")
+                if 0 <= idx < len(children):
+                    return [children[idx]]
+            except Exception:
+                pass
+
+        # 3) phone match
+        digits = _digits(q)
+        if digits:
+            found = self.adapter.find_by_phone(self.current_user, "clients", digits)
+            if found:
+                return found
+
+        # 4) name substring
+        found = self.adapter.find_by_name_substring(self.current_user, "clients", q)
+        return found
+
     # employees, products, services (same structure)
     def create_employee(self, data): return self._add_child("employees", data)
     def update_employee(self, emp_id, patch): self.adapter.update_child(self.current_user, "employees", emp_id, patch)
