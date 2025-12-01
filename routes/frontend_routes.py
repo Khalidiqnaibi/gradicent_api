@@ -239,6 +239,11 @@ def data() -> Any:
     """Data wrapper for patient details."""
     return redirect(_render_protected_page("data"))
 
+@frontend_blueprint.route("/srch",methods=["get"])
+@require_login
+def srch() -> Any:
+    """srch wrapper."""
+    return redirect(_render_protected_page("srch"))
 
 @frontend_blueprint.route("/lab", methods=["GET"])
 def lab_public() -> str:

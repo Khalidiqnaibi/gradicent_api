@@ -1,905 +1,479 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="antialiased">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
-  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
-  <title>Binder Medical</title>
-
-  <!-- Tailwind -->
+  <title>Binder — Search Clients</title>
+  <link rel="icon" href="/static/images/w3.jpg" />
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
     :root{
-      --bg-main: #D9C4B0;
-      --accent:  #ce7a35;
+      --bg-main:#D9C4B0;
+      --accent:#ce7a35;
       --secondary:#78cee6;
-      --w: #e6ded9;
-      --text: #2b2b2b;
+      --muted:#6b7280;
+      --card:#fff;
     }
-
-    /* Base reset */
-    html, body {
-      height: 100%;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: linear-gradient(180deg, var(--bg-main) 0%, #E6D6C0 60%);
-      color: var(--text);
-      line-height: 1.4;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Main layout */
-    main.layout-center {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: 1100px;
-      margin: 45px auto;
-      padding: 16px;
-    }
-
-    /* Decorative card */
-    .decorative-card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.84));
-      border: 1px solid rgba(0,0,0,0.04);
-      box-shadow: 0 10px 30px rgba(18,18,18,0.06);
-      border-radius: 16px;
-    }
-
-    section.decorative-card.p-6 {
-      min-height: auto;
-      max-height: none;
-    }
-
-    /* Controls grid */
-    .controls-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      width: 100%;
-    }
-
-    @media (min-width: 900px) {
-      .controls-grid {
-        display: grid;
-        grid-template-columns: 380px 1fr;
-        gap: 20px;
-        align-items: start;
-      }
-    }
-
-    /* Inputs & Buttons */
-    input[type="text"] {
-      -webkit-appearance:none; 
-      -moz-appearance:none;
-    }
-
-    .big-input {
-      font-size: 1.05rem; 
-      padding: 14px 16px; 
-      border-radius: 14px;
-      border: 1px solid rgba(0, 0, 0, 0.253);
-      background: rgba(255,255,255,0.98);
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .big-btn {
-      min-height: 48px; 
-      padding: 12px 18px; 
-      border-radius: 14px; 
-      font-weight: 600; 
-      font-size: 1rem;
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 10px; 
-      cursor: pointer;
-      box-shadow: 0 6px 18px rgba(12,12,12,0.06);
-      width: 100%;
-    }
-
-    .btn-primary {
-      background: linear-gradient(90deg, var(--accent), rgb(207,161,117));
-      color: #142022;
-      border: none;
-    }
-
-    .btn-secondary {
-      background: linear-gradient(90deg, var(--secondary), #7ecbf5);
-      color: #fff; 
-      border: none;
-    }
-
-    .btn-ghost {
-      background: transparent; 
-      border: 1px solid rgba(0,0,0,0.06); 
-      color: var(--text);
-    }
-
-    /* Accessibility focus */
-    .big-input:focus, .big-btn:focus, .menu__btn:focus, .menu-item:focus {
-      outline: 3px solid rgba(206,122,53,0.14);
-      outline-offset: 3px;
-    }
-
-    /* Search hint */
-    #srchHint { 
-      margin-top:10px; 
-      padding:12px; 
-      border-radius:12px; 
-      background: linear-gradient(90deg, rgba(255,255,255,0.88), rgba(255,255,255,0.8)); 
-      border:1px solid rgba(0,0,0,0.03); 
-      color:rgba(0,0,0,0.6); 
-      font-size:0.98rem; 
-      display:flex; 
-      gap:12px; 
-      align-items:center; 
-    }
-
-    /* Search results */
-    #srchMain {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-height: none;         /* remove artificial height limit */
-      min-height: 150px;
-      overflow-y: visible;      /* allow natural flow */
-      justify-content: flex-start;
-      margin-bottom: 20px;      /* give breathing room before patient cards */
-    }
-
-    #srchMain img {
-      width: 100%;
-      max-height: 60vh;
-      object-fit: cover;
-      border-radius: 12px;
-    }
-
-    /* Patient card grid */
-    .patient-info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      width: 100%;
-    }
-
-    .patient-info-grid input.patient-value {
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .patient-card > div:last-child {
-      flex-wrap: wrap;
-    }
-
-    .flex.gap-6.items-center {
-      gap: 18rem;
-    }
-
-    /* Patient labels & values */
-    .patient-card {
-      margin-top: 0;            /* no more manual top margin needed */
-      width: 100%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.84));
-      border: 1px solid rgba(0,0,0,0.04);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-    }
-    .patient-row { display:flex; gap:12px; align-items:center; width: 100%; }
-    .patient-label { font-weight:600; min-width:120px; color:rgba(0,0,0,0.7); }
-    .patient-value { background:rgba(255,255,255,0.92); padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.04); flex:1; }
-
-    /* Responsive tweaks */
-    @media (max-width: 500px) {
-      .patient-value {
-        font-size: 0.95rem;
-        padding: 8px;
-      }
-      .patient-label {
-        min-width: auto;
-        font-size: 0.9rem;
-      }
-      #srchHint, #textupper {
-        display: none;
-      }
-    }
-
-    /* Smooth scroll for results */
-    #srchMain {
-      scroll-behavior: smooth;
-    }
-
-    /* Hamburger menu lines */
-    .menu__btn span,
-    .menu__btn span::before,
-    .menu__btn span::after {
-      display: block;
-      width: 26px;
-      height: 3px;
-      background-color: var(--accent);
-      position: relative;
-      border-radius: 6px;
-      transition: 0.28s ease;
-    }
-    .menu__btn span::before,
-    .menu__btn span::after {
-      content: "";
-      position: absolute;
-      left: 0;
-    }
-    .menu__btn span::before { top: -8px; }
-    .menu__btn span::after { top: 8px; }
-
-    .menu-active .menu__btn span {
-      transform: rotate(45deg);
-      background-color: var(--accent);
-    }
-    .menu-active .menu__btn span::before {
-      transform: rotate(90deg);
-      top: 0;
-    }
-    .menu-active .menu__btn span::after {
-      opacity: 0;
-    }
-
-    /* Menu slide */
-    .menu__box {
-      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity 0.2s;
-      transform: translateX(-110%);
-      opacity: 0;
-    }
-    .menu-active .menu__box {
-      transform: translateX(0);
-      opacity: 1;
-    }
-
-    .toast {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 260px;
-      max-width: 350px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-      font-size: 0.95rem;
-      font-weight: 500;
-      animation: slideIn 0.4s ease, fadeOut 0.6s ease 3.4s forwards;
-    }
-    .toast-success { background: #d1fae5; color: #065f46; border-left: 6px solid #10b981; }
-    .toast-error   { background: #fee2e2; color: #991b1b; border-left: 6px solid #ef4444; }
-    .toast-info    { background: #dbeafe; color: #1e3a8a; border-left: 6px solid #3b82f6; }
-
-    @keyframes slideIn {
-      from { transform: translateX(120%); opacity: 0; }
-      to   { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes fadeOut {
-      to { opacity: 0; transform: translateX(120%); }
-    }
-
+    html,body { height:100%; margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system, "Segoe UI", Roboto; background:linear-gradient(180deg,var(--bg-main), #E6D6C0); color:#111827; }
+    .layout { max-width:1100px; margin:48px auto; padding:18px; }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)); border-radius:14px; padding:16px; box-shadow:0 8px 30px rgba(2,6,23,0.06); border:1px solid rgba(0,0,0,0.04); }
+    .big-input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,0,0.08); font-size:1rem; }
+    .big-btn { padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+    .btn-primary { background:linear-gradient(90deg,var(--accent), #cfa174); color:#142022; border:none; }
+    .btn-secondary { background:linear-gradient(90deg,var(--secondary), #7ecbf5); color:#fff; border:none; }
+    .btn-ghost { background:transparent; border:1px solid rgba(0,0,0,0.06); color:var(--muted); }
+    .client-card { background:var(--card); border-radius:12px; padding:12px; margin-bottom:12px; border:1px solid rgba(0,0,0,0.03); }
+    .toast { position:fixed; top:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+    .toast-item { padding:10px 12px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.12); font-weight:600; }
+    .toast-success { background:#dcfce7; color:#065f46; border-left:6px solid #10b981; }
+    .toast-error { background:#fee2e2; color:#991b1b; border-left:6px solid #ef4444; }
+    .toast-info { background:#dbeafe; color:#1e3a8a; border-left:6px solid #3b82f6; }
+    @media (max-width:900px) { .two-col { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-
-  <!-- Floating menu (kept same items + icons) -->
-  <div id="menuBar" class="fixed top-4 left-4 z-50">
-    <div class="hamburger-menu p-2">
-      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
-        <span></span>
-      </label>
-
-      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
-            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
-            <h6 class="text-sm font-medium">Account</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
-            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
-            <h6 class="text-sm font-medium">Add</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
-            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
-            <h6 class="text-sm font-medium">Search</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
-            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
-            <h6 class="text-sm font-medium">Stats</h6>
-          </a>
-        </li>
-        <li>
-          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
-            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
-            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
-          </a>
-        </li>
-
-        <li class="border-t border-[var(--secondary)] my-1"></li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
-            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
-            <h6 class="text-sm font-medium">Settings</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
-            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
-            <h6 class="text-sm font-medium">Support</h6>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- Page content -->
-  <main class="layout-center">
-    <section class="decorative-card p-6">
-      <div class="flex items-center justify-between gap-4 mb-4">
-        <div class="flex gap-6 items-center">
-          <div class="flex items-center gap-4">
-            <img src="/static/images/w3.jpg" class="w-16 h-16 rounded-full shadow">
-            <h1 style="font-size:1.6rem; font-weight:700; letter-spacing:-0.6px;">Search patients</h1>
-          </div>
-          <p id="textupper" style="color:rgba(0,0,0,0.6); margin-top:6px; font-size:0.98rem;">
-            Enter a patient name, ID, or phone number.
-          </p>
+  <main class="layout">
+    <section class="card" aria-labelledby="page-title">
+      <div class="flex items-center gap-4 mb-4">
+        <img src="/static/images/w3.jpg" alt="Binder" class="w-14 h-14 rounded-lg shadow" />
+        <div>
+          <h1 id="page-title" class="text-2xl font-extrabold">Search Clients</h1>
+          <p class="text-sm text-[var(--muted)] mt-1">Search by name, phone, gov ID or numeric client id. Backend will choose the best strategy.</p>
         </div>
       </div>
 
-      <div class="controls-grid">
-        <!-- Left controls -->
+      <div class="grid two-col" style="grid-template-columns:380px 1fr; gap:18px;">
+        <!-- controls -->
         <div>
-          <input id="idEntry" type="text" class="big-input" aria-label="Search by patient name or number"
-                 value="" />
+          <label for="query_input" class="sr-only">Search query</label>
+          <input id="query_input" class="big-input" placeholder="Name, phone, gov ID, or id" aria-label="Search query" />
 
-          <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-3">
-            <button id="searchNameBtn" onclick="searchByName()" class="big-btn btn-primary w-full sm:w-auto" title="Search by name">
-              Search by Name
-            </button>
-
-            <button id="searchNumberBtn" onclick="searchByNumber('{{plan}}')" class="big-btn btn-secondary w-full sm:w-auto" title="Search by number">
-              Search by Number
-            </button>
+          <div class="mt-4 flex gap-3 flex-wrap">
+            <button id="btn_search" class="big-btn btn-primary">Search</button>
+            <button id="btn_search_number" class="big-btn btn-secondary">Search by Number</button>
+            <button id="btn_search_gov" class="big-btn btn-ghost">Search by Gov ID</button>
+            <button id="btn_clear" class="big-btn btn-ghost">Clear</button>
           </div>
 
-          <div id="srchHint" aria-live="polite">
-            <div style="display:flex; gap:10px; align-items:center;">
-              <div>
-                <div style="font-weight:600;">Tips:</div>
-                <div style="font-weight: 600;">- press Enter to quickly search by name.</div>
-                <div style="font-weight: 600;">- search ID or phone number using 'search by number' button.</div>
-              </div>
-            </div>
+          <div class="mt-4 text-xs text-[var(--muted)]">
+            Tip: You can paste a gov ID (e.g. <code>G-222-333</code>) or a phone (<code>059123456</code>).
+            For legacy numeric IDs enter the number and press "Search by Number".
           </div>
         </div>
 
-        <!-- Right result area -->
+        <!-- results -->
         <div>
-          <div id="srchMain" class="result decorative-card scrollbar" role="region" aria-live="polite" aria-label="Search results">
-            <!-- Rotating media / results will appear here -->
-          </div>
+          <div id="results" role="region" aria-live="polite"></div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Toast container -->
-  <div id="toast-container" class="fixed top-4 right-4 z-[9999] space-y-3"></div>
+  <div id="toast_container" class="toast" aria-live="polite" aria-atomic="true"></div>
 
-
-  <!-- scripts (logic preserved and slightly refactored for the new layout) -->
   <script>
-    const PLAN = '{{plan}}';
+  /**
+   * srch.html
+   * - Single-file modular frontend following company standards.
+   * - Modules: utils, api, ui, controller.
+   * - Sends queries to unified backend: POST /api/binder/search
+   * - Supports auto-render and Gaia list rendering (server injects window.__AUTO_RENDER / window.__GAIA_LIST).
+   * - Single-session usage tracker that sends final total to /track_time.
+   */
 
-    function showToast(message, type = "info") {
-      const container = document.getElementById("toast-container");
-      const toast = document.createElement("div");
-      toast.className = `toast toast-${type}`;
-      toast.innerHTML = `<span>${message}</span>`;
+  /* =========================
+     Constants & App State
+     ========================= */
+  const TRACK_ENDPOINT = '/track_time';
+  const APP_STATE = {
+    domain: null,
+    user_id: null,
+    usage_tracker: null
+  };
 
-      container.appendChild(toast);
-
-      // auto remove after animation
-      setTimeout(() => {
-        toast.remove();
-      }, 4000);
-    }
-
+  /* =========================
+     Utils module
+     ========================= */
+  const utils = (function () {
     /**
-     * Tracks real active time on the page and sends ONLY one final value:
-     * { seconds: totalActiveSeconds }
-     *
-     * Usage:
-     * startUsageTracker("/track_time");
+     * safe_fetch
+     * Simple wrapper for fetch that returns JSON or throws.
      */
-    function startUsageTracker(endpoint) {
+    async function safe_fetch(url, opts = {}, timeout_ms = 10000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout_ms);
+      opts.signal = controller.signal;
 
-      let totalActiveSeconds = 0;
-      let active = true;
-
-      // Count only when the page is visible & focused
-      document.addEventListener("visibilitychange", () => {
-        active = !document.hidden;
-      });
-
-      window.addEventListener("blur", () => { active = false; });
-      window.addEventListener("focus", () => { active = true; });
-
-      // Tick every second → adds to active use
-      setInterval(() => {
-        if (active) totalActiveSeconds += 1;
-      }, 1000);
-
-      // Send the final total when the session ends
-      function sendFinal() {
-        if (totalActiveSeconds <= 0) return;
-
-        const payload = JSON.stringify({ seconds: totalActiveSeconds });
-
-        // Use sendBeacon so it always sends before page unload
-        navigator.sendBeacon(endpoint, payload);
-      }
-
-      // On close / refresh / navigation
-      window.addEventListener("beforeunload", sendFinal);
-
-      // Return API for manual flush if needed
-      return {
-        getSeconds: () => totalActiveSeconds,
-        flush: sendFinal
-      };
-    }
-
-
-    document.addEventListener("DOMContentLoaded", function() {
-      // template tokens (unchanged)
-      const nono = '{{nono}}';
-      const pats = '{{pats}}';
-      const binder = '{{ binder }}';
-
-      const usage = startUsageTracker("/track_time");
-
-      // MENU toggle accessibility
-      const menuBtn = document.querySelector('.hamburger-menu');
-        const menuBar = document.getElementById('menuBar');
-
-        // Toggle menu (keeps same interaction as previous)
-        menuBtn.addEventListener('click', () => {
-            menuBar.classList.toggle('menu-active');
-        });
-
-      // binder-specific adjustments (kept from original)
-      const appa = document.getElementById('appa');
-      const appimg = document.getElementById('appimg');
-      const apph6 = document.getElementById('apph6');
-      var link = document.querySelector("link[rel~='icon']");
-      if (binder === 'lab'){
-        appa.title='Search Lab';
-        appa.href='/srchlab';
-        appimg.src='/static/images/srchlab.png';
-        document.title= 'Binder Labratory';
-        link.href = '/static/images/binderlab.jpg';
-        apph6.textContent = 'Search Lab';
-      }
-
-      // quick-enter support
-      const idEntry = document.getElementById('idEntry');
-      idEntry.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          // prefer name search on enter
-          searchByName();
+      try {
+        const res = await fetch(url, opts);
+        clearTimeout(id);
+        const text = await res.text().catch(() => '');
+        const ct = res.headers.get('content-type') || '';
+        if (!res.ok) {
+          const err = new Error(`HTTP ${res.status} ${res.statusText}`);
+          err.status = res.status;
+          err.body = text;
+          throw err;
         }
-      });
-
-      // auto flows from template
-      if (nono === 'yup') {
-        autoSearchByNumber(PLAN);
+        if (ct.includes('application/json')) return JSON.parse(text || '{}');
+        return text;
+      } catch (err) {
+        clearTimeout(id);
+        throw err;
       }
-      if (pats !== 'nope') {
-        searchStats();
-      }
-
-      // start rotating media when empty
-      initMediaRotation();
-    });
-    const labels = [
-        { key: 'name', text: 'Patient Name' },
-        { key: 'id', text: 'ID Number' },
-        { key: 'phone', text: 'Phone Number' },
-        { key: 'location', text: 'Location' },
-        { key: 'pmh', text: 'Medical History' },
-        { key: 'allergies', text: 'Allergies' },
-        { key: 'age', text: 'Age' },
-        { key: 'next', text: 'Next visit' },
-        { key: 'btype', text: 'Blood Type' },
-        { key: 'sex', text: 'Sex' },
-        { key: 'payed', text: 'Paid' },
-        { key: 'debit', text: 'Debit' }
-    ];
-
-    function searchByName() {
-      const nameEntry = document.getElementById('idEntry').value.trim();
-      const srchMain = document.getElementById('srchMain');
-
-      if (!nameEntry) {
-        showToast("Please type a name or number above.", "info");
-        return;
-      }
-
-      if (/^\d+$/.test(nameEntry)) {
-        showToast("That looks like a number. Please use the number search instead.", "error");
-        return;
-      }
-
-      fetch('/search_by_name', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ name: nameEntry }),
-      })
-      .then(response => response.json())
-      .then(data => {
-          if (Array.isArray(data)) {
-              renderSearchResult(data, srchMain);
-              srchMain.style.backgroundImage="none";
-              srchMain.style.backgroundColor = "var(--w)";
-          } else {
-              showToast(`Error: ${data.error || 'Unexpected error'}`, "error");
-          }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        showToast("Error fetching data. Please try again.", "error");
-      });
     }
 
-    function searchStats() {
-      const srchMain = document.getElementById('srchMain');
-      fetch('/searchh_stats', { method: 'POST', headers: {'Content-Type': 'application/json'} })
-      .then(response => {
-        if (!response.ok) return response.text().then(t => { throw new Error(t); });
-        return response.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          renderSearchResult(data, srchMain);
-          srchMain.style.backgroundImage = "none";
-        } else {
-          showToast(`Error: ${data.error || 'Unexpected error'}`, "error");
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        showToast("Error fetching data. Please try again.", "error");
-      });
+    function is_numeric(s) {
+      return /^\d+$/.test(String(s || '').trim());
     }
 
-    function searchByNumber(PLAN) {
-      const numberEntry = document.getElementById('idEntry').value.trim();
-      const srchMain = document.getElementById('srchMain');
+    function normalize_digits(s) {
+      return String(s || '').replace(/\D/g, '');
+    }
 
-      if (!numberEntry) {
-        showToast("Please enter an ID or phone number.", "info");
-        return; 
-      }
+    function normalize_gov_id(s) {
+      return String(s || '').replace(/[\s\-]/g, '').toUpperCase();
+    }
 
-      // 🚫 validate numeric input (digits only)
-      if (!/^\d+$/.test(numberEntry)) {
-        showToast("Invalid number. Please enter digits only.", "error");
-        return;
-      }
+    function el(id) { return document.getElementById(id); }
 
-      fetch('/search_by_number', {
+    return { safe_fetch, is_numeric, normalize_digits, normalize_gov_id, el };
+  })();
+
+  /* =========================
+     API module (network-only)
+     ========================= */
+  const api = (function (u) {
+    /**
+     * Unified search. Backend decides strategy.
+     * Request: { domain?, user_id?, query: string }
+     * Response: { status, data: { results: [...] }, message }
+     */
+    async function search(query, opts = {}) {
+      const body = { query, ...opts };
+      return u.safe_fetch('/api/binder/search', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ number: numberEntry }),
-      })
-      .then(response => {
-        if (!response.ok) return response.text().then(t => { throw new Error(t); });
-        return response.json();
-      })
-      .then(data => {
-        if (data.error) {
-          showToast(`Error: ${data.error}`, "error");
-        } else {
-          if (Object.keys(data).length === 0) {
-            showToast('No patient found.', "info");
-          } else {
-            renderPatientInfo(data, srchMain, PLAN);
-            srchMain.style.backgroundImage = "none";
-          }
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        showToast("Error fetching data. Please try again.", "error");
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
       });
     }
 
-    function renderSearchResult(patients, srchMain) {
-      srchMain.innerHTML = '';
-      if (!patients || patients.length === 0) {
-        showToast(`No matches found. Try another spelling or try searching by number.`, "info");
+    async function get_client(id, opts = {}) {
+      const domain = opts.domain || undefined;
+      const url = `/api/binder/clients/${encodeURIComponent(id)}${domain? `?domain=${encodeURIComponent(domain)}` : ''}`;
+      return u.safe_fetch(url, { method: 'GET' });
+    }
+
+    async function patch_client(id, updates, opts = {}) {
+      const body = { updates, ...opts };
+      return u.safe_fetch(`/api/binder/clients/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    }
+
+    async function get_ui_context() {
+      return u.safe_fetch('/api/binder/ui_context', { method: 'GET' });
+    }
+
+    async function get_gaia_list(metric) {
+      return u.safe_fetch(`/api/gaia/patient_list?metric=${encodeURIComponent(metric)}`, { method: 'GET' });
+    }
+
+    async function track_time(payload) {
+      // best-effort; not critical
+      return u.safe_fetch(TRACK_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(()=>null);
+    }
+
+    return { search, get_client, patch_client, get_ui_context, get_gaia_list, track_time };
+  })(utils);
+
+  /* =========================
+     UI module (DOM concerns)
+     ========================= */
+  const ui = (function (u) {
+    const results_el = u.el('results');
+    const toast_container = u.el('toast_container');
+
+    function show_toast(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `toast-item toast-${type}`;
+      div.textContent = message;
+      toast_container.appendChild(div);
+      setTimeout(() => div.remove(), 3600);
+    }
+
+    function clear_results() {
+      results_el.innerHTML = '';
+    }
+
+    function render_results_list(results = []) {
+      clear_results();
+      if (!Array.isArray(results) || results.length === 0) {
+        const p = document.createElement('div');
+        p.className = 'client-card';
+        p.textContent = 'No results';
+        results_el.appendChild(p);
         return;
       }
 
-      patients.forEach(patient => {
-        const container = document.createElement('div');
-        container.className = 'patient-card decorative-card';
-        container.innerHTML = `
-          <div class="patient-row" style="justify-content:space-between;">
-            <div>
-              <div style="font-weight:800; font-size:1.05rem;">${patient.name || '—'}</div>
-              <div style="color:rgba(0,0,0,0.6); margin-top:6px;">ID: ${patient.no || '—'} • Age: ${patient.age || '—'}</div>
+      results.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'client-card';
+        card.innerHTML = `
+          <div class="flex justify-between items-start gap-4">
+            <div style="min-width:0">
+              <div class="font-semibold text-lg truncate">${escape_html(c.name || c.display_name || 'Unnamed')}</div>
+              <div class="text-sm text-[var(--muted)] mt-1">ID: ${escape_html(String(c.id ?? c.no ?? '-'))} • Gov ID: ${escape_html(c.gov_id ?? '-')}</div>
+              <div class="text-sm text-[var(--muted)] mt-1">Phone: ${escape_html(c.phone ?? '-')}</div>
             </div>
-            <div style="text-align:right;">
-              <button class="big-btn btn-secondary" style="min-width:110px;" onclick="searchById('${patient.no}')">Open</button>
+            <div class="flex flex-col gap-2 items-end">
+              <button class="big-btn btn-secondary open-btn" data-id="${escape_html(String(c.id ?? c.no ?? ''))}">Open</button>
+              <button class="big-btn btn-ghost view-visits-btn" data-id="${escape_html(String(c.id ?? c.no ?? ''))}">Visits</button>
             </div>
           </div>
         `;
-        srchMain.appendChild(container);
-      });
-    }
-
-    function renderPatientInfo(patient, srchMain, PLAN) {
-      srchMain.innerHTML = '';
-      if (!patient) {
-        showToast('The number is not registered', "info");
-        return;
-      }
-
-      const infoDiv = document.createElement('div');
-      infoDiv.className = 'patient-card decorative-card';
-      infoDiv.setAttribute('data-patient-no', patient.no || '');
-
-      // grid of fields (simple clear layout for older eyes)
-      const grid = document.createElement('div');
-      grid.className = 'patient-info-grid';
-
-      labels.forEach(label => {
-        const field = document.createElement('div');
-        const fldLabel = document.createElement('div');
-        fldLabel.className = 'patient-label';
-        fldLabel.style.fontWeight = '700';
-        fldLabel.style.marginBottom = '6px';
-        fldLabel.textContent = label.text + ':';
-
-        let entry;
-        if (label.key === 'next') {
-          entry = document.createElement('input');
-          entry.type = 'datetime-local';
-          entry.value = patient[label.key] || formatyear();
-          entry.className = 'patient-value';
-        } else {
-          entry = document.createElement('input');
-          entry.type = 'text';
-          entry.value = (patient[label.key] !== undefined ? patient[label.key] : '');
-          entry.className = 'patient-value';
-        }
-
-        // set data-key for save extraction
-        entry.setAttribute('data-key', label.key);
-
-        field.appendChild(fldLabel);
-        field.appendChild(entry);
-        grid.appendChild(field);
+        results_el.appendChild(card);
       });
 
-      // actions
-      const btnRow = document.createElement('div');
-      btnRow.style.marginTop = '14px';
-      btnRow.style.display = 'flex';
-      btnRow.style.gap = '10px';
-      btnRow.style.justifyContent = 'center';
-
-      const saveButton = document.createElement('button');
-      saveButton.className = 'big-btn btn-primary';
-      saveButton.textContent = 'Save';
-      saveButton.onclick = () => savePatientInfo(patient.no);
-
-      const printBtn = document.createElement('button');
-      printBtn.className = 'big-btn btn-ghost';
-      printBtn.textContent = 'Print';
-      printBtn.onclick = () => showPage('kprint');
-
-      const openBtn = document.createElement('button');
-      openBtn.className = 'big-btn';
-      openBtn.textContent = 'Open';
-      openBtn.style.background = 'white';
-      openBtn.style.border = '1px solid rgba(0,0,0,0.06)';
-      openBtn.onclick = () => showPage('meddata');
-
-      btnRow.appendChild(saveButton);
-      btnRow.appendChild(printBtn);
-      if (PLAN !== 'sec') btnRow.appendChild(openBtn);
-
-      infoDiv.appendChild(grid);
-      infoDiv.appendChild(btnRow);
-      srchMain.appendChild(infoDiv);
-
-      // center for wide screens
-      const maxwidth = document.documentElement.clientWidth;
-      if (maxwidth > 750) srchMain.style.justifyContent = "center";
-    }
-
-    /* Save function (keeps original conversion logic) */
-    async function savePatientInfo(patientNo) {
-      const patientDiv = document.querySelector(`[data-patient-no="${patientNo}"]`);
-      if (!patientDiv) {
-        showToast('Error: Patient block not found', "error");
-        return;
-      }
-
-      // Build payload with top-level keys (endpoint expects { patientNo, name, id, ... })
-      const payload = { patientNo: Number(patientNo) };
-
-      labels.forEach((lbl, idx) => {
-        let input = patientDiv.querySelector(`[data-key="${lbl.key}"]`)
-                || patientDiv.querySelector(`[name="${lbl.key}"]`)
-                || patientDiv.querySelector(`#${lbl.key}-${patientNo}`);
-
-        if (!input) {
-          const els = patientDiv.querySelectorAll('input, textarea, select');
-          input = els[idx];
-        }
-
-        let val = '';
-        if (input) {
-          if (input.type === 'checkbox') val = input.checked ? (input.value || true) : false;
-          else val = input.value ?? '';
-        }
-
-        if (['age', 'payed', 'debit'].includes(lbl.key)) {
-          const cleaned = String(val).trim().replace(',', '.');
-          const n = parseFloat(cleaned);
-          payload[lbl.key] = Number.isFinite(n) ? n : 0;
-        } else {
-          payload[lbl.key] = val;
-        }
-      });
-
-      try {
-        const res = await fetch('/updatePatientData', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+      // wire buttons
+      results_el.querySelectorAll('.open-btn').forEach(b => {
+        b.addEventListener('click', (ev) => {
+          const id = ev.currentTarget.getAttribute('data-id');
+          controller.open_client(id);
         });
+      });
+      results_el.querySelectorAll('.view-visits-btn').forEach(b => {
+        b.addEventListener('click', (ev) => {
+          const id = ev.currentTarget.getAttribute('data-id');
+          controller.open_client(id, { show_visits: true });
+        });
+      });
+    }
 
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          console.error('Save failed:', data);
-          showToast(`Error saving patient data:${(data.message || res.statusText)}` ,"error");
+    function render_client_detail(client) {
+      clear_results();
+      if (!client) {
+        show_toast('No client data to display', 'info');
+        return;
+      }
+
+      const container = document.createElement('div');
+      container.className = 'client-card';
+      container.innerHTML = `
+        <div class="font-bold text-lg">${escape_html(client.name || client.display_name || 'Unnamed')}</div>
+        <div class="text-sm text-[var(--muted)] mt-1">ID: ${escape_html(String(client.id ?? client.no ?? '-'))} • Gov ID: ${escape_html(client.gov_id ?? '-')}</div>
+        <div class="mt-3 grid gap-2">
+          <div><strong>Phone:</strong> ${escape_html(client.phone ?? '-')}</div>
+          <div><strong>Location:</strong> ${escape_html(client.location ?? '-')}</div>
+          <div><strong>Notes:</strong> <textarea id="client_notes" class="big-input" style="min-height:80px">${escape_html(client.notes ?? '')}</textarea></div>
+        </div>
+
+        <div class="mt-4 flex gap-3">
+          <button id="save_client_btn" class="big-btn btn-primary">Save</button>
+          <button id="back_to_list" class="big-btn btn-ghost">Back</button>
+        </div>
+
+        <div id="visits_container" class="mt-4"></div>
+      `;
+      results_el.appendChild(container);
+
+      const notes_el = document.getElementById('client_notes');
+      document.getElementById('save_client_btn').addEventListener('click', async () => {
+        const updates = { notes: notes_el.value };
+        try {
+          await controller.save_client(client.id, updates);
+          show_toast('Client saved', 'success');
+        } catch (err) {
+          show_toast('Save failed', 'error');
+        }
+      });
+
+      document.getElementById('back_to_list').addEventListener('click', () => {
+        // reset to previous list (controller stores lastResults)
+        controller.render_last_results();
+      });
+
+      // render visits if present
+      const visits_container = document.getElementById('visits_container');
+      if (Array.isArray(client.visits) && client.visits.length) {
+        const title = document.createElement('div');
+        title.className = 'font-semibold mt-2';
+        title.textContent = 'Visits';
+        visits_container.appendChild(title);
+
+        client.visits.forEach(v => {
+          const vcard = document.createElement('div');
+          vcard.className = 'client-card';
+          vcard.style.marginTop = '8px';
+          vcard.innerHTML = `<div><strong>${escape_html(String(v.date || v.when || '-'))}</strong></div>
+                             <div>Notes: ${escape_html(v.notes ?? '-')}</div>
+                             <div>Paid: ${escape_html(String(v.payed ?? '-'))} • Debit: ${escape_html(String(v.debit ?? '-'))}</div>`;
+          visits_container.appendChild(vcard);
+        });
+      }
+    }
+
+    function escape_html(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    return { show_toast, render_results_list, render_client_detail, clear_results, escape_html };
+  })(utils);
+
+  /* =========================
+     Usage tracker (single final send)
+     ========================= */
+  function start_usage_tracker(endpoint) {
+    let total_seconds = 0;
+    let is_active = true;
+
+    document.addEventListener('visibilitychange', () => { is_active = !document.hidden; });
+    window.addEventListener('focus', () => { is_active = true; });
+    window.addEventListener('blur', () => { is_active = false; });
+
+    const interval_id = setInterval(() => { if (is_active) total_seconds += 1; }, 1000);
+
+    function send_final() {
+      if (total_seconds < 1) return;
+      try {
+        navigator.sendBeacon(endpoint, JSON.stringify({ seconds: total_seconds }));
+      } catch (err) {
+        // fallback (best-effort)
+        fetch(endpoint, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ seconds: total_seconds }) }).catch(()=>{});
+      } finally {
+        clearInterval(interval_id);
+      }
+    }
+    window.addEventListener('beforeunload', send_final);
+    return { get_seconds: () => total_seconds, flush: send_final };
+  }
+
+  /* =========================
+     Controller (small & explicit)
+     ========================= */
+  const controller = (function (api_mod, ui_mod, u_mod) {
+    let last_results = [];
+    let last_query = '';
+
+    function render_last_results() {
+      ui_mod.render_results_list(last_results);
+    }
+
+    async function init() {
+      // wire buttons
+      u_mod.el('btn_search').addEventListener('click', () => do_search(u_mod.el('query_input').value.trim()));
+      u_mod.el('btn_search_number').addEventListener('click', () => do_search(u_mod.el('query_input').value.trim(), { hint: 'number' }));
+      u_mod.el('btn_search_gov').addEventListener('click', () => do_search(u_mod.el('query_input').value.trim(), { hint: 'gov' }));
+      u_mod.el('btn_clear').addEventListener('click', () => { u_mod.el('query_input').value = ''; ui_mod.clear_results(); last_results = []; });
+
+      // Enter key for quick search
+      u_mod.el('query_input').addEventListener('keydown', (e) => { if (e.key === 'Enter') do_search(u_mod.el('query_input').value.trim()); });
+
+      // start usage tracker
+      APP_STATE.usage_tracker = start_usage_tracker(TRACK_ENDPOINT);
+
+      // fetch UI context (branding / permissions)
+      try {
+        const ctx = await api_mod.get_ui_context();
+        if (ctx && ctx.status === 'success' && ctx.data && ctx.data.branding && ctx.data.branding.title) {
+          document.title = ctx.data.branding.title;
+        }
+      } catch (err) {
+        // not critical
+        console.debug('ui_context fetch failed', err);
+      }
+
+      // auto-render path: server may inject window.__AUTO_RENDER = { client_id: '...', domain:'...' }
+      try {
+        if (window.__AUTO_RENDER && window.__AUTO_RENDER.client_id) {
+          const client_id = window.__AUTO_RENDER.client_id;
+          await open_client(client_id, { domain: window.__AUTO_RENDER.domain });
+          return;
+        }
+      } catch (err) {
+        console.error('auto render failed', err);
+      }
+
+      // gaia list path: server may inject window.__GAIA_LIST = { metric: 'recent_unpaid' }
+      try {
+        if (window.__GAIA_LIST && window.__GAIA_LIST.metric) {
+          const gl = await api_mod.get_gaia_list(window.__GAIA_LIST.metric);
+          if (gl && gl.status === 'success') {
+            last_results = gl.data.results || [];
+            ui_mod.render_results_list(last_results);
+          }
+        }
+      } catch (err) {
+        console.debug('gaia list fetch failed', err);
+      }
+    }
+
+    async function do_search(query, opts = {}) {
+      if (!query) {
+        ui_mod.show_toast('Please type a query', 'info');
+        return;
+      }
+      last_query = query;
+      try {
+        // we send optional metadata: domain, user_id if available in APP_STATE
+        const payloadOpts = {};
+        if (APP_STATE.domain) payloadOpts.domain = APP_STATE.domain;
+        if (APP_STATE.user_id) payloadOpts.user_id = APP_STATE.user_id;
+        // optional hint (frontend UI only) — backend can use or ignore
+        if (opts.hint) payloadOpts.hint = opts.hint;
+
+        const res = await api_mod.search(query, payloadOpts);
+        if (!res || res.status !== 'success') {
+          ui_mod.show_toast(res?.message || 'Search failed', 'error');
           return;
         }
 
-        showToast('Patient data saved successfully.',"success");
+        const results = res.data?.results || [];
+        last_results = results;
+        ui_mod.render_results_list(results);
       } catch (err) {
-        console.error(err);
-        showToast('Error saving patient data.', "error");
+        console.error('search failed', err);
+        ui_mod.show_toast('Search request failed', 'error');
       }
     }
 
-    function autoSearchByNumber(PLAN) {
-      const srchMain = document.getElementById('srchMain');
-      fetch('/auto_search_by_number', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ number: 'ya' }),
-      })
-      .then(res => { if (!res.ok) return res.text().then(t => { throw new Error(t); }); return res.json(); })
-      .then(data => {
-        if (data.error) { showToast(`Error: ${data.error}`, "error"); }
-        else {
-          if (Object.keys(data).length === 0) showToast('No patient found.', "info");
-          else {
-            document.getElementById('idEntry').value = data.no || '';
-            renderPatientInfo(data, srchMain, PLAN);
-          }
-          srchMain.style.backgroundImage="none";
+    async function open_client(client_id, opts = {}) {
+      if (!client_id) { ui_mod.show_toast('Invalid client id', 'error'); return; }
+      try {
+        const res = await api_mod.get_client(client_id, { domain: opts.domain || APP_STATE.domain });
+        if (!res || res.status !== 'success') {
+          ui_mod.show_toast(res?.message || 'Failed to load client', 'error'); return;
         }
-      })
-      .catch(err => { console.error(err); showToast("Error fetching data. Please try again.", "error"); });
-    }
-
-    function searchById(patientNumber) {
-      const srchMain = document.getElementById('srchMain');
-      fetch('/search_by_number', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ number: patientNumber }),
-      })
-      .then(res => { if (!res.ok) return res.text().then(t => { throw new Error(t); }); return res.json(); })
-      .then(data => {
-        if (data.error) showToast(`Error: ${data.error}`, "error");
-        else {
-          if (Object.keys(data).length === 0) showToast('No patient found.', "info");
-          else {
-            document.getElementById('idEntry').value = data.no || '';
-            renderPatientInfo(data, srchMain, PLAN);
-          }
-        }
-      })
-      .catch(err => { console.error(err); showToast("Error fetching data. Please try again.", "error"); });
-    }
-
-    function showPage(page) { window.location.href = `/${page}`; }
-
-    const mediaSources = [
-      { type: 'image', src: '/static/images/ad.jpg' },
-      { type: 'image', src: 'https://firebasestorage.googleapis.com/v0/b/monydb-f2cdb.appspot.com/o/freebindermed.png?alt=media&token=55b86ff5-fd63-4a9d-bc41-79302130c7ba' },
-      { type: 'image', src: 'https://firebasestorage.googleapis.com/v0/b/monydb-f2cdb.appspot.com/o/ad1.jpg?alt=media&token=dc248e7d-3806-4364-ba9c-d575736d6253' }
-    ];
-    let mediaIndex = 0;
-    let mediaTimer = null;
-
-    function getStartIndexBasedOnTime() {
-      const currentTime = new Date();
-      const totalSeconds = currentTime.getHours() * 3600 + currentTime.getMinutes() * 60 + currentTime.getSeconds();
-      const mediaDuration = 15;
-      return Math.floor(totalSeconds / mediaDuration) % mediaSources.length;
-    }
-
-    function initMediaRotation() {
-      const srchMain = document.getElementById('srchMain');
-      mediaIndex = getStartIndexBasedOnTime();
-
-      // create an img element once
-      let adImg = document.createElement('img');
-      adImg.style.maxWidth = "100%";
-      adImg.style.borderRadius = "16px";
-      adImg.style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)";
-      adImg.style.display = "none";
-      srchMain.appendChild(adImg);
-
-      function showNextMedia() {
-        const hasResultCards = !!srchMain.querySelector('.patient-card');
-        if (hasResultCards) { adImg.style.display = 'none'; return; }
-
-        const media = mediaSources[mediaIndex];
-        if (media.type === 'image') {
-          adImg.src = media.src;
-          adImg.style.display = 'block';
-        }
-
-        mediaIndex = (mediaIndex + 1) % mediaSources.length;
-        clearTimeout(mediaTimer);
-        mediaTimer = setTimeout(showNextMedia, 15000);
+        ui_mod.render_client_detail(res.data.client);
+      } catch (err) {
+        console.error('open_client error', err);
+        ui_mod.show_toast('Failed to load client', 'error');
       }
-
-      showNextMedia();
-
-      const observer = new MutationObserver(() => {
-        const hasCards = !!srchMain.querySelector('.patient-card');
-        if (!hasCards && !mediaTimer) mediaTimer = setTimeout(showNextMedia, 15000);
-        if (hasCards) { clearTimeout(mediaTimer); mediaTimer = null; adImg.style.display='none'; }
-      });
-      observer.observe(srchMain, { childList: true, subtree: true });
     }
 
-    function formatyear() {
-      const today = new Date().toISOString().split('T')[0];
-      return today;
+    async function save_client(client_id, updates) {
+      if (!client_id) throw new Error('client_id required');
+      try {
+        const res = await api_mod.patch_client(client_id, updates, { domain: APP_STATE.domain, user_id: APP_STATE.user_id });
+        if (!res || res.status !== 'success') throw new Error(res?.message || 'save failed');
+        return res.data.client;
+      } catch (err) {
+        console.error('save_client error', err);
+        throw err;
+      }
     }
+
+    return { init, do_search, open_client, save_client, render_last_results };
+  })(api, ui, utils);
+
+  // bootstrap
+  document.addEventListener('DOMContentLoaded', () => controller.init());
   </script>
 </body>
 </html>
