@@ -1,0 +1,8 @@
+this : "POST /api/binder/search/client HTTP/1.1" 200 -
+
+for this user : khalidqnabi@gmail.com 
+on the medical domain
+
+with the current search page payload as of the master commit : Commit ca44fc8
+
+and the img : no res.png is the output in this folder 

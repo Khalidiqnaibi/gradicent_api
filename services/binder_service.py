@@ -191,7 +191,7 @@ class BinderService:
         if not query:
             return []
         # binder implementations implement search_clients(query)
-        return self.binder.search_clients(query)
+        return self._binder.search_clients(query)
     
     # ------- Public API: Interactions (visits/transactions) -------
     def create_interaction(self, client_id: str, interaction: Dict[str, Any]) -> Dict[str, Any]:

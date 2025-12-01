@@ -239,7 +239,7 @@ def client_search():
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
 
-    results = service.search_clients(query)
+    results = service.search_client(query)
     resp = make_response(data=results, message="Search completed.")
     resp.status_code = 200
     return resp
