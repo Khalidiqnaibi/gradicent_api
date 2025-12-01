@@ -79,9 +79,96 @@
       .search-row { flex-direction:column; align-items:stretch; }
       .search-btn { width:100%; }
     }
+    
+    /* Hamburger lines */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display: block;
+      width: 26px;
+      height: 3px;
+      background-color: var(--accent);
+      position: relative;
+      border-radius: 6px;
+      transition: 0.28s ease;
+    }
+    .menu__btn span::before,
+    .menu__btn span::after { content: ""; position: absolute; left: 0; }
+    .menu__btn span::before { top: -8px; }
+    .menu__btn span::after { top: 8px; }
+
+    .menu-active .menu__btn span { transform: rotate(45deg); }
+    .menu-active .menu__btn span::before { transform: rotate(90deg); top: 0; }
+    .menu-active .menu__btn span::after { opacity: 0; }
+
+    .menu__box {
+      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity 0.2s;
+      transform: translateX(-110%);
+      opacity: 0;
+    }
+    .menu-active .menu__box { transform: translateX(0); opacity: 1; }
+
   </style>
 </head>
 <body>
+  
+  
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
   <div class="wrap">
     <header class="sitehead">
       <img class="logo" src="/static/images/w3.jpg" alt="Binder" />
@@ -331,11 +418,31 @@
     window.addEventListener('beforeunload', send_final);
     return { get_seconds: () => seconds, flush: send_final };
   }
+  function menu_init() {
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
+      
+      // Toggle menu (keeps same interaction as previous)
+      menuBtn.addEventListener('click', () => {
+        menuBar.classList.toggle('menu-active');
+      });
+      
+      const menu_box = document.querySelector(".menu__box")
+      // close when clicking outside (improves UX)
+      document.addEventListener('click', (ev) => {
+        if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+          menuBar.classList.remove('menu-active');
+          toggle.setAttribute('aria-expanded', 'false');
+          menu_box.setAttribute('aria-hidden', 'true');
+        }
+      });
+    }
 
   /* ----------------------
      Controller
      ---------------------- */
   const controller = (function (api_mod, ui_mod, u_mod) {
+    menu_init();
     let last_results = [];
     async function init() {
       // wire UI
