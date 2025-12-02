@@ -1,0 +1,39 @@
+
+
+when requesting the appopintment in the acc.html it gives an error 
+the functions name in acc.html is get_appointments_for_date
+
+
+
+
+
+
+
+"
+127.0.0.1 - - [02/Dec/2025 12:14:20] "GET /api/binder/get_appointments/2025-12-02 HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\routes\binder_routes.py", line 275, in getappointments
+    appointments = get_appopintments(date,user_id)
+  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\utils\get_appointments.py", line 11, in get_appopintments
+    return nn.get(date, [])
+           ^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+"
+
+
+
+i think the whole problem in the last two lines

@@ -315,13 +315,17 @@
      API Module (Binder / Gaia)
      ========================= */
   const api = (function (u) {
+async function get_user(){
+    
+}
+
     /**
      * get_appointments_for_date
      * Fetch appointments from server for given date (YYYY-MM-DD).
      * Returns an array.
      */
     async function get_appointments_for_date(date_iso) {
-      const url = `/get_appointments/${encodeURIComponent(date_iso)}`;
+      const url = `/api/binder/get_appointments/${encodeURIComponent(date_iso)}`;
       const data = await u.safe_fetch(url, { method: 'GET' });
       if (Array.isArray(data)) return data;
       if (data && Array.isArray(data.appointments)) return data.appointments;
