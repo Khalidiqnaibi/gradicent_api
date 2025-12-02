@@ -62,9 +62,9 @@ class LegacyUser:
                 "legacy": True,
                 "plan": self.plan,
                 "settings": self.settings,
-                "msg": self.msg,
+                "appointments": self.msg,
                 "phone": self.phone,
-                "old metadata": self.metadata
+                "legacy metadata": self.metadata,
             },
             "clients": self.patients,
             "employees": [],

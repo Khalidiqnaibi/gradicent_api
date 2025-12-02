@@ -17,7 +17,7 @@ from dataclasses import asdict
 
 from auth.providers.google_provider import GoogleAuthProvider
 from binder import User,LegacyUser  # adjust path to your actual model
-
+from utils.provision_user import _provision_user
 
 class AuthService:
     """
@@ -61,60 +61,13 @@ class AuthService:
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
         provider_user = self.providers[provider].exchange_code_for_user(code)
-        user = self._provision_user(provider, provider_user)
+        user = _provision_user(provider, provider_user)
 
         tokens = self._create_tokens_for_user(user.id)
         self._save_refresh_token(user.id, tokens["refresh_token"])
 
         return user.to_dict(), tokens
 
-    def _provision_user(self, provider: str, provider_user: Dict[str, Any]) -> User:
-        provider_id = str(provider_user.get("id"))
-        user_id = f"{provider_id}"
-
-        # Try existing user
-        raw = self.adapter.get_user(user_id)
-        if raw:
-            #  NEW FORMAT
-            if "metadata" in raw and "first" not in raw:
-                return User(**raw)
-
-            #  LEGACY FORMAT
-            if "google_id" in raw or "patients" in raw:
-                legacy_user = LegacyUser.from_raw(raw)
-                converted = legacy_user.to_user()
-                print(converted)
-                return User(**converted)
-            
-            # Unknown structure (fallback safe)
-            return User(
-                id=user_id,
-                name=raw.get("name", user_id),
-                email=None,
-            )
-
-        # Create new User instance using your model
-        new_user = User(
-            id=user_id,
-            name=provider_user.get("name")
-            or provider_user.get("email")
-            or user_id,
-            email=provider_user.get("email"),
-            metadata={
-                "provider": provider,
-                "provider_id": provider_id,
-                "raw": provider_user.get("raw", {}),
-            },
-            clients=[],
-            employees=[],
-            products=[],
-            services=[],
-        )
-
-        self.adapter.add_user(user_id, new_user.to_dict())
-        return new_user
-
-   
     def _create_tokens_for_user(self, user_id: str) -> Dict[str, Any]:
         now = int(time.time())
 
