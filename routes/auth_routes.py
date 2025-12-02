@@ -137,7 +137,7 @@ def current_user():
     if not normalized:
         return jsonify({"status": "error","data":None, "message": "unrecognized user structure"}), 401
     
-    return jsonify({"status": "success", "data": normalized,"message":"got user"})
+    return jsonify({"status": "success", "data": normalized.to_dict(),"message":"got user"})
 
 
 @auth_blueprint.route("/refresh", methods=["POST"])

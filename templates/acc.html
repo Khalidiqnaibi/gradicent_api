@@ -315,8 +315,14 @@
      API Module (Binder / Gaia)
      ========================= */
   const api = (function (u) {
-async function get_user(){
-    
+    /**
+     * get_user_id
+     * Fetches current user ID from /api/auth/me.
+     */
+    async function get_user_id(){
+      const url = `/api/auth/me`;
+      const data = await u.safe_fetch(url, { method: 'GET' });
+      return data.id;    
 }
 
     /**
@@ -336,8 +342,8 @@ async function get_user(){
      * get_patients_count
      * Uses Gaia compute endpoint that returns { patient_count: number }.
      */
-    async function get_patients_count() {
-      const url = `/api/gaia/compute?metric=total_customers&domain=medical`;
+    async function get_patients_count(user_id) {
+      const url = `/api/gaia/compute?metric=total_customers&domain=medical&user_id=${encodeURIComponent(user_id)}`;
       const data = await u.safe_fetch(url, { method: 'GET' });
       if (data && typeof data.patient_count === 'number') return data.patient_count;
       // some older responses may embed in data.data
@@ -501,11 +507,14 @@ async function get_user(){
      * Fetch counts and update UI. Errors are surfaced to the user via toasts.
      */
     async function load_and_render_counts() {
+      
       try {
+        const user_id = await api_mod.get_user_id();
         const date_iso = utils_mod.iso_today();
         const [appointments, patients_count] = await Promise.allSettled([
           api_mod.get_appointments_for_date(date_iso),
-          api_mod.get_patients_count()
+          api_mod.get_patients_count(user_id)
+        
         ]);
 
         const appointments_list = (appointments.status === 'fulfilled') ? (appointments.value || []) : [];
