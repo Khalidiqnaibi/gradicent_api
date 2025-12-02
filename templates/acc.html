@@ -322,7 +322,8 @@
     async function get_user_id(){
       const url = `/api/auth/me`;
       const data = await u.safe_fetch(url, { method: 'GET' });
-      return data.id;    
+      console.log("User data:", data);
+      return data.data.id;    
 }
 
     /**
@@ -383,7 +384,7 @@
       }
     }
 
-    return { get_appointments_for_date, get_patients_count, get_domain, get_plan_status };
+    return { get_appointments_for_date, get_patients_count, get_domain, get_plan_status ,get_user_id};
   })(utils);
 
   /* =========================
