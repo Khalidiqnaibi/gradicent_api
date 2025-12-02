@@ -1,470 +1,363 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="google-site-verification" content="CdS-jnmDkiXrSvujf6OARsOgBIBGsMPk0GrTKOs2w2Q" />
+  <title>Binder — Appointments</title>
   <link rel="icon" href="/static/images/w3.jpg" />
-  <title>Binder Medical</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     :root{
-      --bg-main: #D9C4B0;   /* warm beige */
-      --accent:   #ce7a35;  /* cool teal */
-      --secondary:#78cee6;  /* warm secondary */
-      --card: rgba(255,255,255,0.95);
-      --muted:#6b6b6b;
-      --text:#122022;
+      --bg-1:#F2ECE6;
+      --bg-2:#E6D6C0;
+      --card:#FFFFFF;
+      --muted:#6b7280;
+      --accent:#ce7a35;
+      --text:#0f172a;
     }
 
-    html,body{height:100%; margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;}
-    body{
-      background: linear-gradient(180deg,var(--bg-main), #f6efe6 65%);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-    }
-
-    /* -- Menu hamburger (kept style you wanted) -- */
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));font-family:Inter,-apple-system,system-ui;}
+    .wrap{max-width:1100px;margin:48px auto;padding:20px;}
+    .card{background:var(--card);padding:24px;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);}
+    .input{padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,0.08);width:100%;font-size:15px;background:rgba(255,255,255,0.9);}
+    .btn-primary{padding:10px 14px;border-radius:12px;background:linear-gradient(90deg,var(--accent),#cfa174);font-weight:700;color:#071620;border:none;cursor:pointer;}
+    .btn-ghost{padding:8px 12px;border-radius:10px;background:#fff;border:1px solid rgba(0,0,0,0.06);cursor:pointer;font-weight:600;color:#071620;}
+    .slot{display:grid;grid-template-columns:200px 80px 120px 1fr auto;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(180deg,#fff,#fbfbfb);border:1px solid rgba(0,0,0,0.05);}
+    .slot h3{margin:0;font-size:16px;font-weight:700;color:var(--text);}
+    .slot p{margin:0;font-size:13px;color:var(--muted);}
+    @media(max-width:900px){.slot{grid-template-columns:1fr;}}
+    #toasts{position:fixed;top:18px;right:18px;z-index:999;}
+  
+    /* Hamburger lines */
     .menu__btn span,
     .menu__btn span::before,
     .menu__btn span::after {
       display: block;
-      width: 25px;
+      width: 26px;
       height: 3px;
       background-color: var(--accent);
       position: relative;
       border-radius: 6px;
-      transition: 0.3s ease;
+      transition: 0.28s ease;
     }
     .menu__btn span::before,
-    .menu__btn span::after {
-      content: "";
-      position: absolute;
-      left: 0;
-    }
+    .menu__btn span::after { content: ""; position: absolute; left: 0; }
     .menu__btn span::before { top: -8px; }
     .menu__btn span::after { top: 8px; }
 
-    .menu-active .menu__btn span {
-      transform: rotate(45deg);
-      background-color: var(--accent);
-    }
-    .menu-active .menu__btn span::before {
-      transform: rotate(90deg);
-      top: 0;
-    }
+    .menu-active .menu__btn span { transform: rotate(45deg); }
+    .menu-active .menu__btn span::before { transform: rotate(90deg); top: 0; }
     .menu-active .menu__btn span::after { opacity: 0; }
 
     .menu__box {
-      transition: transform 0.28s ease, opacity 0.28s ease;
-      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity 0.2s;
+      transform: translateX(-110%);
       opacity: 0;
     }
     .menu-active .menu__box { transform: translateX(0); opacity: 1; }
 
-    /* card + layout */
-    .container {
-      max-width: 1100px;
-      margin: 48px auto;
-      padding: 20px;
-    }
-    .card {
-      background: var(--card);
-      border-radius: 18px;
-      padding: 20px;
-      height: 80%;
-      box-shadow: 0 14px 40px rgba(12,12,12,0.06);
-      border:1px solid rgba(0,0,0,0.04);
-    }
-
-    .scroll-area{
-      scrollbar-width: thin;
-      scrollbar-color: var(--accent) rgba(0,0,0,0.1);
-    }
-
-    /* input look: soft gradient border, padding */
-    .input-control {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 15px;
-      background-image:
-        linear-gradient(#fff,#fff),
-        linear-gradient(90deg, rgba(187,220,229,0.95), rgba(207,171,141,0.6));
-      background-origin: padding-box, border-box;
-      background-clip: padding-box, border-box;
-      border: 2px solid transparent;
-      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.04);
-      outline: none;
-      color: var(--text);
-      transition: box-shadow .12s, transform .06s;
-    }
-    .input-control:focus{
-      transform: translateY(-1px);
-      box-shadow: 0 10px 30px rgba(11,20,23,0.06), 0 0 0 6px rgba(187,220,229,0.12);
-    }
-
-    textarea.input-control { min-height:86px; resize:vertical; padding-top:10px; padding-bottom:10px; }
-
-    /* buttons */
-    .btn-primary {
-      background: linear-gradient(90deg,var(--accent), rgba(229, 211, 187, 0.95));
-      color:#072024; font-weight:700; padding:10px 14px; border-radius:12px; border:none; cursor:pointer;
-      box-shadow: 0 10px 30px rgba(11,20,23,0.06);
-    }
-    .btn-ghost {
-      background: #fff; color: #111827; border:1px solid rgba(16,24,40,0.06);
-      padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:600;
-      box-shadow: 0 6px 18px rgba(2,6,23,0.04);
-    }
-
-    /* appointments list */
-    .list-wrap {
-      display:flex; flex-direction:column; gap:12px;
-    }
-    .slot {
-      display:flex; gap:12px; align-items:flex-start;
-      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
-      padding:14px; border-radius:12px; border:1px solid rgba(0,0,0,0.05);
-      align-items:center;
-    }
-    .slot .meta { width: 260px; min-width:140px; }
-    .slot .meta h3 { font-size:16px; margin:0; font-weight:700; color:var(--text); }
-    .slot .meta p { margin:0; color:var(--muted); font-size:13px; }
-    .slot .msg { flex:1; }
-    .slot .actions { display:flex; gap:8px; align-items:center; justify-self:end; }
-
-    /* scroll area */
-    .scroll-area { max-height: 30vh; overflow-y: auto; padding-right:6px; }
-    .empty {
-      display:flex; align-items:center; justify-content:center; padding:36px; color:var(--muted);
-      border:2px dashed rgba(0,0,0,0.06); border-radius:12px; background: rgba(255,255,255,0.6);
-    }
-
-    /* responsive */
-    @media (max-width:900px){
-      .slot { flex-direction:column; align-items:stretch; }
-      .slot .meta{ width:100%; min-width:0; display:flex; justify-content:space-between; gap:8px; }
-      .slot .actions{ justify-content:flex-end; }
-      .container { margin: 16px; }
-    }
-
-    /* tiny niceties */
-    .small-muted { color:var(--muted); font-size:13px; }
-    .count-badge { background:var(--accent); padding:4px 8px; border-radius:999px; font-weight:700; color:#072024; box-shadow: 0 6px 18px rgba(11,20,23,0.05); }
-
-    /* keep your menu icons readable */
-    .icoo { width:22px; height:22px; margin-right:8px; filter: none; }
-
-    .butnss{
-      display: flex;
-      flex-direction: column;
-    }
-
-    .w-full.sm\:w-64 {
-      display: flex;
-      align-items: center;
-    }
-
-    .flex.flex-col.sm\:flex-row.sm\:items-center.sm\:gap-4.mb-4 {
-      display: flex;
-      justify-content: space-around;
-    } 
-
-    main.container {
-      display: flex;
-      align-self: center;
-      height: 100%;
-      justify-content: center;
-      justify-self: center;
-      align-items: center;
-    }
-
   </style>
 </head>
+
 <body>
-  <!-- hamburger menu (left top) -->
+  <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
-      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg" role="button" aria-label="Menu toggle">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
         <span></span>
       </label>
 
-      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]" role="menu">
-        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account"><img class="icoo" src="/static/images/acc.png" alt=""><span>Account</span></a></li>
-        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add"><img class="icoo" src="/static/images/hoo.png" alt=""><span>Add</span></a></li>
-        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search"><img class="icoo" src="/static/images/sss.png" alt=""><span>Search</span></a></li>
-        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats"><img class="icoo" src="/static/images/stst.png" alt=""><span>Stats</span></a></li>
-        <li><a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments"><img class="icoo" src="/static/images/appoint.png" alt=""><span>Appointments</span></a></li>
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
         <li class="border-t border-[var(--secondary)] my-1"></li>
-        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings"><img class="icoo" src="/static/images/sett.png" alt=""><span>Settings</span></a></li>
-        <li><a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support"><img class="icoo" src="/static/images/supp.png" alt=""><span>Support</span></a></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
       </ul>
     </div>
   </div>
-
-  <main class="container">
-    <div class="card gap-3">
-      <!-- header -->
-      <div class="butnss items-center justify-between mb-4">
-        <div>
-          <h1 class="text-2xl font-bold">Appointments</h1>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <div class="small-muted">Showing</div>
-          <div id="appCount" class="count-badge">0</div>
-          <button id="refreshBtn" class="btn-ghost" title="Refresh">Refresh</button>
-          <button id="saveBtn" class="btn-primary">Save changes</button>
+  <div class="wrap">
+    <div class="card">
+      <div class="flex justify-between items-center mb-5">
+        <h1 class="text-2xl font-bold">Appointments</h1>
+        <div class="flex gap-3 items-center">
+          <div class="text-sm text-gray-500">Total</div>
+          <div id="count" class="px-3 py-1 rounded-full bg-[var(--accent)] text-[#071620] font-bold">0</div>
+          <button id="refresh" class="btn-ghost">Refresh</button>
+          <button id="save" class="btn-primary">Save</button>
         </div>
       </div>
 
-      <!-- controls: date picker + quick filters -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:gap-4 mb-4">
-        <div class="w-full sm:w-64 gap-3">
-          <label class="small-muted block mb-1">Date</label>
-          <input id="appointmentDate" type="date" class="input-control" aria-label="Appointment date" />
+      <div class="flex gap-4 flex-col sm:flex-row mb-4">
+        <div class="w-full sm:w-64">
+          <label class="text-sm text-gray-500">Date</label>
+          <input id="dateInput" type="date" class="input" />
         </div>
 
-        <div class="mt-3 sm:mt-0 flex items-center gap-3">
-          <label class="small-muted">Filter</label>
-          <select id="filterSelect" class="input-control" style="width:180px;">
+        <div class="flex gap-3 items-end">
+          <select id="filter" class="input" style="width:170px;">
             <option value="all">All</option>
-            <option value="hasNote">Has Note</option>
-            <option value="noNote">No Note</option>
+            <option value="has">With Note</option>
+            <option value="none">No Note</option>
           </select>
-          <button id="clearBtn" class="btn-ghost">Clear notes</button>
+          <button id="clear" class="btn-ghost">Clear notes</button>
         </div>
       </div>
 
-      <!-- tags header (desktop) -->
-      <div id="tagsHeader" class="hidden md:flex items-center gap-4 text-sm text-gray-700 border-b pb-2 mb-3">
-        <div class="w-64 font-semibold">Name</div>
-        <div class="w-28 font-semibold">Number</div>
-        <div class="w-40 font-semibold">Phone</div>
-        <div class="flex-1 font-semibold">Note</div>
-        <div style="width:110px"></div>
+      <div id="list" class="flex flex-col gap-3"></div>
+
+      <div id="empty" class="hidden flex justify-center bg-white/60 rounded-lg p-8 text-gray-500 border border-gray-200">
+        No appointments.
       </div>
-
-      <!-- list -->
-      <section class="scroll-area">
-        <div id="appointmentsList" class="list-wrap">
-          <!-- Items injected by JS -->
-        </div>
-
-        <div id="emptyState" class="empty mt-4 hidden">
-          <div>
-            <div class="text-lg font-semibold mb-2">No appointments found</div>
-            <div class="small-muted">Try another date or refresh. New appointments will appear here.</div>
-          </div>
-        </div>
-      </section>
-
     </div>
-  </main>
+  </div>
 
-  <div id="toast" style="position:fixed;right:18px;bottom:18px;z-index:60;"></div>
+  <div id="toasts"></div>
 
-  <script>
-    // --- UI bindings ---
-    const menuBtn = document.querySelector('.hamburger-menu');
-    const menuBar = document.getElementById('menuBar');
-    menuBtn.addEventListener('click', () => { menuBar.classList.toggle('menu-active'); });
+<script>
+/* ------------------------------------------------------------------------
+   Utils
+------------------------------------------------------------------------ */
+function $(id){return document.getElementById(id);}
+function toast(msg,type='info'){
+  const wrap=$("toasts");
+  const t=document.createElement("div");
+  t.textContent=msg;
+  t.style.padding="10px 14px";
+  t.style.borderRadius="10px";
+  t.style.marginTop="6px";
+  t.style.color="white";
+  t.style.fontWeight="600";
+  t.style.background=type==='error'?'#dc2626':type==='success'?'#059669':'#1e3a8a';
+  wrap.appendChild(t);
+  setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.remove(),300);},2600);
+}
+function todayISO(){
+  const t=new Date(); t.setMinutes(t.getMinutes()-t.getTimezoneOffset());
+  return t.toISOString().slice(0,10);
+}
 
-    const appointmentDate = document.getElementById('appointmentDate');
-    const listEl = document.getElementById('appointmentsList');
-    const emptyEl = document.getElementById('emptyState');
-    const appCountEl = document.getElementById('appCount');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const filterSelect = document.getElementById('filterSelect');
-    const clearBtn = document.getElementById('clearBtn');
+/* ------------------------------------------------------------------------
+   API
+------------------------------------------------------------------------ */
+async function api_getAppointments(date){
+  const r=await fetch(`/api/binder/appointments/${date}`);
+  if(!r.ok) throw new Error("Failed");
+  return r.json();
+}
+async function api_save(date,appointments){
+  const r=await fetch(`/api/binder/appointments/${date}`,{
+    method:"PATCH",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({appointments})
+  });
+  if(!r.ok) throw new Error("save failed");
+  return r.json();
+}
+async function api_lock(no){
+  const r=await fetch(`/api/binder/appointments/lock`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({no})
+  });
+  if(!r.ok) throw new Error("lock failed");
+}
 
-    // state
-    let appointments = [];
+/* ------------------------------------------------------------------------
+   App State
+------------------------------------------------------------------------ */
+let APPOINTMENTS=[];
 
-    setInterval(() => {
-      fetch("/track_time", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({seconds: 60})
-      });
-    }, 60000); // log 1 min active time
+/* ------------------------------------------------------------------------
+   Rendering
+------------------------------------------------------------------------ */
+function render(){
+  const list=$("list"); list.innerHTML="";
+  const empty=$("empty");
 
-    function toast(message, type='info') {
-      const t = document.getElementById('toast');
-      const el = document.createElement('div');
-      el.textContent = message;
-      el.style.background = (type === 'error') ? '#B91C1C' : (type === 'success') ? '#059669' : '#111827';
-      el.style.color = 'white';
-      el.style.padding = '10px 14px';
-      el.style.borderRadius = '10px';
-      el.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
-      t.appendChild(el);
-      setTimeout(()=> { el.style.opacity = '0'; setTimeout(()=> el.remove(), 350); }, 3000);
-    }
+  const filter=$("filter").value;
+  const filtered=APPOINTMENTS.filter(a=>{
+    const has=a.msg && a.msg.trim().length>0;
+    if(filter==="has") return has;
+    if(filter==="none") return !has;
+    return true;
+  });
 
-    function isoToday() {
-      const t = new Date();
-      const tzOffset = t.getTimezoneOffset() * 60000;
-      const localISOTime = (new Date(t - tzOffset)).toISOString().slice(0,10);
-      return localISOTime;
-    }
+  $("count").textContent=filtered.length;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      appointmentDate.value = isoToday();
-      fetchAppointments(appointmentDate.value);
+  if(filtered.length===0){
+    empty.classList.remove("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+
+  filtered.forEach(a=>{
+    const slot=document.createElement("div");
+    slot.className="slot";
+
+    slot.innerHTML=`
+      <div>
+        <h3>${a.name||"Unknown"}</h3>
+        <p>No. ${a.no||""}</p>
+      </div>
+      <div class="text-sm text-gray-600">${a.no||""}</div>
+      <div class="text-sm text-gray-600">${a.phone||""}</div>
+      <div>
+        <textarea class="input" style="min-height:70px;">${a.msg||""}</textarea>
+      </div>
+      <div class="flex flex-col gap-2">
+        <button class="btn-ghost show">Show</button>
+        <button class="btn-ghost lock">Lock</button>
+      </div>
+    `;
+
+    // note editing
+    slot.querySelector("textarea").addEventListener("input",e=>{
+      a.msg=e.target.value;
     });
 
-    appointmentDate.addEventListener('change', () => fetchAppointments(appointmentDate.value));
-    refreshBtn.addEventListener('click', () => fetchAppointments(appointmentDate.value));
-    filterSelect.addEventListener('change', renderAppointments);
-    clearBtn.addEventListener('click', () => {
-      appointments.forEach(a => a.msg = '');
-      renderAppointments();
-      toast('Cleared notes locally — click Save to persist.', 'info');
-    });
-    saveBtn.addEventListener('click', saveAppointments);
+    // show
+    slot.querySelector(".show").onclick=()=>window.location.href=`/show_search_by_number/${a.no}`;
 
-    // fetch appointments
-    async function fetchAppointments(date) {
-      try {
-        const res = await fetch(`/get_appointments/${date}`);
-        if (!res.ok) throw new Error('Network response not ok');
-        const data = await res.json();
-        // Accept both array and { appointments: [...] } shapes
-        appointments = Array.isArray(data) ? data : (data.appointments || []);
-        // ensure msg property exists
-        appointments = appointments.map(a => ({ ...a, msg: a.msg ?? '' }));
-        renderAppointments();
-        toast('Appointments loaded', 'success');
-      } catch (err) {
-        console.error(err);
-        appointments = [];
-        renderAppointments();
-        toast('Failed to load appointments', 'error');
+    // lock
+    slot.querySelector(".lock").onclick=async()=>{
+      try{
+        await api_lock(a.no);
+        toast("Locked","success");
+      }catch(e){
+        toast("Failed","error");
       }
-    }
+    };
 
-    // render
-    function renderAppointments() {
-      listEl.innerHTML = '';
-      const filter = filterSelect.value;
-      const filtered = appointments.filter(a => {
-        if (filter === 'hasNote') return (a.msg && a.msg.toString().trim().length);
-        if (filter === 'noNote') return !(a.msg && a.msg.toString().trim().length);
-        return true;
+    list.appendChild(slot);
+  });
+}
+
+/* ------------------------------------------------------------------------
+   Loading Appointments
+------------------------------------------------------------------------ */
+async function load(date){
+  try{
+    const res=await api_getAppointments(date);
+    APPOINTMENTS=res.data?.appointments || res.appointments || [];
+    APPOINTMENTS=APPOINTMENTS.map(a=>({...a,msg:a.msg||""}));
+    render();
+    toast("Loaded","success");
+  }catch(e){
+    APPOINTMENTS=[];
+    render();
+    toast("Failed","error");
+  }
+}
+// menu
+function menu_init() {
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
+      
+      // Toggle menu (keeps same interaction as previous)
+      menuBtn.addEventListener('click', () => {
+        menuBar.classList.toggle('menu-active');
       });
-
-      appCountEl.textContent = filtered.length;
-      if (filtered.length === 0) {
-        emptyEl.classList.remove('hidden');
-      } else {
-        emptyEl.classList.add('hidden');
-      }
-
-      filtered.forEach((appt, idx) => {
-        const slot = document.createElement('div');
-        slot.className = 'slot';
-
-        // meta
-        const meta = document.createElement('div'); meta.className = 'meta';
-        const nameH = document.createElement('h3'); nameH.textContent = appt.name || 'Unknown';
-        const sub = document.createElement('p'); sub.className = 'small-muted'; sub.textContent = `No: ${appt.no || ''} • ${appt.time || ''}`;
-        meta.appendChild(nameH); meta.appendChild(sub);
-
-        // number & phone (compact)
-        const numberWrap = document.createElement('div');
-        numberWrap.className = 'w-28 small-muted';
-        numberWrap.textContent = appt.no || '';
-
-        const phoneWrap = document.createElement('div');
-        phoneWrap.className = 'w-40 small-muted';
-        phoneWrap.textContent = appt.phone || '';
-
-        // message textarea
-        const msgWrap = document.createElement('div');
-        msgWrap.className = 'msg';
-        const ta = document.createElement('textarea');
-        ta.className = 'input-control';
-        ta.value = appt.msg || '';
-        ta.placeholder = 'Add a note for this appointment...';
-        ta.addEventListener('input', (e) => {
-          // find actual index in appointments array and update
-          const originalIndex = appointments.findIndex(x => (x.no === appt.no && x.name === appt.name) || x === appt);
-          if (originalIndex >= 0) {
-            appointments[originalIndex].msg = e.target.value;
-          }
-        });
-        msgWrap.appendChild(ta);
-
-        // actions
-        const actions = document.createElement('div'); actions.className = 'actions';
-        const showBtn = document.createElement('button');
-        showBtn.className = 'btn-ghost';
-        showBtn.textContent = 'Show';
-        showBtn.addEventListener('click', () => {
-          const pno = appt.no;
-          if (!pno) { toast('Patient number missing', 'error'); return; }
-          window.location.href = `/show_search_by_number/${encodeURIComponent(pno)}`;
-        });
-
-        const lockBtn = document.createElement('button');
-        lockBtn.className = 'btn-ghost';
-        lockBtn.textContent = 'Lock';
-        lockBtn.title = 'Mark printed / locked (will be sent to server)';
-        lockBtn.addEventListener('click', async () => {
-          try {
-            const r = await fetch('/lock_appointment', {
-              method: 'POST',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify({ no: appt.no })
-            });
-            if (!r.ok) throw new Error('Lock failed');
-            toast('Appointment locked', 'success');
-          } catch (e) {
-            console.error(e);
-            toast('Could not lock', 'error');
-          }
-        });
-
-        actions.appendChild(showBtn);
-        actions.appendChild(lockBtn);
-
-        // assemble (desktop layout)
-        slot.appendChild(meta);
-        slot.appendChild(numberWrap);
-        slot.appendChild(phoneWrap);
-        slot.appendChild(msgWrap);
-        slot.appendChild(actions);
-
-        listEl.appendChild(slot);
+      
+      const menu_box = document.querySelector(".menu__box")
+      // close when clicking outside (improves UX)
+      document.addEventListener('click', (ev) => {
+        if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+          menuBar.classList.remove('menu-active');
+          toggle.setAttribute('aria-expanded', 'false');
+          menu_box.setAttribute('aria-hidden', 'true');
+        }
       });
     }
 
-    // save local edits to server
-    async function saveAppointments() {
-      try {
-        const payload = { appointments: appointments };
-        const res = await fetch('/save_appointments', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error('Save failed');
-        const json = await res.json().catch(()=>({}));
-        toast('Saved successfully', 'success');
-        // optionally refresh after save
-        fetchAppointments(appointmentDate.value);
-      } catch (err) {
-        console.error(err);
-        toast('Save failed', 'error');
-      }
-    }
+/* ------------------------------------------------------------------------
+   Save
+------------------------------------------------------------------------ */
+async function save(){
+  const date=$("dateInput").value;
+  try{
+    await api_save(date,APPOINTMENTS);
+    toast("Saved","success");
+    load(date);
+  }catch(e){
+    toast("Failed","error");
+  }
+}
 
-  </script>
+/* ------------------------------------------------------------------------
+   Usage Tracker (single unload send)
+------------------------------------------------------------------------ */
+(function(){
+  let sec=0,active=true;
+  setInterval(()=>{if(active)sec++;},1000);
+  window.addEventListener("blur",()=>active=false);
+  window.addEventListener("focus",()=>active=true);
+  window.addEventListener("beforeunload",()=>{
+    navigator.sendBeacon("/track_time",JSON.stringify({seconds:sec}));
+  });
+})();
+
+/* ------------------------------------------------------------------------
+   Events
+------------------------------------------------------------------------ */
+
+document.addEventListener("DOMContentLoaded", function() {
+  menu_init();
+})
+
+$("dateInput").value=todayISO();
+load($("dateInput").value);
+
+$("refresh").onclick=()=>load($("dateInput").value);
+$("save").onclick=save;
+$("filter").onchange=render;
+$("clear").onclick=()=>{
+  APPOINTMENTS.forEach(a=>a.msg="");
+  render();
+  toast("Cleared (local)","info");
+};
+</script>
 </body>
 </html>
