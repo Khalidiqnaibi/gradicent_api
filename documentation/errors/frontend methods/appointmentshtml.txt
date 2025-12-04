@@ -1,2 +1,6 @@
 i didnt test them using postman i tested them using the browser by real data
 i didnt find any  problem 
+
+
+**********
+maybe i got a problem -_- idk
