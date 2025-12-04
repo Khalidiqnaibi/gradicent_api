@@ -1,0 +1,32 @@
+we got this problem :
+Traceback (most recent call last):
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\routes\binder_routes.py", line 80, in get_plan_status
+    plan , first  = get_plan_data(service=service)
+                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\utils\get_plan_status.py", line 46, in get_plan_data
+    date =data.get("metadata",datetime.now().isoformat()).get("plan_started_at",datetime.now().isoformat())
+          ^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+
+
+the problem were in binder_routes.py it was so dump 
+in line 76 :  domain: "domain"
+i replaced it with  "domain": domain
+
+
+=============
+i suppose it's fixed cuz there is no error on console 

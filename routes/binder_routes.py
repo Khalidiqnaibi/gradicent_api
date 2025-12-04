@@ -73,7 +73,7 @@ def handle_not_found(err: NotFound):
 def get_plan_status():
     domain = request.args.get("domain", DEFAULT_DOMAIN)
     payload ={
-        domain: "domain"
+        "domain": domain
     }
     service = _get_domain_and_service(payload)
 
