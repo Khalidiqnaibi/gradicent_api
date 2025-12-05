@@ -14,12 +14,13 @@ Design notes:
 - Uses explicit return values and typed signatures.
 """
 
+import requests
 from typing import Any, Dict, Optional
 from flask import Blueprint, request, jsonify, current_app , session
 from werkzeug.exceptions import BadRequest, NotFound
 
 from services.binder_service import BinderService, BinderServiceError
-from utils.get_appointments import get_appopintments
+from utils.get_appointments import get_appointments
 from utils.get_plan_status import get_plan_status, get_plan_data
 
 binder_blueprint = Blueprint("binder", __name__)
@@ -270,8 +271,8 @@ def add_interaction(client_id: str):
 
 @binder_blueprint.route('/get_appointments/<date>', methods = ["GET"])
 def getappointments(date):
-    user_id = request.args.get("user_id")
+    user = requests.get("/api/auth/me")["data"]
 
-    appointments = get_appopintments(date,user_id)
+    appointments = get_appointments(date,user)
 
     return jsonify(appointments)

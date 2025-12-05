@@ -5,7 +5,9 @@ Configuration settings for Gradicent_api
 '''
 
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 ADMIN_SECRET = os.getenv("ADMIN_SECRET","bindersoftware.com")
 
