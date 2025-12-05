@@ -2,34 +2,34 @@
 <html lang="en" class="antialiased">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Binder — Appointments</title>
-  <link rel="icon" href="/static/images/w3.jpg" />
-
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg" />
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
+    
     :root{
-      --bg-1:#F2ECE6;
-      --bg-2:#E6D6C0;
-      --card:#FFFFFF;
-      --muted:#6b7280;
-      --accent:#ce7a35;
-      --text:#0f172a;
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary: #78cee6;
+      --muted: #7f7f7f;
+      --text: #071620;
+      --card: #ffffff;
+      --card-opp: #f9f5f1;
     }
 
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));font-family:Inter,-apple-system,system-ui;}
-    .wrap{max-width:1100px;margin:48px auto;padding:20px;}
-    .card{background:var(--card);padding:24px;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);}
-    .input{padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,0.08);width:100%;font-size:15px;background:rgba(255,255,255,0.9);}
+
+    html,body{height:100%;margin:0;font-family:Inter,-apple-system,system-ui;background:linear-gradient(180deg,#F2ECE6,#E6D6C0);}
+    .max-wrap{max-width:1100px;margin:48px auto;padding:20px;}
+    .card{background:var(--card);padding:22px;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);}
+    .input{padding:10px;border-radius:12px;border:1px solid rgba(0,0,0,0.08);width:100%;font-size:14px;background:rgba(255,255,255,0.95);color:var(--text);}
     .btn-primary{padding:10px 14px;border-radius:12px;background:linear-gradient(90deg,var(--accent),#cfa174);font-weight:700;color:#071620;border:none;cursor:pointer;}
     .btn-ghost{padding:8px 12px;border-radius:10px;background:#fff;border:1px solid rgba(0,0,0,0.06);cursor:pointer;font-weight:600;color:#071620;}
-    .slot{display:grid;grid-template-columns:200px 80px 120px 1fr auto;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(180deg,#fff,#fbfbfb);border:1px solid rgba(0,0,0,0.05);}
+    .slot{display:grid;grid-template-columns:220px 90px 140px 1fr auto;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(180deg,var(--card),var(--card-opp));border:1px solid rgba(0,0,0,0.05);align-items:center;}
     .slot h3{margin:0;font-size:16px;font-weight:700;color:var(--text);}
     .slot p{margin:0;font-size:13px;color:var(--muted);}
-    @media(max-width:900px){.slot{grid-template-columns:1fr;}}
-    #toasts{position:fixed;top:18px;right:18px;z-index:999;}
-  
+    @media(max-width:900px){.slot{grid-template-columns:1fr;gap:8px;}}
     /* Hamburger lines */
     .menu__btn span,
     .menu__btn span::before,
@@ -58,10 +58,22 @@
     }
     .menu-active .menu__box { transform: translateX(0); opacity: 1; }
 
+    /* small helpers */
+    .muted { color:var(--muted); font-size:13px; }
+    .flex { display:flex; }
+    .gap-3 { gap:12px; }
+    #empty { display:none; }
+    #empty.visible { display:flex; }
+    /* toasts container */
+    .toast { display:flex; align-items:center; gap:10px; min-width:240px; padding:10px 14px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.12); font-weight:600; }
+    .toast-success { background:#d1fae5; color:#065f46; border-left:6px solid #10b981; }
+    .toast-error { background:#fee2e2; color:#991b1b; border-left:6px solid #ef4444; }
+    .toast-info { background:#dbeafe; color:#1e3a8a; border-left:6px solid #3b82f6; }
   </style>
 </head>
 
-<body>
+<body class="min-h-screen text-gray-800">
+
   <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
@@ -118,246 +130,425 @@
       </ul>
     </div>
   </div>
-  <div class="wrap">
-    <div class="card">
-      <div class="flex justify-between items-center mb-5">
-        <h1 class="text-2xl font-bold">Appointments</h1>
-        <div class="flex gap-3 items-center">
-          <div class="text-sm text-gray-500">Total</div>
-          <div id="count" class="px-3 py-1 rounded-full bg-[var(--accent)] text-[#071620] font-bold">0</div>
-          <button id="refresh" class="btn-ghost">Refresh</button>
-          <button id="save" class="btn-primary">Save</button>
+
+
+  <!-- Page content -->
+  <main class="min-h-screen flex items-start justify-center p-6">
+    <div class="max-wrap w-full">
+      <div class="card">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-5">
+          <h1 class="text-2xl font-bold">Appointments</h1>
+          <div class="flex gap-3 items-center">
+            <div class="text-sm muted">Total</div>
+            <div id="count" class="px-3 py-1 rounded-full bg-[var(--accent)] text-[#071620] font-bold">0</div>
+            <button id="refresh" class="btn-ghost">Refresh</button>
+            <button id="save" class="btn-primary">Save</button>
+          </div>
         </div>
-      </div>
 
-      <div class="flex gap-4 flex-col sm:flex-row mb-4">
-        <div class="w-full sm:w-64">
-          <label class="text-sm text-gray-500">Date</label>
-          <input id="dateInput" type="date" class="input" />
+        <!-- Controls -->
+        <div class="flex gap-4 flex-col sm:flex-row mb-4 items-end">
+          <div class="w-full sm:w-64">
+            <label class="text-sm muted">Date</label>
+            <input id="date_input" type="date" class="input" />
+          </div>
+
+          <div class="flex gap-3 items-end">
+            <select id="filter" class="input" style="width:170px;">
+              <option value="all">All</option>
+              <option value="has">With Note</option>
+              <option value="none">No Note</option>
+            </select>
+            <button id="clear" class="btn-ghost">Clear notes</button>
+          </div>
         </div>
 
-        <div class="flex gap-3 items-end">
-          <select id="filter" class="input" style="width:170px;">
-            <option value="all">All</option>
-            <option value="has">With Note</option>
-            <option value="none">No Note</option>
-          </select>
-          <button id="clear" class="btn-ghost">Clear notes</button>
+        <!-- Appointment list -->
+        <div id="list" class="flex flex-col gap-3"></div>
+
+        <div id="empty" class="hidden justify-center bg-white/60 rounded-lg p-8 text-gray-500 border border-gray-200">
+          No appointments.
         </div>
-      </div>
 
-      <div id="list" class="flex flex-col gap-3"></div>
-
-      <div id="empty" class="hidden flex justify-center bg-white/60 rounded-lg p-8 text-gray-500 border border-gray-200">
-        No appointments.
       </div>
     </div>
-  </div>
+  </main>
 
-  <div id="toasts"></div>
+  <!-- Toast container -->
+  <div id="toast_container" class="fixed top-4 right-4 z-[9999] space-y-3" aria-live="polite"></div>
 
-<script>
-/* ------------------------------------------------------------------------
-   Utils
------------------------------------------------------------------------- */
-function $(id){return document.getElementById(id);}
-function toast(msg,type='info'){
-  const wrap=$("toasts");
-  const t=document.createElement("div");
-  t.textContent=msg;
-  t.style.padding="10px 14px";
-  t.style.borderRadius="10px";
-  t.style.marginTop="6px";
-  t.style.color="white";
-  t.style.fontWeight="600";
-  t.style.background=type==='error'?'#dc2626':type==='success'?'#059669':'#1e3a8a';
-  wrap.appendChild(t);
-  setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.remove(),300);},2600);
-}
-function todayISO(){
-  const t=new Date(); t.setMinutes(t.getMinutes()-t.getTimezoneOffset());
-  return t.toISOString().slice(0,10);
-}
+  <script>
+  /**
+   * appointments_page.js
+   * --------------------
+   * Single-file modular structure:
+   * - utils: helpers (time, dom, safe_fetch)
+   * - api: network calls (binder)
+   * - ui: toasts + menu wiring
+   * - controller: page wiring and rendering
+   *
+   * Conforms to company standards:
+   * - snake_case naming
+   * - small functions (<= ~30 lines)
+   * - explicit APP_STATE
+   * - doc-comments explaining what each exported function does
+   */
 
-/* ------------------------------------------------------------------------
-   API
------------------------------------------------------------------------- */
-async function api_getAppointments(date){
-  const r=await fetch(`/api/binder/appointments/${date}`);
-  if(!r.ok) throw new Error("Failed");
-  return r.json();
-}
-async function api_save(date,appointments){
-  const r=await fetch(`/api/binder/appointments/${date}`,{
-    method:"PATCH",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({appointments})
-  });
-  if(!r.ok) throw new Error("save failed");
-  return r.json();
-}
-async function api_lock(no){
-  const r=await fetch(`/api/binder/appointments/lock`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({no})
-  });
-  if(!r.ok) throw new Error("lock failed");
-}
+  /* =========================
+     Constants & Explicit State
+     ========================= */
+  const API_TIMEOUT_MS = 10_000;
+  const APP_STATE = {
+    current_user_id: null,
+    current_domain: 'medical',
+    appointments: []
+  };
 
-/* ------------------------------------------------------------------------
-   App State
------------------------------------------------------------------------- */
-let APPOINTMENTS=[];
+  /* =========================
+     Utils Module
+     ========================= */
+  const utils = (function () {
+    /**
+     * iso_today
+     * Return today's date in YYYY-MM-DD according to local timezone.
+     */
+    function iso_today() {
+      const now = new Date();
+      const tz_offset_ms = now.getTimezoneOffset() * 60000;
+      return new Date(now.getTime() - tz_offset_ms).toISOString().slice(0, 10);
+    }
 
-/* ------------------------------------------------------------------------
-   Rendering
------------------------------------------------------------------------- */
-function render(){
-  const list=$("list"); list.innerHTML="";
-  const empty=$("empty");
+    /**
+     * safe_fetch
+     * Fetch wrapper with timeout and JSON handling.
+     */
+    async function safe_fetch(url, opts = {}) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+      opts.signal = controller.signal;
 
-  const filter=$("filter").value;
-  const filtered=APPOINTMENTS.filter(a=>{
-    const has=a.msg && a.msg.trim().length>0;
-    if(filter==="has") return has;
-    if(filter==="none") return !has;
-    return true;
-  });
+      try {
+        const res = await fetch(url, opts);
+        clearTimeout(timeout);
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          const err = new Error(`HTTP ${res.status} ${res.statusText}`);
+          err.status = res.status; err.body = text;
+          throw err;
+        }
+        const ct = (res.headers.get('content-type') || '');
+        if (ct.includes('application/json')) return res.json();
+        return res.text();
+      } catch (err) {
+        clearTimeout(timeout);
+        throw err;
+      }
+    }
 
-  $("count").textContent=filtered.length;
+    /**
+     * el
+     * Shorthand for document.getElementById
+     */
+    function el(id) { return document.getElementById(id); }
 
-  if(filtered.length===0){
-    empty.classList.remove("hidden");
-    return;
-  }
-  empty.classList.add("hidden");
+    return { iso_today, safe_fetch, el };
+  })();
 
-  filtered.forEach(a=>{
-    const slot=document.createElement("div");
-    slot.className="slot";
+  /* =========================
+     API Module
+     ========================= */
+  const api = (function (u) {
+    /**
+     * get_user
+     * Fetch current user object from backend.
+     * Returns user payload { id, domain, ... } or throws.
+     */
+    async function get_user() {
+      const url = '/api/auth/me';
+      const data = await u.safe_fetch(url, { method: 'GET' });
+      return data.data || data;
+    }
 
-    slot.innerHTML=`
+    /**
+     * get_appointments_for_date
+     * Attempts a few endpoint shapes to be robust.
+     * Returns an array of appointment objects.
+     */
+    async function get_appointments_for_date(date_iso, domain, user_id) {
+      APP_STATE.current_date_iso = u.el('date_input').value;
+      const url = `/api/binder/appointments/${encodeURIComponent(date_iso)}?domain=${encodeURIComponent(domain)}&user_id=${encodeURIComponent(user_id)}`;
+
+      try {
+        const res = await u.safe_fetch(url, { method: 'GET' });
+        // Return appointments array
+        return res.data.appointments || [];
+      } catch (err) {
+        console.warn('get_appointments_for_date attempt failed', err);
+        ui.create_toast('Failed to load appointments', 'error');
+        return [];
+      }
+    }
+
+
+    /**
+     * save_appointments
+     * PATCH appointments payload for date.
+     */
+    async function save_appointments(date_iso, appointments, domain, user_id) {
+      const url = `/api/binder/appointments/${encodeURIComponent(date_iso)}?domain=${encodeURIComponent(domain)}&user_id=${encodeURIComponent(user_id)}`;
+      return await u.safe_fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointments })
+      });
+    }
+
+    /**
+     * lock_appointment
+     * POST to lock appointment by number.
+     */
+    async function lock_appointment(no, domain, date_iso, user_id) {
+      const url = `/api/binder/appointments/lock`;
+      return await utils.safe_fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ no, user_id, date: date_iso, domain }) 
+      });
+    }
+
+
+    return { get_user, get_appointments_for_date, save_appointments, lock_appointment };
+  })(utils);
+
+  /* =========================
+     UI Module
+     ========================= */
+  const ui = (function (u) {
+    const TOAST_CONTAINER_ID = 'toast_container';
+
+    /**
+     * create_toast
+     * Show a toast message. type: 'info'|'success'|'error'
+     */
+    function create_toast(message, type = 'info') {
+      const container = u.el(TOAST_CONTAINER_ID);
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    /**
+     * menu_init
+     * Wire menu toggle interactions.
+     */
+    function menu_init() {
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
+      if (!menuBtn || !menuBar) return;
+      menuBtn.addEventListener('click', () => {
+        menuBar.classList.toggle('menu-active');
+      });
+      document.addEventListener('click', (ev) => {
+        if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+          menuBar.classList.remove('menu-active');
+        }
+      });
+    }
+
+    return { create_toast, menu_init };
+  })(utils);
+
+  /* =========================
+     Rendering Helpers
+     ========================= */
+
+  /**
+   * render_slot
+   * Build DOM element for a single appointment.
+   * Keeps function small and focused (single responsibility).
+   */
+  function render_slot(a) {
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+
+    slot.innerHTML = `
       <div>
-        <h3>${a.name||"Unknown"}</h3>
-        <p>No. ${a.no||""}</p>
+        <h3>${escape_html(a.name || 'Unknown')}</h3>
+        <p class="muted">No. ${escape_html(String(a.no || ''))}</p>
       </div>
-      <div class="text-sm text-gray-600">${a.no||""}</div>
-      <div class="text-sm text-gray-600">${a.phone||""}</div>
-      <div>
-        <textarea class="input" style="min-height:70px;">${a.msg||""}</textarea>
-      </div>
+      <div class="text-sm muted">${escape_html(String(a.no || ''))}</div>
+      <div class="text-sm muted">${escape_html(a.phone || '')}</div>
+      <div><textarea class="input" style="min-height:70px;">${escape_html(a.msg || '')}</textarea></div>
       <div class="flex flex-col gap-2">
         <button class="btn-ghost show">Show</button>
         <button class="btn-ghost lock">Lock</button>
       </div>
     `;
 
-    // note editing
-    slot.querySelector("textarea").addEventListener("input",e=>{
-      a.msg=e.target.value;
+    // textarea binding
+    const ta = slot.querySelector('textarea');
+    ta.addEventListener('input', (e) => { a.msg = e.target.value; });
+
+    // show button
+    slot.querySelector('.show').addEventListener('click', () => {
+      window.location.href = `/show_search_by_number/${encodeURIComponent(a.no)}`;
     });
 
-    // show
-    slot.querySelector(".show").onclick=()=>window.location.href=`/show_search_by_number/${a.no}`;
-
-    // lock
-    slot.querySelector(".lock").onclick=async()=>{
-      try{
-        await api_lock(a.no);
-        toast("Locked","success");
-      }catch(e){
-        toast("Failed","error");
-      }
-    };
-
-    list.appendChild(slot);
+    // lock button
+    slot.querySelector('.lock').addEventListener('click', async () => {
+    try {
+      await api.lock_appointment(
+        a.no,
+        APP_STATE.current_domain,
+        APP_STATE.current_date_iso, // will now be sent as 'date'
+        APP_STATE.current_user_id
+      );
+      ui.create_toast('Locked', 'success');
+    } catch (err) {
+      console.error('lock error', err);
+      ui.create_toast('Failed to lock', 'error');
+    }
   });
-}
 
-/* ------------------------------------------------------------------------
-   Loading Appointments
------------------------------------------------------------------------- */
-async function load(date){
-  try{
-    const res=await api_getAppointments(date);
-    APPOINTMENTS=res.data?.appointments || res.appointments || [];
-    APPOINTMENTS=APPOINTMENTS.map(a=>({...a,msg:a.msg||""}));
-    render();
-    toast("Loaded","success");
-  }catch(e){
-    APPOINTMENTS=[];
-    render();
-    toast("Failed","error");
+
+    return slot;
   }
-}
-// menu
-function menu_init() {
-      const menuBtn = document.querySelector('.hamburger-menu');
-      const menuBar = document.getElementById('menuBar');
-      
-      // Toggle menu (keeps same interaction as previous)
-      menuBtn.addEventListener('click', () => {
-        menuBar.classList.toggle('menu-active');
+
+  /**
+   * escape_html
+   * Small helper to avoid accidental injection when inserting text into innerHTML.
+   */
+  function escape_html(str) {
+    if (!str && str !== 0) return '';
+    return String(str).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+  }
+
+  /* =========================
+     Controller (page wiring)
+     ========================= */
+  (function controller(api_mod, ui_mod, utils_mod) {
+
+    const el = utils_mod.el;
+
+    /**
+     * render
+     * Render appointments list according to selected filter.
+     */
+    function render() {
+      const list = el('list');
+      const empty = el('empty');
+      const filter = el('filter').value;
+      list.innerHTML = '';
+
+      const filtered = APP_STATE.appointments.filter(a => {
+        const has = (a.msg || '').trim().length > 0;
+        if (filter === 'has') return has;
+        if (filter === 'none') return !has;
+        return true;
       });
-      
-      const menu_box = document.querySelector(".menu__box")
-      // close when clicking outside (improves UX)
-      document.addEventListener('click', (ev) => {
-        if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
-          menuBar.classList.remove('menu-active');
-          toggle.setAttribute('aria-expanded', 'false');
-          menu_box.setAttribute('aria-hidden', 'true');
-        }
+
+      el('count').textContent = String(filtered.length);
+
+      if (filtered.length === 0) {
+        empty.classList.add('visible');
+        return;
+      }
+      empty.classList.remove('visible');
+
+      for (const a of filtered) {
+        const slot = render_slot(a);
+        list.appendChild(slot);
+      }
+    }
+
+    /**
+     * load_appointments
+     * Loads appointments for given date and update state.
+     */
+    async function load_appointments(date_iso) {
+      try {
+        const arr = await api_mod.get_appointments_for_date(date_iso, APP_STATE.current_domain, APP_STATE.current_user_id);
+        // normalize shape: ensure objects and msg default
+        APP_STATE.appointments = (Array.isArray(arr) ? arr : []).map(x => Object.assign({}, x, { msg: x.msg || '' }));
+        render();
+        ui_mod.create_toast('Loaded', 'success');
+      } catch (err) {
+        console.error('load error', err);
+        APP_STATE.appointments = [];
+        render();
+        ui_mod.create_toast('Failed to load appointments', 'error');
+      }
+    }
+
+    /**
+     * save_appointments
+     * Persist APP_STATE.appointments to server for the date.
+     */
+    async function save_appointments() {
+      const date_iso = el('date_input').value;
+      try {
+        await api_mod.save_appointments(date_iso, APP_STATE.appointments, APP_STATE.current_domain, APP_STATE.current_user_id);
+        ui_mod.create_toast('Saved', 'success');
+        // reload to get any server-side normalization
+        await load_appointments(date_iso);
+      } catch (err) {
+        console.error('save error', err);
+        ui_mod.create_toast('Failed to save', 'error');
+      }
+    }
+
+    /**
+     * wire_buttons
+     * Attach event handlers for page controls.
+     */
+    function wire_buttons() {
+      el('refresh').addEventListener('click', () => load_appointments(el('date_input').value));
+      el('save').addEventListener('click', save_appointments);
+      el('filter').addEventListener('change', render);
+      el('clear').addEventListener('click', () => {
+        APP_STATE.appointments.forEach(a => a.msg = '');
+        render();
+        ui_mod.create_toast('Cleared (local)', 'info');
       });
     }
 
-/* ------------------------------------------------------------------------
-   Save
------------------------------------------------------------------------- */
-async function save(){
-  const date=$("dateInput").value;
-  try{
-    await api_save(date,APPOINTMENTS);
-    toast("Saved","success");
-    load(date);
-  }catch(e){
-    toast("Failed","error");
-  }
-}
+    /**
+     * init
+     * Entry point: get user, set defaults, load initial appointments.
+     */
+    async function init() {
+      try {
+        ui_mod.menu_init();
+        wire_buttons();
 
-/* ------------------------------------------------------------------------
-   Usage Tracker (single unload send)
------------------------------------------------------------------------- */
-(function(){
-  let sec=0,active=true;
-  setInterval(()=>{if(active)sec++;},1000);
-  window.addEventListener("blur",()=>active=false);
-  window.addEventListener("focus",()=>active=true);
-  window.addEventListener("beforeunload",()=>{
-    navigator.sendBeacon("/track_time",JSON.stringify({seconds:sec}));
-  });
-})();
+        // get current user
+        const user = await api_mod.get_user();
+        APP_STATE.current_user_id = user.id;
+        APP_STATE.current_domain = user.domain || 'medical';
 
-/* ------------------------------------------------------------------------
-   Events
------------------------------------------------------------------------- */
+        // set date to today
+        el('date_input').value = utils_mod.iso_today();
 
-document.addEventListener("DOMContentLoaded", function() {
-  menu_init();
-})
+        // initial load
+        await load_appointments(el('date_input').value);
+      } catch (err) {
+        console.error('init error', err);
+        ui_mod.create_toast('Failed to initialize page', 'error');
+      }
+    }
 
-$("dateInput").value=todayISO();
-load($("dateInput").value);
+    // start when DOM is ready
+    document.addEventListener('DOMContentLoaded', init);
 
-$("refresh").onclick=()=>load($("dateInput").value);
-$("save").onclick=save;
-$("filter").onchange=render;
-$("clear").onclick=()=>{
-  APPOINTMENTS.forEach(a=>a.msg="");
-  render();
-  toast("Cleared (local)","info");
-};
-</script>
+  })(api, ui, utils);
+  </script>
+
 </body>
 </html>

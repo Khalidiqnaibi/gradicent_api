@@ -1,11 +1,4 @@
-
-
-when requesting the appopintment in the acc.html it gives an error 
-the functions name in acc.html is get_appointments_for_date
-
-
-"
-127.0.0.1 - - [02/Dec/2025 12:14:20] "GET /api/binder/get_appointments/2025-12-02 HTTP/1.1" 500 -
+we got this problem :
 Traceback (most recent call last):
   File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 1536, in __call__
     return self.wsgi_app(environ, start_response)
@@ -21,25 +14,19 @@ Traceback (most recent call last):
   File "C:\Users\rasem\AppData\Local\Programs\Python\Python314\Lib\site-packages\flask\app.py", line 902, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\routes\binder_routes.py", line 275, in getappointments
-    appointments = get_appopintments(date,user_id)
-  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\utils\get_appointments.py", line 11, in get_appopintments
-    return nn.get(date, [])
-           ^^^^^^
+  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\routes\binder_routes.py", line 80, in get_plan_status
+    plan , first  = get_plan_data(service=service)
+                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\rasem\Desktop\Personal\BinderSoftware_api\utils\get_plan_status.py", line 46, in get_plan_data
+    date =data.get("metadata",datetime.now().isoformat()).get("plan_started_at",datetime.now().isoformat())
+          ^^^^^^^^
 AttributeError: 'NoneType' object has no attribute 'get'
-"
 
 
+the problem were in binder_routes.py it was so dump 
+in line 76 :  domain: "domain"
+i replaced it with  "domain": domain
 
-i think the whole problem in the last two lines
 
-======================================
-fixed:
-the logic was a copy of the past logic and dont work for the currant way + we had to use: 
-headers={
-            "Authorization": request.headers.get("Authorization"),
-        },
-        cookies=request.cookies,
-        params={ "domain": request.args.get("domain", session.get("domain", "business")) }
-    
-to give the request the headers to be authenticated
+=============
+i suppose it's fixed cuz there is no error on console 

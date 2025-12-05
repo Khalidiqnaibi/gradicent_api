@@ -14,13 +14,16 @@ Design notes:
 - Uses explicit return values and typed signatures.
 """
 
+import requests
 from typing import Any, Dict, Optional
 from flask import Blueprint, request, jsonify, current_app , session
 from werkzeug.exceptions import BadRequest, NotFound
 
 from services.binder_service import BinderService, BinderServiceError
-from utils.get_appointments import get_appopintments
+from services.appointments_service import AppointmentsService
+from utils.get_appointments import get_appointments
 from utils.get_plan_status import get_plan_status, get_plan_data
+from config import BACKEND_URL
 
 binder_blueprint = Blueprint("binder", __name__)
 
@@ -73,7 +76,7 @@ def handle_not_found(err: NotFound):
 def get_plan_status():
     domain = request.args.get("domain", DEFAULT_DOMAIN)
     payload ={
-        domain: "domain"
+        "domain": domain
     }
     service = _get_domain_and_service(payload)
 
@@ -268,10 +271,102 @@ def add_interaction(client_id: str):
     interaction = service.create_interaction(client_id, payload["interaction"])
     return make_response(data=interaction, message="Interaction created."), 201
 
-@binder_blueprint.route('/get_appointments/<date>', methods = ["GET"])
+@binder_blueprint.route('/get_appointments/<date>', methods=["GET"])
 def getappointments(date):
-    user_id = request.args.get("user_id")
+    """
+    Get appointments for a given date.
+    this is the old way of getting appointments
 
-    appointments = get_appopintments(date,user_id)
+    Args:
+        date (_type_): _description_
 
+    Returns:
+        _type_: _description_
+    """
+
+    # Forward cookies + headers to preserve user authentication
+    res = requests.get(
+        f"{BACKEND_URL}/api/auth/me",
+        headers={
+            "Authorization": request.headers.get("Authorization"),
+        },
+        cookies=request.cookies,
+        params={ "domain": request.args.get("domain", session.get("domain", "business")) }
+    )
+
+    con = res.json()
+
+    if con.get("status") != "success":
+        return jsonify({"error": "unauthenticated"}), 401
+
+    user = con["data"]
+
+    appointments = get_appointments(date, user)
     return jsonify(appointments)
+
+@binder_blueprint.route("/appointments/<date>", methods=["GET"])
+def get_appointments_for_date(date):
+    """
+    Read appointments for a given date.
+    the current way of getting appointments
+    
+    Requires:
+        domain
+        user_id
+    """
+    payload = {
+        "domain": request.args.get("domain", DEFAULT_DOMAIN),
+        "user_id": request.args.get("user_id")
+    }
+
+    if not payload["user_id"]:
+        raise BadRequest("Missing user_id")
+
+    service = _get_domain_and_service(payload)
+    service.set_current_user(payload["user_id"])
+
+    result = service.get_appointments(date)
+    return make_response(data={"appointments": result}), 200
+
+
+@binder_blueprint.route("/appointments/<date>", methods=["PATCH"])
+def save_appointments_for_date(date):
+    """
+    Save or replace appointments for the given date.
+    Body:
+        { "appointments": [...] }
+    """
+    payload = request.get_json(force=True)
+    if "appointments" not in payload:
+        raise BadRequest("Missing appointments list")
+
+    domain = request.args.get("domain", DEFAULT_DOMAIN)
+    user_id = request.args.get("user_id")
+    if not user_id:
+        raise BadRequest("Missing user_id")
+
+    service = _get_domain_and_service({"domain": domain})
+    service.set_current_user(user_id)
+
+    service.save_appointments(date, payload["appointments"])
+
+    return make_response(message="Appointments saved successfully"), 200
+
+
+@binder_blueprint.route("/appointments/lock", methods=["POST"])
+def lock_appointments():
+    """
+    Body:
+        { "domain": "...", "user_id": "...", "date": "...", "no": <int> }
+    """
+    payload = request.get_json(force=True)
+    no = payload.get("no")
+    if no is None:
+        raise BadRequest("Missing 'no' field")
+
+    service = _get_domain_and_service(payload) 
+    service.set_current_user(payload["user_id"])
+
+    service.lock_appointment(payload["date"], int(no))
+
+    return make_response(message="Appointment locked."), 200

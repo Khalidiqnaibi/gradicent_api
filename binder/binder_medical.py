@@ -9,9 +9,16 @@ from datetime import datetime
 from typing import Any, Dict, Optional, List
 from .interfaces.binder_interface import IUserService, IClientService, IInteractionService
 from .interfaces.binder import Binder
+from .interfaces.binder_appointment import IAppointment
 
 
-class BinderMedical(Binder, IUserService, IClientService, IInteractionService):
+class BinderMedical(
+    Binder, 
+    IUserService, 
+    IClientService, 
+    IInteractionService,
+    IAppointment 
+    ):
     """Medical domain binder."""
     
     # user

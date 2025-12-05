@@ -1,0 +1,5 @@
+i got a problem in the endpoint      ---> /api/binder/clients/${encodeURIComponent(id)}
+
+
+
+i didnt complete the testing >_<

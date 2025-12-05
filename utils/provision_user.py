@@ -1,13 +1,12 @@
-from binder import User,LegacyUser
+from binder import User,LegacyUser,normalize_user
 from typing import Dict,Any
-from utils.normlize_user import normalize_user
 
-def _provision_user(self, provider: str, provider_user: Dict[str, Any]) -> User:
+def _provision_user(adapter, provider: str, provider_user: Dict[str, Any]) -> User:
     provider_id = str(provider_user.get("id"))
     user_id = f"{provider_id}"
 
     # Try existing user
-    raw = self.adapter.get_user(user_id)
+    raw = adapter.get_user(user_id)
     if raw:
         normalized =  normalize_user(raw)
         if normalized:
@@ -39,5 +38,5 @@ def _provision_user(self, provider: str, provider_user: Dict[str, Any]) -> User:
         services=[],
     )
 
-    self.adapter.add_user(user_id, new_user.to_dict())
+    adapter.add_user(user_id, new_user.to_dict())
     return new_user

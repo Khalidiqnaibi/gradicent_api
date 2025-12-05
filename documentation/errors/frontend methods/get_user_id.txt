@@ -1,0 +1,18 @@
+
+we created a function called get_user_id to solve the get_patients_count by giving it the user_id value 
+the problem we're facing now is the function  load_and_render_counts dosent recognize the functions (get_user_id)
+as the following error :
+
+
+"
+load_and_render_counts TypeError: api_mod.get_user_id is not a function
+    at load_and_render_counts (Binder_medical:512:39)
+    at HTMLDocument.init (Binder_medical:599:15)
+load_and_render_counts	@	Binder_medical:534
+init	@	Binder_medical:599
+"
+==============================================================================
+fixed :
+
+we solved the problem by just defining the function name in the api_mod
+im stupid at JS XD

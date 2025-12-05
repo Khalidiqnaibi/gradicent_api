@@ -1,0 +1,10 @@
+i got a problem at line 392
+
+
+at addPatient() 
+
+
+i think the whole problem is just an endpoint 
+
+
+cuz in binder there's no addpatient only addclients {IDK}

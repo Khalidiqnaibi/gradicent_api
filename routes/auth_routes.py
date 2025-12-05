@@ -14,7 +14,7 @@ Endpoints:
 from typing import Optional
 from flask import Blueprint, request, redirect, session, jsonify, current_app, url_for
 from werkzeug.exceptions import BadRequest
-from utils.normlize_user import normalize_user
+from binder import normalize_user
 
 auth_blueprint = Blueprint("auth", __name__)
 
@@ -137,7 +137,7 @@ def current_user():
     if not normalized:
         return jsonify({"status": "error","data":None, "message": "unrecognized user structure"}), 401
     
-    return jsonify({"status": "success", "data": normalized,"message":"got user"})
+    return jsonify({"status": "success", "data": normalized.to_dict(),"message":"got user"})
 
 
 @auth_blueprint.route("/refresh", methods=["POST"])

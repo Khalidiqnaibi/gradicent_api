@@ -193,6 +193,16 @@ class BinderService:
         # binder implementations implement search_clients(query)
         return self._binder.search_clients(query)
     
+    # --- appointments ---
+    def get_appointments(self, date: str) -> list:
+        return self._binder.get_appointments(date)
+
+    def save_appointments(self, date: str, appointments: list) -> None:
+        return self._binder.save_appointments(date, appointments)
+
+    def lock_appointment(self, date: str, no: str) -> bool:
+        return self._binder.lock_appointment(date, no)
+    
     # ------- Public API: Interactions (visits/transactions) -------
     def create_interaction(self, client_id: str, interaction: Dict[str, Any]) -> Dict[str, Any]:
         """

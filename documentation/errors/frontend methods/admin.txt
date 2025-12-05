@@ -1,0 +1,2 @@
+i didnt test cuz the endpoints are "api/dashboard" not "api/"gaia/binder/auth"/"
+sorry for that

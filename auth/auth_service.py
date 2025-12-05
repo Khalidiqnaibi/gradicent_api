@@ -61,7 +61,7 @@ class AuthService:
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
         provider_user = self.providers[provider].exchange_code_for_user(code)
-        user = _provision_user(provider, provider_user)
+        user = _provision_user(self.adapter,provider, provider_user)
 
         tokens = self._create_tokens_for_user(user.id)
         self._save_refresh_token(user.id, tokens["refresh_token"])
