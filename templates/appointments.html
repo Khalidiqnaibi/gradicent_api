@@ -7,6 +7,7 @@
   <link rel="icon" href="/static/images/w3.jpg" />
 
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/static/js/utils.js"></script> <!-- contains safe_fetch -->
 
   <style>
     :root{
@@ -28,9 +29,10 @@
     .slot h3{margin:0;font-size:16px;font-weight:700;color:var(--text);}
     .slot p{margin:0;font-size:13px;color:var(--muted);}
     @media(max-width:900px){.slot{grid-template-columns:1fr;}}
+
     #toasts{position:fixed;top:18px;right:18px;z-index:999;}
-  
-    /* Hamburger lines */
+
+    /* --- hamburger --- */
     .menu__btn span,
     .menu__btn span::before,
     .menu__btn span::after {
@@ -57,110 +59,81 @@
       opacity: 0;
     }
     .menu-active .menu__box { transform: translateX(0); opacity: 1; }
-
   </style>
 </head>
 
 <body>
-  <!-- Menu -->
-  <div id="menuBar" class="fixed top-4 left-4 z-50">
-    <div class="hamburger-menu p-2">
-      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
-        <span></span>
-      </label>
 
-      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
-            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
-            <h6 class="text-sm font-medium">Account</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
-            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
-            <h6 class="text-sm font-medium">Add</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
-            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
-            <h6 class="text-sm font-medium">Search</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
-            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
-            <h6 class="text-sm font-medium">Stats</h6>
-          </a>
-        </li>
-        <li>
-          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
-            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
-            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
-          </a>
-        </li>
+<!-- LEFT MENU -->
+<div id="menuBar" class="fixed top-4 left-4 z-50">
+  <div class="hamburger-menu p-2">
+    <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+      <span></span>
+    </label>
 
-        <li class="border-t border-[var(--secondary)] my-1"></li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
-            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
-            <h6 class="text-sm font-medium">Settings</h6>
-          </a>
-        </li>
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
-            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
-            <h6 class="text-sm font-medium">Support</h6>
-          </a>
-        </li>
-      </ul>
-    </div>
+    <ul class="menu__box absolute mt-3 left-0 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-gray-200">
+      <li><a href="/acc"      class="menu__item flex items-center gap-3 p-2">Account</a></li>
+      <li><a href="/home_page" class="menu__item flex items-center gap-3 p-2">Add</a></li>
+      <li><a href="/srch"     class="menu__item flex items-center gap-3 p-2">Search</a></li>
+      <li><a href="/stats"    class="menu__item flex items-center gap-3 p-2">Stats</a></li>
+      <li><a href="/appointments" class="menu__item flex items-center gap-3 p-2">Appointments</a></li>
+      <li class="border-t border-gray-200 my-1"></li>
+      <li><a href="/settings" class="menu__item flex items-center gap-3 p-2">Settings</a></li>
+      <li><a href="/support"  class="menu__item flex items-center gap-3 p-2">Support</a></li>
+    </ul>
   </div>
-  <div class="wrap">
-    <div class="card">
-      <div class="flex justify-between items-center mb-5">
-        <h1 class="text-2xl font-bold">Appointments</h1>
-        <div class="flex gap-3 items-center">
-          <div class="text-sm text-gray-500">Total</div>
-          <div id="count" class="px-3 py-1 rounded-full bg-[var(--accent)] text-[#071620] font-bold">0</div>
-          <button id="refresh" class="btn-ghost">Refresh</button>
-          <button id="save" class="btn-primary">Save</button>
-        </div>
-      </div>
+</div>
 
-      <div class="flex gap-4 flex-col sm:flex-row mb-4">
-        <div class="w-full sm:w-64">
-          <label class="text-sm text-gray-500">Date</label>
-          <input id="dateInput" type="date" class="input" />
-        </div>
-
-        <div class="flex gap-3 items-end">
-          <select id="filter" class="input" style="width:170px;">
-            <option value="all">All</option>
-            <option value="has">With Note</option>
-            <option value="none">No Note</option>
-          </select>
-          <button id="clear" class="btn-ghost">Clear notes</button>
-        </div>
-      </div>
-
-      <div id="list" class="flex flex-col gap-3"></div>
-
-      <div id="empty" class="hidden flex justify-center bg-white/60 rounded-lg p-8 text-gray-500 border border-gray-200">
-        No appointments.
+<div class="wrap">
+  <div class="card">
+    
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-5">
+      <h1 class="text-2xl font-bold">Appointments</h1>
+      <div class="flex gap-3 items-center">
+        <div class="text-sm text-gray-500">Total</div>
+        <div id="count" class="px-3 py-1 rounded-full bg-[var(--accent)] text-[#071620] font-bold">0</div>
+        <button id="refresh" class="btn-ghost">Refresh</button>
+        <button id="save" class="btn-primary">Save</button>
       </div>
     </div>
-  </div>
 
-  <div id="toasts"></div>
+    <!-- DATE + FILTER -->
+    <div class="flex gap-4 flex-col sm:flex-row mb-4">
+      <div class="w-full sm:w-64">
+        <label class="text-sm text-gray-500">Date</label>
+        <input id="dateInput" type="date" class="input" />
+      </div>
+
+      <div class="flex gap-3 items-end">
+        <select id="filter" class="input" style="width:170px;">
+          <option value="all">All</option>
+          <option value="has">With Note</option>
+          <option value="none">No Note</option>
+        </select>
+        <button id="clear" class="btn-ghost">Clear notes</button>
+      </div>
+    </div>
+
+    <!-- APPOINTMENT LIST -->
+    <div id="list" class="flex flex-col gap-3"></div>
+
+    <div id="empty" class="hidden flex justify-center bg-white/60 rounded-lg p-8 text-gray-500 border border-gray-200">
+      No appointments.
+    </div>
+
+  </div>
+</div>
+
+<div id="toasts"></div>
 
 <script>
-/* ------------------------------------------------------------------------
-   Utils
------------------------------------------------------------------------- */
-function $(id){return document.getElementById(id);}
+
+// -------------------------------------------------------------
+// Helper
+// -------------------------------------------------------------
+function $(id){ return document.getElementById(id); }
+
 function toast(msg,type='info'){
   const wrap=$("toasts");
   const t=document.createElement("div");
@@ -174,190 +147,192 @@ function toast(msg,type='info'){
   wrap.appendChild(t);
   setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.remove(),300);},2600);
 }
+
 function todayISO(){
-  const t=new Date(); t.setMinutes(t.getMinutes()-t.getTimezoneOffset());
-  return t.toISOString().slice(0,10);
+  const d=new Date();
+  d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
+  return d.toISOString().slice(0,10);
 }
 
-/* ------------------------------------------------------------------------
-   API
------------------------------------------------------------------------- */
+// -------------------------------------------------------------
+// USER (Binder Authentication)
+// -------------------------------------------------------------
+let CURRENT_USER_ID = null;
+let CURRENT_DOMAIN = "medical"; // can be dynamic
+
+async function getCurrentUser(){
+  const r = await u.safe_fetch("/api/auth/me");
+  return r.data;
+}
+
+// -------------------------------------------------------------
+// API BINDER
+// -------------------------------------------------------------
 async function api_getAppointments(date){
-  const r=await fetch(`/api/binder/appointments/${date}`);
+  const url = `/api/binder/appointments/${date}?domain=${CURRENT_DOMAIN}&user_id=${CURRENT_USER_ID}`;
+  const r = await fetch(url);
   if(!r.ok) throw new Error("Failed");
   return r.json();
 }
-async function api_save(date,appointments){
-  const r=await fetch(`/api/binder/appointments/${date}`,{
+
+async function api_save(date, appointments){
+  const url = `/api/binder/appointments/${date}?domain=${CURRENT_DOMAIN}&user_id=${CURRENT_USER_ID}`;
+  const r = await fetch(url,{
     method:"PATCH",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({appointments})
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ appointments })
   });
-  if(!r.ok) throw new Error("save failed");
+  if(!r.ok) throw new Error("Save failed");
   return r.json();
 }
+
 async function api_lock(no){
-  const r=await fetch(`/api/binder/appointments/lock`,{
+  const url = `/api/binder/appointments/lock`;
+  const r = await fetch(url,{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({no})
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      no: no,
+      user_id: CURRENT_USER_ID,
+      domain: CURRENT_DOMAIN
+    })
   });
-  if(!r.ok) throw new Error("lock failed");
+  if(!r.ok) throw new Error("Lock failed");
 }
 
-/* ------------------------------------------------------------------------
-   App State
------------------------------------------------------------------------- */
-let APPOINTMENTS=[];
+// -------------------------------------------------------------
+// STATE
+// -------------------------------------------------------------
+let APPOINTMENTS = [];
 
-/* ------------------------------------------------------------------------
-   Rendering
------------------------------------------------------------------------- */
+// -------------------------------------------------------------
+// Rendering
+// -------------------------------------------------------------
 function render(){
-  const list=$("list"); list.innerHTML="";
-  const empty=$("empty");
+  const list = $("list");
+  const empty = $("empty");
+  const filter = $("filter").value;
 
-  const filter=$("filter").value;
-  const filtered=APPOINTMENTS.filter(a=>{
-    const has=a.msg && a.msg.trim().length>0;
+  list.innerHTML = "";
+
+  const filtered = APPOINTMENTS.filter(a=>{
+    const has = a.msg?.trim().length > 0;
     if(filter==="has") return has;
     if(filter==="none") return !has;
     return true;
   });
 
-  $("count").textContent=filtered.length;
+  $("count").textContent = filtered.length;
 
-  if(filtered.length===0){
+  if(filtered.length === 0){
     empty.classList.remove("hidden");
     return;
   }
   empty.classList.add("hidden");
 
   filtered.forEach(a=>{
-    const slot=document.createElement("div");
+    const slot = document.createElement("div");
     slot.className="slot";
 
-    slot.innerHTML=`
+    slot.innerHTML = `
       <div>
         <h3>${a.name||"Unknown"}</h3>
         <p>No. ${a.no||""}</p>
       </div>
       <div class="text-sm text-gray-600">${a.no||""}</div>
       <div class="text-sm text-gray-600">${a.phone||""}</div>
-      <div>
-        <textarea class="input" style="min-height:70px;">${a.msg||""}</textarea>
-      </div>
+      <div><textarea class="input" style="min-height:70px;">${a.msg||""}</textarea></div>
       <div class="flex flex-col gap-2">
         <button class="btn-ghost show">Show</button>
         <button class="btn-ghost lock">Lock</button>
       </div>
     `;
 
-    // note editing
     slot.querySelector("textarea").addEventListener("input",e=>{
-      a.msg=e.target.value;
+      a.msg = e.target.value;
     });
 
-    // show
-    slot.querySelector(".show").onclick=()=>window.location.href=`/show_search_by_number/${a.no}`;
-
-    // lock
+    slot.querySelector(".show").onclick=()=>location.href=`/show_search_by_number/${a.no}`;
     slot.querySelector(".lock").onclick=async()=>{
       try{
         await api_lock(a.no);
         toast("Locked","success");
-      }catch(e){
-        toast("Failed","error");
-      }
+      }catch{ toast("Failed","error"); }
     };
 
     list.appendChild(slot);
   });
 }
 
-/* ------------------------------------------------------------------------
-   Loading Appointments
------------------------------------------------------------------------- */
+// -------------------------------------------------------------
+// Load Appointments
+// -------------------------------------------------------------
 async function load(date){
   try{
-    const res=await api_getAppointments(date);
-    APPOINTMENTS=res.data?.appointments || res.appointments || [];
-    APPOINTMENTS=APPOINTMENTS.map(a=>({...a,msg:a.msg||""}));
+    const res = await api_getAppointments(date);
+    APPOINTMENTS = res.data?.appointments || [];
+
+    APPOINTMENTS = APPOINTMENTS.map(a=>({...a, msg:a.msg||""}));
+
     render();
     toast("Loaded","success");
-  }catch(e){
-    APPOINTMENTS=[];
+  }catch{
+    APPOINTMENTS = [];
     render();
     toast("Failed","error");
   }
 }
-// menu
-function menu_init() {
-      const menuBtn = document.querySelector('.hamburger-menu');
-      const menuBar = document.getElementById('menuBar');
-      
-      // Toggle menu (keeps same interaction as previous)
-      menuBtn.addEventListener('click', () => {
-        menuBar.classList.toggle('menu-active');
-      });
-      
-      const menu_box = document.querySelector(".menu__box")
-      // close when clicking outside (improves UX)
-      document.addEventListener('click', (ev) => {
-        if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
-          menuBar.classList.remove('menu-active');
-          toggle.setAttribute('aria-expanded', 'false');
-          menu_box.setAttribute('aria-hidden', 'true');
-        }
-      });
-    }
 
-/* ------------------------------------------------------------------------
-   Save
------------------------------------------------------------------------- */
+// -------------------------------------------------------------
+// Save
+// -------------------------------------------------------------
 async function save(){
-  const date=$("dateInput").value;
+  const date = $("dateInput").value;
   try{
-    await api_save(date,APPOINTMENTS);
+    await api_save(date, APPOINTMENTS);
     toast("Saved","success");
     load(date);
-  }catch(e){
+  }catch{
     toast("Failed","error");
   }
 }
 
-/* ------------------------------------------------------------------------
-   Usage Tracker (single unload send)
------------------------------------------------------------------------- */
-(function(){
-  let sec=0,active=true;
-  setInterval(()=>{if(active)sec++;},1000);
-  window.addEventListener("blur",()=>active=false);
-  window.addEventListener("focus",()=>active=true);
-  window.addEventListener("beforeunload",()=>{
-    navigator.sendBeacon("/track_time",JSON.stringify({seconds:sec}));
+// -------------------------------------------------------------
+// Menu
+// -------------------------------------------------------------
+function menu_init(){
+  const menuBtn=document.querySelector('.hamburger-menu');
+  const menuBar=document.getElementById('menuBar');
+
+  menuBtn.onclick = ()=> menuBar.classList.toggle('menu-active');
+
+  document.addEventListener("click",e=>{
+    if(!menuBar.contains(e.target)) menuBar.classList.remove('menu-active');
   });
-})();
+}
 
-/* ------------------------------------------------------------------------
-   Events
------------------------------------------------------------------------- */
-
-document.addEventListener("DOMContentLoaded", function() {
+// -------------------------------------------------------------
+// Page Init
+// -------------------------------------------------------------
+(async function init(){
   menu_init();
-})
 
-$("dateInput").value=todayISO();
-load($("dateInput").value);
+  const user = await getCurrentUser();
+  CURRENT_USER_ID = user.id;
+  CURRENT_DOMAIN = user.domain || "medical";
 
-$("refresh").onclick=()=>load($("dateInput").value);
-$("save").onclick=save;
-$("filter").onchange=render;
-$("clear").onclick=()=>{
-  APPOINTMENTS.forEach(a=>a.msg="");
-  render();
-  toast("Cleared (local)","info");
-};
+  $("dateInput").value = todayISO();
+  load($("dateInput").value);
+
+  $("refresh").onclick = ()=> load($("dateInput").value);
+  $("save").onclick    = save;
+  $("filter").onchange = render;
+  $("clear").onclick   = ()=>{
+    APPOINTMENTS.forEach(a=> a.msg="");
+    render();
+    toast("Cleared (local)","info");
+  };
+})();
 </script>
 </body>
 </html>

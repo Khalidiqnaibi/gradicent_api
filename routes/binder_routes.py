@@ -20,6 +20,7 @@ from flask import Blueprint, request, jsonify, current_app , session
 from werkzeug.exceptions import BadRequest, NotFound
 
 from services.binder_service import BinderService, BinderServiceError
+from services.appointments_service import AppointmentsService
 from utils.get_appointments import get_appointments
 from utils.get_plan_status import get_plan_status, get_plan_data
 from config import BACKEND_URL
@@ -292,3 +293,72 @@ def getappointments(date):
 
     appointments = get_appointments(date, user)
     return jsonify(appointments)
+
+@binder_blueprint.route("/appointments/<date>", methods=["GET"])
+def get_appointments_for_date(date):
+    """
+    Read appointments for a given date.
+    Requires:
+        domain
+        user_id
+    """
+    payload = {
+        "domain": request.args.get("domain", DEFAULT_DOMAIN),
+        "user_id": request.args.get("user_id")
+    }
+
+    if not payload["user_id"]:
+        raise BadRequest("Missing user_id")
+
+    service = _get_domain_and_service(payload)
+
+    # appointments service uses the same adapter inside BinderService
+    appointments_service = service.get_appointments_service()
+
+    result = appointments_service.get_appointments(payload["user_id"], date)
+    return make_response(data={"appointments": result}), 200
+
+
+@binder_blueprint.route("/appointments/<date>", methods=["PATCH"])
+def save_appointments_for_date(date):
+    """
+    Save or replace appointments for the given date.
+    Body:
+        { "appointments": [...] }
+    """
+    payload = request.get_json(force=True)
+    if "appointments" not in payload:
+        raise BadRequest("Missing appointments list")
+
+    domain = request.args.get("domain", DEFAULT_DOMAIN)
+    user_id = request.args.get("user_id")
+    if not user_id:
+        raise BadRequest("Missing user_id")
+
+    service = _get_domain_and_service({"domain": domain})
+    service.set_current_user(user_id)
+
+    appointments_service = service.get_appointments_service()
+    appointments_service.save_appointments(user_id, date, payload["appointments"])
+
+    return make_response(message="Appointments saved successfully"), 200
+
+
+@binder_blueprint.route("/appointments/lock", methods=["POST"])
+def lock_appointments():
+    """
+    Body:
+        { "domain": "...", "user_id": "...", "no": <int> }
+    """
+    payload = request.get_json(force=True)
+    no = payload.get("no")
+    if no is None:
+        raise BadRequest("Missing 'no' field")
+
+    service = AppointmentsService()
+    service.set_current_user(payload["user_id"])
+
+    appointments_service = service.get_appointments_service()
+    appointments_service.lock_appointment(payload["user_id"], int(no))
+
+    return make_response(message="Appointment locked."), 200

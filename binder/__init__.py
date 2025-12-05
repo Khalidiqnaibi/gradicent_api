@@ -6,6 +6,7 @@ from .adapters.firebase_crud_adapter import FirebaseCrudAdapter
 from .binder_business import BinderBusiness
 from .binder_medical import BinderMedical
 from .interfaces.binder import Binder
+from .interfaces.binder_appointment import IAppointment
 from .interfaces.binder_interface import (
     IClientService,
     ICrudService,
@@ -58,5 +59,5 @@ __all__ = [
     "service_repository","employee_repository","interaction_repository","transaction_repository",
     "BaseRepository","BaseRepository", "ClientRepository","EmployeeRepository",
     "InteractionRepository","ServiceRepository","ProductRepository", "UserRepository",
-    "TransactionRepository","LegacyUser"
+    "TransactionRepository","LegacyUser","IAppointment"
 ]
