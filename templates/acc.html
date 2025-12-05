@@ -327,7 +327,8 @@
     }
 
     async function get_user_id(){
-      return get_user().id;    
+      user = await get_user();
+      return user.id;    
     }
 
     /**
@@ -344,15 +345,15 @@
     }
 
     /**
-     * get_patients_count
+     * get_patients_count(total_customers)
      * Uses Gaia compute endpoint that returns { patient_count: number }.
      */
     async function get_patients_count(user_id) {
       const url = `/api/gaia/compute?metric=total_customers&domain=medical&user_id=${encodeURIComponent(user_id)}`;
       const data = await u.safe_fetch(url, { method: 'GET' });
-      if (data && typeof data.patient_count === 'number') return data.patient_count;
+      if (data && typeof data.total_customers === 'number') return data.total_customers;
       // some older responses may embed in data.data
-      if (data && data.data && typeof data.data.patient_count === 'number') return data.data.patient_count;
+      if (data && data.data && typeof data.data.total_customers === 'number') return data.data.total_customers;
       return 0;
     }
 
