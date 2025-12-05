@@ -32,3 +32,14 @@ AttributeError: 'NoneType' object has no attribute 'get'
 
 
 i think the whole problem in the last two lines
+
+======================================
+fixed:
+the logic was a copy of the past logic and dont work for the currant way + we had to use: 
+headers={
+            "Authorization": request.headers.get("Authorization"),
+        },
+        cookies=request.cookies,
+        params={ "domain": request.args.get("domain", session.get("domain", "business")) }
+    
+to give the request the headers to be authenticated

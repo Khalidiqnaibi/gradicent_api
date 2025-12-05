@@ -11,7 +11,6 @@ def normalize_user(user) -> Union[User,None]:
     if "google_id" in user or "patients" in user:
         legacy_user = LegacyUser.from_raw(user)
         converted = legacy_user.to_user()
-        print(converted)
         return User(**converted)
     
     return None

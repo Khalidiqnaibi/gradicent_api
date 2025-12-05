@@ -32,6 +32,7 @@ STRIPE_API_KEY = os.getenv("STRIPE_API_KEY","")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET","")
 
 # other settings
+BACKEND_URL= os.getenv("BACKEND_URL","http://localhost:5000")
 FRONTEND_URL = os.getenv("FRONTEND_URL","http://localhost:3000")
 DATABASE_URL = os.getenv("DATABASE_URL","sqlite:///./test.db")
 LOG_LEVEL = os.getenv("LOG_LEVEL","DEBUG")
@@ -84,6 +85,7 @@ class DefaultConfig:
     STRIPE_API_KEY = STRIPE_API_KEY
     STRIPE_WEBHOOK_SECRET = STRIPE_WEBHOOK_SECRET
 
+    BACKEND_URL = BACKEND_URL
     FRONTEND_URL = FRONTEND_URL
     DATABASE_URL = DATABASE_URL
     LOG_LEVEL = LOG_LEVEL

@@ -22,6 +22,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 from services.binder_service import BinderService, BinderServiceError
 from utils.get_appointments import get_appointments
 from utils.get_plan_status import get_plan_status, get_plan_data
+from config import BACKEND_URL
 
 binder_blueprint = Blueprint("binder", __name__)
 
@@ -269,10 +270,25 @@ def add_interaction(client_id: str):
     interaction = service.create_interaction(client_id, payload["interaction"])
     return make_response(data=interaction, message="Interaction created."), 201
 
-@binder_blueprint.route('/get_appointments/<date>', methods = ["GET"])
+@binder_blueprint.route('/get_appointments/<date>', methods=["GET"])
 def getappointments(date):
-    user = requests.get("/api/auth/me")["data"]
 
-    appointments = get_appointments(date,user)
+    # Forward cookies + headers to preserve user authentication
+    res = requests.get(
+        f"{BACKEND_URL}/api/auth/me",
+        headers={
+            "Authorization": request.headers.get("Authorization"),
+        },
+        cookies=request.cookies,
+        params={ "domain": request.args.get("domain", session.get("domain", "business")) }
+    )
 
+    con = res.json()
+
+    if con.get("status") != "success":
+        return jsonify({"error": "unauthenticated"}), 401
+
+    user = con["data"]
+
+    appointments = get_appointments(date, user)
     return jsonify(appointments)

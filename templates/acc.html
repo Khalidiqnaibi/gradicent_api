@@ -319,12 +319,16 @@
      * get_user_id
      * Fetches current user ID from /api/auth/me.
      */
-    async function get_user_id(){
+
+    async function get_user(){
       const url = `/api/auth/me`;
       const data = await u.safe_fetch(url, { method: 'GET' });
-      console.log("User data:", data);
-      return data.data.id;    
-}
+      return data.data;    
+    }
+
+    async function get_user_id(){
+      return get_user().id;    
+    }
 
     /**
      * get_appointments_for_date
@@ -384,7 +388,7 @@
       }
     }
 
-    return { get_appointments_for_date, get_patients_count, get_domain, get_plan_status ,get_user_id};
+    return { get_appointments_for_date, get_patients_count, get_domain, get_plan_status ,get_user_id,get_user};
   })(utils);
 
   /* =========================
