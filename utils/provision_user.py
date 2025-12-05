@@ -1,6 +1,5 @@
-from binder import User,LegacyUser
+from binder import User,LegacyUser,normalize_user
 from typing import Dict,Any
-from utils.normlize_user import normalize_user
 
 def _provision_user(adapter, provider: str, provider_user: Dict[str, Any]) -> User:
     provider_id = str(provider_user.get("id"))

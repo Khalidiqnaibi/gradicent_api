@@ -273,6 +273,16 @@ def add_interaction(client_id: str):
 
 @binder_blueprint.route('/get_appointments/<date>', methods=["GET"])
 def getappointments(date):
+    """
+    Get appointments for a given date.
+    this is the old way of getting appointments
+
+    Args:
+        date (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
 
     # Forward cookies + headers to preserve user authentication
     res = requests.get(
@@ -298,6 +308,8 @@ def getappointments(date):
 def get_appointments_for_date(date):
     """
     Read appointments for a given date.
+    the current way of getting appointments
+    
     Requires:
         domain
         user_id
@@ -311,11 +323,9 @@ def get_appointments_for_date(date):
         raise BadRequest("Missing user_id")
 
     service = _get_domain_and_service(payload)
+    service.set_current_user(payload["user_id"])
 
-    # appointments service uses the same adapter inside BinderService
-    appointments_service = service.get_appointments_service()
-
-    result = appointments_service.get_appointments(payload["user_id"], date)
+    result = service.get_appointments(date)
     return make_response(data={"appointments": result}), 200
 
 
@@ -338,8 +348,7 @@ def save_appointments_for_date(date):
     service = _get_domain_and_service({"domain": domain})
     service.set_current_user(user_id)
 
-    appointments_service = service.get_appointments_service()
-    appointments_service.save_appointments(user_id, date, payload["appointments"])
+    service.save_appointments(date, payload["appointments"])
 
     return make_response(message="Appointments saved successfully"), 200
 
@@ -348,17 +357,16 @@ def save_appointments_for_date(date):
 def lock_appointments():
     """
     Body:
-        { "domain": "...", "user_id": "...", "no": <int> }
+        { "domain": "...", "user_id": "...", "date": "...", "no": <int> }
     """
     payload = request.get_json(force=True)
     no = payload.get("no")
     if no is None:
         raise BadRequest("Missing 'no' field")
 
-    service = AppointmentsService()
+    service = _get_domain_and_service(payload) 
     service.set_current_user(payload["user_id"])
 
-    appointments_service = service.get_appointments_service()
-    appointments_service.lock_appointment(payload["user_id"], int(no))
+    service.lock_appointment(payload["date"], int(no))
 
     return make_response(message="Appointment locked."), 200

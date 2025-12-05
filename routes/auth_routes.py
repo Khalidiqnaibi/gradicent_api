@@ -14,7 +14,7 @@ Endpoints:
 from typing import Optional
 from flask import Blueprint, request, redirect, session, jsonify, current_app, url_for
 from werkzeug.exceptions import BadRequest
-from utils.normlize_user import normalize_user
+from binder import normalize_user
 
 auth_blueprint = Blueprint("auth", __name__)
 

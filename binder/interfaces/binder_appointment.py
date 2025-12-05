@@ -4,7 +4,9 @@ binder_appointment.py
 interface for the appointments
 '''
 
+from datetime import date
 from typing import List, Dict
+from ..utils.normlize_user import normalize_user
 
 class IAppointment:
     """
@@ -13,48 +15,42 @@ class IAppointment:
     """
 
     def get_appointments(self, date: str) -> List[Dict]:
-        path = f"metadata/appointments/{date}"
-        items = self.adapter.list_children(self.current_user, path)
+        user = self.adapter.get_user(self.current_user)
+        user = normalize_user(user)
+        user = user.to_dict() or {}
+        meta = user.get("metadata", {})
+        appo = meta.get("appointments", {}) 
+        appointments = appo.get(date, [])
         # ensure msg exists
-        for a in items:
+        for a in appointments:
             a["msg"] = a.get("msg", "")
-        return items
+        return appointments
 
     def save_appointments(self, date: str, appointments: List[Dict]) -> None:
-        path = f"metadata/appointments/{date}"
-        # delete old list fully → replace with new
-        existing = self.adapter.list_children(self.current_user, path)
-        for a in existing:
-            self.adapter.delete_child(self.current_user, path, a["id"])
+        user = self.adapter.get_user(self.current_user)
+        user = normalize_user(user)
+        user = user.to_dict() or {}
+        if "metadata" not in user:
+            user["metadata"] = {}
+        if "appointments" not in user["metadata"]:
+            user["metadata"]["appointments"] = {}
+        user["metadata"]["appointments"][date] = appointments
+        self.adapter.update_user(self.current_user, user)
 
-        # write new children
-        for ap in appointments:
-            # if missing id → auto-generate
-            if "id" not in ap or not ap["id"]:
-                ap["id"] = self.adapter.add_child(self.current_user, path, ap)
-            else:
-                self.adapter.add_child(self.current_user, path, ap)
-
-    def lock_appointment(self, no: str) -> bool:
-        """
-        Finds appointment by patient/client number.
-        Marks: locked=True
-        """
-        all_dates = self.adapter.list_children(self.current_user, "appointments")
+    def lock_appointment(self, date: str, no: str) -> bool:
+        user = self.adapter.get_user(self.current_user)
+        user = normalize_user(user)
+        user = user.to_dict() or {}
+        appointments = user.get("metadata", {}).get("appointments", {}).get(date, [])
         locked_any = False
 
-        for d in all_dates:
-            date_key = d["id"]
-            apps = self.adapter.list_children(self.current_user, f"appointments/{date_key}")
+        for ap in appointments:
+            if str(ap.get("no")) == str(no):
+                ap["locked"] = True
+                locked_any = True
 
-            for ap in apps:
-                if str(ap.get("no")) == str(no):
-                    self.adapter.update_child(
-                        self.current_user,
-                        f"appointments/{date_key}",
-                        ap["id"],
-                        {"locked": True}
-                    )
-                    locked_any = True
+        if locked_any:
+            user["metadata"]["appointments"][date] = appointments
+            self.adapter.update_user(self.current_user, user)
 
         return locked_any

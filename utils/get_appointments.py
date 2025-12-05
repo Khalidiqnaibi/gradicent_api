@@ -1,7 +1,6 @@
 
 
 def get_appointments(date,user):
-    meta = user.get("metadata",{})
-    appoint = meta.get("appointments",{})
+    appoint = user.get("appointments",{})
     
     return appoint.get(date, [])
