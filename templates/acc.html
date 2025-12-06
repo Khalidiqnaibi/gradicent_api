@@ -212,7 +212,7 @@
     user_name: null,
     plan: null,
     days_left: 0,
-    binder_type: null, // e.g., 'medical' | 'lab'
+    domain: null, // e.g., 'medical' | 'lab'
     btn1_href: '/logout',
     btn2_href: '/logme'
   };
@@ -336,20 +336,26 @@
      * Fetch appointments from server for given date (YYYY-MM-DD).
      * Returns an array.
      */
-    async function get_appointments_for_date(date_iso) {
-      const url = `/api/binder/get_appointments/${encodeURIComponent(date_iso)}`;
-      const data = await u.safe_fetch(url, { method: 'GET' });
-      if (Array.isArray(data)) return data;
-      if (data && Array.isArray(data.appointments)) return data.appointments;
-      return [];
+    async function get_appointments_for_date(date_iso, domain, user_id) {
+      const url = `/api/binder/appointments/${encodeURIComponent(date_iso)}?domain=${encodeURIComponent(domain)}&user_id=${encodeURIComponent(user_id)}`;
+
+      try {
+        const res = await u.safe_fetch(url, { method: 'GET' });
+        // Return appointments array
+        return res.data.appointments || [];
+      } catch (err) {
+        console.warn('get_appointments_for_date attempt failed', err);
+        ui.create_toast('Failed to load appointments', 'error');
+        return [];
+      }
     }
 
     /**
      * get_patients_count(total_customers)
      * Uses Gaia compute endpoint that returns { patient_count: number }.
      */
-    async function get_patients_count(user_id) {
-      const url = `/api/gaia/compute?metric=total_customers&domain=medical&user_id=${encodeURIComponent(user_id)}`;
+    async function get_patients_count(user_id,domain) {
+      const url = `/api/gaia/compute?metric=total_customers&domain=${encodeURIComponent(domain)}&user_id=${encodeURIComponent(user_id)}`;
       const data = await u.safe_fetch(url, { method: 'GET' });
       if (data && typeof data.total_customers === 'number') return data.total_customers;
       // some older responses may embed in data.data
@@ -518,8 +524,8 @@
         const user_id = await api_mod.get_user_id();
         const date_iso = utils_mod.iso_today();
         const [appointments, patients_count] = await Promise.allSettled([
-          api_mod.get_appointments_for_date(date_iso),
-          api_mod.get_patients_count(user_id)
+          api_mod.get_appointments_for_date(date_iso,APP_STATE.domain,user_id),
+          api_mod.get_patients_count(user_id,APP_STATE.domain)
         
         ]);
 
@@ -534,7 +540,6 @@
           console.error('patients_count error', patients_count.reason);
           ui_mod.create_toast('Failed to load patients count', 'error');
         }
-
         update_counts(Number(patient_count_value), Array.isArray(appointments_list) ? appointments_list.length : 0);
       } catch (err) {
         console.error('load_and_render_counts', err);
@@ -588,14 +593,14 @@
         // Persist to explicit app state
         APP_STATE.days_left = Number(plan_payload.days || 0);
         APP_STATE.plan = plan_payload.plan || null;
-        APP_STATE.binder_type = domain_payload || null;
+        APP_STATE.domain = domain_payload || null;
 
         // render header and plan
         render_plan_status(APP_STATE.days_left, APP_STATE.plan);
         render_user_header(APP_STATE.user_name, APP_STATE.plan);
 
         // apply binder customizations (lab variant etc.)
-        customize_for_binder_type(APP_STATE.binder_type);
+        customize_for_binder_type(APP_STATE.domain);
 
         // set default button hrefs (can be overridden by other flows)
         APP_STATE.btn1_href = '/logout';

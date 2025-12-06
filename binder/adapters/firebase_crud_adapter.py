@@ -69,33 +69,20 @@ class FirebaseCrudAdapter(StorageAdapter):
     # Child CRUD
     # --------------------
     def list_children(self, user_id: str, collection: str) -> List[Dict]:
-        """
-        Returns all children in a collection with injected 'id'
-        (Binder standard for all domains).
-        """
         ref = self._child_ref(user_id, collection)
         children = ref.get() or {}
 
-        # Realtime DB may return:
-        # - dict of {id: {...}}
-        # - list of [{...}] in older data
-        # Normalize both.
-        result = []
-
         if isinstance(children, list):
-            # list => convert to {index: value}
             children = {str(i): v for i, v in enumerate(children)}
 
-        for child_id, data in children.items():
-            if isinstance(data, dict):
-                # merge id into entry (standard Binder shape)
-                result.append({"id": child_id, **data})
+        result = []
+        for k, v in children.items():
+            if isinstance(v, dict):
+                result.append({"id": k, **v})
             else:
-                # primitive values – wrap them consistently
-                result.append({"id": child_id, "value": data})
+                result.append({"id": k, "value": v})
 
         return result
-
 
     def add_child(self, user_id: str, collection: str, obj: Dict) -> str:
         child_id = obj.get("id")

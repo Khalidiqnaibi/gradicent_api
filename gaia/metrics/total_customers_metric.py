@@ -13,6 +13,7 @@ import logging
 from gaia.interfaces.base_metric import IMetric
 from gaia.registry import MetricRegistry
 from gaia.utils import filter_patients , DOMAIN_ENTITY_MAP,filter_clients
+from binder import normalize_user
 
 logger = logging.getLogger(__name__)
 
@@ -55,14 +56,19 @@ class TotalCustomersMetric(IMetric):
         """
         # collect patients and normalize to a list
         DOMAIN = kwargs.get("domain","medical")
+        user = binder.adapter.get_user(binder.current_user)
+        user = normalize_user(user).to_dict()
+
         if DOMAIN in ["medical"]:
-            raw_clients= binder.adapter.list_children(binder.current_user, DOMAIN_ENTITY_MAP[DOMAIN]) or []
-            clients = list(raw_clients)
+            clients = user.get("clients")
             matched = filter_patients(clients, kwargs)
             total = len(matched)
         elif DOMAIN in ["business"]:
-            raw_clients= binder.adapter.list_children(binder.current_user, DOMAIN_ENTITY_MAP[DOMAIN]) or []
-            clients = list(raw_clients)
+            clients = user.get("clients")
+            matched = filter_clients(clients, kwargs)
+            total = len(matched)
+        else:# temp
+            clients = user.get("clients")
             matched = filter_clients(clients, kwargs)
             total = len(matched)
         

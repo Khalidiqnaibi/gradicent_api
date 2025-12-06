@@ -271,44 +271,10 @@ def add_interaction(client_id: str):
     interaction = service.create_interaction(client_id, payload["interaction"])
     return make_response(data=interaction, message="Interaction created."), 201
 
-@binder_blueprint.route('/get_appointments/<date>', methods=["GET"])
-def getappointments(date):
-    """
-    Get appointments for a given date.
-    this is the old way of getting appointments
-
-    Args:
-        date (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
-
-    # Forward cookies + headers to preserve user authentication
-    res = requests.get(
-        f"{BACKEND_URL}/api/auth/me",
-        headers={
-            "Authorization": request.headers.get("Authorization"),
-        },
-        cookies=request.cookies,
-        params={ "domain": request.args.get("domain", session.get("domain", "business")) }
-    )
-
-    con = res.json()
-
-    if con.get("status") != "success":
-        return jsonify({"error": "unauthenticated"}), 401
-
-    user = con["data"]
-
-    appointments = get_appointments(date, user)
-    return jsonify(appointments)
-
 @binder_blueprint.route("/appointments/<date>", methods=["GET"])
 def get_appointments_for_date(date):
     """
     Read appointments for a given date.
-    the current way of getting appointments
     
     Requires:
         domain
@@ -327,7 +293,6 @@ def get_appointments_for_date(date):
 
     result = service.get_appointments(date)
     return make_response(data={"appointments": result}), 200
-
 
 @binder_blueprint.route("/appointments/<date>", methods=["PATCH"])
 def save_appointments_for_date(date):
@@ -351,7 +316,6 @@ def save_appointments_for_date(date):
     service.save_appointments(date, payload["appointments"])
 
     return make_response(message="Appointments saved successfully"), 200
-
 
 @binder_blueprint.route("/appointments/lock", methods=["POST"])
 def lock_appointments():
