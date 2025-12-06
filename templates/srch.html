@@ -202,7 +202,7 @@
      Constants & App State
      ---------------------- */
   const API_SEARCH = '/api/binder/search/client';
-  const API_GET_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
+  const API_GET_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}?domain=${encodeURIComponent(APP_STATE.domain || '')}&user_id=${encodeURIComponent(APP_STATE.user_id || '')}`;
   const API_PATCH_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
   const TRACK_ENDPOINT = '/track_time';
 
@@ -299,13 +299,11 @@
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(body)
       });
-      console.log(`Search API response:`, res , `data received:`, res.data);
       return res;
     }
 
     async function get_client(id) {
       out = u.safe_fetch(API_GET_CLIENT(id), { method: 'GET' });
-      console.log(out)
       return out
     }
 
@@ -313,7 +311,7 @@
       return u.safe_fetch(API_PATCH_CLIENT(id), {
         method: 'PATCH',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ patch: updates })
+        body: JSON.stringify({ patch: updates , user_id:APP_STATE.user_id , domain:APP_STATE.domain })
       });
     }
 
@@ -359,83 +357,135 @@
       });
     }
 
-    function render_list(list) {
+    function render_client_detail(patient) {
       clear();
-      if (!Array.isArray(list) || list.length === 0) {
-        const no = document.createElement('div');
-        no.className = 'client-card';
-        no.textContent = 'No results';
-        results_el.appendChild(no);
+      const el = results_el;
+
+      if (!patient) {
+        utils.show_toast("Client not found", "error");
         return;
       }
 
-      list.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'client-card';
-        const id = item.id ?? item.no ?? '-';
-        const gov = item.gov_id ?? '-';
-        const phone = item.phone ?? '-';
-        card.innerHTML = `
-          <div class="client-meta">
-            <div class="client-name">${u.escape_html(item.name ?? item.display_name ?? 'Unnamed')}</div>
-            <div class="client-sub">ID: ${u.escape_html(id)} • Gov: ${u.escape_html(gov)} • ${u.escape_html(phone)}</div>
-          </div>
-          <div class="card-actions">
-            <button class="btn-ghost view-btn" data-id="${u.escape_html(id)}">View</button>
-            <button class="btn-primary-small open-btn" data-id="${u.escape_html(id)}">Open</button>
-          </div>
-        `;
-        results_el.appendChild(card);
+      const labels = [
+        { key: 'name', text: 'Patient Name' },
+        { key: 'id', text: 'ID Number' },
+        { key: 'phone', text: 'Phone Number' },
+        { key: 'location', text: 'Location' },
+        { key: 'pmh', text: 'Medical History' },
+        { key: 'allergies', text: 'Allergies' },
+        { key: 'age', text: 'Age' },
+        { key: 'next', text: 'Next visit' },
+        { key: 'btype', text: 'Blood Type' },
+        { key: 'sex', text: 'Sex' },
+        { key: 'payed', text: 'Paid' },
+        { key: 'debit', text: 'Debit' },
+        { key: 'notes', text: 'Notes' }
+      ];
+
+      const panel = document.createElement('div');
+      panel.className = 'patient-card decorative-card';
+      panel.style.padding = "20px";
+
+      const grid = document.createElement('div');
+      grid.className = 'patient-info-grid';
+
+      labels.forEach(lbl => {
+        const wrap = document.createElement('div');
+
+        const l = document.createElement('div');
+        l.className = 'patient-label';
+        l.textContent = lbl.text + ':';
+
+        const input = document.createElement('input');
+        input.className = 'patient-value';
+        input.setAttribute('data-key', lbl.key);
+
+        if (lbl.key === 'next') {
+          input.type = 'datetime-local';
+          input.value = patient.next || new Date().toISOString().slice(0, 16);
+        } else {
+          input.type = 'text';
+          input.value = patient[lbl.key] || '';
+        }
+
+        wrap.appendChild(l);
+        wrap.appendChild(input);
+        grid.appendChild(wrap);
       });
 
-      // wire handlers
-      results_el.querySelectorAll('.view-btn').forEach(b => b.addEventListener('click', ev => controller.view_client(ev.currentTarget.dataset.id)));
-      results_el.querySelectorAll('.open-btn').forEach(b => b.addEventListener('click', ev => controller.open_client(ev.currentTarget.dataset.id)));
-    }
+      const btnRow = document.createElement('div');
+      btnRow.style.display = 'flex';
+      btnRow.style.gap = '10px';
+      btnRow.style.marginTop = '16px';
 
-    function render_client_detail(client) {
-      clear();
-      if (!client) { u.show_toast('Client not found', 'error'); return; }
-      const id = client.id ?? client.no ?? '-';
-      const box = document.createElement('div');
-      box.className = 'detail-panel';
-      box.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
-          <div>
-            <div style="font-weight:800">${u.escape_html(client.name ?? client.display_name ?? 'Unnamed')}</div>
-            <div style="color:${getComputedStyle(document.documentElement).getPropertyValue('--muted')}; margin-top:6px">ID: ${u.escape_html(id)} • Gov: ${u.escape_html(client.gov_id ?? '-')}</div>
-          </div>
-          <div>
-            <button id="back_btn" class="btn-ghost">Back</button>
-            <button id="save_btn" class="btn-primary-small">Save</button>
-          </div>
-        </div>
-
-        <div style="margin-top:12px">
-          <label style="font-weight:600">Phone</label>
-          <div style="margin-top:6px">${u.escape_html(client.phone ?? '-')}</div>
-
-          <label style="font-weight:600; display:block; margin-top:8px">Notes</label>
-          <textarea id="notes_area" class="search-input" style="min-height:86px; margin-top:6px">${u.escape_html(client.notes ?? '')}</textarea>
-        </div>
+      btnRow.innerHTML = `
+        <button class="big-btn btn-primary" id="save_btn">Save</button>
+        <button class="big-btn btn-ghost" id="back_btn">Back</button>
       `;
-      ui.clear();
-      results_el.appendChild(box);
+
+      panel.appendChild(grid);
+      panel.appendChild(btnRow);
+      el.appendChild(panel);
 
       document.getElementById('back_btn').addEventListener('click', () => controller.render_last());
-      document.getElementById('save_btn').addEventListener('click', async () => {
-        const notes = document.getElementById('notes_area').value;
-        try {
-          await controller.save_client(id, { notes });
-          u.show_toast('Saved', 'success');
-        } catch (err) {
-          u.show_toast('Save failed', 'error');
-        }
-      });
+      document.getElementById('save_btn').addEventListener('click', () => controller.save_client(patient.id, collectPatientValues()));
     }
 
-    return { render_list, render_client_detail, clear , menu_init };
-  })(utils);
+    function collectPatientValues() {
+      const inputs = results_el.querySelectorAll('[data-key]');
+      const data = {};
+      inputs.forEach(i => {
+        const key = i.dataset.key;
+        data[key] = i.value;
+      });
+      return data;
+    }
+
+
+   function render_list(list) {
+    clear();
+    const el = results_el;
+
+    if (!list || list.length === 0) {
+      const no = document.createElement('div');
+      no.className = 'patient-card decorative-card';
+      no.textContent = 'No patients found.';
+      el.appendChild(no);
+      return;
+    }
+
+    list.forEach(patient => {
+      const card = document.createElement('div');
+      card.className = 'patient-card decorative-card';
+      card.innerHTML = `
+        <div class="patient-row" style="justify-content:space-between;">
+          <div>
+            <div style="font-weight:800; font-size:1.05rem;">${patient.name || '—'}</div>
+            <div style="color:rgba(0,0,0,0.6); margin-top:6px;">
+              ID: ${parseInt(patient.id)+1 || '—'} • Age: ${patient.age || '—'}
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <button 
+              class="big-btn btn-secondary" 
+              style="min-width:110px;" 
+              data-id="${patient.id}"
+            >
+              Open
+            </button>
+          </div>
+        </div>
+      `;
+      el.appendChild(card);
+    });
+
+    el.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', ev => controller.open_client(ev.target.dataset.id));
+    });
+  }
+  return { clear, menu_init, render_list , render_client_detail };
+
+  })(utils)
 
   /* ----------------------
      Usage tracker (single final send)
@@ -484,7 +534,7 @@
       try {
         if (window.__AUTO_RENDER && window.__AUTO_RENDER.client_id) {
           const resp = await api_mod.get_client(window.__AUTO_RENDER.client_id);
-          if (resp && resp.status === 'success') ui_mod.render_client_detail(resp.data.client);
+          if (resp && resp.status === 'success') ui_mod.render_client_detail(resp.data);
         }
         if (window.__GAIA_LIST && window.__GAIA_LIST.metric) {
           const res = await api_mod.search('', { metric: window.__GAIA_LIST.metric });
@@ -510,7 +560,23 @@
           u_mod.show_toast(res?.message || 'Search failed', 'error');
           return;
         }
-        last_results = res.data;
+
+        last_results = Object.entries(res.data).map(([id, p]) => ({
+          id,
+          name: p.name,
+          age: p.age,
+          phone: p.phone,
+          pmh: p.pmh,
+          allergies: p.allergies,
+          location: p.location,
+          sex: p.sex,
+          debit: p.debit,
+          payed: p.payed,
+          next: p.next,
+          btype: p.btype,
+          notes: p.notes
+        }));
+
         APP_STATE.last_results = last_results;
         ui_mod.render_list(last_results);
       } catch (err) {
@@ -524,7 +590,7 @@
       try {
         const res = await api_mod.get_client(id);
         if (!res || res.status !== 'success') { u_mod.show_toast(res?.message || 'Failed to load', 'error'); return; }
-        ui_mod.render_client_detail(res.data.client);
+        ui_mod.render_client_detail(res.data);
       } catch (err) {
         console.error('view error', err);
         u_mod.show_toast('Failed to load client', 'error');
@@ -537,7 +603,7 @@
       try {
         const res = await api_mod.patch_client(id, updates);
         if (!res || res.status !== 'success') throw new Error(res?.message || 'save failed');
-        return res.data.client;
+        return res.data;
       } catch (err) {
         console.error('save client error', err);
         throw err;
