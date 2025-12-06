@@ -40,11 +40,11 @@ class BinderMedical(
 
     # patient
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        client_id = self.adapter.add_child(self.current_user, "clients", data)
+        client_id = self.adapter.add_child(self.current_user, "clients", data) or self.adapter.add_child(self.current_user, "patients", data)
         return {"id": client_id, **data}
 
     def read_client(self, client_id: str) -> Dict[str, Any]:
-        patients = self.adapter.list_children(self.current_user, "clients")
+        patients = self.adapter.list_children(self.current_user, "clients") or self.adapter.list_children(self.current_user, "patients")
         client = patients[int(client_id)] 
         if client:
             return patients[int(client_id)] 
@@ -52,11 +52,11 @@ class BinderMedical(
             return None
 
     def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
-        self.adapter.update_child(self.current_user, "clients", client_id, patch)
+        self.adapter.update_child(self.current_user, "clients", client_id, patch) or self.adapter.update_child(self.current_user, "patients", client_id, patch)
 
     def delete_client(self, client_id: str) -> None:
-        self.adapter.delete_child(self.current_user, "clients", client_id)
-
+        self.adapter.delete_child(self.current_user, "clients", client_id) or self.adapter.delete_child(self.current_user, "patients", client_id)
+        
     def search_clients(self, query: str) -> List[Dict[str, Any]]:
         """
         search over 'patients' collection for clients.
@@ -72,17 +72,17 @@ class BinderMedical(
 
         gov_norm = _norm_gov(q)
         if gov_norm:
-            found = self.adapter.find_children_by_predicate(self.current_user, "patients", lambda c: _norm_gov(c.get("gov_id","")) == gov_norm)
+            found = self.adapter.find_children_by_predicate(self.current_user, "clients", lambda c: _norm_gov(c.get("gov_id","")) == gov_norm) or self.adapter.find_children_by_predicate(self.current_user, "patients", lambda c: _norm_gov(c.get("gov_id","")) == gov_norm)
             if found: return found
 
         if q.isdigit():
             # id field
-            found = self.adapter.find_children_by_field(self.current_user, "patients", "id", q)
+            found = self.adapter.find_children_by_field(self.current_user, "clients", "id", q) or self.adapter.find_children_by_field(self.current_user, "patients", "id", q)
             if found: return found
             # numeric index
             try:
                 idx = int(q) - 1
-                children = self.adapter.list_children(self.current_user, "patients")
+                children = self.adapter.list_children(self.current_user, "clients") or self.adapter.list_children(self.current_user, "patients")
                 if 0 <= idx < len(children):
                     return [children[idx]]
             except Exception:
@@ -90,21 +90,21 @@ class BinderMedical(
 
         digits = _digits(q)
         if digits:
-            found = self.adapter.find_by_phone(self.current_user, "patients", digits)
+            found = self.adapter.find_by_phone(self.current_user, "clients", digits) or self.adapter.find_by_phone(self.current_user, "patients", digits)
             if found: return found
 
-        return self.adapter.find_by_name_substring(self.current_user, "patients", q)
+        return self.adapter.find_by_name_substring(self.current_user, "clients", q) or self.adapter.find_by_name_substring(self.current_user, "patients", q)
 
     # visits (nested)
     def create_visit(self, patient_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.adapter.add_nested(self.current_user, "clients", patient_id, "visits", data)
+        self.adapter.add_nested(self.current_user, "clients", patient_id, "visits", data) or self.adapter.add_nested(self.current_user, "patients", patient_id, "visits", data)
         return data
 
     def list(self, patient_id: str) -> List[Dict[str, Any]]:
-        return self.adapter.list_nested(self.current_user, "clients", patient_id, "visits")
-
+        return self.adapter.list_nested(self.current_user, "clients", patient_id, "visits") or self.adapter.list_nested(self.current_user, "patients", patient_id, "visits")
+    
     def update_visit(self, patient_id: str, visit_id: str, patch: Dict[str, Any]) -> None:
-        self.adapter.update_nested(self.current_user, "clients", patient_id, "visits", visit_id, patch)
+        self.adapter.update_nested(self.current_user, "clients", patient_id, "visits", visit_id, patch) or self.adapter.update_nested(self.current_user, "patients", patient_id, "visits", visit_id, patch)
 
     def delete_visit(self, patient_id: str, visit_id: str) -> None:
-        self.adapter.delete_nested(self.current_user, "clients", patient_id, "visits", visit_id)
+        self.adapter.delete_nested(self.current_user, "clients", patient_id, "visits", visit_id) or self.adapter.delete_nested(self.current_user, "patients", patient_id, "visits", visit_id)

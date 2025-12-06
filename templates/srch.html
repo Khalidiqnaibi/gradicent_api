@@ -269,13 +269,38 @@
      API module
      ---------------------- */
   const api = (function (u) {
+    async function get_domain() {
+      try {
+        const data = await u.safe_fetch('/api/binder/get_domain', { method: 'GET' });
+        if (data && (typeof data.data === 'string' || typeof data.domain === 'string')) {
+          return data.data || data.domain;
+        }
+      } catch (err) {
+        // propagate to caller
+      }
+      return null;
+    }
+
+    async function get_user(){
+      const url = `/api/auth/me`;
+      const data = await u.safe_fetch(url, { method: 'GET' });
+      return data.data;    
+    }
+
+    async function get_user_id(){
+      user = await get_user();
+      return user.id;    
+    }
+
     async function search(query, opts = {}) {
-      const body = { query, ...opts };
-      return u.safe_fetch(API_SEARCH, {
+      const body = { query, user_id:APP_STATE.user_id, ...opts };
+      res= await u.safe_fetch(API_SEARCH, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(body)
       });
+      console.log(`Search API response:`, res , `data received:`, res.data);
+      return res;
     }
 
     async function get_client(id) {
@@ -303,7 +328,7 @@
       } catch (e) { /* ignore */ }
     }
 
-    return { search, get_client, patch_client, track_time };
+    return { search, get_client, patch_client, track_time , get_user_id , get_user , get_domain  };
   })(utils);
 
   /* ----------------------
@@ -445,6 +470,8 @@
   const controller = (function (api_mod, ui_mod, u_mod) {
     let last_results = [];
     async function init() {
+      APP_STATE.user_id =  await api_mod.get_user_id();
+      APP_STATE.domain = await api_mod.get_domain();
       ui_mod.menu_init();
       // wire UI
       u_mod.el('search_btn').addEventListener('click', () => do_search());
@@ -462,7 +489,7 @@
         if (window.__GAIA_LIST && window.__GAIA_LIST.metric) {
           const res = await api_mod.search('', { metric: window.__GAIA_LIST.metric });
           if (res && res.status === 'success') {
-            last_results = res.data.results || [];
+            last_results = res.data || [];
             ui_mod.render_list(last_results);
           }
         }
@@ -483,7 +510,7 @@
           u_mod.show_toast(res?.message || 'Search failed', 'error');
           return;
         }
-        last_results = res.data?.results || [];
+        last_results = res.data;
         APP_STATE.last_results = last_results;
         ui_mod.render_list(last_results);
       } catch (err) {
