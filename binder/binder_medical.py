@@ -40,11 +40,11 @@ class BinderMedical(
 
     # patient
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        client_id = self.adapter.add_child(self.current_user, "patients", data)
+        client_id = self.adapter.add_child(self.current_user, "clients", data)
         return {"id": client_id, **data}
 
     def read_client(self, client_id: str) -> Dict[str, Any]:
-        patients = self.adapter.list_children(self.current_user, "patients")
+        patients = self.adapter.list_children(self.current_user, "clients")
         client = patients[int(client_id)] 
         if client:
             return patients[int(client_id)] 
@@ -52,10 +52,10 @@ class BinderMedical(
             return None
 
     def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
-        self.adapter.update_child(self.current_user, "patients", client_id, patch)
+        self.adapter.update_child(self.current_user, "clients", client_id, patch)
 
     def delete_client(self, client_id: str) -> None:
-        self.adapter.delete_child(self.current_user, "patients", client_id)
+        self.adapter.delete_child(self.current_user, "clients", client_id)
 
     def search_clients(self, query: str) -> List[Dict[str, Any]]:
         """
@@ -97,14 +97,14 @@ class BinderMedical(
 
     # visits (nested)
     def create_visit(self, patient_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.adapter.add_nested(self.current_user, "patients", patient_id, "visits", data)
+        self.adapter.add_nested(self.current_user, "clients", patient_id, "visits", data)
         return data
 
     def list(self, patient_id: str) -> List[Dict[str, Any]]:
-        return self.adapter.list_nested(self.current_user, "patients", patient_id, "visits")
+        return self.adapter.list_nested(self.current_user, "clients", patient_id, "visits")
 
     def update_visit(self, patient_id: str, visit_id: str, patch: Dict[str, Any]) -> None:
-        self.adapter.update_nested(self.current_user, "patients", patient_id, "visits", visit_id, patch)
+        self.adapter.update_nested(self.current_user, "clients", patient_id, "visits", visit_id, patch)
 
     def delete_visit(self, patient_id: str, visit_id: str) -> None:
-        self.adapter.delete_nested(self.current_user, "patients", patient_id, "visits", visit_id)
+        self.adapter.delete_nested(self.current_user, "clients", patient_id, "visits", visit_id)

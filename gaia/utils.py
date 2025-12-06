@@ -40,7 +40,7 @@ def filter_clients(clients, filters):
 
     matched = []
 
-    for patient in clients:
+    for patient in clients.values():
         # patient-level filters
         if location and patient.get("location", "").lower() != location:
             continue
@@ -91,7 +91,7 @@ def filter_patients(patients, filters):
 
     matched = []
 
-    for patient in patients:
+    for patient in patients.values():
         # patient-level filters
         if location and patient.get("location", "").lower() != location:
             continue

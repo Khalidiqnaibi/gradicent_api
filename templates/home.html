@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Binder Medical</title>
-  
+  <title>Binder Medical — Add Patient</title>
+
   <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
 
-  <!-- Tailwind CDN -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
@@ -25,7 +25,7 @@
       -webkit-font-smoothing:antialiased;
     }
 
-    /* Hamburger lines */
+    /* Hamburger icon */
     .menu__btn span,
     .menu__btn span::before,
     .menu__btn span::after {
@@ -37,54 +37,55 @@
       border-radius: 6px;
       transition: 0.28s ease;
     }
+
     .menu__btn span::before,
-    .menu__btn span::after {
-      content: "";
-      position: absolute;
-      left: 0;
-    }
-    .menu__btn span::before { top: -8px; }
-    .menu__btn span::after { top: 8px; }
-
-    /* Toggle open */
-    .menu-active .menu__btn span {
-      transform: rotate(45deg);
-      background-color: var(--accent);
-    }
-    .menu-active .menu__btn span::before {
-      transform: rotate(90deg);
-      top: 0;
-    }
-    .menu-active .menu__btn span::after {
-      opacity: 0;
+    .menu__btn span::after{
+      content:"";
+      position:absolute;
+      left:0;
     }
 
-    /* Menu slide */
-    .menu__box {
-      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity 0.2s;
-      transform: translateX(-110%);
-      opacity: 0;
-    }
-    .menu-active .menu__box {
-      transform: translateX(0);
-      opacity: 1;
+    .menu__btn span::before{ top:-8px;}
+    .menu__btn span::after{ top: 8px;}
+
+    /* Open state */
+    .menu-active .menu__btn span{
+      transform:rotate(45deg);
+      background:var(--accent);
     }
 
-    /* Small touch-ups */
-    .form-label { color: #44372f; font-weight: 600; }
-    .decorative-card {
+    .menu-active .menu__btn span::before{
+      transform:rotate(90deg);
+      top:0;
+    }
+
+    .menu-active .menu__btn span::after{
+      opacity:0;
+    }
+
+    /* Menu sliding */
+    .menu__box{
+      transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .2s;
+      transform:translateX(-110%);
+      opacity:0;
+    }
+
+    .menu-active .menu__box{
+      transform:translateX(0);
+      opacity:1;
+    }
+
+    .decorative-card{
       background: linear-gradient(135deg, rgba(255,255,255,0.72), rgba(255,255,255,0.62));
-      border: 1px solid rgba(0,0,0,0.04);
+      border:1px solid rgba(0,0,0,0.05);
       box-shadow: 0 8px 28px rgba(18,18,18,0.08);
-    }
-
-    .ac-frame.min-h-screen.flex.items-center.justify-center.px-6.py-12 {
-      padding-top: 4rem;
     }
   </style>
 </head>
+
 <body class="font-inter antialiased">
 
+  
   <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
@@ -142,313 +143,283 @@
     </div>
   </div>
 
-  <!-- Page content -->
-  <div class="ac-frame min-h-screen flex items-center justify-center px-6 py-12">
-    <div class="bd max-w-3xl w-full decorative-card rounded-3xl p-8 sm:p-10 border border-[rgba(0,0,0,0.04)]">
+<div class="ac-frame min-h-screen flex justify-center items-center px-6 py-12">
+  <div class="decorative-card max-w-3xl w-full rounded-3xl p-10">
 
-      <!-- Header -->
-      <div class="header mb-6 text-center">
-        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight" style="color: #2b2b2b;">Add A Patient</h1>
-        <p class="mt-2 text-sm text-[rgba(0,0,0,0.55)]">Add patient details quickly — press Enter to jump between fields.</p>
-      </div>
-
-      <!-- Form -->
-      <div class="main-frame">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-          <div class="form-group">
-            <label class="form-label block mb-1 text-sm">Patient Name</label>
-            <input id="PName" type="text" placeholder="Full name" class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label block mb-1 text-sm">ID Number</label>
-            <input id="idnum" type="text" placeholder="National ID / MRN" class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label block mb-1 text-sm">Phone Number</label>
-            <input id="PNum" type="text" placeholder="+970 59 ..." class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label block mb-1 text-sm">Location</label>
-            <input id="loc" type="text" placeholder="City / Clinic" class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div class="form-group sm:col-span-2">
-            <label class="form-label block mb-1 text-sm">Medical History</label>
-            <input id="medh" type="text" placeholder="PMH, chronic conditions..." class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label block mb-1 text-sm">Allergies</label>
-            <input id="allergies" type="text" placeholder="e.g., Penicillin" class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label block mb-1 text-sm">Blood Type</label>
-            <input id="btype" type="text" placeholder="A+, O-, etc." class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label block mb-1 text-sm">Sex</label>
-            <input id="sex" type="text" placeholder="M / F" class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label block mb-1 text-sm">Age</label>
-            <input id="age" type="text" placeholder="Years" class="px-4 py-2 rounded-xl border border-[var(--secondary)] bg-white/80 w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
-          </div>
-
-        </div>
-
-        <!-- Add button -->
-        <div class="mt-6 flex justify-center">
-          <button class="add-patient-btn px-6 py-2 rounded-2xl bg-[var(--accent)] text-[var(--text)] font-semibold shadow-md hover:scale-[1.02] transition" onclick="add_btn()">
-            Add
-          </button>
-        </div>
-      </div>
+    <div class="text-center mb-10">
+      <h1 class="text-3xl font-bold">Add a Patient</h1>
+      <p class="text-[rgba(0,0,0,0.60)] mt-2">
+        Fill out medical and personal details. Press Enter to navigate fields quickly.
+      </p>
     </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+      <div>
+        <label class="font-semibold">Patient Name</label>
+        <input id="PName"
+               placeholder="Full name"
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80 focus:ring-2 focus:ring-[var(--accent)]">
+      </div>
+
+      <div>
+        <label class="font-semibold">National ID</label>
+        <input id="idnum"
+               placeholder="ID / Gov Number"
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80">
+      </div>
+
+      <div>
+        <label class="font-semibold">Phone</label>
+        <input id="PNum"
+               placeholder="+970 59 …"
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80">
+      </div>
+
+      <div>
+        <label class="font-semibold">Location</label>
+        <input id="loc" placeholder="City / Area / Building"
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80">
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="font-semibold">Medical History</label>
+        <input id="medh"
+               placeholder="PMH, chronic conditions…"
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80">
+      </div>
+
+      <div>
+        <label class="font-semibold">Allergies</label>
+        <input id="allergies" placeholder="e.g., Penicillin"
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80">
+      </div>
+
+      <div>
+        <label class="font-semibold">Blood Type</label>
+        <input id="btype" placeholder="A+, O-, etc."
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80">
+      </div>
+
+      <div>
+        <label class="font-semibold">Sex</label>
+        <input id="sex" placeholder="M / F"
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80">
+      </div>
+
+      <div>
+        <label class="font-semibold">Age</label>
+        <input id="age" placeholder="Years"
+               class="w-full p-3 rounded-xl border border-[var(--secondary)] bg-white/80">
+      </div>
+
+    </div>
+
+    <!-- ADD BUTTON -->
+    <div class="mt-10 flex justify-center">
+      <button onclick="submitPatient()"
+              class="px-8 py-3 bg-[var(--accent)] rounded-2xl text-white font-semibold shadow hover:scale-105 transition">
+        Add Patient
+      </button>
+    </div>
+
   </div>
+</div>
 
-  <!-- Scripts -->
-  <script>
-    const entryWidgets = {};
+<script>
+const API_TIMEOUT_MS = 10_000;
+const POLL_TRACK_INTERVAL_MS = 60_000;
 
-  /**
-   * Tracks real active time on the page and sends ONLY one final value:
-   * { seconds: totalActiveSeconds }
-   *
-   * Usage:
-   * startUsageTracker("/track_time");
-   */
-  function startUsageTracker(endpoint) {
+let GLOBAL_USER_ID = null;
+let GLOBAL_DOMAIN = null;
 
-    let totalActiveSeconds = 0;
-    let active = true;
+document.addEventListener("DOMContentLoaded", async () => {
+  startUsageTracker("/track_time");
 
-    // Count only when the page is visible & focused
-    document.addEventListener("visibilitychange", () => {
-      active = !document.hidden;
-    });
+  try {
+    menu_init()
+    GLOBAL_USER_ID = await get_user_id();       // ex: 1015974463...
+    GLOBAL_DOMAIN  = await get_domain();        // ex: "medical"
 
-    window.addEventListener("blur", () => { active = false; });
-    window.addEventListener("focus", () => { active = true; });
+  } catch (err) {
+    console.error("Failed to load domain/user:", err);
+  }
+});
 
-    // Tick every second → adds to active use
-    setInterval(() => {
-      if (active) totalActiveSeconds += 1;
-    }, 1000);
-
-    // Send the final total when the session ends
-    function sendFinal() {
-      if (totalActiveSeconds <= 0) return;
-
-      const payload = JSON.stringify({ seconds: totalActiveSeconds });
-
-      // Use sendBeacon so it always sends before page unload
-      navigator.sendBeacon(endpoint, payload);
+function menu_init() {
+  const menuBtn = document.querySelector('.hamburger-menu');
+  const menuBar = document.getElementById('menuBar');
+  
+  // Toggle menu (keeps same interaction as previous)
+  menuBtn.addEventListener('click', () => {
+    menuBar.classList.toggle('menu-active');
+  });
+  
+  const menu_box = document.querySelector(".menu__box")
+  // close when clicking outside (improves UX)
+  document.addEventListener('click', (ev) => {
+    if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+      menuBar.classList.remove('menu-active');
+      toggle.setAttribute('aria-expanded', 'false');
+      menu_box.setAttribute('aria-hidden', 'true');
     }
+  });
+}
 
-    // On close / refresh / navigation
-    window.addEventListener("beforeunload", sendFinal);
+// ---------------------------------------------
+//  SAFE FETCH WRAPPER (same across Binder)
+// ---------------------------------------------
+async function safePost(url, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body)
+  });
 
-    // Return API for manual flush if needed
-    return {
-      getSeconds: () => totalActiveSeconds,
-      flush: sendFinal
-    };
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Request failed: ${res.status} → ${t}`);
   }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        const usage = startUsageTracker("/track_time");
-        // Initialize entryWidgets with references to input elements
-        entryWidgets["PName"] = document.getElementById("PName");
-        entryWidgets["idnum"] = document.getElementById("idnum");
-        entryWidgets["PNum"] = document.getElementById("PNum");
-        entryWidgets["loc"] = document.getElementById("loc");
-        entryWidgets["medh"] = document.getElementById("medh");
-        entryWidgets["allergies"] = document.getElementById("allergies");
-        entryWidgets["btype"] = document.getElementById("btype");
-        entryWidgets["sex"] = document.getElementById("sex");
-        entryWidgets["age"] = document.getElementById("age");
+  return await res.json();
+}
 
-        const menuBtn = document.querySelector('.hamburger-menu');
-        const menuBar = document.getElementById('menuBar');
+async function safe_fetch(url, opts = {}) {
+ const controller = new AbortController();
+ const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+ opts.signal = controller.signal;
 
-        // Toggle menu (keeps same interaction as previous)
-        menuBtn.addEventListener('click', () => {
-            menuBar.classList.toggle('menu-active');
-        });
+ try {
+   const res = await fetch(url, opts);
+   clearTimeout(timeout);
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      const err = new Error(`HTTP ${res.status} ${res.statusText}`);
+      err.status = res.status;
+      err.body = text;
+      throw err;
+    }
+    // assume JSON by default
+    const ct = (res.headers.get('content-type') || '');
+    if (ct.includes('application/json')) return res.json();
+    return res.text();
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
+  }
+}
 
-        const menu_box = document.querySelector(".menu__box")
-        // close when clicking outside (improves UX)
-        document.addEventListener('click', (ev) => {
-          if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
-            menuBar.classList.remove('menu-active');
-            toggle.setAttribute('aria-expanded', 'false');
-            menu_box.setAttribute('aria-hidden', 'true');
-          }
-        });
+async function get_domain() {
+  try {
+    const data = await safe_fetch('/api/binder/get_domain', { method: 'GET' });
+    if (data && (typeof data.data === 'string' || typeof data.domain === 'string')) {
+      return data.data || data.domain;
+    }
+  } catch (err) {
+    console.log(err)
+  }
+  return null;
+}
 
-        const binder = '{{ binder }}';
-        const appa = document.getElementById('appa');
-        const appimg = document.getElementById('appimg');
-        const apph6 = document.getElementById('apph6');
-        var link = document.querySelector("link[rel~='icon']");
+async function get_user(){
+  const url = `/api/auth/me`;
+  const data = await safe_fetch(url, { method: 'GET' });
+  return data.data;    
+}
 
-        if (binder === 'lab'){
-            appa.title='Search Lab';
-            appa.href='/srchlab';
-            appimg.src='/static/images/srchlab.png';
-            document.title= 'Binder Labratory';
-            link.href = '/static/images/binderlab.jpg';
-            apph6.textContent = 'Search Lab';
-        }
+async function get_user_id(){
+  user = await get_user();
+  return user.id;    
+}
 
-        // Set up Enter navigation behavior for inputs
-        Object.values(entryWidgets).forEach(widget => {
-            widget.addEventListener("keydown", function(event) {
-                if (event.key === "Enter") {
-                    nextEntry(event, widget);
-                }
-            });
-        });
-    });
+// ---------------------------------------------
+//  USAGE TRACKER
+// ---------------------------------------------
+function startUsageTracker(endpoint) {
+  let active = true;
+  let seconds = 0;
 
-    function formatt() {
-        const today = new Date().toISOString().split('T')[0];
-        const d = new Date(today);
-        let month = '' + (d.getMonth() + 1);
-        let day = '' + d.getDate();
-        const year = d.getFullYear()+1;
+  document.addEventListener("visibilitychange", () => {
+    active = !document.hidden;
+  });
+  window.addEventListener("focus",  () => active = true);
+  window.addEventListener("blur",   () => active = false);
 
-        if (month.length < 2) month = '0' + month;
-        if (day.length < 2) day = '0' + day;
-        return [year, month, day].join('-');
+  setInterval(() => { if (active) seconds++; }, 1000);
+
+  window.addEventListener("beforeunload", () => {
+    if (seconds > 0) {
+      navigator.sendBeacon(endpoint, JSON.stringify({seconds}));
+    }
+  });
+}
+
+
+
+// ---------------------------------------------
+//  BUILD PATIENT OBJECT
+// ---------------------------------------------
+function buildClientObject() {
+  return {
+    name:       document.getElementById("PName").value.trim(),
+    gov_id:     document.getElementById("idnum").value.trim(),
+    phone:      document.getElementById("PNum").value.trim(),
+    location:   document.getElementById("loc").value.trim(),
+    pmh:        document.getElementById("medh").value.trim(),
+    allergies:  document.getElementById("allergies").value.trim(),
+    btype:      document.getElementById("btype").value.trim(),
+    sex:        document.getElementById("sex").value.trim(),
+    age:        document.getElementById("age").value.trim(),
+    debit: 0,
+    payed: 0,
+    visits: []   // empty — first visit will be added later
+  };
+}
+
+
+// ---------------------------------------------
+//  SUBMIT
+// ---------------------------------------------
+
+
+async function submitPatient() {
+  const client = buildClientObject();
+
+  if (!GLOBAL_USER_ID || !GLOBAL_DOMAIN) {
+    alert("Unable to get user or domain. Please refresh the page.");
+    return;
+  }
+
+  if (!client.name || client.age == 0) {
+    alert("Please enter the patient name.");
+    return;
+  }
+
+  try {
+
+    const payload = {
+      domain:GLOBAL_DOMAIN,
+      user_id: GLOBAL_USER_ID,
+      client
+    };
+
+    const result = await safePost("/api/binder/clients", payload);
+    console.log(result);
+
+    alert("Patient added successfully!");
+    if (["medical"].includes(domain)){
+      window.location.href = "/meddata";
+    }
+    else{
+      console.warn("not impleminted yet!")
     }
 
-    function get_info() {
-        const PatientName = document.getElementById("PName");
-        const idnum = document.getElementById("idnum");
-        const PhoneNumber = document.getElementById("PNum");
-        const loc = document.getElementById("loc");
-        const medh = document.getElementById("medh");
-        const age = document.getElementById("age");
-        const btype = document.getElementById("btype");
-        const sex = document.getElementById("sex");
-        const allergies = document.getElementById("allergies");
+  } catch (err) {
+    console.error("Error adding patient:", err);
+    alert("Error adding patient. See console.");
+  }
+}
+</script>
 
-        const fields = [
-            PatientName,
-            idnum,
-            PhoneNumber,
-            loc,
-            medh,
-            allergies,
-            sex,
-            btype,
-            age
-        ];
-
-        var info = {
-            "no":1,
-            "name": PatientName.value,
-            "id": idnum.value,
-            "phone": PhoneNumber.value,
-            "location": loc.value,
-            "pmh": medh.value,
-            "allergies":allergies.value,
-            "payed": 0,
-            "debit": 0,
-            "age": age.value,
-            "sex": sex.value,
-            "div":"aha",
-            "btype":btype.value,
-            "visits": [
-                {
-                    "coast": 0,
-                    "debit": 0,
-                    "details": "",
-                    "diagnosis": " ",
-                    "lab": "",
-                    "payed": 0,
-                    "treatment": "",
-                    "visit_date": formatt(),
-                    "vno": 1
-                }
-            ]
-        };
-
-        for (let i = 0, len = fields.length; i < len; i++) {
-            fields[i].value = "";
-        }
-
-        return info;
-    }
-    // error in handeling it was 
-    async function addPatient(data) {
-        try {
-            const response = await fetch('/addPatient', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }else{
-                const result = await response.json();
-                console.log(result.message);
-                window.location.href = `/meddata`;
-            }
-
-        } catch (error) {
-            console.error('Error adding patient:', error);
-            alert('Error adding patient. See console for details.');
-        }
-    }
-
-    function add_btn() {
-        var info = get_info();
-        var data = {
-            patient_info: info
-        };
-        if (info.name){
-            addPatient(data);
-        }else{
-            alert(`Please provide a patient name` );
-        }
-    }
-
-    function nextEntry(event, entryWidget) {
-        try {
-            const keyForWidget = Object.keys(entryWidgets).find(k => entryWidgets[k] === entryWidget);
-            if (!['visit_date','search'].includes(keyForWidget)) {
-                // special handling not present in this form — fall back to normal tabbing
-                const nextWidget = getNextWidget(entryWidget);
-                if (nextWidget) {
-                    nextWidget.focus();
-                    event.preventDefault();
-                }
-            }
-        } catch (error) {
-            console.error('Error in nextEntry function:', error);
-        }
-    }
-
-    function getNextWidget(currentWidget) {
-        const keys = Object.keys(entryWidgets);
-        const currentKey = keys.find(k => entryWidgets[k] === currentWidget);
-        const currentIndex = keys.indexOf(currentKey);
-
-        if (currentIndex >= 0 && currentIndex < keys.length - 1) {
-            return entryWidgets[keys[currentIndex + 1]];
-        }
-        return null;
-    }
-  </script>
 </body>
 </html>

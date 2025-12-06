@@ -125,7 +125,6 @@ class BinderService:
         Raises:
             BinderServiceError: on validation or binder failure.
         """
-        self._ensure_id(client, "id")
         return self._wrap_and_log("create_client", self._binder.create_client, client)
 
     def read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
