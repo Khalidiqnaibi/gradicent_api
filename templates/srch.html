@@ -111,8 +111,6 @@
   </style>
 </head>
 <body>
-  
-  
   <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
@@ -281,7 +279,9 @@
     }
 
     async function get_client(id) {
-      return u.safe_fetch(API_GET_CLIENT(id), { method: 'GET' });
+      out = u.safe_fetch(API_GET_CLIENT(id), { method: 'GET' });
+      console.log(out)
+      return out
     }
 
     async function patch_client(id, updates) {
@@ -409,7 +409,7 @@
       });
     }
 
-    return { render_list, render_client_detail, clear };
+    return { render_list, render_client_detail, clear , menu_init };
   })(utils);
 
   /* ----------------------
@@ -443,9 +443,9 @@
      Controller
      ---------------------- */
   const controller = (function (api_mod, ui_mod, u_mod) {
-    ui_mod.menu_init();
     let last_results = [];
     async function init() {
+      ui_mod.menu_init();
       // wire UI
       u_mod.el('search_btn').addEventListener('click', () => do_search());
       u_mod.el('query_input').addEventListener('keydown', (e) => { if (e.key === 'Enter') do_search(); });
