@@ -34,9 +34,10 @@ class TotalCustomersMetric(IMetric):
 
             **kwargs (filter options):
                 Common:
+                    user_id (str) : binders user id in the db
                     domain (str): "medical" | "business" | "education" | optional
-                    start_date (str): "YYYY-MM-DD"
-                    end_date   (str): "YYYY-MM-DD"
+                    start_date | From (str): "YYYY-MM-DD"
+                    end_date | To   (str): "YYYY-MM-DD"
                     details    (str): free text
                     location   (str): free text
                     show_date (bool): filter by date
@@ -54,27 +55,38 @@ class TotalCustomersMetric(IMetric):
         Returns:
             dict: {"total_customers": int}
         """
-        # collect patients and normalize to a list
-        DOMAIN = kwargs.get("domain","medical")
-        user = binder.adapter.get_user(binder.current_user)
-        user = normalize_user(user).to_dict()
+        domain = kwargs.get("domain", "medical").lower()
 
-        if DOMAIN in ["medical"]:
-            clients = user.get("clients")
-            matched = filter_patients(clients, kwargs)
-            total = len(matched)
-        elif DOMAIN in ["business"]:
-            clients = user.get("clients")
-            matched = filter_clients(clients, kwargs)
-            total = len(matched)
-        else:# temp
-            clients = user.get("clients")
-            matched = filter_clients(clients, kwargs)
-            total = len(matched)
-        
+        # Which collection do we load?
+        entity_collection = DOMAIN_ENTITY_MAP.get(domain, "clients")
 
-        logger.debug("total_customers computed: %d", total)
-        return {"total_customers": total}
+        # ----------------------
+        # Switch binder user (if client called with ?user_id=)
+        # ----------------------
+        userid = kwargs.get("user_id")
+        if userid:
+            binder.adapter.current_user = userid
+
+        # ----------------------
+        # FAST LOAD — only the clients/patients/customers array
+        # ----------------------
+        entities = binder.adapter.list_children(
+            binder.current_user,
+            entity_collection
+        ) or []
+
+        # ----------------------
+        # Apply correct filter per domain
+        # ----------------------
+        if domain == "medical":
+            matched = filter_patients(entities, kwargs)
+        else:  # business, sales, etc.
+            matched = filter_clients(entities, kwargs)
+
+        # ----------------------
+        # Return count
+        # ----------------------
+        return {"total_customers": len(matched)}
 
 
 MetricRegistry.register(TotalCustomersMetric)

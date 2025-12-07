@@ -215,7 +215,22 @@
         domain: null, // e.g., 'medical' | 'lab'
         user_id: null
       };
+      
+    document.addEventListener("DOMContentLoaded", async function() {
+      const menuBtn = document.querySelector('.hamburger-menu');
+      const menuBar = document.getElementById('menuBar');
 
+      const usage = startUsageTracker("/track_time");
+
+      // Toggle menu and spin transition
+      menuBtn.addEventListener('click', () => {
+        menuBar.classList.toggle('menu-active');
+      });
+
+      document.getElementById("patients").addEventListener("click", function () {
+        showpats();
+      });
+    });
 
     // ===== Utilities =====
     const u = (function(){
@@ -259,7 +274,7 @@
         }
         return null;
       } 
-      return { get_user, get_user_id, get_domain, safe_fetch };
+      return { get_user, get_user_id, get_domain };
     })(u);  
     
     function showpats() {
@@ -375,24 +390,31 @@
     });
 
     // builds a query string only with present filters
-    function buildQsFromFilters() {
+    async function buildQsFromFilters() {
+      APP_STATE.user_id = await api.get_user_id();
+      APP_STATE.domain = await api.get_domain();
       const params = new URLSearchParams();
       if (filters.from) params.append('from', filters.from);
-      if (filters.to) params.append('to', filters.to);-
+      if (filters.to) params.append('to', filters.to);
+      if (APP_STATE.domain) params.append('domain', APP_STATE.domain);
+      if (APP_STATE.user_id) params.append('user_id', APP_STATE.user_id);
       return params.toString();
     }
 
     // ===== Load patients list (optionally within date range) =====
     async function loadPatientsList() {
       try {
-        const qs = buildQsFromFilters();
-        const url = qs ? `/api/gaia/compute?metrics=matched_entities&domain=${APP_STATE.domain}&user_id=${APP_STATE.user_id}&${qs}` : `/api/gaia/compute?metrics=matched_entities&domain=${APP_STATE.domain}`;
+        const qs = await buildQsFromFilters();
+        const url = qs ? `/api/gaia/compute?metric=matched_entities&${qs}` : `/api/gaia/compute?metrics=matched_entities&domain=${APP_STATE.domain}`;
         const res = await fetch(url);
         if (!res.ok) {
           console.warn('patients list fetch returned', res.status);
           return;
         }
-        const data = await res.json();
+        let data = await res.json();
+        console.log(`before data : ${JSON.stringify(data)}`);
+        data = data.data;
+        console.log(`data : ${JSON.stringify(data)}`);
         const sel = document.getElementById('patientSelect');
         sel.innerHTML = '<option value="">All</option>';
         // expect data = [{id:'...', name:'...'}, ...]
@@ -448,18 +470,22 @@
 
     // ===== Data loader for each tab =====
     async function loadTab(tab) {
-      const qs = buildQsFromFilters();
-      const url = `/api/gaia/${tab}${qs ? '?' + qs : ''}`;
+      const qs = await buildQsFromFilters();
+      let url = `/api/gaia/`;
 
       try {
-        const res = await fetch(url);
-        if (!res.ok) {
-          console.error('API error', res.status, await res.text());
-          return;
-        }
-        const data = await res.json();
 
         if (tab === 'roi') {
+          url = `/api/gaia/compute?metric=roi&${qs}`;
+          const res = await fetch(url);
+          if (!res.ok) {
+            console.error('API error', res.status, await res.text());
+            return;
+          }
+          let data = await res.json();
+          console.log(`before data : ${JSON.stringify(data)}`);
+          data = data.data;
+          console.log(`data : ${JSON.stringify(data)}`);
           document.getElementById('roi-hours').innerText = (data.hours_saved || 0).toFixed(2) + ' hrs';
           document.getElementById('roi-dollar').innerText = fmtMoney(data.binder_roi || 0);
           document.getElementById('roi-payback').innerText = data.payback_days ? data.payback_days + ' days' : '—';
@@ -477,6 +503,16 @@
         }
 
         if (tab === 'productivity') {
+          url = `/api/gaia/compute?metric=productivity&${qs}`;
+          const res = await fetch(url);
+          if (!res.ok) {
+            console.error('API error', res.status, await res.text());
+            return;
+          }
+          let data = await res.json();
+          console.log(`before data : ${JSON.stringify(data)}`);
+          data = data.data;
+          console.log(`data : ${JSON.stringify(data)}`);
           document.getElementById('prod-total-time').innerText = (data.total_time_minutes || 0) + ' mins';
           document.getElementById('prod-avg-session').innerText = (data.avg_time_per_session_minutes || 0) + ' mins';
           document.getElementById('prod-productive').innerText = (data.percent_productive || 0) + '%';
@@ -505,6 +541,16 @@
         }
 
         if (tab === 'finance') {
+          url = `/api/gaia/compute?metric=finance&${qs}`;
+          const res = await fetch(url);
+          if (!res.ok) {
+            console.error('API error', res.status, await res.text());
+            return;
+          }
+          let data = await res.json();
+          console.log(`before data : ${JSON.stringify(data)}`);
+          data = data.data;
+          console.log(`data : ${JSON.stringify(data)}`);
           document.getElementById('fin-total-rev').innerText = fmtMoney(data.total_revenue || 0);
           document.getElementById('fin-unpaid').innerText = fmtMoney(data.total_unpaid || 0);
           document.getElementById('fin-avg-per-patient').innerText = fmtMoney(data.avg_revenue_per_patient || 0);
@@ -531,6 +577,16 @@
         }
 
         if (tab === 'patients') {
+          url = `/api/gaia/compute?metric=total_customers&${qs}`;
+          const res = await fetch(url);
+          if (!res.ok) {
+            console.error('API error', res.status, await res.text());
+            return;
+          }
+          let data = await res.json();
+          console.log(`before data : ${JSON.stringify(data)}`);
+          data = data.data;
+          console.log(`data : ${JSON.stringify(data)}`);
           document.getElementById('pat-total').innerText = data.total_patients || 0;
           document.getElementById('pat-returning').innerText = data.returning_patients || 0;
           document.getElementById('pat-avg-visits').innerText = (data.avg_visits_per_patient || 0).toFixed(2);
@@ -589,23 +645,6 @@
       });
     })();
 
-    document.addEventListener("DOMContentLoaded", async function() {
-      APP_STATE.user_id = await api.get_user_id();
-      APP_STATE.domain = await api.get_domain();
-      const menuBtn = document.querySelector('.hamburger-menu');
-      const menuBar = document.getElementById('menuBar');
-
-      const usage = startUsageTracker("/track_time");
-
-      // Toggle menu and spin transition
-      menuBtn.addEventListener('click', () => {
-        menuBar.classList.toggle('menu-active');
-      });
-
-      document.getElementById("patients").addEventListener("click", function () {
-        showpats();
-      });
-    });
   </script>
 </body>
 </html>

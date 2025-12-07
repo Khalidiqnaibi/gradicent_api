@@ -5,7 +5,7 @@ Utility functions for time parsing and validation.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict
 
 DOMAIN_ENTITY_MAP = {
     "medical": "patients",
@@ -22,104 +22,142 @@ def parse_date(value: Optional[str]) -> Optional[datetime]:
     except Exception:
         return None
 
-def filter_clients(clients, filters):
-    start_date = filters.get("start_date")
-    end_date   = filters.get("end_date")
-    details    = filters.get("details", "").lower()
-    location   = filters.get("location", "").lower()
-    service  = filters.get("service", "").lower()
-    product  = filters.get("product", "").lower()
-    show_date  = filters.get("show_date", False)
-    show_visit_info = filters.get("show_visit_info", False)
+def _match_visit(
+    visits: List[Dict],
+    *,
+    details=None,
+    start_date=None,
+    end_date=None,
+    visit_filters=None
+):
+    """Efficient visit filtering with early exit."""
+    for v in visits:
 
-    if start_date or start_date:
-        show_date = True
-
-    if location or service or product:
-        show_visit_info = True
-
-    matched = []
-
-    for patient in clients.values():
-        # patient-level filters
-        if location and patient.get("location", "").lower() != location:
+        # ---- details filter ----
+        if details and details not in v.get("_details_lc", ""):
             continue
 
-        visits = patient.get("visits", [])
-
-        if details:
-            if not any(details in v.get("details", "").lower() for v in visits):
-                continue
-
-        if show_visit_info:
-            ok = any(
-                (not service or service in v.get("service", "").lower()) and
-                (not product or product in v.get("product", "").lower())
-                for v in visits
-            )
+        # ---- dynamic visit filters (treatment, lab, service, product, etc.) ----
+        if visit_filters:
+            ok = True
+            for key, value in visit_filters.items():
+                if value and value not in v.get(key, ""):
+                    ok = False
+                    break
             if not ok:
                 continue
 
-        if show_date:
-            ok = any(
-                (not start_date or not end_date or start_date <= v.get("visit_date", "") <= end_date)
-                for v in visits
-            )
-            if not ok:
+        # ---- date filter ----
+        if start_date or end_date:
+            vd = v.get("_vd")
+            if not vd:
+                continue
+            if (start_date and vd < start_date) or (end_date and vd > end_date):
                 continue
 
-        matched.append(patient)
+        # if ANY visit matches → patient matches
+        return True
+
+    return False
+
+def filter_patients(patients: List[Dict], f: Dict):
+    # Extract filters
+    details = (f.get("details", "") or "").lower()
+    location = (f.get("location", "") or "").lower()
+    treatment = (f.get("treatment", "") or "").lower()
+    diagnosis = (f.get("diagnosis", "") or "").lower()
+    lab = (f.get("lab", "") or "").lower()
+
+    start_raw = f.get("start_date") or f.get("from") or f.get("From")
+    end_raw   = f.get("end_date") or f.get("to") or f.get("To")
+
+    start_date = parse_date(start_raw)
+    end_date   = parse_date(end_raw)
+
+    # visits filter dict
+    visit_filters = {
+        "treatment": treatment,
+        "diagnosis": diagnosis,
+        "lab": lab
+    }
+
+    matched = []
+    append = matched.append   # local binding (micro-optim)
+
+    # Precompute lowercase once
+    for p in patients:
+        # ---- patient-level filters ----
+        if location and location != p.get("location", "").lower():
+            continue
+
+        visits = p.get("visits", [])
+        if not visits:
+            continue
+
+        # Precompute lowercase and parsed dates ONCE
+        for v in visits:
+            if "_details_lc" not in v:
+                v["_details_lc"] = v.get("details", "").lower()
+            if "_vd" not in v:
+                v["_vd"] = parse_date(v.get("visit_date"))
+
+        # ---- match visits ----
+        if _match_visit(
+            visits,
+            details=details,
+            start_date=start_date,
+            end_date=end_date,
+            visit_filters=visit_filters
+        ):
+            append(p)
 
     return matched
 
-def filter_patients(patients, filters):
-    start_date = filters.get("start_date")
-    end_date   = filters.get("end_date")
-    details    = filters.get("details", "").lower()
-    location   = filters.get("location", "").lower()
-    treatment  = filters.get("treatment", "").lower()
-    diagnosis  = filters.get("diagnosis", "").lower()
-    lab        = filters.get("lab", "").lower()
-    show_date  = filters.get("show_date", False)
-    show_visit_info = filters.get("show_visit_info", False)
+def filter_clients(clients: List[Dict], f: Dict):
 
-    if start_date or start_date:
-        show_date = True
+    details = (f.get("details", "") or "").lower()
+    location = (f.get("location", "") or "").lower()
+    service = (f.get("service", "") or "").lower()
+    product = (f.get("product", "") or "").lower()
 
-    if location or treatment or diagnosis or lab:
-        show_visit_info = True
+    start_raw = f.get("start_date") or f.get("from") or f.get("From")
+    end_raw   = f.get("end_date") or f.get("to") or f.get("To")
+
+    start_date = parse_date(start_raw)
+    end_date   = parse_date(end_raw)
+
+    visit_filters = {
+        "service": service,
+        "product": product
+    }
 
     matched = []
+    append = matched.append
 
-    for patient in patients.values():
+    for p in clients:
+
         # patient-level filters
-        if location and patient.get("location", "").lower() != location:
+        if location and location != p.get("location", "").lower():
             continue
 
-        visits = patient.get("visits", [])
+        visits = p.get("visits", [])
+        if not visits:
+            continue
 
-        if details:
-            if not any(details in v.get("details", "").lower() for v in visits):
-                continue
+        # preprocess visit data
+        for v in visits:
+            if "_details_lc" not in v:
+                v["_details_lc"] = v.get("details", "").lower()
+            if "_vd" not in v:
+                v["_vd"] = parse_date(v.get("visit_date"))
 
-        if show_visit_info:
-            ok = any(
-                (not treatment or treatment in v.get("treatment", "").lower()) and
-                (not diagnosis or diagnosis in v.get("diagnosis", "").lower()) and
-                (not lab or lab in v.get("lab", "").lower())
-                for v in visits
-            )
-            if not ok:
-                continue
-
-        if show_date:
-            ok = any(
-                (not start_date or not end_date or start_date <= v.get("visit_date", "") <= end_date)
-                for v in visits
-            )
-            if not ok:
-                continue
-
-        matched.append(patient)
+        if _match_visit(
+            visits,
+            details=details,
+            start_date=start_date,
+            end_date=end_date,
+            visit_filters=visit_filters
+        ):
+            append(p)
 
     return matched

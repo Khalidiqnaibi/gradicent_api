@@ -80,7 +80,7 @@ class MatchedEntitiesMetric(IMetric):
             len(result),
         )
 
-        return {"entities": result}
+        return result
 
 
 MetricRegistry.register(MatchedEntitiesMetric)

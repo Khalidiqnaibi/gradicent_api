@@ -10,10 +10,11 @@ from .metrics.financial_summary_metric import FinancialSummaryMetric
 from .metrics.total_customers_metric import TotalCustomersMetric
 from .metrics.unpaid_customers_metric import UnpaidCustomersMetric
 from .metrics.matched_entities_metric import MatchedEntitiesMetric
+from .metrics.productivity_metric import ProductivityMetric
 
 __all__ = [
     "IMetric", "base_metric","GaiaEngine","RoiMetric",
     "ConversionRateMetric","FinanceMetric","MetricRegistry","parse_date",
     "FinancialSummaryMetric","TotalCustomersMetric","UnpaidCustomersMetric",
-    "MatchedEntitiesMetric"
+    "MatchedEntitiesMetric","ProductivityMetric"
 ]
