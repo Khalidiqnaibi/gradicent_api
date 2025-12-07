@@ -1,0 +1,18 @@
+the code is really inefficient for high clients users .. like this : 
+POST /api/gaia/compute?metric=total_customers&domain=medical&user_id=108738109636203771652
+
+this was the output : {
+    "data": {
+        "total_customers": 2022
+    },
+    "message": "Metric 'total_customers' computed successfully.",
+    "status": "success"
+} ,
+which is correct but the request took along time and is not scalable at that rate 
+it took on post man:10.03 s
+and others like the test users that had < 10 users took im ms.
+
+
+its probably because of the lots of in checks and lots of .lower() and and date parsing. 
+but im not sure 
+probably we can optimize it if we can sort and use biunary srch or other algorithm

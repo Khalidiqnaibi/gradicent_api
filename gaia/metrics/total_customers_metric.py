@@ -73,6 +73,9 @@ class TotalCustomersMetric(IMetric):
         entities = binder.adapter.list_children(
             binder.current_user,
             entity_collection
+        ) or binder.adapter.list_children(
+            binder.current_user,
+            "clients"
         ) or []
 
         # ----------------------
