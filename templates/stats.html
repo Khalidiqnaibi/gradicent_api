@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
-  <title>Binder Medical</title>
+  <title>Binder - Powered by GAIA</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -210,6 +210,57 @@
   </main>
 
   <script>
+      const APP_STATE = {
+        plan: null,
+        domain: null, // e.g., 'medical' | 'lab'
+        user_id: null
+      };
+
+
+    // ===== Utilities =====
+    const u = (function(){
+      async function safe_fetch(url, options={}) {
+        try {
+          const res = await fetch(url, options);
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`Fetch error ${res.status}: ${text}`);
+          }
+          const data = await res.json();
+          return data;
+        } catch (err) {
+          console.error('safe_fetch error:', err);
+          throw err;
+        }
+      }
+      return { safe_fetch };
+    })();
+
+    const api = (function(u) {
+      async function get_user(){
+        const url = `/api/auth/me`;
+        const data = await u.safe_fetch(url, { method: 'GET' });
+        return data.data;    
+      }
+
+      async function get_user_id(){
+        user = await get_user();
+        return user.id;    
+      }
+
+      async function get_domain() {
+        try {
+          const data = await u.safe_fetch('/api/binder/get_domain', { method: 'GET' });
+          if (data && (typeof data.data === 'string' || typeof data.domain === 'string')) {
+            return data.data || data.domain;
+          }
+        } catch (err) {
+          // propagate to caller
+        }
+        return null;
+      } 
+      return { get_user, get_user_id, get_domain, safe_fetch };
+    })(u);  
     
     function showpats() {
       window.location.href = `/search_stats`;
@@ -296,7 +347,7 @@
     }
 
     // ===== Default filter object (will be set to last 7 days) =====
-    const filters = { from: null, to: null, patient: null };
+    const filters = { from: null, to: null};
 
     // set date inputs to last 7 days and update filters
     function setFiltersToLastWeek() {
@@ -327,8 +378,7 @@
     function buildQsFromFilters() {
       const params = new URLSearchParams();
       if (filters.from) params.append('from', filters.from);
-      if (filters.to) params.append('to', filters.to);
-      if (filters.patient) params.append('patient', filters.patient);
+      if (filters.to) params.append('to', filters.to);-
       return params.toString();
     }
 
@@ -336,7 +386,7 @@
     async function loadPatientsList() {
       try {
         const qs = buildQsFromFilters();
-        const url = qs ? `/api/gaia/patients/list?${qs}` : `/api/gaia/patients/list`;
+        const url = qs ? `/api/gaia/compute?metrics=matched_entities&domain=${APP_STATE.domain}&user_id=${APP_STATE.user_id}&${qs}` : `/api/gaia/compute?metrics=matched_entities&domain=${APP_STATE.domain}`;
         const res = await fetch(url);
         if (!res.ok) {
           console.warn('patients list fetch returned', res.status);
@@ -539,7 +589,9 @@
       });
     })();
 
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
+      APP_STATE.user_id = await api.get_user_id();
+      APP_STATE.domain = await api.get_domain();
       const menuBtn = document.querySelector('.hamburger-menu');
       const menuBar = document.getElementById('menuBar');
 
