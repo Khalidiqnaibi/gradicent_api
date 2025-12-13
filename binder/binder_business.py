@@ -149,6 +149,19 @@ class BinderBusiness(
     def update_service(self, svc_id, patch): self.adapter.update_child(self.current_user, "services", svc_id, patch)
     def delete_service(self, svc_id): self.adapter.delete_child(self.current_user, "services", svc_id)
 
+    # interactions:
+    def create_interaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        pass
+    
+    def list_interactions(self, client_id: str) -> List[Dict[str, Any]]:
+        pass
+    
+    def update_interaction(self, client_id:str, interaction_no : int, patch:List[Any]) -> List[Any]:
+        pass
+    
+    def delete_interaction(self, client_id:str, interaction_no:int)->None:
+        pass
+
     # transactions (nested)
     def create_transaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         self.adapter.add_nested(self.current_user, "clients", client_id, "transactions", data)

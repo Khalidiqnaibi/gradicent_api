@@ -107,15 +107,15 @@ class BinderMedical(
         return self.adapter.find_by_name_substring(self.current_user, "clients", q) or self.adapter.find_by_name_substring(self.current_user, "patients", q)
 
     # visits (nested)
-    def create_interacttion(self, patient_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def create_interaction(self, patient_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         self.adapter.add_nested(self.current_user, "clients", patient_id, "visits", data) or self.adapter.add_nested(self.current_user, "patients", patient_id, "visits", data)
         return data
 
-    def list_interacttions(self, patient_id: str) -> List[Dict[str, Any]]:
+    def list_interactions(self, patient_id: str) -> List[Dict[str, Any]]:
         return self.adapter.list_nested(self.current_user, "clients", patient_id, "visits") or self.adapter.list_nested(self.current_user, "patients", patient_id, "visits")
     
-    def update_interacttion(self, patient_id: str, visit_id: str, patch: Dict[str, Any]) -> None:
+    def update_interaction(self, patient_id: str, visit_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_nested(self.current_user, "clients", patient_id, "visits", visit_id, patch) or self.adapter.update_nested(self.current_user, "patients", patient_id, "visits", visit_id, patch)
 
-    def delete_interacttion(self, patient_id: str, visit_id: str) -> None:
+    def delete_interaction(self, patient_id: str, visit_id: str) -> None:
         self.adapter.delete_nested(self.current_user, "clients", patient_id, "visits", visit_id) or self.adapter.delete_nested(self.current_user, "patients", patient_id, "visits", visit_id)
