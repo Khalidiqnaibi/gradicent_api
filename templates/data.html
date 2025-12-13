@@ -348,6 +348,7 @@
   // State
   const API_TIMEOUT_MS = 10_000;
   const POLL_TRACK_INTERVAL_MS = 60_000;
+  let user_id = "";
   let visits = [];
   let currentVisitIndex = 0;
   let patientNumber = '{{client}}';
@@ -379,6 +380,17 @@
     }
   }
 
+  async function get_user(){
+    const url = `/api/auth/me`;
+    const data = await safe_fetch(url, { method: 'GET' });
+    return data.data;    
+  }
+
+  async function get_user_id(){
+    user = await get_user();
+    return user.id;    
+  }
+
   async function get_domain() {
     try {
       const data = await safe_fetch('/api/binder/get_domain', { method: 'GET' });
@@ -393,8 +405,9 @@
   }
 
   document.addEventListener('DOMContentLoaded', async function() {
-    // Hamburger menu
     domain = await get_domain();
+    user_id = await get_user_id();
+    // Hamburger menu
     const menuBtn = document.querySelector('.hamburger-menu');
     const menuBar = document.getElementById('menuBar');
     menuBtn.addEventListener('click', () => {
@@ -449,7 +462,7 @@
 
   // Patient data
   function fetchPatientData() {
-    fetch(`/api/binder/clients/${patientNumber}?domain=${domain}`)
+    fetch(`/api/binder/clients/${patientNumber}?domain=${domain}&user_id=${user_id}`)
       .then(r => r.json())
       .then(data => {
         console.log(data);
@@ -531,9 +544,15 @@
     };
     if (!visitData.visit_date) { showToast('Visit date is required','error'); return; }
     totald(visitData);
-    fetch(`/api/binder/clients/${patientNumber}/interactions`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({"user_id":user_id,"interaction_no" : currentVisitIndex +1,"domain":domain,"patch":visitData})})
-      .then(()=> { showToast('Visit saved','success'); fetchPatientData(); })
-      .catch(err=>{console.error(err); showToast('Error saving visit','error');});
+    if (visits.length == currentVisitIndex+1){
+      fetch(`/api/binder/clients/${patientNumber}/interactions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({"user_id":user_id,"domain":domain,"interaction":visitData})})
+        .then(()=> { showToast('Visit saved','success'); fetchPatientData(); })
+        .catch(err=>{console.error(err); showToast('Error saving visit','error');});
+    }else{
+      fetch(`/api/binder/clients/${patientNumber}/interactions`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({"user_id":user_id,"interaction_no" : currentVisitIndex +1,"domain":domain,"patch":visitData})})
+        .then(()=> { showToast('Visit saved','success'); fetchPatientData(); })
+        .catch(err=>{console.error(err); showToast('Error saving visit','error');});
+    }
   }
 
   function totald(visitData){

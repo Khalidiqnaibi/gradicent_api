@@ -122,9 +122,10 @@ class FirebaseCrudAdapter(StorageAdapter):
         return result
 
     def add_nested(self, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
-        ref = self._nested_ref(user_id, collection, child_id, nested).push(obj)
-        nested_id = ref.key
-        ref.update({"id": nested_id})
+        inter_length = len(self._nested_ref(user_id, collection, child_id, nested).get())
+        nested_id = inter_length
+        ref = self._nested_ref(user_id, collection, child_id, nested,nested_id).set(obj)
+        ref.update({"interaction_no": nested_id})
         return nested_id
 
     def update_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
