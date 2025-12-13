@@ -232,11 +232,22 @@ def stats() -> Any:
     """Stats wrapper."""
     return redirect(_render_protected_page("stats"))
 
+@frontend_blueprint.route("/data/<client>", methods=["GET"])
+@require_login
+def set_curr_client(client) -> Any:
+    """Data redirect for a client details."""
+    client = int(client)
+    if (client) - 1 >= 0:
+        client -=1
+    else:
+        client = 0
+    session["client"] = client
+    return redirect("/data")
 
 @frontend_blueprint.route("/data", methods=["GET"])
 @require_login
 def data() -> Any:
-    """Data wrapper for patient details."""
+    """Data wrapper for client details."""
     return redirect(_render_protected_page("data"))
 
 @frontend_blueprint.route("/srch",methods=["GET"])
@@ -267,6 +278,8 @@ def binder_medical() -> Any:
     """
     session["binder"] = "medical"
     page = session.get("page","home")
+    if page == "data":
+        return render_template(f"{page}.html", client = session.get("client",1))
     return render_template(f"{page}.html")
 
 

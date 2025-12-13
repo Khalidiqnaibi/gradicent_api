@@ -5,7 +5,7 @@ Provides the BaseBinder class that composes the small service interfaces
 and defines shared CRUD helpers for Firebase or similar adapters.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional , List 
 from abc import ABC
 
 
@@ -44,3 +44,17 @@ class Binder(ABC):
     def _require_user(self) -> None:
         if not self._current_user:
             raise RuntimeError("Operation requires a logged-in user context")
+        
+    # interactions crud
+    def create_interaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        self.adapter.add_nested(self.current_user, "clients", client_id, "interactions", data)
+        return data
+    
+    def list_interactions(self, client_id: str) -> List[Dict[str, Any]]:
+        return self.adapter.list_nested(self.current_user, "clients", client_id, "interactions")
+    
+    def update_interaction(self, client_id:str, interaction_no : int, patch:List[Any]) -> List[Any]:
+        return self.adapter.update_nested(self.current_user, "clients", client_id, "interactions", interaction_no, patch)
+       
+    def delete_interaction(self, client_id:str, interaction_no:int)->None:
+        self.adapter.delete_interaction(self.current_user,"clients", client_id, "interactions", interaction_no)

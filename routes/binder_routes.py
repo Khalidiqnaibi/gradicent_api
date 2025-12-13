@@ -118,7 +118,6 @@ def create_user():
     user = service.create_user(payload["user"])
     return make_response(data=user, message="User created successfully."), 201
 
-
 @binder_blueprint.route("/set_current_user", methods=["POST"])
 def set_current_user():
     """
@@ -137,7 +136,6 @@ def set_current_user():
     service = _get_domain_and_service(payload)
     service.set_current_user(payload["user_id"])
     return make_response(message="Current user set."), 200
-
 
 @binder_blueprint.route("/clients", methods=["POST"])
 def add_client():
@@ -164,7 +162,6 @@ def add_client():
     client = service.create_client(payload["client"])
     return make_response(data=client, message="Client added successfully."), 201
 
-
 @binder_blueprint.route("/clients/<client_id>", methods=["GET"])
 def get_client(client_id: str):
     """
@@ -184,7 +181,6 @@ def get_client(client_id: str):
     if client is None:
         raise NotFound(f"Client {client_id} not found")
     return make_response(data=client), 200
-
 
 @binder_blueprint.route("/clients/<client_id>", methods=["PATCH"])
 def patch_client(client_id: str):
@@ -208,7 +204,6 @@ def patch_client(client_id: str):
 
     service.update_client(client_id, payload["patch"])
     return make_response(message="Client updated successfully."), 200
-
 
 @binder_blueprint.route("/clients/<client_id>", methods=["DELETE"])
 def remove_client(client_id: str):
@@ -270,6 +265,76 @@ def add_interaction(client_id: str):
 
     interaction = service.create_interaction(client_id, payload["interaction"])
     return make_response(data=interaction, message="Interaction created."), 201
+
+@binder_blueprint.route("/clients/<client_id>/interactions", methods=["GET"])
+def list_interaction(client_id: str):
+    """
+    List interactions (or visits) for a client.
+
+    Query param:
+        domain (optional)
+        user_id (optional)
+    """
+    domain = request.args.get("domain", DEFAULT_DOMAIN)
+    user_id = request.args.get("user_id")
+    service = _get_domain_and_service({"domain": domain})
+    if user_id:
+        service.set_current_user(user_id)
+
+    interactions = service.list_interactions(client_id=client_id)
+    return make_response(data=interactions, message="Got Interactions."), 201
+
+@binder_blueprint.route("/clients/<client_id>/interactions", methods=["PATCH"])
+def update_interaction(client_id: str):
+    """
+    Update interaction (or visit) for a client.
+
+    Expected JSON:
+    {
+       "domain" (str): "...",
+       "user_id" (str): "...",
+       "interaction_no (int):"...",
+       "patch" (list[Any]): { ... }
+    }
+    """
+    payload = request.get_json(force=True)
+    if "patch" not in payload:
+        raise BadRequest("Missing 'patch' payload")
+    
+    if "interaction_no" not in payload:
+        raise BadRequest("Missing 'interaction_no' payload")
+
+    service = _get_domain_and_service(payload)
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+
+    service.update_interactions(client_id=client_id,interaction_no=payload["interaction_no"],patch = payload["patch"])
+    return make_response(data=payload, message="Updated Interactions."), 201
+
+@binder_blueprint.route("/clients/<client_id>/interactions", methods=["DELETE"])
+def delete_interaction(client_id: str):
+    """
+    Delete interaction (or visit) for a client.
+
+    Expected JSON:
+    {
+       "domain" (str): "...",
+       "interaction_no (int):"...",
+       "user_id" (str): "..."
+    }
+    """
+    payload = request.get_json(silent=True) or {}
+    service = _get_domain_and_service(payload)
+    interaction_no = payload.get("interaction_no")
+    user_id = payload.get("user_id")
+    if user_id:
+        service.set_current_user(user_id)
+    
+    if not interaction_no:
+        raise BadRequest("'interaction_no' not found in payload")
+
+    service.delete_interactions(client_id=client_id , interaction_no = interaction_no)
+    return make_response(data=payload, message="Deleted Interactions."), 201
 
 @binder_blueprint.route("/appointments/<date>", methods=["GET"])
 def get_appointments_for_date(date):

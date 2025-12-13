@@ -127,7 +127,7 @@ class BinderService:
         """
         return self._wrap_and_log("create_client", self._binder.create_client, client)
 
-    def read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
+    def  read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
         """
         Fetch a client by id.
 
@@ -203,6 +203,53 @@ class BinderService:
         return self._binder.lock_appointment(date, no)
     
     # ------- Public API: Interactions (visits/transactions) -------
+    def update_interactions(self,client_id: str,interaction_no: int,patch:list[Any])-> Dict[str, Any]:
+        """
+        Update a interactions's fields and return the updated interactions.
+
+        Args:
+            client_id (str): id of the client to update.
+            interaction_no (int): id of the interaction to update.
+            patch (dict): partial update document (non-empty).
+
+        Returns:
+            dict: updated interaction.
+
+        Raises:
+            BinderServiceError: on validation or binder failure.
+        """
+        if not client_id:
+            raise BinderServiceError("client_id cannot be empty")
+        if not interaction_no:
+            raise BinderServiceError("interaction_no cannot be empty")
+        if not patch:
+            raise BinderServiceError("patch cannot be empty")
+        self._wrap_and_log("update_interaction", self._binder.update_interaction, client_id,interaction_no, patch)
+        # return the up-to-date record when possible
+        updated = self._wrap_and_log("read_interaction_after_update", self._binder.read_client, client_id)
+        if updated is None:
+            # binder might choose to not return the item after update; still treat as success
+            self._logger.warning("update_interaction: interaction %s updated but read returned None", client_id)
+            return {}
+        return updated
+
+    def delete_interaction(self,client_id: str,interaction_no: int)-> Dict[str, Any]:
+        """
+        Delete a interaction.
+
+        Args:
+            client_id (str): id of the client to remove.
+            interaction_no (int): id of the interaction to remove.
+
+        Side effects:
+            - Calls binder.delete_interaction.
+        """
+        if not interaction_no:
+            raise BinderServiceError("interaction_no cannot be empty")
+        if not client_id:
+            raise BinderServiceError("client_id cannot be empty")
+        self._wrap_and_log("delete_interaction", self._binder.delete_interaction, client_id,interaction_no)
+
     def create_interaction(self, client_id: str, interaction: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create an interaction (visit, transaction) for a given client.

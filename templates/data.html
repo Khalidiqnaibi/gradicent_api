@@ -328,7 +328,6 @@
     };
   }
 
-
   // Toast system
   function showToast(text, type = 'info') {
     const c = document.getElementById('toastContainer');
@@ -346,15 +345,56 @@
     }, 3000);
   }
 
-
   // State
+  const API_TIMEOUT_MS = 10_000;
+  const POLL_TRACK_INTERVAL_MS = 60_000;
   let visits = [];
   let currentVisitIndex = 0;
-  let patientNumber = '';
+  let patientNumber = '{{client}}';
   let selectedFolder = 'drs';
+  let domain = "";
+  
+  async function safe_fetch(url, opts = {}) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    opts.signal = controller.signal;
 
-  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      const res = await fetch(url, opts);
+      clearTimeout(timeout);
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        const err = new Error(`HTTP ${res.status} ${res.statusText}`);
+        err.status = res.status;
+        err.body = text;
+        throw err;
+      }
+      // assume JSON by default
+      const ct = (res.headers.get('content-type') || '');
+      if (ct.includes('application/json')) return res.json();
+      return res.text();
+    } catch (err) {
+      clearTimeout(timeout);
+      throw err;
+    }
+  }
+
+  async function get_domain() {
+    try {
+      const data = await safe_fetch('/api/binder/get_domain', { method: 'GET' });
+      if (data && (typeof data.data === 'string' || typeof data.domain === 'string')) {
+        return data.data || data.domain;
+      }
+    } catch (err) {
+      console.log(err)
+    }
+    console.log("nigga error in domain")
+    return "medical";
+  }
+
+  document.addEventListener('DOMContentLoaded', async function() {
     // Hamburger menu
+    domain = await get_domain();
     const menuBtn = document.querySelector('.hamburger-menu');
     const menuBar = document.getElementById('menuBar');
     menuBtn.addEventListener('click', () => {
@@ -367,9 +407,9 @@
     $('#nextButton').addEventListener('click', next);
     $('#firstButton').addEventListener('click', first);
     $('#lastButton').addEventListener('click', last);
-    $('#saveBtn').addEventListener('click', tacc);
+    $('#saveBtn').addEventListener('click', save);
     $('#openFolderBtn').addEventListener('click', openFile);
-    $('#printBtn').addEventListener('click', () => { tacc(); printVisit(); });
+    $('#printBtn').addEventListener('click', () => { save(); printVisit(); });
 
     // File modal
     $('#closeModal').addEventListener('click', closeFileModal);
@@ -409,11 +449,13 @@
 
   // Patient data
   function fetchPatientData() {
-    fetch('/getPatientData')
+    fetch(`/api/binder/clients/${patientNumber}?domain=${domain}`)
       .then(r => r.json())
       .then(data => {
+        console.log(data);
+        data = data.data;
+        console.log(data);
         visits = data.visits || [];
-        patientNumber = (data.patientss_number || 0) + 1;
         if (visits.length) {
           currentVisitIndex = 0;
           populatePatientData(visits[0]);
@@ -423,7 +465,7 @@
           visits=[t]; currentVisitIndex=0; populatePatientData(t);
         }
       })
-      .catch(err => { console.error(err); showToast('Failed to load patient data', 'error'); });
+      .catch(err => { console.error(err); showToast('Failed to load client data', 'error'); });
   }
 
   function populatePatientData(visit) {
@@ -472,7 +514,7 @@
   }
 
   // Save
-  function tacc() {
+  function save() {
     const visitData = {
       visit_date: $('#visitDate').value.trim(),
       drname: $('#drname').value.trim(),
@@ -489,8 +531,7 @@
     };
     if (!visitData.visit_date) { showToast('Visit date is required','error'); return; }
     totald(visitData);
-    fetch('/updateVisitData',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(visitData)})
-      .then(()=> fetch('/updatePatientTotals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ totalDebit: visitData.debit })}))
+    fetch(`/api/binder/clients/${patientNumber}/interactions`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({"user_id":user_id,"interaction_no" : currentVisitIndex +1,"domain":domain,"patch":visitData})})
       .then(()=> { showToast('Visit saved','success'); fetchPatientData(); })
       .catch(err=>{console.error(err); showToast('Error saving visit','error');});
   }
