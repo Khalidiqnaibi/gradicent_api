@@ -81,6 +81,8 @@ def filter_patients(patients: List[Dict], f: Dict):
         "lab": lab
     }
 
+    if not start_date and not end_date and treatment == '' and diagnosis == '' and lab == '':
+        return patients
     matched = []
     append = matched.append   # local binding (micro-optim)
 
@@ -93,6 +95,9 @@ def filter_patients(patients: List[Dict], f: Dict):
         visits = p.get("visits", [])
         if not visits:
             continue
+        
+        if (not type(visits) is list):
+            visits = [visits]
 
         # Precompute lowercase and parsed dates ONCE
         for v in visits:
@@ -131,6 +136,10 @@ def filter_clients(clients: List[Dict], f: Dict):
         "product": product
     }
 
+    
+    if not start_date and not end_date and service == '' and product == '':
+        return clients
+
     matched = []
     append = matched.append
 
@@ -145,7 +154,8 @@ def filter_clients(clients: List[Dict], f: Dict):
             continue
 
         # preprocess visit data
-        for v in visits:
+        print(list(visits))
+        for v in list(visits):
             if "_details_lc" not in v:
                 v["_details_lc"] = v.get("details", "").lower()
             if "_vd" not in v:

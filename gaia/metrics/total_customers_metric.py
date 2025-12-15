@@ -82,9 +82,9 @@ class TotalCustomersMetric(IMetric):
         # Apply correct filter per domain
         # ----------------------
         if domain == "medical":
-            matched = filter_patients(entities, kwargs)
+            matched = filter_patients(list(entities), kwargs)
         else:  # business, sales, etc.
-            matched = filter_clients(entities, kwargs)
+            matched = filter_clients(list(entities), kwargs)
 
         # ----------------------
         # Return count
