@@ -40,17 +40,13 @@ class BinderMedical(
 
     # patient
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        # Fetch existing clients
-        clients = self.adapter.get_child(self.current_user, "clients") or self.adapter.get_child(self.current_user, "patients") or {}
-
-        # The new id is simply the next index
+        clients = self.adapter.list_children(self.current_user, "clients") or self.adapter.list_children(self.current_user, "patients")or {}
+         
         client_id = str(len(clients))
 
-        # Insert id into the data before saving
         data["id"] = client_id
 
-        # Save at /clients/<client_id>
-        self.adapter.set_child(self.current_user, f"clients/{client_id}", data)
+        self.adapter.add_child(self.current_user, f"clients", data)
 
         return data
 

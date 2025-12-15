@@ -48,7 +48,7 @@ class FirebaseCrudAdapter(StorageAdapter):
         nested_id: Optional[str] = None,
     ):
         ref = db.reference(f"/{self.root_path}/{user_id}/{collection}/{child_id}/{nested}")
-        return ref if not nested_id else ref.child(nested_id)
+        return ref if not nested_id else ref.child(str(nested_id))
 
     # --------------------
     # User CRUD
@@ -122,10 +122,15 @@ class FirebaseCrudAdapter(StorageAdapter):
         return result
 
     def add_nested(self, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
-        inter_length = len(self._nested_ref(user_id, collection, child_id, nested).get())
+        full_ref = self._nested_ref(user_id, collection, child_id, nested)
+        full_ref_content = full_ref.get()
+        if full_ref_content:
+            inter_length = len(full_ref_content)
+        else:
+            inter_length = 0
         nested_id = inter_length
-        ref = self._nested_ref(user_id, collection, child_id, nested,nested_id).set(obj)
-        ref.update({"interaction_no": nested_id})
+        ref = full_ref.set(obj)
+        ref.set({"interaction_no": nested_id})
         return nested_id
 
     def update_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:

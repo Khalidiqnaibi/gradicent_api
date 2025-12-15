@@ -178,6 +178,7 @@ def get_client(client_id: str):
         service.set_current_user(user_id)
 
     client = service.read_client(client_id)
+    session["client"]=client["id"]
     if client is None:
         raise NotFound(f"Client {client_id} not found")
     return make_response(data=client), 200
@@ -204,6 +205,8 @@ def patch_client(client_id: str):
 
     service.update_client(client_id, payload["patch"])
     return make_response(message="Client updated successfully."), 200
+
+
 
 @binder_blueprint.route("/clients/<client_id>", methods=["DELETE"])
 def remove_client(client_id: str):

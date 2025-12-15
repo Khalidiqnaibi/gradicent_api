@@ -407,8 +407,8 @@ async function submitPatient() {
     console.log(result);
 
     alert("Patient added successfully!");
-    if (["medical"].includes(domain)){
-      window.location.href = "/meddata";
+    if (["medical"].includes(GLOBAL_DOMAIN)){
+      window.location.href = `/data/-1`;
     }
     else{
       console.warn("not impleminted yet!")

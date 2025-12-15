@@ -237,8 +237,10 @@ def stats() -> Any:
 def set_curr_client(client) -> Any:
     """Data redirect for a client details."""
     client = int(client)
-    if (client) - 1 >= 0:
+    if (client - 1) >= 0:
         client -=1
+    elif client == -1:
+        pass
     else:
         client = 0
     session["client"] = client
