@@ -204,6 +204,7 @@
   const API_SEARCH = '/api/binder/search/client';
   const API_GET_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}?domain=${encodeURIComponent(APP_STATE.domain || '')}&user_id=${encodeURIComponent(APP_STATE.user_id || '')}`;
   const API_PATCH_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
+  const API_OPEN_CLIENT = (id) => `/data/${encodeURIComponent(id)}`;
   const TRACK_ENDPOINT = '/track_time';
 
   const APP_STATE = {
@@ -431,6 +432,8 @@
 
       document.getElementById('back_btn').addEventListener('click', () => controller.render_last());
       document.getElementById('save_btn').addEventListener('click', () => controller.save_client(patient.id, collectPatientValues()));
+      document.getElementById('open_btn').addEventListener('click', () => controller.open_client(parseInt(patient.id)+1));
+      console.log("no", patient.id , parseInt(patient.id)+1)
     }
 
     function collectPatientValues() {
@@ -482,7 +485,7 @@
     });
 
     el.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', ev => controller.open_client(ev.target.dataset.id));
+      btn.addEventListener('click', ev => controller.view_client(ev.target.dataset.id));
     });
   }
   return { clear, menu_init, render_list , render_client_detail };
@@ -600,7 +603,9 @@
       }
     }
 
-    async function open_client(id) { return view_client(id); }
+    async function open_client(id) { 
+      window.location.href = API_OPEN_CLIENT(id);
+    }
 
     async function save_client(id, updates) {
       try {

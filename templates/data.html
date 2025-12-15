@@ -400,7 +400,6 @@
     } catch (err) {
       console.log(err)
     }
-    console.log("nigga error in domain")
     return "medical";
   }
 
@@ -465,9 +464,7 @@
     fetch(`/api/binder/clients/${patientNumber}?domain=${domain}&user_id=${user_id}`)
       .then(r => r.json())
       .then(data => {
-        console.log(data);
         data = data.data;
-        console.log(data);
         visits = data.visits || [];
         if (visits.length) {
           currentVisitIndex = 0;
