@@ -206,8 +206,6 @@ def patch_client(client_id: str):
     service.update_client(client_id, payload["patch"])
     return make_response(message="Client updated successfully."), 200
 
-
-
 @binder_blueprint.route("/clients/<client_id>", methods=["DELETE"])
 def remove_client(client_id: str):
     """

@@ -211,7 +211,8 @@
     user_id: null,
     last_results: [],
     last_query: '',
-    usage_tracker: null
+    usage_tracker: null,
+    client_id: "{{client}}" || 0
   };
 
   /* ----------------------
@@ -368,7 +369,7 @@
 
       const labels = [
         { key: 'name', text: 'Patient Name' },
-        { key: 'id', text: 'ID Number' },
+        { key: 'gov_id', text: 'ID Number' },
         { key: 'phone', text: 'Phone Number' },
         { key: 'location', text: 'Location' },
         { key: 'pmh', text: 'Medical History' },
@@ -420,6 +421,7 @@
 
       btnRow.innerHTML = `
         <button class="big-btn btn-primary" id="save_btn">Save</button>
+        <button class="big-btn btn-primary" id="open_btn">Open</button>
         <button class="big-btn btn-ghost" id="back_btn">Back</button>
       `;
 
@@ -532,8 +534,8 @@
 
       // auto-render if server injected data
       try {
-        if (window.__AUTO_RENDER && window.__AUTO_RENDER.client_id) {
-          const resp = await api_mod.get_client(window.__AUTO_RENDER.client_id);
+        if (window.__AUTO_RENDER && APP_STATE.client_id !== 0) {
+          const resp = await api_mod.get_client(APP_STATE.client_id);
           if (resp && resp.status === 'success') ui_mod.render_client_detail(resp.data);
         }
         if (window.__GAIA_LIST && window.__GAIA_LIST.metric) {
@@ -562,7 +564,8 @@
         }
 
         last_results = Object.entries(res.data).map(([id, p]) => ({
-          id,
+          id: p.id,
+          gov_id: p.gov_id,
           name: p.name,
           age: p.age,
           phone: p.phone,
