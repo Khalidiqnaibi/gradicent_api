@@ -465,10 +465,18 @@
       .then(r => r.json())
       .then(data => {
         data = data.data;
-        visits = data.visits || [];
-        if (visits.length) {
-          currentVisitIndex = 0;
-          populatePatientData(visits[0]);
+        
+        var len = data.visits.length;
+        if (len){
+          visits = data.visits;
+        }else{
+          visits = [data.visits];
+          len = 1;
+        }
+
+        if (len) {
+          currentVisitIndex = len-1;
+          populatePatientData(visits[currentVisitIndex]);
           showToast('Patient data loaded', 'success');
         } else {
           const t = { visit_date: '', drname:'', diagnosis:'', treatment:'', lab:'', wight:'0', height:'0', coast:0, payed:0, debit:0, details:'', vno:1 };
