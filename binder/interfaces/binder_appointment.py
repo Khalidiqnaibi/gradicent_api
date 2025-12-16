@@ -13,9 +13,11 @@ class IAppointment:
     Shared appointment logic for Business + Medical binders.
     Uses StorageAdapter through self.adapter.
     """
+    def __init__(self,domain):
+        self.domain = domain
 
     def get_appointments(self, date: str) -> List[Dict]:
-        user = self.adapter.get_user(self.current_user)
+        user = self.adapter.get_user(self.domain,self.current_user)
         user = normalize_user(user)
         user = user.to_dict() or {}
         meta = user.get("metadata", {})
@@ -27,7 +29,7 @@ class IAppointment:
         return appointments
 
     def save_appointments(self, date: str, appointments: List[Dict]) -> None:
-        user = self.adapter.get_user(self.current_user)
+        user = self.adapter.get_user(self.domain,self.current_user)
         user = normalize_user(user)
         user = user.to_dict() or {}
         if "metadata" not in user:
@@ -35,10 +37,10 @@ class IAppointment:
         if "appointments" not in user["metadata"]:
             user["metadata"]["appointments"] = {}
         user["metadata"]["appointments"][date] = appointments
-        self.adapter.update_user(self.current_user, user)
+        self.adapter.update_user(self.domain,self.current_user, user)
 
     def lock_appointment(self, date: str, no: str) -> bool:
-        user = self.adapter.get_user(self.current_user)
+        user = self.adapter.get_user(self.domain,self.current_user)
         user = normalize_user(user)
         user = user.to_dict() or {}
         appointments = user.get("metadata", {}).get("appointments", {}).get(date, [])
@@ -51,6 +53,6 @@ class IAppointment:
 
         if locked_any:
             user["metadata"]["appointments"][date] = appointments
-            self.adapter.update_user(self.current_user, user)
+            self.adapter.update_user(self.domain,self.current_user, user)
 
         return locked_any

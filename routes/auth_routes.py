@@ -77,7 +77,7 @@ def oauth_callback():
     domain = request.args.get("domain",session.get("domain", session.get("binder", "business")))
     auth_service = _get_auth_service(domain)
     try:
-        user, tokens = auth_service.handle_provider_callback(provider, code)
+        user, tokens = auth_service.handle_provider_callback(domain,provider, code)
     except Exception as exc:
         # return a safe error message
         return jsonify({"status": "error","data":None, "message": str(exc)}), 500
@@ -107,7 +107,7 @@ def sign_out():
     user_id = request.json.get("user_id") if request.is_json else session.get("user_id")
     # revoke server-side refresh token
     try:
-        auth_service.sign_out(user_id)
+        auth_service.sign_out(domain,user_id)
     except Exception:
         # non-fatal: continue to clear session
         pass
@@ -129,7 +129,7 @@ def current_user():
         token = auth_header.split(" ", 1)[1].strip()
     token = token or session.get("jwt")
 
-    user = auth_service.verify_token_and_get_user(token)
+    user = auth_service.verify_token_and_get_user(domain,token)
     if not user:
         return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
     

@@ -8,7 +8,7 @@ Initializes Flask, Firebase, and registers domain routes.
 from flask import Flask
 from firebase_admin import credentials, initialize_app
 from services.subscription_service import SubscriptionService
-from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness
+from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness , UnitedFirebaseAdapter
 
 from auth.auth_service import AuthService  # using the new AuthService
 from services.user_service import UserService
@@ -35,12 +35,12 @@ def create_app(config_name: str = 'default') -> Flask:
         'storageBucket': app.config["FIREBASE"]["storageBucket"]
     })
     # Adapter + domain binders
-    firebase_adapter_business = FirebaseCrudAdapter(root_path="business")
-    firebase_adapter_medical = FirebaseCrudAdapter(root_path="drs")
+    united_firebase_adapter = UnitedFirebaseAdapter(root_path="Gradicent")
+    legacy_firebase_adapter_medical = FirebaseCrudAdapter(root_path="drs")
 
     binders = {
-        "medical": BinderMedical(firebase_adapter_medical),
-        "business": BinderBusiness(firebase_adapter_business),
+        "medical": BinderMedical(united_firebase_adapter),
+        "business": BinderBusiness(united_firebase_adapter),
     }
 
     app.config.setdefault("BINDERS", binders)
@@ -51,26 +51,25 @@ def create_app(config_name: str = 'default') -> Flask:
         "scopes": app.config.get("OAUTH_SCOPES", ["openid", "email", "profile"]),
     }
 
+    auth = AuthService(
+        adapter=united_firebase_adapter,
+        legacy_adapter=legacy_firebase_adapter_medical,
+        google_config=google_config,
+        jwt_secret=jwt_secret,
+        # optional: access_token_ttl=3600, refresh_token_ttl=2592000
+    )
+
     auth_services = {
-        "medical": AuthService(
-            adapter=firebase_adapter_medical,
-            google_config=google_config,
-            jwt_secret=jwt_secret,
-            # optional: access_token_ttl=3600, refresh_token_ttl=2592000
-        ),
-        "business": AuthService(
-            adapter=firebase_adapter_business,
-            google_config=google_config,
-            jwt_secret=jwt_secret,
-            # optional: access_token_ttl=3600, refresh_token_ttl=2592000
-        ),
+        "medical": auth,
+        "business": auth,
     }
 
     # services/adapters
     payment_provider = StripePaymentProvider(app.config["STRIPE_API_KEY"])
+    sub = SubscriptionService(united_firebase_adapter, payment_provider)
     subscription_services = {
-        "medical": SubscriptionService(firebase_adapter_medical, payment_provider),
-        "business": SubscriptionService(firebase_adapter_business, payment_provider),
+        "medical": sub,
+        "business": sub,
     }
 
     # register blueprints and pass factories via app extensions

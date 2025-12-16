@@ -7,7 +7,7 @@ Flask blueprint for handling payments and subscriptions API routes.
 - Delegates all business logic to services.
 """
 
-from flask import Blueprint, request
+from flask import Blueprint, request,session
 from services.subscription_service import SubscriptionService
 from services.payment_service import PaymentService
 from payments.stripe_provider import StripePaymentProvider
@@ -31,6 +31,7 @@ def subscribe():
     Subscribes a user to a plan.
     """
     payload = request.get_json()
+    domain = payload.get("domain", session.get("domain", session.get("binder", "business")))
     user_id = payload.get("user_id")
     plan = payload.get("plan")
     payment_data = payload.get("payment_data")
@@ -38,7 +39,7 @@ def subscribe():
     if not all([user_id, plan, payment_data]):
         return make_response(None, "Missing parameters.", "error")
 
-    result = subscription_service.subscribe_user(user_id, plan, payment_data)
+    result = subscription_service.subscribe_user(domain,user_id, plan, payment_data)
     return make_response({"result":result}, "Subscription processed.")
 
 
@@ -49,11 +50,12 @@ def cancel_subscription():
     Cancels the user's subscription.
     """
     payload = request.get_json()
+    domain = payload.get("domain", session.get("domain", session.get("binder", "business")))
     user_id = payload.get("user_id")
     if not user_id:
         return make_response(None, "Missing user_id.", "error")
 
-    subscription_service.cancel_subscription(user_id)
+    subscription_service.cancel_subscription(domain,user_id)
     return make_response(None, "Subscription canceled.")
 
 

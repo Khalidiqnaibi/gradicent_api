@@ -25,7 +25,7 @@ class SubscriptionService:
         """Retrieve the cost of a plan."""
         return PLANS.get(plan_name.lower())
 
-    def subscribe_user(self, user_id: str, plan_name: str, payment_data: Dict[str, Any]) -> Dict[str, Any]:
+    def subscribe_user(self, domain:str, user_id: str, plan_name: str, payment_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Subscribes a user to a selected plan.
         """
@@ -36,14 +36,14 @@ class SubscriptionService:
         payment_result = self.payment_service.process_payment(payment_data, plan_price)
 
         if payment_result["status"] == "success":
-            self.adapter.update(user_id,"plan", plan_name)
+            self.adapter.update(domain,user_id,"plan", plan_name)
             return {"status": "success", "data":{"plan": plan_name, "price": plan_price},
                     "message": f"Payment successfull. Amount: {plan_price} , Id: {user_id}"}
         else:
             return {"status": "failed","data":{}, "message": "Payment failed."}
 
-    def cancel_subscription(self, user_id: str) -> None:
+    def cancel_subscription(self,domain:str, user_id: str) -> None:
         """
         Cancels user's subscription and updates metadata.
         """
-        self.adapter.update(user_id, "plan", "canceled")
+        self.adapter.update(domain,user_id, "plan", "canceled")

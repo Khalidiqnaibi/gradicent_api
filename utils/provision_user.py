@@ -1,12 +1,12 @@
 from binder import User,LegacyUser,normalize_user
-from typing import Dict,Any
+from typing import Dict,Any,Union
 
-def _provision_user(adapter, provider: str, provider_user: Dict[str, Any]) -> User:
+def _provision_user(adapter,domain:str, provider: str, provider_user: Dict[str, Any]) -> User:
     provider_id = str(provider_user.get("id"))
     user_id = f"{provider_id}"
 
     # Try existing user
-    raw = adapter.get_user(user_id)
+    raw = adapter.get_user(domain,user_id)
     if raw:
         normalized =  normalize_user(raw)
         if normalized:
@@ -38,5 +38,30 @@ def _provision_user(adapter, provider: str, provider_user: Dict[str, Any]) -> Us
         services=[],
     )
 
-    adapter.add_user(user_id, new_user.to_dict())
+    adapter.add_user(domain,user_id, new_user.to_dict())
     return new_user
+
+
+def get_legacy_user(adapter, provider: str, provider_user: Dict[str, Any]) -> Union[User , None]:
+    provider_id = str(provider_user.get("id"))
+    user_id = f"{provider_id}"
+
+    # Try existing user
+    raw = adapter.get_user(user_id)
+    if raw:
+        normalized =  normalize_user(raw)
+        if normalized:
+            return normalized
+        
+        # Unknown structure (fallback safe)
+        return User(
+            id=user_id,
+            name=raw.get("name", user_id),
+                email=None,
+        )
+    return None
+
+
+if __name__ ==  "__main__":
+    
+    user = _provision_user("adapter","provider", "provider_user")

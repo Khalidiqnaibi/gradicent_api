@@ -4,6 +4,7 @@ from .interfaces import (binder_interface,binder,storage_adapter,base_repository
 from .models import models
 from .utils.normlize_user import normalize_user
 from .adapters.firebase_crud_adapter import FirebaseCrudAdapter
+from binder.adapters.united_firebase_adapter import UnitedFirebaseAdapter
 from .binder_business import BinderBusiness
 from .binder_medical import BinderMedical
 from .interfaces.binder import Binder
@@ -60,5 +61,5 @@ __all__ = [
     "service_repository","employee_repository","interaction_repository","transaction_repository",
     "BaseRepository","BaseRepository", "ClientRepository","EmployeeRepository",
     "InteractionRepository","ServiceRepository","ProductRepository", "UserRepository",
-    "TransactionRepository","LegacyUser","IAppointment","normalize_user"
+    "TransactionRepository","LegacyUser","IAppointment","normalize_user" , "UnitedFirebaseAdapter"
 ]

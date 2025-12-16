@@ -28,7 +28,7 @@ class BinderBusiness(
     IServiceService,
     IInteractionService,
     ITransactionService,
-    IAppointment
+    IAppointment("business")
 ):
     """
     Binder Business that stores and reads uniform model dicts.
@@ -36,26 +36,26 @@ class BinderBusiness(
     """
 
     # user CRUD
-    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.adapter.add_user(data["id"], data)
+    def create(self,data: Dict[str, Any]) -> Dict[str, Any]:
+        self.adapter.add_user("business",data["id"], data)
         self.current_user=data["id"]
         return data
 
-    def read(self, entity_id: str) -> Dict[str, Any]:
-        return self.adapter.get_user(entity_id)
+    def read(self,entity_id: str) -> Dict[str, Any]:
+        return self.adapter.get_user("business",entity_id)
 
-    def update(self, entity_id: str, patch: Dict[str, Any]) -> None:
-        user = self.adapter.get_user(entity_id) or {}
+    def update(self,entity_id: str, patch: Dict[str, Any]) -> None:
+        user = self.adapter.get_user("business",entity_id) or {}
         user.update(patch)
-        self.adapter.update_user(entity_id, user)
+        self.adapter.update_user("business",entity_id, user)
 
-    def delete(self, entity_id: str) -> None:
-        self.adapter.delete_user(entity_id)
+    def delete(self,entity_id: str) -> None:
+        self.adapter.delete_user("business",entity_id)
 
     # clients
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
         # Fetch existing clients
-        clients = self.adapter.get_child(self.current_user, "clients") or {}
+        clients = self.adapter.get_child("business",self.current_user, "clients") or {}
 
         # The new id is simply the next index
         client_id = str(len(clients))
@@ -64,25 +64,25 @@ class BinderBusiness(
         data["id"] = client_id
 
         # Save at /clients/<client_id>
-        self.adapter.set_child(self.current_user, f"clients/{client_id}", data)
+        self.adapter.set_child("business",self.current_user, f"clients/{client_id}", data)
 
         return data
 
-    def read_client(self, client_id: str) -> Dict[str, Any]:
-        clients = self.adapter.list_children(self.current_user, "clients")
+    def read_client(self,client_id: str) -> Dict[str, Any]:
+        clients = self.adapter.list_children("business",self.current_user, "clients")
         client = clients[int(client_id)] 
         if client:
             return clients[int(client_id)] 
         else:
             return None
 
-    def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
-        self.adapter.update_child(self.current_user, "clients", client_id, patch)
+    def update_client(self,client_id: str, patch: Dict[str, Any]) -> None:
+        self.adapter.update_child("business",self.current_user, "clients", client_id, patch)
 
-    def delete_client(self, client_id: str) -> None:
-        self.adapter.delete_child(self.current_user, "clients", client_id)
+    def delete_client(self,client_id: str) -> None:
+        self.adapter.delete_child("business",self.current_user, "clients", client_id)
 
-    def search_clients(self, query: str) -> List[Dict[str, Any]]:
+    def search_clients(self,query: str) -> List[Dict[str, Any]]:
         """
         Domain-agnostic client search:
         - try gov_id exact (normalized)
@@ -106,20 +106,20 @@ class BinderBusiness(
         # 1) gov id
         gov_norm = _norm_gov(q)
         if gov_norm:
-            found = self.adapter.find_children_by_predicate(self.current_user, "clients", lambda c: _norm_gov(c.get("gov_id","")) == gov_norm)
+            found = self.adapter.find_children_by_predicate("business",self.current_user, "clients", lambda c: _norm_gov(c.get("gov_id","")) == gov_norm)
             if found:
                 return found
 
         # 2) numeric id (legacy: client stored as list index or 'id' field)
         if q.isdigit():
             # try exact id field first
-            found = self.adapter.find_children_by_field(self.current_user, "clients", "id", q)
+            found = self.adapter.find_children_by_field("business",self.current_user, "clients", "id", q)
             if found:
                 return found
             # fallback to index-based lookup (if adapter stores list)
             try:
                 idx = int(q) - 1
-                children = self.adapter.list_children(self.current_user, "clients")
+                children = self.adapter.list_children("business",self.current_user, "clients")
                 if 0 <= idx < len(children):
                     return [children[idx]]
             except Exception:
@@ -128,26 +128,26 @@ class BinderBusiness(
         # 3) phone match
         digits = _digits(q)
         if digits:
-            found = self.adapter.find_by_phone(self.current_user, "clients", digits)
+            found = self.adapter.find_by_phone("business",self.current_user, "clients", digits)
             if found:
                 return found
 
         # 4) name substring
-        found = self.adapter.find_by_name_substring(self.current_user, "clients", q)
+        found = self.adapter.find_by_name_substring("business",self.current_user, "clients", q)
         return found
 
     # employees, products, services (same structure)
-    def create_employee(self, data): return self._add_child("employees", data)
-    def update_employee(self, emp_id, patch): self.adapter.update_child(self.current_user, "employees", emp_id, patch)
-    def delete_employee(self, emp_id): self.adapter.delete_child(self.current_user, "employees", emp_id)
+    def create_employee(self, data): return self.adapter.add_child("business","employees", data)
+    def update_employee(self, emp_id, patch): self.adapter.update_child("businesss",self.current_user, "employees", emp_id, patch)
+    def delete_employee(self, emp_id): self.adapter.delete_child("business",self.current_user, "employees", emp_id)
 
-    def create_product(self, data): return self._add_child("products", data)
-    def update_product(self, prod_id, patch): self.adapter.update_child(self.current_user, "products", prod_id, patch)
-    def delete_product(self, prod_id): self.adapter.delete_child(self.current_user, "products", prod_id)
+    def create_product(self, data): return self.adapter.add_child("business","products", data)
+    def update_product(self, prod_id, patch): self.adapter.update_child("business",self.current_user, "products", prod_id, patch)
+    def delete_product(self, prod_id): self.adapter.delete_child("business",self.current_user, "products", prod_id)
 
-    def create_service(self, data): return self._add_child("services", data)
-    def update_service(self, svc_id, patch): self.adapter.update_child(self.current_user, "services", svc_id, patch)
-    def delete_service(self, svc_id): self.adapter.delete_child(self.current_user, "services", svc_id)
+    def create_service(self, data): return self.adapter.add_child("business","services", data)
+    def update_service(self, svc_id, patch): self.adapter.update_child("business",self.current_user, "services", svc_id, patch)
+    def delete_service(self, svc_id): self.adapter.delete_child("business",self.current_user, "services", svc_id)
 
     # interactions:
     def create_interaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -164,8 +164,8 @@ class BinderBusiness(
 
     # transactions (nested)
     def create_transaction(self, client_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.adapter.add_nested(self.current_user, "clients", client_id, "transactions", data)
+        self.adapter.add_nested("business",self.current_user, "clients", client_id, "transactions", data)
         return data
 
     def list_transactions(self, client_id: str) -> List[Dict[str, Any]]:
-        return self.adapter.list_nested(self.current_user, "clients", client_id, "transactions")
+        return self.adapter.list_nested("business",self.current_user, "clients", client_id, "transactions")

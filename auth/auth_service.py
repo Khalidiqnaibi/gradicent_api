@@ -28,12 +28,14 @@ class AuthService:
     def __init__(
         self,
         adapter,
+        legacy_adapter,
         google_config: Dict[str, Any],
         jwt_secret: str,
         access_token_ttl: int = 3600,
         refresh_token_ttl: int = 60 * 60 * 24 * 30,
     ):
         self.adapter = adapter
+        self.legacy_adapter = legacy_adapter
         self.jwt_secret = jwt_secret
         self.access_token_ttl = access_token_ttl
         self.refresh_token_ttl = refresh_token_ttl
@@ -47,21 +49,24 @@ class AuthService:
             )
         }
 
-
-
     def get_authorization_url(self, provider: str, state: Optional[str]) -> str:
         return self.providers[provider].get_authorization_url(state)
 
 
-
     def handle_provider_callback(
         self,
+        domain:str,
         provider: str,
         code: str,
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
         provider_user = self.providers[provider].exchange_code_for_user(code)
-        user = _provision_user(self.adapter,provider, provider_user)
+        
+        legacy_user = self.legacy_adapter.get_user(provider_user.get('id'))
+        if legacy_user:
+            user = _provision_user(self.adapter,domain,provider, legacy_user)
+        else:
+            user = _provision_user(self.adapter,domain,provider, provider_user)
 
         tokens = self._create_tokens_for_user(user.id)
         self._save_refresh_token(user.id, tokens["refresh_token"])
@@ -91,23 +96,23 @@ class AuthService:
         }
 
 
-    def verify_token_and_get_user(self, token: str) -> Optional[Dict[str, Any]]:
+    def verify_token_and_get_user(self,domain:str, token: str) -> Optional[Dict[str, Any]]:
         if not token:
             return None
 
         try:
             payload = jwt.decode(token, self.jwt_secret, algorithms=["HS256"])
-            raw_user = self.adapter.get_user(payload["sub"])
+            raw_user = self.adapter.get_user(domain,payload["sub"])
             return raw_user if raw_user else None
         except Exception:
             return None
 
 
-    def sign_out(self, user_id: str) -> None:
-        self._save_refresh_token(user_id, None)
+    def sign_out(self,domain:str, user_id: str) -> None:
+        self._save_refresh_token(domain,user_id, None)
 
-    def _save_refresh_token(self, user_id: str, token: Optional[str]):
-        raw = self.adapter.get_user(user_id)
+    def _save_refresh_token(self,domain:str, user_id: str, token: Optional[str]):
+        raw = self.adapter.get_user(domain,user_id)
         if not raw:
             return
 
@@ -118,10 +123,10 @@ class AuthService:
         raw["metadata"]["refresh_token"] = token
 
         # Save back without enforcing dataclass structure
-        self.adapter.update_user(user_id, raw)
+        self.adapter.update_user(domain,user_id, raw)
 
-    def _get_stored_refresh_token(self, user_id: str) -> Optional[str]:
-        raw = self.adapter.get_user(user_id)
+    def _get_stored_refresh_token(self,domain:str, user_id: str) -> Optional[str]:
+        raw = self.adapter.get_user(domain,user_id)
         if not raw:
             return None
 
