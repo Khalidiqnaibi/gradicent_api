@@ -10,9 +10,10 @@ from auth.auth_service import AuthService
 def require_login(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        domain = session.get("domain", session.get("binder", "business"))
         token = request.headers.get("Authorization", "").replace("Bearer ", "") or session.get("jwt")
         auth_service: AuthService = current_app.extensions["services"]["auth_services"].get(session.get("domain",session.get("binder","business")))
-        user = auth_service.verify_token_and_get_user(token)
+        user = auth_service.verify_token_and_get_user(domain,token)
         if not user:
             return redirect("/login") #jsonify({"status": "error", "message": "unauthenticated"}), 401
         # Attach user to request context for controllers

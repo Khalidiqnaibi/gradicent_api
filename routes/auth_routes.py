@@ -129,6 +129,7 @@ def current_user():
         token = auth_header.split(" ", 1)[1].strip()
     token = token or session.get("jwt")
 
+    
     user = auth_service.verify_token_and_get_user(domain,token)
     if not user:
         return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401

@@ -13,9 +13,7 @@ class IAppointment:
     Shared appointment logic for Business + Medical binders.
     Uses StorageAdapter through self.adapter.
     """
-    def __init__(self,domain):
-        self.domain = domain
-
+    
     def get_appointments(self, date: str) -> List[Dict]:
         user = self.adapter.get_user(self.domain,self.current_user)
         user = normalize_user(user)
