@@ -14,7 +14,7 @@ outputs
 
 from datetime import datetime, timedelta
 
-def get_plan_status(plan, first_date_str):
+def compute_plan_status(plan, first_date_str):
     if plan == "fam":
         return  True, 0
     elif plan in ['free']:
@@ -42,7 +42,13 @@ def get_plan_status(plan, first_date_str):
         
     
 def get_plan_data(service):
-    data = service._binder.adapter.get_user(service._binder.current_user)
-    date =data.get("metadata",datetime.now().isoformat()).get("plan_started_at",datetime.now().isoformat())
-    plan = data.getdata.get("metadata","free").get("plan","free")
+    data = service._binder.adapter.get_user(service._binder.domain,service._binder.current_user)
+    print(service._binder.domain,service._binder.current_user)
+    meta =data.get("metadata")
+    if meta:
+        date = meta.get("plan_started_at",datetime.now().isoformat())
+        plan = meta.get("plan","free")
+    else:
+        date = datetime.now().isoformat()
+        plan = "free"
     return plan , date

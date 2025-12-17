@@ -22,7 +22,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 from services.binder_service import BinderService, BinderServiceError
 from services.appointments_service import AppointmentsService
 from utils.get_appointments import get_appointments
-from utils.get_plan_status import get_plan_status, get_plan_data
+from utils.get_plan_status import compute_plan_status, get_plan_data
 from config import BACKEND_URL
 
 binder_blueprint = Blueprint("binder", __name__)
@@ -74,15 +74,16 @@ def handle_not_found(err: NotFound):
 
 @binder_blueprint.route("/get_plan_status",methods=["GET"])
 def get_plan_status():
-    domain = request.args.get("domain", DEFAULT_DOMAIN)
+    domain = request.args.get("domain", session.get("domain", session.get("binder", DEFAULT_DOMAIN)))
     payload ={
         "domain": domain
     }
     service = _get_domain_and_service(payload)
-
+    user_id = session["user_id"]
+    service.set_current_user(user_id)
     plan , first  = get_plan_data(service=service)
     
-    status ,days = get_plan_status(plan,first)
+    status ,days = compute_plan_status(plan,first)
 
     result = {
         "days": days,
@@ -93,7 +94,7 @@ def get_plan_status():
 
 @binder_blueprint.route("/get_domain",methods=["GET"])
 def get_domain():
-    domain = session.get("domain", session.get("binder", "business"))
+    domain = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
     return make_response(data=domain) , 200
 
 @binder_blueprint.route("/create_user", methods=["POST"])
