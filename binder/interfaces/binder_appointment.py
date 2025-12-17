@@ -8,7 +8,7 @@ from datetime import date
 from typing import List, Dict
 from ..utils.normlize_user import normalize_user
 
-class IAppointment:
+class AppointmentMixin:
     """
     Shared appointment logic for Business + Medical binders.
     Uses StorageAdapter through self.adapter.

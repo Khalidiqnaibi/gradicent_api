@@ -1,0 +1,6 @@
+we need a new adapter for the file upload download preview and delete..
+
+the old one that was in the pythonanywhere branch works 
+but is not to our standards and is not modular
+
+and we need to mke the delete a soft delete so still have the info for our KNOWLAGE BASE

@@ -8,17 +8,15 @@ from binder.adapters.united_firebase_adapter import UnitedFirebaseAdapter
 from .binder_business import BinderBusiness
 from .binder_medical import BinderMedical
 from .interfaces.binder import Binder
-from .interfaces.binder_appointment import IAppointment
+from .interfaces.binder_appointment import AppointmentMixin
 from .interfaces.binder_interface import (
-    IClientService,
-    ICrudService,
-    IEmployeeService,
-    IInteractionService,
-    INestedCrudService,
-    IProductService,
-    IServiceService,
-    ITransactionService,
-    IUserService
+    ClientMixin,
+    EmployeeMixin,
+    InteractionMixin,
+    ProductMixin,
+    ServiceMixin,
+    TransactionMixin,
+    UserMixin
 )
 from .adapters.inmemory_adapter import InMemoryAdapter
 from .interfaces.storage_adapter import StorageAdapter
@@ -53,13 +51,13 @@ from .repositories.transaction_repository import TransactionRepository
 __all__ = [
     "inmemory_adapter","firebase_crud_adapter","binder_business","binder_medical",
     "binder_interface","binder","storage_adapter","models","base_repository",
-    "FirebaseCrudAdapter","BinderBusiness","BinderMedical","Binder","IClientService",
-    "ICrudService","IEmployeeService","IInteractionService","INestedCrudService",
-    "IProductService","IServiceService", "ITransactionService","IUserService","GaiaEngine",
+    "FirebaseCrudAdapter","BinderBusiness","BinderMedical","Binder","ClientMixin",
+    "EmployeeMixin","TransactionMixin","INestedCrudService",
+    "ProductMixin","ServiceMixin", "ITransactionService","UserMixin","GaiaEngine",
     "InMemoryAdapter","StorageAdapter","User","Service","Employee","Client",'Interaction',
     "Transaction","Product","client_repository","user_repository","product_repository",
     "service_repository","employee_repository","interaction_repository","transaction_repository",
     "BaseRepository","BaseRepository", "ClientRepository","EmployeeRepository",
     "InteractionRepository","ServiceRepository","ProductRepository", "UserRepository",
-    "TransactionRepository","LegacyUser","IAppointment","normalize_user" , "UnitedFirebaseAdapter"
+    "TransactionRepository","LegacyUser","AppointmentMixin","normalize_user" , "UnitedFirebaseAdapter"
 ]
