@@ -58,7 +58,7 @@ class FinancialSummaryMetric(IMetric):
         entity_key = DOMAIN_ENTITY_MAP.get(domain, "patients")
 
         raw_entities = binder.adapter.list_children(
-            binder.current_user, entity_key
+           binder.domain,binder.current_user, entity_key
         ) or []
         entities = list(raw_entities)
 

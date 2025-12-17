@@ -73,6 +73,6 @@ def compute_metric():
 
     try:
         results = gaia_engine.compute(binder, metric_name, **params)
-        return make_response(results, f"Metric '{metric_name}' computed successfully.")
+        return make_response(results, f"Metric '{metric_name}' computed successfully.") , 200
     except Exception as e:
-        return make_response({}, f"Error computing metric '{metric_name}': {str(e)}", "error")
+        return make_response({}, f"Error computing metric '{metric_name}': {str(e)}", "error") , 400

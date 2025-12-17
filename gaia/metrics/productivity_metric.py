@@ -64,7 +64,7 @@ class ProductivityMetric(IMetric):
         # 0. Extract domain + base user
         # -------------------------------------------
         DOMAIN = kwargs.get("domain", "medical")
-        user   = binder.adapter.get_user(binder.current_user) or {}
+        user   = binder.adapter.get_user(binder.domain,binder.current_user) or {}
         start_dt = kwargs.get("form") or kwargs.get("From") or kwargs.get("start_date")
         end_dt = kwargs.get("to") or kwargs.get("To") or kwargs.get("end_date")
 

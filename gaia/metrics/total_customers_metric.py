@@ -71,9 +71,11 @@ class TotalCustomersMetric(IMetric):
         # FAST LOAD — only the clients/patients/customers array
         # ----------------------
         entities = binder.adapter.list_children(
+            binder.domain,
             binder.current_user,
             entity_collection
         ) or binder.adapter.list_children(
+            binder.domain,
             binder.current_user,
             "clients"
         ) or []

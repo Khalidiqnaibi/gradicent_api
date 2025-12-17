@@ -17,10 +17,10 @@ class FinanceMetric(IMetric):
     def compute(self, binder, **kwargs) -> Dict[str, Any]:
         total_revenue = 0.0
         total_unpaid = 0.0
-        patients = binder.adapter.list_children(binder.current_user, "clients")
+        patients = binder.adapter.list_children(binder.domain,binder.current_user, "clients")
 
         for p in patients:
-            visits = binder.adapter.list_nested(binder.current_user, "clients", p["id"], "transactions")
+            visits = binder.adapter.list_nested(binder.domain,binder.current_user, "clients", p["id"], "transactions")
             for v in visits:
                 total_revenue += float(v.get("payed", 0))
                 total_unpaid += float(v.get("debit", 0))

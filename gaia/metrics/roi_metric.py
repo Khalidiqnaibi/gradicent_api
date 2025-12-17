@@ -23,7 +23,7 @@ class RoiMetric(IMetric):
         plan_price = float(kwargs.get("subscription_price", 0))
 
         # Example dummy logic using binder data
-        time_logs = binder.adapter.list_children(binder.current_user, "time_tracking")
+        time_logs = binder.adapter.list_children(binder.domain,binder.current_user, "time_tracking")
         total_seconds = sum(float(l.get("seconds", 0)) for l in time_logs)
 
         hours_saved = total_seconds / 3600.0
