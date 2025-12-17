@@ -1,7 +1,8 @@
-from binder import User,LegacyUser,normalize_user
+from binder import User,normalize_user
 from typing import Dict,Any,Union
 
-def _provision_user(adapter,domain:str, provider: str, provider_user: Dict[str, Any]) -> User:
+
+def _provision_user(adapter,legacy_adapter,domain:str, provider: str, provider_user: Dict[str, Any]) -> User:
     provider_id = str(provider_user.get("id"))
     user_id = f"{provider_id}"
 
@@ -19,7 +20,22 @@ def _provision_user(adapter,domain:str, provider: str, provider_user: Dict[str, 
                 email=None,
         )
     
-    # Create new User instance using your model
+    legacy = get_legacy_user(legacy_adapter,provider,legacy_adapter.get_user(provider_user.get('id')))
+
+    if legacy:
+        '''
+        see if there is an old account 
+        and making a new account with the prev data
+        but with the new format and path
+        '''
+        new_user = normalize_user(legacy.to_dict())
+        new_user.metadata["provider"] = provider
+
+        adapter.add_user(domain,user_id, new_user.to_dict())
+        return new_user
+
+    
+    # Creating new User instance using our model
     new_user = User(
         id=user_id,
         name=provider_user.get("name")
@@ -40,7 +56,6 @@ def _provision_user(adapter,domain:str, provider: str, provider_user: Dict[str, 
 
     adapter.add_user(domain,user_id, new_user.to_dict())
     return new_user
-
 
 def get_legacy_user(adapter, provider: str, provider_user: Dict[str, Any]) -> Union[User , None]:
     provider_id = str(provider_user.get("id"))
