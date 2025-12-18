@@ -14,6 +14,7 @@ Design notes:
 - Uses explicit return values and typed signatures.
 """
 
+from datetime import datetime
 import requests
 from typing import Any, Dict, Optional
 from flask import Blueprint, request, jsonify, current_app , session
@@ -401,3 +402,36 @@ def lock_appointments():
     service.lock_appointment(payload["date"], int(no))
 
     return make_response(message="Appointment locked."), 200
+
+@binder_blueprint.route("/track_time", methods=["POST"])
+def log_time_tracking():
+    """
+    Log time tracking entry for the current user.
+
+    Expected JSON:
+    {
+        "domain": "...",
+        "user_id": "...",
+        "seconds": { ... }
+    }
+    """
+    payload = request.get_json(force=True)
+    if "seconds" not in payload:
+        raise BadRequest("Missing 'seconds' payload")
+
+    service = _get_domain_and_service(payload)
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+    
+    seconds_spent = payload.get("seconds", 0)
+    user = service._binder.adapter.get_user(session.get("domain"),session.get("user_id"))
+    user["metadata"] = user.get("metadata", {})
+    user["metadata"]["time_tracking"] = user["metadata"].get("time_tracking", [])
+    user["metadata"]["time_tracking"].append({
+        "seconds": seconds_spent,
+        "timestamp": datetime.now().isoformat()
+    })
+    service._binder.adapter.update_user(session.get("domain"),session.get("user_id"),user)
+
+    time_entry = payload["seconds"]
+    return make_response(data=time_entry, message="Time entry logged."), 201

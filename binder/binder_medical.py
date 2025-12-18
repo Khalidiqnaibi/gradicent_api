@@ -7,7 +7,7 @@ CRUD operations for the medical domain, using Firebase or similar adapters.
 
 from datetime import datetime
 from typing import Any, Dict, Optional, List
-from .interfaces.binder_interface import UserMixin, ClientMixin, InteractionMixin
+from .interfaces.binder_mixins import UserMixin, ClientMixin, InteractionMixin
 from .interfaces.binder import Binder
 from .interfaces.binder_appointment import AppointmentMixin
 

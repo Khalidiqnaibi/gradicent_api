@@ -205,7 +205,7 @@
   const API_GET_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}?domain=${encodeURIComponent(APP_STATE.domain || '')}&user_id=${encodeURIComponent(APP_STATE.user_id || '')}`;
   const API_PATCH_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
   const API_OPEN_CLIENT = (id) => `/data/${encodeURIComponent(id)}`;
-  const TRACK_ENDPOINT = '/track_time';
+  const TRACK_ENDPOINT = '/api/binder/track_time';
 
   const APP_STATE = {
     domain: null,

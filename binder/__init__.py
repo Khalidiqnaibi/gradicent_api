@@ -1,6 +1,6 @@
 from .adapters import (inmemory_adapter,firebase_crud_adapter)
 from . import binder_business,binder_medical
-from .interfaces import (binder_interface,binder,storage_adapter,base_repository)
+from .interfaces import (binder, binder_mixins,storage_adapter,base_repository)
 from .models import models
 from .utils.normlize_user import normalize_user
 from .adapters.firebase_crud_adapter import FirebaseCrudAdapter
@@ -9,7 +9,7 @@ from .binder_business import BinderBusiness
 from .binder_medical import BinderMedical
 from .interfaces.binder import Binder
 from .interfaces.binder_appointment import AppointmentMixin
-from .interfaces.binder_interface import (
+from .interfaces.binder_mixins import (
     ClientMixin,
     EmployeeMixin,
     InteractionMixin,
@@ -50,7 +50,7 @@ from .repositories.transaction_repository import TransactionRepository
 
 __all__ = [
     "inmemory_adapter","firebase_crud_adapter","binder_business","binder_medical",
-    "binder_interface","binder","storage_adapter","models","base_repository",
+    "binder_mixins","binder","storage_adapter","models","base_repository",
     "FirebaseCrudAdapter","BinderBusiness","BinderMedical","Binder","ClientMixin",
     "EmployeeMixin","TransactionMixin","INestedCrudService",
     "ProductMixin","ServiceMixin", "ITransactionService","UserMixin","GaiaEngine",
@@ -60,4 +60,5 @@ __all__ = [
     "BaseRepository","BaseRepository", "ClientRepository","EmployeeRepository",
     "InteractionRepository","ServiceRepository","ProductRepository", "UserRepository",
     "TransactionRepository","LegacyUser","AppointmentMixin","normalize_user" , "UnitedFirebaseAdapter"
+    "InteractionMixin"
 ]

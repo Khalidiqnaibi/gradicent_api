@@ -220,7 +220,7 @@
       const menuBtn = document.querySelector('.hamburger-menu');
       const menuBar = document.getElementById('menuBar');
 
-      const usage = startUsageTracker("/track_time");
+      const usage = startUsageTracker("/api/binder/track_time");
 
       // Toggle menu and spin transition
       menuBtn.addEventListener('click', () => {
@@ -587,9 +587,9 @@
           console.log(`before data : ${JSON.stringify(data)}`);
           data = data.data;
           console.log(`data : ${JSON.stringify(data)}`);
-          document.getElementById('pat-total').innerText = data.total_patients || 0;
-          document.getElementById('pat-returning').innerText = data.returning_patients || 0;
-          document.getElementById('pat-avg-visits').innerText = (data.avg_visits_per_patient || 0).toFixed(2);
+          document.getElementById('pat-total').innerText = data.total_customers || 0;
+          document.getElementById('pat-returning').innerText = data.returning_customers || 0;
+          document.getElementById('pat-avg-visits').innerText = (data.avg_visits_per_customer || 0).toFixed(2);
 
           const ch = ensureChart('pat-weekly', 'bar', { options: { responsive: true, maintainAspectRatio: false } });
           if (ch) {

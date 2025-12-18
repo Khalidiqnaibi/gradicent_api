@@ -234,7 +234,7 @@ let GLOBAL_USER_ID = null;
 let GLOBAL_DOMAIN = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  startUsageTracker("/track_time");
+  startUsageTracker("/api/binder/track_time");
 
   try {
     menu_init()

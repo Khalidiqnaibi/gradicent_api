@@ -412,7 +412,7 @@
     menuBtn.addEventListener('click', () => {
       menuBar.classList.toggle('menu-active');
     });
-    const usage = startUsageTracker("/track_time");
+    const usage = startUsageTracker("/api/binder/track_time");
     // Button bindings
     $('#searchButton').addEventListener('click', search);
     $('#prevButton').addEventListener('click', prev);

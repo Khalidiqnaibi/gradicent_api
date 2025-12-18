@@ -237,7 +237,7 @@
       const menuBtn = document.querySelector('.hamburger-menu');
       const menuBar = document.getElementById('menuBar');
       menuBtn.addEventListener('click', () => menuBar.classList.toggle('menu-active'));
-      const usage = startUsageTracker("/track_time");
+      const usage = startUsageTracker("/api/binder/track_time");
       // binder lab mode (keeps parity with other pages)
       const binder = '{{ binder }}';
       const appa = document.getElementById('appa');

@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional , List
 from .interfaces.storage_adapter import StorageAdapter
 from .interfaces.binder import Binder
 from .interfaces.binder_appointment import AppointmentMixin
-from .interfaces.binder_interface import (
+from .interfaces.binder_mixins import (
     UserMixin,
     ClientMixin,
     EmployeeMixin,

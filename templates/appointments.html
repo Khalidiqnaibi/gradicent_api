@@ -206,6 +206,44 @@
     appointments: []
   };
 
+  function startUsageTracker(endpoint) {
+
+    let totalActiveSeconds = 0;
+    let active = true;
+
+    // Count only when the page is visible & focused
+    document.addEventListener("visibilitychange", () => {
+      active = !document.hidden;
+    });
+
+    window.addEventListener("blur", () => { active = false; });
+    window.addEventListener("focus", () => { active = true; });
+
+    // Tick every second → adds to active use
+    setInterval(() => {
+      if (active) totalActiveSeconds += 1;
+    }, 1000);
+
+    // Send the final total when the session ends
+    function sendFinal() {
+      if (totalActiveSeconds <= 0) return;
+
+      const payload = JSON.stringify({ seconds: totalActiveSeconds });
+
+      // Use sendBeacon so it always sends before page unload
+      navigator.sendBeacon(endpoint, payload);
+    }
+
+    // On close / refresh / navigation
+    window.addEventListener("beforeunload", sendFinal);
+
+    // Return API for manual flush if needed
+    return {
+      getSeconds: () => totalActiveSeconds,
+      flush: sendFinal
+    };
+  }
+
   /* =========================
      Utils Module
      ========================= */
@@ -527,7 +565,7 @@
       try {
         ui_mod.menu_init();
         wire_buttons();
-
+        startUsageTracker("/api/binder/track_time");
         // get current user
         const user = await api_mod.get_user();
         APP_STATE.current_user_id = user.id;

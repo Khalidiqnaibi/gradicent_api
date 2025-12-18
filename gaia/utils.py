@@ -149,7 +149,7 @@ def filter_clients(clients: List[Dict], f: Dict):
         if location and location != p.get("location", "").lower():
             continue
 
-        visits = p.get("visits", [])
+        visits = p.get("interactions", [])
         if not visits:
             continue
 
@@ -159,7 +159,7 @@ def filter_clients(clients: List[Dict], f: Dict):
             if "_details_lc" not in v:
                 v["_details_lc"] = v.get("details", "").lower()
             if "_vd" not in v:
-                v["_vd"] = parse_date(v.get("visit_date"))
+                v["_vd"] = parse_date(v.get("interaction_date"))
 
         if _match_visit(
             visits,
