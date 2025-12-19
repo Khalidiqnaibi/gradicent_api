@@ -1,0 +1,2 @@
+Any none secure things like getting the user clints with user id etc need a check if the user id
+Matches with the id for user trying to access

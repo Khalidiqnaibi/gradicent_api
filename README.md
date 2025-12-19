@@ -30,16 +30,12 @@ gradicent-api/
 │   ├── adapters/               # Data storage adapters
 │   │   ├── firebase_crud_adapter.py
 │   │   └── inmemory_adapter.py
-│   ├── gaia/                   # Domain-specific extensions for analytics
-│   │   └── gaia_engine.py
 │   ├── interfaces/             # Abstract interfaces and contracts
 │   │   ├── binder.py
-│   │   ├── binder_interface.py
+│   │   ├── binder_mixins.py
 │   │   └── storage_adapter.py
 │   ├── models/                 # Uniform data schemas
-│   │   └── models.py
-│   └── services/               # Domain service logic (optional)
-│       └── medical_service.py
+│   └── models.py
 │
 ├── gaia/                       # Global analytics engine
 │   ├── engine.py               # Facade for metric computation

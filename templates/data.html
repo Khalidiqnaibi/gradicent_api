@@ -599,81 +599,138 @@
       .catch(err=>{console.error(err); showToast('Print failed','error');});
   }
 
-  // File manager
-  function openFile(){ $('#fileModal').style.display='flex'; selectFolder('drs'); }
-  function closeFileModal(){ $('#fileModal').style.display='none'; $('#filePreviews').innerHTML=''; }
+  const FILE_API_BASE = '/api/binder/files';
 
-  function selectFolder(folder){
-    selectedFolder=folder||'drs';
-    const uploadControls=$('#uploadControls');
-    if(selectedFolder==='drs'){ uploadControls.style.display='flex'; }
-    else { uploadControls.style.display='none'; }
-    fetchFiles();
+
+/* ---------- Open / Close ---------- */
+function openFile() {
+  $('#fileModal').style.display = 'flex';
+  selectFolder('drs');
+}
+function closeFileModal() {
+  $('#fileModal').style.display = 'none';
+  $('#filePreviews').innerHTML = '';
+}
+
+/* ---------- Folder Handling ---------- */
+function selectFolder(folder) {
+  selectedFolder = folder || 'drs';
+  $('#uploadControls').style.display = selectedFolder === 'drs' ? 'flex' : 'none';
+  fetchFiles();
+}
+
+/* ---------- Fetch Files ---------- */
+async function fetchFiles() {
+  try {
+    const res = await safe_fetch(`${FILE_API_BASE}/get_files?folder=${encodeURIComponent(selectedFolder)}&client_no=${patientNumber}`, {
+      method: 'GET'
+    });
+    renderFiles(res.data || []);
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to fetch files', 'error');
   }
+}
 
-  function onFilesSelected(e){
+/* ---------- Upload Files ---------- */
+function onFilesSelected(e){
     if($('#fileInput').files.length) showToast(`${$('#fileInput').files.length} files selected`,'info');
   }
 
-  function uploadFile(){
-    const files=$('#fileInput').files;
-    if(!files||files.length===0){ showToast('No files selected','error'); return; }
-    if(selectedFolder!=='drs'){ showToast('Uploads only allowed in Doctor folder','error'); return; }
+function uploadFile() {
+  const files = $('#fileInput').files;
+  if (!files.length) return showToast('No files selected', 'error');
+  if (selectedFolder !== 'drs') return showToast('Uploads only allowed in Doctor folder', 'error');
 
-    const totalFiles=files.length; let currentIndex=0;
-    $('#uploadProgressContainer').classList.remove('hidden');
-    function uploadNext(){
-      if(currentIndex>=totalFiles){
-        $('#uploadProgressContainer').classList.add('hidden'); $('#fileInput').value='';
-        showToast('All files uploaded','success'); fetchFiles(); return;
-      }
-      const file=files[currentIndex]; const form=new FormData();
-      form.append('file',file); form.append('patient_no',patientNumber); form.append('folder',selectedFolder);
+  const total = files.length;
+  let index = 0;
+  $('#uploadProgressContainer').style.display = 'block';
 
-      const xhr=new XMLHttpRequest();
-      xhr.open('POST','/uploadFile',true);
-      xhr.upload.onprogress=function(ev){
-        if(!ev.lengthComputable)return;
-        const filePercent=(ev.loaded/ev.total)*100;
-        const overall=Math.round(((currentIndex/totalFiles)*100)+(filePercent/totalFiles));
-        $('#fileUploadProgress').value=overall; $('#progressText').textContent=`${overall}%`;
-      };
-      xhr.onload=function(){ if(xhr.status===200){ currentIndex++; uploadNext(); } else { showToast('Upload failed','error'); $('#uploadProgressContainer').classList.add('hidden'); }};
-      xhr.onerror=function(){ showToast('Upload error','error'); $('#uploadProgressContainer').classList.add('hidden'); };
-      xhr.send(form);
+  const uploadNext = () => {
+    if (index >= total) {
+      $('#uploadProgressContainer').style.display = 'none';
+      $('#fileInput').value = '';
+      showToast('All files uploaded', 'success');
+      fetchFiles();
+      return;
     }
-    uploadNext();
-  }
 
-  function fetchFiles(){
-    const folder=encodeURIComponent(selectedFolder||'drs');
-    fetch(`/getFiles?patient_no=${patientNumber}&folder=${folder}`)
-      .then(r=>r.json()).then(files=>renderFiles(files||[]))
-      .catch(err=>{console.error(err); showToast('Failed to fetch files','error');});
-  }
+    const form = new FormData();
+    form.append('file', files[index]);
+    form.append('folder', selectedFolder);
+    form.append('client_no', patientNumber); // adjust if needed
+    form.append('user_id', user_id);
 
-  function renderFiles(files){
-    const c=$('#filePreviews'); c.innerHTML='';
-    if(!files||!files.length){ c.innerHTML='<div class="text-gray-500">No files</div>'; return; }
-    files.forEach(file=>{
-      const div=document.createElement('div'); div.className='file-preview';
-      const link=document.createElement('a'); link.href=file.data; link.target='_blank';
-      if(file.file_type.includes('image')){ const img=document.createElement('img'); img.src=file.data; link.appendChild(img);}
-      else if(file.file_type.includes('video')){ const v=document.createElement('video'); v.src=file.data; v.controls=true; v.className='rounded'; link.appendChild(v);}
-      else { const txt=document.createElement('div'); txt.className='p-3 border rounded txtPrev'; txt.textContent=file.name||'file'; link.appendChild(txt);}
-      if(selectedFolder==='drs'){ const rem=document.createElement('div'); rem.className='file-remove'; rem.innerHTML='&times;'; rem.onclick=(e)=>{e.preventDefault(); if(confirm('Delete this file?')) deleteFile(file.data);}; div.appendChild(rem);}
-      div.appendChild(link); c.appendChild(div);
-    });
-  }
+    fetch(`${FILE_API_BASE}/upload_file`, { method: 'POST', body: form })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'success') {
+          index++;
+          uploadNext();
+        } else {
+          showToast('Upload failed', 'error');
+          $('#uploadProgressContainer').style.display = 'none';
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Upload error', 'error');
+        $('#uploadProgressContainer').style.display = 'none';
+      });
+  };
 
-  function deleteFile(url){
-    fetch(`/deleteFile?url=${encodeURIComponent(url)}`,{method:'DELETE'})
-      .then(r=>r.json()).then(()=>{ showToast('File deleted','success'); fetchFiles(); })
-      .catch(e=>{console.error(e); showToast('Delete failed','error');});
-  }
+  uploadNext();
+}
 
-  window.openFile=openFile;
-  window.printVisit=printVisit;
+/* ---------- Render Files ---------- */
+function renderFiles(files) {
+  const container = $('#filePreviews');
+  container.innerHTML = '';
+  if (!files.length) return container.innerHTML = '<div class="text-gray-500">No files</div>';
+
+  files.forEach(file => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'file-preview';
+
+    const link = document.createElement('a');
+    link.href = file.data;
+    link.target = '_blank';
+
+    if (file.file_type.includes('image')) {
+      const img = document.createElement('img'); img.src = file.data; link.appendChild(img);
+    } else if (file.file_type.includes('video')) {
+      const video = document.createElement('video'); video.src = file.data; video.controls = true; video.className = 'rounded'; link.appendChild(video);
+    } else {
+      const txt = document.createElement('div'); txt.className = 'p-3 border rounded txtPrev'; txt.textContent = file.name || 'file'; link.appendChild(txt);
+    }
+
+    if (selectedFolder === 'drs') {
+      const remove = document.createElement('div');
+      remove.className = 'file-remove'; remove.innerHTML = '&times;';
+      remove.onclick = (e) => { e.preventDefault(); if(confirm('Delete this file?')) deleteFile(file.data); };
+      wrapper.appendChild(remove);
+    }
+
+    wrapper.appendChild(link);
+    container.appendChild(wrapper);
+  });
+}
+
+/* ---------- Delete File ---------- */
+async function deleteFile(url) {
+  try {
+    const res = await safe_fetch(`${FILE_API_BASE}/delete_file?url=${encodeURIComponent(url)}`, { method: 'DELETE' });
+    if (res.status === 'success') showToast('File deleted', 'success');
+    fetchFiles();
+  } catch (err) {
+    console.error(err);
+    showToast('Delete failed', 'error');
+  }
+}
+
+/* ---------- Bind globals ---------- */
+window.openFile = openFile;
+window.printVisit = printVisit;
 </script>
 
 </body>
