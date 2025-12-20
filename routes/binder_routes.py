@@ -98,6 +98,64 @@ def get_domain():
     domain = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
     return make_response(data=domain) , 200
 
+@binder_blueprint.route("/user",methods=["GET"])
+def get_user():
+    '''
+    get user data from binder
+
+    Expects:
+        user_id(str): target id
+        domain (str) : the domain of the target (optional)
+    
+    Returns:
+        user (Dict[str:Any]): the target users data
+    '''
+
+    payload = {
+        "user_id":request.args.get("user_id"),
+        "domain" : request.args.get("domain",session.get("domain", session.get("binder", DEFAULT_DOMAIN)))
+    }
+
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+    
+    service = _get_domain_and_service(payload=payload)
+
+    return service.get_user(payload['user_id']) , 200
+
+@binder_blueprint.route("/user",methods=["POST"])
+def update_user():
+    '''
+    updatess user info ussing the current binder service
+
+    expects:
+        user_id (str)
+        domain (str)
+        user (dict[str:Any]) # new user data
+
+    '''
+    payload = request.get_json(force=True)
+
+    if not payload.get("user_id"):
+        return make_response(message="user_id cann not be null", status="error") , 400
+
+    if not payload.get("user_id") == session.get("user_id"):
+        return make_response(None, message="Unauthorized action", status="error") , 401
+    
+    if payload.get("domain"):
+        session["domain"] = payload["domain"]
+    
+    payload["domain"] = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
+
+    if not payload.get("user"):
+        return make_response(message="New user data can not be Null", status="error") , 400
+    
+    service = _get_domain_and_service(payload=payload)
+
+    service.update_user(payload["domain"] , payload["user_id"] , payload["user"])
+
+    return make_response(data=payload , message="updated successfully")
+
 @binder_blueprint.route("/create_user", methods=["POST"])
 def create_user():
     """

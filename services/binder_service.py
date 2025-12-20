@@ -74,6 +74,25 @@ class BinderService:
 
     # ------- Public API: User operations -------
 
+    def get_user(self, user_id: str) -> Dict[str, Any]:
+        """
+        Gets a users data and set them as the current user in the binder.
+
+        Args:
+            user_id (str): the target user id
+
+        Returns:
+            dict: the user record (as returned by binder.read).
+
+        Raises:
+            BinderServiceError: on validation or binder failure.
+        """
+        
+        got = self._wrap_and_log("get_user", self._binder.read, user_id)
+        # set current user to avoid hidden state surprises in downstream code
+        self.set_current_user(user_id=user_id)
+        return got
+
     def create_user(self, user: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a user and set them as the current user in the binder.
@@ -92,6 +111,20 @@ class BinderService:
         # set current user to avoid hidden state surprises in downstream code
         self.set_current_user(user["id"])
         return created
+    
+    def update_user(self,user_id:str, user: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Updates a user in binder.
+
+        Args:
+            user_id (str) : the updated user id.
+            user (dict): new user payload.
+
+        Raises:
+            BinderServiceError: on validation or binder failure.
+        """
+        
+        self._wrap_and_log("update_user", self._binder.update,user_id, user)
 
     def set_current_user(self, user_id: str) -> None:
         """

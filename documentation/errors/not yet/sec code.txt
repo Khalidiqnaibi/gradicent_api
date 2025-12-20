@@ -1,0 +1,5 @@
+the sec code is till not implemented from the unrefactored code 
+
+we will have to change the way it wa used so it will have the first part of it as the user_id 
+
+and the second part will be the ssame or a lil shorter

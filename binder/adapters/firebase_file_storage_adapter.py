@@ -5,6 +5,10 @@ from binder.interfaces.file_storage_adapter import FileStorageAdapter
 
 
 class FirebaseFileStorageAdapter(FileStorageAdapter):
+    '''
+    Adapter for the firestore for the files of binder
+    '''
+
     def __init__(self):
         self._db = None
         self._bucket = None
