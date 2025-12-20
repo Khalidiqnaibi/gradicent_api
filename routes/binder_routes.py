@@ -24,7 +24,7 @@ from services.binder_service import BinderService, BinderServiceError
 from services.appointments_service import AppointmentsService
 from utils.get_appointments import get_appointments
 from utils.get_plan_status import compute_plan_status, get_plan_data
-from config import BACKEND_URL
+from config import BACKEND_URL , MIN_SEC_REC
 
 binder_blueprint = Blueprint("binder", __name__)
 
@@ -476,7 +476,11 @@ def log_time_tracking():
     payload = request.get_json(force=True)
     if "seconds" not in payload:
         raise BadRequest("Missing 'seconds' payload")
-
+    
+    time_entry = payload["seconds"]
+    if int(time_entry) < MIN_SEC_REC : 
+        return make_response(data=payload, message="Time entry below minimum."), 200
+    
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
@@ -491,5 +495,4 @@ def log_time_tracking():
     })
     service._binder.adapter.update_user(session.get("domain"),session.get("user_id"),user)
 
-    time_entry = payload["seconds"]
     return make_response(data=time_entry, message="Time entry logged."), 201
