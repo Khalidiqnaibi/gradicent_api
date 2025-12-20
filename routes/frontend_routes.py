@@ -95,48 +95,6 @@ def med_sub_ar() -> str:
     """Arabic med subscription page."""
     session["appname"] = "Binder Medical"
     return render_template("basic - ar.html")
-
-
-@frontend_blueprint.route("/Ekth-sAKY-KX-7NjnHTgIT085oc1j50T7", methods=["GET"])
-def code_generate_public() -> str:
-    """Generate a simple code and render page (public admin shortcut)."""
-    code = gencode()
-    save_code(code, "basic")
-    return render_template("code_gen.html", code=code)
-
-
-@frontend_blueprint.route("/Ekth-sAKY-KX-7NjnHTgIT085oc1j50T7N", methods=["GET"])
-def code_show_form() -> str:
-    """Render code generation form (admin use)."""
-    return render_template("code_gen.html", code="")
-
-
-@frontend_blueprint.route("/codesec", methods=["POST"])
-@require_login
-def codesec() -> Any:
-    """
-    Endpoint used by the UI to exchange a short activation code for a secure code.
-    This route mirrors logic in the previous api.py implementation but keeps structural
-    checks minimal (auth & page context).
-    """
-    if "page" not in session or session["page"] not in ["settings"]:
-        return jsonify({"error": "Unauthorized access"}), 403
-
-    payload = request.get_json() or {}
-    code = payload.get("code")
-    if not code:
-        return jsonify({"error": "No code provided"}), 400
-
-    # The original logic reads/writes Firebase; keep this a thin wrapper and
-    # call into shared helper(s) for actual DB updates.
-    try:
-        # re-use helper functions defined in core.helpers or api.py
-        # NOTE: actual DB mutation logic lives in helper functions (save_seccode, etc.)
-        save_code(gencode(), "sec", session.get("google_id"))
-        return jsonify({"code": "ok"}), 200
-    except Exception as exc:
-        logger.exception("codesec failed: %s", exc)
-        return jsonify({"error": "Internal error"}), 500
     
 @frontend_blueprint.route("/login", methods=["GET"])
 def login_page() -> str:

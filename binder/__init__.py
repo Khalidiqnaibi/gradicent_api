@@ -48,6 +48,7 @@ from .repositories.product_repository import ProductRepository
 from .repositories.user_repository import UserRepository
 from .repositories.transaction_repository import TransactionRepository
 from .adapters.firebase_file_storage_adapter import FirebaseFileStorageAdapter
+from .interfaces.permission_code_mixin import PermissionCodeMixin
 
 __all__ = [
     "inmemory_adapter","firebase_crud_adapter","binder_business","binder_medical",
@@ -61,5 +62,5 @@ __all__ = [
     "BaseRepository","BaseRepository", "ClientRepository","EmployeeRepository",
     "InteractionRepository","ServiceRepository","ProductRepository", "UserRepository",
     "TransactionRepository","LegacyUser","AppointmentMixin","normalize_user" , "UnitedFirebaseAdapter"
-    "InteractionMixin","FirebaseFileStorageAdapter"
+    "InteractionMixin","FirebaseFileStorageAdapter" , "PermissionCodeMixin"
 ]

@@ -12,13 +12,12 @@ from abc import ABC
 class Binder(ABC):
     """Base class that other binders extend to interact with adapters and Gaia."""
 
-    def __init__(self,domain:str, adapter: Any, gaia_engine: Optional[Any] = None):
+    def __init__(self,domain:str, adapter: Any):
         if not adapter:
             raise ValueError("Adapter cannot be None")
 
         self._adapter = adapter
         self._domain = domain
-        self._gaia_engine = gaia_engine
         self._current_user: Optional[str] = None
 
     # --- Dependency Access ---

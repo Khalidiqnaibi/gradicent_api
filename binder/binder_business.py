@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional , List
 from .interfaces.storage_adapter import StorageAdapter
 from .interfaces.binder import Binder
 from .interfaces.binder_appointment import AppointmentMixin
+from .interfaces.permission_code_mixin import PermissionCodeMixin
 from .interfaces.binder_mixins import (
     UserMixin,
     ClientMixin,
@@ -28,7 +29,8 @@ class BinderBusiness(
     ServiceMixin,
     InteractionMixin,
     TransactionMixin,
-    AppointmentMixin
+    AppointmentMixin,
+    PermissionCodeMixin
 ):
     """
     Binder Business that stores and reads uniform model dicts.

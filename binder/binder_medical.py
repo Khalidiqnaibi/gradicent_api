@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional, List
 from .interfaces.binder_mixins import UserMixin, ClientMixin, InteractionMixin
 from .interfaces.binder import Binder
 from .interfaces.binder_appointment import AppointmentMixin
+from .interfaces.permission_code_mixin import PermissionCodeMixin
 
 
 class BinderMedical(
@@ -17,7 +18,8 @@ class BinderMedical(
     UserMixin, 
     ClientMixin, 
     InteractionMixin,
-    AppointmentMixin
+    AppointmentMixin,
+    PermissionCodeMixin
     ):
     """Medical domain binder."""
     

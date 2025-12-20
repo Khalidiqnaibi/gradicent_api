@@ -235,6 +235,64 @@ class BinderService:
     def lock_appointment(self, date: str, no: str) -> bool:
         return self._binder.lock_appointment(date, no)
     
+    # codes
+    def rotate_permission_code(self, domain: str, user_id: str, plan: str = "sec") -> str:
+        """
+        Rotate or create a permission code for a user.
+
+        This is a thin facade over PermissionCodeMixin to keep
+        controllers unaware of mixin internals.
+
+        Args:
+            domain (str): Domain name (e.g. 'drs').
+            user_id (str): Code owner.
+            plan (str): Permission plan.
+
+        Returns:
+            str: Newly generated code.
+        """
+        if not domain:
+            raise BinderServiceError("domain cannot be empty")
+        if not user_id:
+            raise BinderServiceError("user_id cannot be empty")
+
+        return self._wrap_and_log(
+            "rotate_permission_code",
+            self._binder.rotate_permission_code,
+            domain,
+            user_id,
+            plan,
+        )
+
+    def validate_permission_code(self,  domain: str, code: str) -> Optional[Dict[str, Any]]:
+        """
+        Validate a permission code and return ownership metadata.
+        """
+        if not domain:
+            raise BinderServiceError("domain cannot be empty")
+        if not code:
+            raise BinderServiceError("code cannot be empty")
+
+        return self._wrap_and_log(
+            "validate_permission_code",
+            self._binder.validate_permission_code,
+            domain=domain,
+            code=code,
+        )
+
+    def consume_permission_code(self, domain: str, owner_user_id: str) -> None:
+        """
+        Increment usage counter for a permission code.
+        """
+        if not domain or not owner_user_id:
+            raise BinderServiceError("domain and owner_user_id are required")
+
+        self._wrap_and_log(
+            "consume_permission_code",
+            self._binder.consume_permission_code,
+            domain,
+            owner_user_id,
+        )
     # ------- Public API: Interactions (visits/transactions) -------
     def update_interactions(self,client_id: str,interaction_no: int,patch:list[Any])-> Dict[str, Any]:
         """

@@ -114,18 +114,10 @@
     function checkActivationCode() {
       if (termsCheckbox.checked) {
         var activationCode = document.getElementById('activationCodeInput').value;
-        fetch('/chk_bcode', {
+        fetch('/api/binder/code/check', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: activationCode }),
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.result === 'accepted') {
-            window.location.href = '/check_bcode';
-          } else {
-            alert('Invalid code. Please try again.');
-          }
         })
         .catch((error) => {
           console.error('Error:', error);
