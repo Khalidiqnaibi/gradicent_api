@@ -121,6 +121,23 @@ def current_user():
     Return the current authenticated user.
     Tries Bearer token first, then session cookie.
     """
+    if session.get("plan") == "sec":
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
+
+        domain = session.get("domain", session.get("binder", "business"))
+        auth_service = _get_auth_service(domain)
+
+        user = auth_service.adapter.get_user(domain, user_id)
+        if not user:
+            return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
+
+        normalized = normalize_user(user)
+        if not normalized:
+            return jsonify({"status": "error","data":None, "message": "unrecognized user structure"}), 401
+
+        return jsonify({"status": "success", "data": normalized.to_dict(),"message":"got user"})
     domain = request.args.get("domain", session.get("domain",session.get("binder", "business")))
     auth_service = _get_auth_service(domain)
     auth_header: Optional[str] = request.headers.get("Authorization")

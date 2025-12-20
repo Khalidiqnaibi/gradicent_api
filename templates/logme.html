@@ -112,19 +112,36 @@
     const loginButton = document.getElementById('login-btn');
 
     function checkActivationCode() {
-      if (termsCheckbox.checked) {
-        var activationCode = document.getElementById('activationCodeInput').value;
-        fetch('/api/binder/code/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: activationCode }),
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-      } else {
+      if (!termsCheckbox.checked) {
         alert('Please agree to the Terms and Privacy Notice before continuing.');
+        return;
       }
+
+      const activationCode =
+        document.getElementById('activationCodeInput').value.trim();
+
+      if (!activationCode) {
+        alert('Please enter an activation code.');
+        return;
+      }
+
+      // Create a real HTML form to trigger a browser POST + redirect
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/api/binder/code/check';
+      form.style.display = 'none';
+
+      // Hidden input for the code
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'code';
+      input.value = activationCode;
+
+      form.appendChild(input);
+      document.body.appendChild(form);
+
+      // Submit = REAL navigation (redirects will work correctly)
+      form.submit();
     }
 
     loginButton.addEventListener("click", function() {

@@ -1,1 +1,0 @@
-the /api/binder/code/check doesnt how a page after the redirect to /Binder_medical

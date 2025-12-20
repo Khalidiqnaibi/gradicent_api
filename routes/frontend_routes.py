@@ -153,7 +153,7 @@ def _render_protected_page(page_name: str) -> Any:
         res = "/Binder_medical"
     elif binder in ["business"]:
         res = "/Binder_business"
-    
+        
     return res
 
 @frontend_blueprint.route("/acc", methods=["GET"])

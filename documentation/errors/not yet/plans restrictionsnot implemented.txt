@@ -1,0 +1,3 @@
+The restrictions based on each plan starter and free and sec and premium and ultra 
+Are not implemented.. The code works for sec and the premium plans so all the plans should be ready 
+For implementation 

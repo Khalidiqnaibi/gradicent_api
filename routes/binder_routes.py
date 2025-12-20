@@ -566,7 +566,7 @@ def check_activation_code():
     - Redirect to appropriate area
     """
     
-    payload = request.get_json(force=True)
+    payload = request.get_json(silent=True) or request.form.to_dict()
     payload["domain"] = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
     
     if not payload["code"]:
@@ -590,6 +590,4 @@ def check_activation_code():
     session["plan"] = res["plan"]
     session["user_id"] = res["owner_user_id"]
 
-    session['page'] = "home"
-
-    return redirect("/Binder_medical")
+    return redirect("/home_page")
