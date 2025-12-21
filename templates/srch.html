@@ -10,14 +10,19 @@
     :root{
       --bg-1: #F8F5F2;
       --card: #FFFFFF;
-      --accent: #ce7a35;
-      --muted: #6b7280;
       --glass: rgba(255,255,255,0.85);
       --shadow: 0 10px 30px rgba(2,6,23,0.06);
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --muted: #7f7f7f;
     }
 
-    html,body { height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background: linear-gradient(180deg, #F2ECE6 0%, #E6D6C0 100%); color:#0f172a; -webkit-font-smoothing:antialiased; }
-
+    html,body {overflow-y: hidden; height:100%; margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background: linear-gradient(180deg, #F2ECE6 0%, #E6D6C0 100%); color:#0f172a; -webkit-font-smoothing:antialiased; }
+    .panel {
+        overflow-y: auto;
+        max-height: 86vh;
+    }
     .wrap { max-width:1100px; margin:48px auto; padding:20px; }
     header.sitehead { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
     .logo { width:56px; height:56px; border-radius:12px; object-fit:cover; box-shadow:0 6px 18px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.04); background:var(--card); }
@@ -213,6 +218,7 @@
     last_results: [],
     last_query: '',
     usage_tracker: null,
+    plan : 'free',
     client_id: "{{client}}" || 0
   };
 
@@ -328,7 +334,23 @@
       } catch (e) { /* ignore */ }
     }
 
-    return { search, get_client, patch_client, track_time , get_user_id , get_user , get_domain  };
+    /**
+     * get_plan_status
+     * Returns { days: number, plan: string } or null.
+     */
+    async function get_plan_status() {
+      try {
+        const data = await u.safe_fetch('/api/binder/get_plan_status', { method: 'GET' });
+        // expected shape: { data: { days: N, plan: 'x' } } or { days: N, plan: 'x' }
+        if (!data) return null;
+        const payload = data.data || data;
+        return { days: Number(payload.days || 0), plan: payload.plan || null };
+      } catch (err) {
+        return null;
+      }
+    }
+
+    return { get_plan_status , search, get_client, patch_client, track_time , get_user_id , get_user , get_domain  };
   })(utils);
 
   /* ----------------------
@@ -405,14 +427,16 @@
         if (lbl.key === 'next') {
           input.type = 'datetime-local';
           input.value = patient.next || new Date().toISOString().slice(0, 16);
-        } else {
+        }else {
           input.type = 'text';
           input.value = patient[lbl.key] || '';
         }
 
-        wrap.appendChild(l);
-        wrap.appendChild(input);
-        grid.appendChild(wrap);
+        if (APP_STATE.plan !== "sec" || ! ["payed" , "debit"].includes(lbl.key)){
+          wrap.appendChild(l);
+          wrap.appendChild(input);
+          grid.appendChild(wrap);
+        }
       });
 
       const btnRow = document.createElement('div');
@@ -420,12 +444,19 @@
       btnRow.style.gap = '10px';
       btnRow.style.marginTop = '16px';
 
-      btnRow.innerHTML = `
+      if (APP_STATE.plan === "sec"){
+        btnRow.innerHTML = `
+          <button class="big-btn btn-primary" id="save_btn">Save</button>
+          <button class="big-btn btn-ghost" id="back_btn">Back</button>
+        `;
+      }else{
+        btnRow.innerHTML = `
         <button class="big-btn btn-primary" id="save_btn">Save</button>
         <button class="big-btn btn-primary" id="open_btn">Open</button>
         <button class="big-btn btn-ghost" id="back_btn">Back</button>
       `;
-
+      }
+      
       panel.appendChild(grid);
       panel.appendChild(btnRow);
       el.appendChild(panel);
@@ -433,7 +464,6 @@
       document.getElementById('back_btn').addEventListener('click', () => controller.render_last());
       document.getElementById('save_btn').addEventListener('click', () => controller.save_client(patient.id, collectPatientValues()));
       document.getElementById('open_btn').addEventListener('click', () => controller.open_client(parseInt(patient.id)+1));
-      console.log("no", patient.id , parseInt(patient.id)+1)
     }
 
     function collectPatientValues() {
@@ -527,6 +557,8 @@
     async function init() {
       APP_STATE.user_id =  await api_mod.get_user_id();
       APP_STATE.domain = await api_mod.get_domain();
+      let res = await api_mod.get_plan_status();
+      APP_STATE.plan = res.plan;
       ui_mod.menu_init();
       // wire UI
       u_mod.el('search_btn').addEventListener('click', () => do_search());

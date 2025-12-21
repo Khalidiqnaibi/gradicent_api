@@ -354,6 +354,7 @@
   let patientNumber = '{{client}}';
   let selectedFolder = 'drs';
   let domain = "";
+  let plan ='free';
   
   async function safe_fetch(url, opts = {}) {
     const controller = new AbortController();
@@ -403,9 +404,24 @@
     return "medical";
   }
 
+  async function get_plan_status() {
+    try {
+      const data = await safe_fetch('/api/binder/get_plan_status', { method: 'GET' });
+      // expected shape: { data: { days: N, plan: 'x' } } or { days: N, plan: 'x' }
+      if (!data) return null;
+      const payload = data.data || data;
+      return { days: Number(payload.days || 0), plan: payload.plan || null };
+    } catch (err) {
+      return null;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', async function() {
     domain = await get_domain();
     user_id = await get_user_id();
+    let res = await get_plan_status();
+    plan = res.plan;
+
     // Hamburger menu
     const menuBtn = document.querySelector('.hamburger-menu');
     const menuBar = document.getElementById('menuBar');
@@ -604,8 +620,10 @@
 
 /* ---------- Open / Close ---------- */
 function openFile() {
-  $('#fileModal').style.display = 'flex';
-  selectFolder('drs');
+  if (["pro","ultra"].includes(plan)){
+    $('#fileModal').style.display = 'flex';
+    selectFolder('drs');
+  }
 }
 function closeFileModal() {
   $('#fileModal').style.display = 'none';
@@ -621,14 +639,19 @@ function selectFolder(folder) {
 
 /* ---------- Fetch Files ---------- */
 async function fetchFiles() {
-  try {
-    const res = await safe_fetch(`${FILE_API_BASE}/get_files?folder=${encodeURIComponent(selectedFolder)}&client_no=${patientNumber}`, {
-      method: 'GET'
-    });
-    renderFiles(res.data || []);
-  } catch (err) {
-    console.error(err);
-    showToast('Failed to fetch files', 'error');
+  
+  if (["pro","ultra"].includes(plan)){
+    try {
+      const res = await safe_fetch(`${FILE_API_BASE}/get_files?folder=${encodeURIComponent(selectedFolder)}&client_no=${patientNumber}`, {
+        method: 'GET'
+      });
+      renderFiles(res.data || []);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to fetch files', 'error');
+    }
+  }else{
+    alert("Hmm thats weird right?");
   }
 }
 
@@ -638,93 +661,101 @@ function onFilesSelected(e){
   }
 
 function uploadFile() {
-  const files = $('#fileInput').files;
-  if (!files.length) return showToast('No files selected', 'error');
-  if (selectedFolder !== 'drs') return showToast('Uploads only allowed in Doctor folder', 'error');
+  if (["pro","ultra"].includes(plan)){
+    const files = $('#fileInput').files;
+    if (!files.length) return showToast('No files selected', 'error');
+    if (selectedFolder !== 'drs') return showToast('Uploads only allowed in Doctor folder', 'error');
 
-  const total = files.length;
-  let index = 0;
-  $('#uploadProgressContainer').style.display = 'block';
+    const total = files.length;
+    let index = 0;
+    $('#uploadProgressContainer').style.display = 'block';
 
-  const uploadNext = () => {
-    if (index >= total) {
-      $('#uploadProgressContainer').style.display = 'none';
-      $('#fileInput').value = '';
-      showToast('All files uploaded', 'success');
-      fetchFiles();
-      return;
-    }
-
-    const form = new FormData();
-    form.append('file', files[index]);
-    form.append('folder', selectedFolder);
-    form.append('client_no', patientNumber); // adjust if needed
-    form.append('user_id', user_id);
-
-    fetch(`${FILE_API_BASE}/upload_file`, { method: 'POST', body: form })
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === 'success') {
-          index++;
-          uploadNext();
-        } else {
-          showToast('Upload failed', 'error');
-          $('#uploadProgressContainer').style.display = 'none';
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        showToast('Upload error', 'error');
+    const uploadNext = () => {
+      if (index >= total) {
         $('#uploadProgressContainer').style.display = 'none';
-      });
-  };
+        $('#fileInput').value = '';
+        showToast('All files uploaded', 'success');
+        fetchFiles();
+        return;
+      }
 
-  uploadNext();
+      const form = new FormData();
+      form.append('file', files[index]);
+      form.append('folder', selectedFolder);
+      form.append('client_no', patientNumber); // adjust if needed
+      form.append('user_id', user_id);
+
+      fetch(`${FILE_API_BASE}/upload_file`, { method: 'POST', body: form })
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            index++;
+            uploadNext();
+          } else {
+            showToast('Upload failed', 'error');
+            $('#uploadProgressContainer').style.display = 'none';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Upload error', 'error');
+          $('#uploadProgressContainer').style.display = 'none';
+        });
+    };
+
+    uploadNext();
+  }else{
+    alert("Hmm thats weird right?");
+  }
 }
 
 /* ---------- Render Files ---------- */
 function renderFiles(files) {
-  const container = $('#filePreviews');
-  container.innerHTML = '';
-  if (!files.length) return container.innerHTML = '<div class="text-gray-500">No files</div>';
+  if (["pro","ultra"].includes(plan)){
+    const container = $('#filePreviews');
+    container.innerHTML = '';
+    if (!files.length) return container.innerHTML = '<div class="text-gray-500">No files</div>';
 
-  files.forEach(file => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'file-preview';
+    files.forEach(file => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'file-preview';
 
-    const link = document.createElement('a');
-    link.href = file.data;
-    link.target = '_blank';
+      const link = document.createElement('a');
+      link.href = file.data;
+      link.target = '_blank';
 
-    if (file.file_type.includes('image')) {
-      const img = document.createElement('img'); img.src = file.data; link.appendChild(img);
-    } else if (file.file_type.includes('video')) {
-      const video = document.createElement('video'); video.src = file.data; video.controls = true; video.className = 'rounded'; link.appendChild(video);
-    } else {
-      const txt = document.createElement('div'); txt.className = 'p-3 border rounded txtPrev'; txt.textContent = file.name || 'file'; link.appendChild(txt);
-    }
+      if (file.file_type.includes('image')) {
+        const img = document.createElement('img'); img.src = file.data; link.appendChild(img);
+      } else if (file.file_type.includes('video')) {
+        const video = document.createElement('video'); video.src = file.data; video.controls = true; video.className = 'rounded'; link.appendChild(video);
+      } else {
+        const txt = document.createElement('div'); txt.className = 'p-3 border rounded txtPrev'; txt.textContent = file.name || 'file'; link.appendChild(txt);
+      }
 
-    if (selectedFolder === 'drs') {
-      const remove = document.createElement('div');
-      remove.className = 'file-remove'; remove.innerHTML = '&times;';
-      remove.onclick = (e) => { e.preventDefault(); if(confirm('Delete this file?')) deleteFile(file.data); };
-      wrapper.appendChild(remove);
-    }
+      if (selectedFolder === 'drs') {
+        const remove = document.createElement('div');
+        remove.className = 'file-remove'; remove.innerHTML = '&times;';
+        remove.onclick = (e) => { e.preventDefault(); if(confirm('Delete this file?')) deleteFile(file.data); };
+        wrapper.appendChild(remove);
+      }
 
-    wrapper.appendChild(link);
-    container.appendChild(wrapper);
-  });
+      wrapper.appendChild(link);
+      container.appendChild(wrapper);
+    });
+  }
 }
 
 /* ---------- Delete File ---------- */
 async function deleteFile(url) {
-  try {
-    const res = await safe_fetch(`${FILE_API_BASE}/delete_file?url=${encodeURIComponent(url)}`, { method: 'DELETE' });
-    if (res.status === 'success') showToast('File deleted', 'success');
-    fetchFiles();
-  } catch (err) {
-    console.error(err);
-    showToast('Delete failed', 'error');
+  if (["pro","ultra"].includes(plan)){
+    try {
+      const res = await safe_fetch(`${FILE_API_BASE}/delete_file?url=${encodeURIComponent(url)}`, { method: 'DELETE' });
+      if (res.status === 'success') showToast('File deleted', 'success');
+      fetchFiles();
+    } catch (err) {
+      console.error(err);
+      showToast('Delete failed', 'error');
+    }
   }
 }
 

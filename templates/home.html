@@ -240,6 +240,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     menu_init()
     GLOBAL_USER_ID = await get_user_id();       // ex: 1015974463...
     GLOBAL_DOMAIN  = await get_domain();        // ex: "medical"
+    let res = await get_plan_status();
+    GLOBAL_PLAN = res.plan;
 
   } catch (err) {
     console.error("Failed to load domain/user:", err);
@@ -282,6 +284,22 @@ async function safePost(url, body) {
   }
 
   return await res.json();
+}
+
+/**
+ * get_plan_status
+ * Returns { days: number, plan: string } or null.
+ */
+async function get_plan_status() {
+  try {
+    const data = await safe_fetch('/api/binder/get_plan_status', { method: 'GET' });
+    // expected shape: { data: { days: N, plan: 'x' } } or { days: N, plan: 'x' }
+    if (!data) return null;
+    const payload = data.data || data;
+    return { days: Number(payload.days || 0), plan: payload.plan || null };
+  } catch (err) {
+    return null;
+  }
 }
 
 async function safe_fetch(url, opts = {}) {
@@ -404,10 +422,18 @@ async function submitPatient() {
     };
 
     const result = await safePost("/api/binder/clients", payload);
-    console.log(result);
 
     alert("Patient added successfully!");
-    if (["medical"].includes(GLOBAL_DOMAIN)){
+    document.getElementById("PName").value= '';
+    document.getElementById("idnum").value= '';
+    document.getElementById("PNum").value= '';
+    document.getElementById("loc").value= '';
+    document.getElementById("medh").value= '';
+    document.getElementById("allergies").value= '';
+    document.getElementById("btype").value= '';
+    document.getElementById("sex").value= '';
+    document.getElementById("age").value= '';
+    if (["medical"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
       window.location.href = `/data/-1`;
     }
     else{

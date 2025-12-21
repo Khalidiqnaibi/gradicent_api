@@ -420,13 +420,19 @@
 
       const usage = startUsageTracker("/api/binder/track_time");
 
-      plan = await get_plan_status().plan
+      let res = await get_plan_status()
+
+      plan = res.plan
       user = await get_user();
       user_id = user.id;
 
       domain = await get_domain();
           
-      if(plan==='sec'){ try { document.getElementById("code").parentElement.style.display="none"; } catch(e){} }
+      if(plan==='sec'){ 
+        try { 
+          document.getElementById("ccc").style.display="none"; 
+        } catch(e){} 
+      }
 
       sett = user.metadata.settings;
       
@@ -445,7 +451,11 @@
       document.getElementById("pkey").value=sett.pkey ?? '';
       document.getElementById("drname").value=sett.drname ?? user.name;
       document.getElementById("msg").value=sett.msg ?? '';
-      document.getElementById("code").value=sett.ac.code ?? '';
+      if (plan !=='sec'){
+        document.getElementById("code").value=sett.ac.code ?? '';
+      }else {
+        document.getElementById("code").value= "you are not smart yk?"
+      }
       // also show preview content initially hidden
       document.getElementById("codePreview").textContent = sett.ac.code ?? '/* no code yet */';
       

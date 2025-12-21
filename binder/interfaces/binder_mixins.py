@@ -40,13 +40,14 @@ class UserMixin:
 # CLIENTS / PATIENTS
 class ClientMixin:
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        clients = self.adapter.get_child(self.domain, self.current_user, "clients") or {}
+        clients = self.adapter.list_children(self.domain, self.current_user, "clients") or []
         client_id = str(len(clients))
         data["id"] = client_id
-        self.adapter.set_child(
+        self.adapter.update_child(
             self.domain,
             self.current_user,
-            f"clients/{client_id}",
+            "clients",
+            client_id,
             data,
         )
         return data
