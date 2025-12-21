@@ -502,7 +502,7 @@
 
         try {
             if (tab === 'roi') {
-              url = `/api/gaia/compute?metric=roi&${qs}`;
+              url = `/api/gaia/compute?metric=roi&${qs}&plan=${APP_STATE.plan}`;
               const res = await fetch(url);
               if (!res.ok) {
                 console.error('API error', res.status, await res.text());

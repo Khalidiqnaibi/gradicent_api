@@ -92,7 +92,7 @@ def filter_patients(patients: List[Dict], f: Dict):
         if location and location != p.get("location", "").lower():
             continue
 
-        visits = p.get("visits", [])
+        visits = p.get("interactions", [])
         if not visits:
             continue
         

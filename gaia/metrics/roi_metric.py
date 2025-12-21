@@ -9,7 +9,14 @@ from datetime import datetime
 from ..interfaces.base_metric import IMetric
 from ..registry import MetricRegistry
 from ..utils import parse_date
+from config import PRO_PRICE,ULTRA_PRICE,PACKAGE_PRICE,STARTER_PRICE
 
+price = {
+    "ultra" : ULTRA_PRICE,
+    "package":PACKAGE_PRICE,
+    "pro" : PRO_PRICE,
+    "free" :0
+}
 
 class RoiMetric(IMetric):
     @property
@@ -20,10 +27,12 @@ class RoiMetric(IMetric):
         start = parse_date(kwargs.get("From"))
         end = parse_date(kwargs.get("To"))
         hourly_rate = float(kwargs.get("avg_hourly", 50))
-        plan_price = float(kwargs.get("subscription_price", 0))
+        plan= kwargs.get("plan", 'free')
+        plan_price = float(price[plan])
 
         # Example dummy logic using binder data
-        time_logs = binder.adapter.list_children(binder.domain,binder.current_user, "time_tracking")
+        time_logs = binder.adapter.get_child(binder.domain,binder.current_user, "metadata")
+        time_logs = time_logs["time_tracking"]
         total_seconds = sum(float(l.get("seconds", 0)) for l in time_logs)
 
         hours_saved = total_seconds / 3600.0

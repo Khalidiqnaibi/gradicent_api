@@ -85,6 +85,12 @@ class UnitedFirebaseAdapter(StorageAdapter):
 
         return result
 
+    def get_child(self, domain :str, user_id: str, collection: str) -> Any:
+        ref = self._child_ref(domain,user_id, collection)
+        children = ref.get() or {}
+
+        return children
+
     def add_child(self, domain :str, user_id: str, collection: str, obj: Dict) -> str:
         child_id = obj.get("id")
         if not child_id:

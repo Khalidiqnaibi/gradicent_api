@@ -43,7 +43,7 @@ def compute_plan_status(plan, first_date_str):
     
 def get_plan_data(service):
     data = service._binder.adapter.get_user(service._binder.domain,service._binder.current_user)
-    print(service._binder.domain,service._binder.current_user)
+
     meta =data.get("metadata")
     if meta:
         date = meta.get("plan_started_at",datetime.now().isoformat())
