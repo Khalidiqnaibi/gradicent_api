@@ -482,11 +482,11 @@
       .then(data => {
         data = data.data;
         
-        var len = data.visits.length;
+        var len = data.interactions.length;
         if (len){
-          visits = data.visits;
+          visits = data.interactions;
         }else{
-          visits = [data.visits];
+          visits = [data.interactions];
           len = 1;
         }
 
@@ -623,6 +623,8 @@ function openFile() {
   if (["pro","ultra"].includes(plan)){
     $('#fileModal').style.display = 'flex';
     selectFolder('drs');
+  }else{
+    showToast("This feature is for the Pro and Ultra plans only");
   }
 }
 function closeFileModal() {

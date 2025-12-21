@@ -230,8 +230,11 @@
         menuBar.classList.toggle('menu-active');
       });
 
-      document.querySelector('.tab-btn[data-tab="finance"').style.display= 'none';
-      document.querySelector('.tab-btn[data-tab="patients"').style.display= 'none';
+      if (["starter","free"].includes(APP_STATE.plan)){
+        document.querySelector('.tab-btn[data-tab="finance"').style.display= 'none';
+        document.querySelector('.tab-btn[data-tab="patients"').style.display= 'none';
+      }
+      
 
       document.getElementById("patients").addEventListener("click", function () {
         showpats();
