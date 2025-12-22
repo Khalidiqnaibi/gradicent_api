@@ -15,8 +15,30 @@ from typing import Optional
 from flask import Blueprint, request, redirect, session, jsonify, current_app, url_for
 from werkzeug.exceptions import BadRequest
 from binder import normalize_user
+from utils.log_events import log_event
+from werkzeug.exceptions import BadRequest, NotFound
+from typing import Any,Dict
+
+from services.binder_service import BinderService, BinderServiceError
 
 auth_blueprint = Blueprint("auth", __name__)
+
+DEFAULT_DOMAIN = "business"
+
+def _get_domain_and_service(payload: Dict[str, Any]) -> BinderService:
+    """
+    Resolve domain from payload and return a BinderService that wraps the configured binder.
+
+    Raises:
+        BadRequest: if domain is missing or binder not configured.
+    """
+    domain = payload.get("domain", DEFAULT_DOMAIN)
+    binders = current_app.config.get("BINDERS", {})
+    binder_impl = binders.get(domain)
+    if not binder_impl:
+        current_app.logger.error("Binder not configured for domain: %s", domain)
+        raise BadRequest(f"Unknown domain: {domain}")
+    return BinderService(binder_impl)
 
 
 def _get_auth_service(domain: str):
@@ -74,7 +96,7 @@ def oauth_callback():
     if not code:
         raise BadRequest("missing 'code' in callback request")
 
-    domain = request.args.get("domain",session.get("domain", session.get("binder", "business")))
+    domain = request.args.get("domain",session.get("domain", session.get("binder", DEFAULT_DOMAIN)))
     auth_service = _get_auth_service(domain)
     try:
         user, tokens = auth_service.handle_provider_callback(domain,provider, code)
@@ -87,14 +109,15 @@ def oauth_callback():
     session["user_id"] = user.get("id")
     session["jwt"] = tokens.get("access_token")
 
-    domain = session.get("domain", session.get("binder"))
+    binder_service = _get_domain_and_service({"domain":domain})
+    binder_service.set_current_user(session.get("user_id"))
+    log_event(binder_service,100)
     if domain in ["medical"]:
         return redirect("/Binder_medical")
     elif domain in ["business"]:
         return redirect("/Binder_business")
 
-    return jsonify({"status": "success","ses":session, "data": {"user": user, "tokens": tokens},"message":"got token"})
-
+    return jsonify({"status": "success", "data": {"user": user, "tokens": tokens},"message":"got token"})
 
 @auth_blueprint.route("/signout", methods=["POST"])
 def sign_out():

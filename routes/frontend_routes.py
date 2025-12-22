@@ -12,13 +12,13 @@ Why:
 from typing import Any, Dict
 import logging
 
-from flask import Blueprint, render_template, redirect, request, session, jsonify
+from flask import Blueprint, render_template, redirect,current_app, request, session, jsonify
 from decorators.req_login import require_login
 from utils.get_plan_status import compute_plan_status
 from utils.codes import gencode , save_code,save_seccode
-from utils.log_events import log_event
 
 logger = logging.getLogger(__name__)
+
 
 frontend_blueprint = Blueprint(
     "frontend",
@@ -120,10 +120,6 @@ def protected_area() -> Any:
     Simple redirect wrapper after login to the main app page.
     Keeps old behavior: log the login event and redirect to /home_page
     """
-    try:
-        log_event(session.get("google_id"), "Login", {"binder": session.get("binder")})
-    except Exception:
-        logger.debug("log_event failed during protected_area", exc_info=True)
     return redirect("/home_page")
 
 

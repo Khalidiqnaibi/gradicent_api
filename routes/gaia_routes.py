@@ -7,6 +7,7 @@ Uses the modular GaiaEngine to compute any registered metric.
 
 from flask import Blueprint, request, jsonify, current_app
 from gaia import GaiaEngine
+from utils.log_events import log_with_binder
 
 gaia_blueprint = Blueprint("gaia", __name__)
 gaia_engine = GaiaEngine()
@@ -73,6 +74,7 @@ def compute_metric():
 
     try:
         results = gaia_engine.compute(binder, metric_name, **params)
+        log_with_binder(binder,301)
         return make_response(results, f"Metric '{metric_name}' computed successfully.") , 200
     except Exception as e:
         return make_response({}, f"Error computing metric '{metric_name}': {str(e)}", "error") , 400

@@ -68,17 +68,20 @@ class ProductivityMetric(IMetric):
         start_dt = kwargs.get("form") or kwargs.get("From") or kwargs.get("start_date")
         end_dt = kwargs.get("to") or kwargs.get("To") or kwargs.get("end_date")
 
+        start_dt = _parse_date_or_timestamp(start_dt, None)
+        end_dt = _parse_date_or_timestamp(end_dt, None)
+
         # -------------------------------------------
         # 1. Select and filter clients
         # -------------------------------------------
-        clients = _get_clients_user(user)
+        # clients = _get_clients_user(user)
 
-        if DOMAIN == "medical":
-            matched = filter_patients(clients, kwargs)
-        elif DOMAIN == "business":
-            matched = filter_clients(clients, kwargs)
-        else:
-            matched = filter_clients(clients, kwargs)   # fallback
+        # if DOMAIN == "medical":
+        #     matched = filter_patients(clients, kwargs)
+        # elif DOMAIN == "business":
+        #     matched = filter_clients(clients, kwargs)
+        # else:
+        #     matched = filter_clients(clients, kwargs)   # fallback
 
         # -------------------------------------------
         # 2. Aggregate logs from matched clients
@@ -86,35 +89,19 @@ class ProductivityMetric(IMetric):
         time_logs = []
         analytics = []
 
-        for c in matched:
-            a = c.get("metadata", {}).get("analatics", {})
-            analytics.append(a)
-            time_logs.append(a.get("time_tracking", {}) or {})
+        meta = binder.adapter.get_child(binder.domain,binder.current_user, "metadata")
+        flat_time = meta.get("time_tracking" , [])
+        analytics = meta.get("analytics")
 
-        # Flatten time logs & events
-        flat_time = []
-        flat_events = []
+        flat_events = flat_time
+        time_logs = flat_time
 
-        for tblock in time_logs:
-            for k, v in (tblock.items() if isinstance(tblock, dict) else []):
-                flat_time.append(v)
-
-        for ablock in analytics:
-            for k, v in (ablock.items() if isinstance(ablock, dict) else []):
-                flat_events.append(v)
 
         # -------------------------------------------
         # 4. Compute total time
         # -------------------------------------------
-        total_seconds = 0.0
-
-        for log in flat_time:
-            ts = log.get("timestamp")
-            ts_dt = _parse_date_or_timestamp(ts, None)
-            if start_dt or end_dt:
-                if not ts_dt or not _in_range_dt(ts_dt, start_dt, end_dt):
-                    continue
-            total_seconds += float(log.get("seconds", 0) or 0)
+        
+        total_seconds = sum(float(l.get("seconds", 0)) for l in time_logs)
 
         total_minutes = round(total_seconds / 60.0, 2)
 
@@ -216,9 +203,9 @@ class ProductivityMetric(IMetric):
             by_day.setdefault(key, {"minutes": 0, "patients": 0})
             by_day[key]["patients"] += 1
 
-        labels = sorted(by_day.keys())
-        minutes = [round(by_day[d]["minutes"], 2) for d in labels]
-        patients = [by_day[d]["patients"] for d in labels]
+        labels = sorted(by_day.keys()) or []
+        minutes = [round(by_day[d].get("minutes",0), 2) for d in labels]
+        patients = [by_day[d].get("patients") for d in labels] 
 
         # -------------------------------------------
         # Return productivity metric

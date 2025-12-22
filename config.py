@@ -11,6 +11,27 @@ load_dotenv()
 
 ADMIN_SECRET = os.getenv("ADMIN_SECRET","bindersoftware.com")
 
+# EVENTS
+EVENTS={
+    100:"logged in",
+    101:"printed client data",
+    102:"printed client interacion data",
+
+    200:"user added",
+    201:"client added" ,
+    202:"interaction added",
+    203:"file uploaded",
+
+    300:"search done",
+    301:"analytics shown",
+
+    400:"user updated",
+    401:"client updated",
+    402:"interaction updated",
+    
+    500:"fooled",
+}
+
 # prices
 STARTER_PRICE = os.getenv("STARTER_PRICE","5")
 PRO_PRICE = os.getenv("PRO_PRICE","25")

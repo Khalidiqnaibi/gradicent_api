@@ -23,6 +23,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 from services.binder_service import BinderService, BinderServiceError
 from utils.get_plan_status import compute_plan_status, get_plan_data
 from config import BACKEND_URL , MIN_SEC_REC
+from utils.log_events import log_with_service,log_time
 
 binder_blueprint = Blueprint("binder", __name__)
 
@@ -154,7 +155,7 @@ def update_user():
     service = _get_domain_and_service(payload=payload)
 
     service.update_user(payload["domain"] , payload["user_id"] , payload["user"])
-
+    log_with_service(service,400)
     return make_response(data=payload , message="updated successfully")
 
 @binder_blueprint.route("/create_user", methods=["POST"])
@@ -177,6 +178,7 @@ def create_user():
 
     service = _get_domain_and_service(payload)
     user = service.create_user(payload["user"])
+    log_with_service(service,200)
     return make_response(data=user, message="User created successfully."), 201
 
 @binder_blueprint.route("/set_current_user", methods=["POST"])
@@ -221,6 +223,7 @@ def add_client():
         service.set_current_user(payload["user_id"])
 
     client = service.create_client(payload["client"])
+    log_with_service(service,201)
     return make_response(data=client, message="Client added successfully."), 201
 
 @binder_blueprint.route("/clients/<client_id>", methods=["GET"])
@@ -265,6 +268,7 @@ def patch_client(client_id: str):
         service.set_current_user(payload["user_id"])
 
     service.update_client(client_id, payload["patch"])
+    log_with_service(service,401)
     return make_response(message="Client updated successfully."), 200
 
 @binder_blueprint.route("/clients/<client_id>", methods=["DELETE"])
@@ -302,6 +306,7 @@ def client_search():
     results = service.search_client(query)
     resp = make_response(data=results, message="Search completed.")
     resp.status_code = 200
+    log_with_service(service,300)
     return resp
 
 # Example nested resource: create interaction / visit
@@ -326,6 +331,7 @@ def add_interaction(client_id: str):
         service.set_current_user(payload["user_id"])
 
     interaction = service.create_interaction(client_id, payload["interaction"])
+    log_with_service(service,202)
     return make_response(data=interaction, message="Interaction created."), 201
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["GET"])
@@ -371,6 +377,7 @@ def update_interaction(client_id: str):
         service.set_current_user(payload["user_id"])
 
     service.update_interactions(client_id=client_id,interaction_no=payload["interaction_no"],patch = payload["patch"])
+    log_with_service(service,402)
     return make_response(data=payload, message="Updated Interactions."), 201
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["DELETE"])
@@ -475,6 +482,7 @@ def log_time_tracking():
     }
     """
     payload = request.get_json(force=True)
+    payload["domain"] = payload.get("domain",session.get("domain", session.get("binder", DEFAULT_DOMAIN)))
     if "seconds" not in payload:
         raise BadRequest("Missing 'seconds' payload")
     
@@ -487,14 +495,8 @@ def log_time_tracking():
         service.set_current_user(payload["user_id"])
     
     seconds_spent = payload.get("seconds", 0)
-    user = service._binder.adapter.get_user(session.get("domain"),session.get("user_id"))
-    user["metadata"] = user.get("metadata", {})
-    user["metadata"]["time_tracking"] = user["metadata"].get("time_tracking", [])
-    user["metadata"]["time_tracking"].append({
-        "seconds": seconds_spent,
-        "timestamp": datetime.now().isoformat()
-    })
-    service._binder.adapter.update_user(session.get("domain"),session.get("user_id"),user)
+    
+    log_time(service , seconds_spent)
 
     return make_response(data=time_entry, message="Time entry logged."), 201
 

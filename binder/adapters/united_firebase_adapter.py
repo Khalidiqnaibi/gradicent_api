@@ -85,8 +85,8 @@ class UnitedFirebaseAdapter(StorageAdapter):
 
         return result
 
-    def get_child(self, domain :str, user_id: str, collection: str) -> Any:
-        ref = self._child_ref(domain,user_id, collection)
+    def get_child(self, domain :str, user_id: str, collection: str, child_id: str = None) -> Any:
+        ref = self._child_ref(domain,user_id, collection , child_id)
         children = ref.get() or {}
 
         return children
@@ -103,10 +103,10 @@ class UnitedFirebaseAdapter(StorageAdapter):
         self._child_ref(domain,user_id, collection, child_id).set(obj)
         return child_id
 
-    def update_child(self, domain :str, user_id: str, collection: str, child_id: str, patch: Dict) -> None:
+    def update_child(self, domain :str, user_id: str, collection: str, patch: Dict, child_id: str = None) -> None:
         self._child_ref(domain,user_id, collection, child_id).update(patch)
 
-    def delete_child(self, domain :str, user_id: str, collection: str, child_id: str) -> None:
+    def delete_child(self, domain :str, user_id: str, collection: str, child_id: str = None) -> None:
         self._child_ref(domain,user_id, collection, child_id).delete()
 
     # --------------------
