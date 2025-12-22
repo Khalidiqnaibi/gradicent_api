@@ -1,6 +1,5 @@
 from datetime import datetime
 
-now = datetime.now()
 
 def log_with_service(service, event_type, metadata=None):
     """Save user activity for analytics"""
@@ -8,6 +7,7 @@ def log_with_service(service, event_type, metadata=None):
     
 def log_time(service, seconds):
     """Save user time spend using binder for analytics"""
+    now = datetime.now()
     meta = service._binder.adapter.get_child(service._binder.domain,service._binder.current_user,"metadata")
     meta["analytics"] = meta.get("analytics" , {})
     meta["analytics"][now.date().isoformat()] = meta["analytics"].get(now.date().isoformat(),{})
@@ -21,10 +21,17 @@ def log_time(service, seconds):
 
 def log_with_binder(binder, event_type, metadata=None):
     """Save user activity for analytics"""
+    now = datetime.now()
     meta = binder.adapter.get_child(binder.domain,binder.current_user,"metadata")
-    meta["analytics"] = meta.get("analtics" , {})
-    meta["analytics"][now.date().isoformat()] = meta["analytics"].get(now.date().isoformat(),{})
-    meta["analytics"][now.date().isoformat()]["events"] = meta["analytics"][now.date().isoformat()].get("events",[])
+    if not meta.get("analytics"):
+        meta["analytics"] = meta.get("analytics" , {})
+    
+    if not meta.get(now.date().isoformat()) :
+        meta["analytics"][now.date().isoformat()] = meta["analytics"].get(now.date().isoformat(),{})
+    
+    if not meta["analytics"][now.date().isoformat()].get("events") :
+        meta["analytics"][now.date().isoformat()]["events"] = meta["analytics"][now.date().isoformat()].get("events",[])
+    
     meta["analytics"][now.date().isoformat()]["events"].append({
         "user": binder.current_user,
         "type": event_type,

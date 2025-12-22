@@ -495,7 +495,7 @@ def log_time_tracking():
         service.set_current_user(payload["user_id"])
     
     seconds_spent = payload.get("seconds", 0)
-    
+    service.set_current_user(session["user_id"])
     log_time(service , seconds_spent)
 
     return make_response(data=time_entry, message="Time entry logged."), 201

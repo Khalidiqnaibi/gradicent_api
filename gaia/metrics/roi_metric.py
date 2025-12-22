@@ -31,10 +31,12 @@ class RoiMetric(IMetric):
         plan_price = float(price[plan])
 
         # Example dummy logic using binder data
-        time_logs = binder.adapter.get_child(binder.domain,binder.current_user, "metadata")
-        time_logs = time_logs["time_tracking"]
-        total_seconds = sum(float(l.get("seconds", 0)) for l in time_logs)
-
+        meta = binder.adapter.get_child(binder.domain,binder.current_user, "metadata")
+        a = meta.get("analytics",{})
+        total_seconds = 0
+        for i in a.keys() :
+            total_seconds += sum(float(l.get("seconds", 0)) for l in a[i].get("time_tracking",[])) 
+        
         hours_saved = total_seconds / 3600.0
         binder_roi = round(hours_saved * hourly_rate - plan_price, 2)
 

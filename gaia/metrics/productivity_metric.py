@@ -5,7 +5,7 @@ from flask import current_app as app
 from gaia.utils import filter_patients,filter_clients
 from binder import normalize_user
 
-def _parse_date_or_timestamp(value, default):
+def _parse_date_or_timestamp(value, default = None):
     if not value:
         return default
     try:
@@ -86,12 +86,9 @@ class ProductivityMetric(IMetric):
         # -------------------------------------------
         # 2. Aggregate logs from matched clients
         # -------------------------------------------
-        time_logs = []
-        analytics = []
-
         meta = binder.adapter.get_child(binder.domain,binder.current_user, "metadata")
         flat_time = meta.get("time_tracking" , [])
-        analytics = meta.get("analytics")
+        a = meta.get("analytics",{})
 
         flat_events = flat_time
         time_logs = flat_time
@@ -100,9 +97,12 @@ class ProductivityMetric(IMetric):
         # -------------------------------------------
         # 4. Compute total time
         # -------------------------------------------
+        total_seconds = 0
+        print(a)
+        for i in a.keys() :
+            if _parse_date_or_timestamp(i) > start_dt and _parse_date_or_timestamp(i)<end_dt:
+                total_seconds += sum(float(l.get("seconds", 0)) for l in a[i].get("time_tracking",[])) 
         
-        total_seconds = sum(float(l.get("seconds", 0)) for l in time_logs)
-
         total_minutes = round(total_seconds / 60.0, 2)
 
         # -------------------------------------------
