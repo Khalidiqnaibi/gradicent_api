@@ -505,26 +505,39 @@
               url = `/api/gaia/compute?metric=roi&${qs}&plan=${APP_STATE.plan}`;
               const res = await fetch(url);
               if (!res.ok) {
-                console.error('API error', res.status, await res.text());
-                return;
+              console.error('API error', res.status, await res.text());
+              return;
               }
               let data = await res.json();
               console.log(`before data : ${JSON.stringify(data)}`);
               data = data.data;
-              console.log(`data : ${JSON.stringify(data)}`);
               document.getElementById('roi-hours').innerText = (data.hours_saved || 0).toFixed(2) + ' hrs';
               document.getElementById('roi-dollar').innerText = fmtMoney(data.binder_roi || 0);
-              document.getElementById('roi-payback').innerText = data.payback_days ? data.payback_days + ' days' : '—';
+              document.getElementById('roi-payback').innerText = data.payback_period_hours ? data.payback_period_hours + ' hrs' : '—';
               const tasksEl = document.getElementById('roi-tasks'); tasksEl.innerHTML = '';
+              
+              const taskCounts = {};
               console.log('ROI tasks data:', data.tasks);
-              for (var [k, v] of Object.entries(data.tasks || {})) {
-                const d = document.createElement('div');
-                d.className = 'p-2 border rounded text-center';
-                if (k === "new_patient") {
-                  k = "New Patient";
-                }
-                d.innerHTML = `<div class="text-sm">${k}</div><div class="font-semibold">${v}</div>`;
-                tasksEl.appendChild(d);
+              
+              // Aggregate counts by type
+              for (const [key, task] of Object.entries(data.tasks || {})) {
+              const type = task.type;
+              if (type) {
+                taskCounts[type] = (taskCounts[type] || 0) + (task.count || 1);
+              }
+              }
+              
+              // Display each type once with its total count
+              for (const [type, count] of Object.entries(taskCounts)) {
+              const d = document.createElement('div');
+              d.className = 'p-2 border rounded text-center';
+              d.innerHTML = `<div class="text-sm">${type}</div>`;
+              
+              const countEl = document.createElement('div');
+              countEl.className = 'text-2xl font-semibold';
+              countEl.innerText = count;
+              d.appendChild(countEl);
+              tasksEl.appendChild(d);
               }
             }
 

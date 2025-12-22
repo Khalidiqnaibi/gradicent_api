@@ -9,9 +9,10 @@ from datetime import datetime
 from ..interfaces.base_metric import IMetric
 from ..registry import MetricRegistry
 from ..utils import parse_date
-from config import PRO_PRICE,ULTRA_PRICE,PACKAGE_PRICE,STARTER_PRICE
+from config import PRO_PRICE,ULTRA_PRICE,PACKAGE_PRICE,STARTER_PRICE, EVENTS
 
 price = {
+    "starter" : STARTER_PRICE,
     "ultra" : ULTRA_PRICE,
     "package":PACKAGE_PRICE,
     "pro" : PRO_PRICE,
@@ -24,8 +25,8 @@ class RoiMetric(IMetric):
         return "roi"
 
     def compute(self, binder, **kwargs) -> Dict[str, Any]:
-        start = parse_date(kwargs.get("From"))
-        end = parse_date(kwargs.get("To"))
+        start = parse_date(kwargs.get("From",kwargs.get("from")))
+        end = parse_date(kwargs.get("To",kwargs.get("to")))
         hourly_rate = float(kwargs.get("avg_hourly", 50))
         plan= kwargs.get("plan", 'free')
         plan_price = float(price[plan])
@@ -39,11 +40,21 @@ class RoiMetric(IMetric):
         
         hours_saved = total_seconds / 3600.0
         binder_roi = round(hours_saved * hourly_rate - plan_price, 2)
-
+        events = []
+        for i in a:
+            if parse_date(i) >= start and parse_date(i) <= end:
+                for j in a[i].get("events",[]):
+                    res = j
+                    res["type"] = EVENTS.get(j.get("type", 100), "Unknown")
+                    events.append(res)
+                    
+        
         return {
             "hours_saved": hours_saved,
             "roi": binder_roi,
             "plan_cost": plan_price,
+            "payback_period_hours": round(plan_price / hourly_rate, 2) if hourly_rate > 0 else None,
+            "tasks": events
         }
 
 

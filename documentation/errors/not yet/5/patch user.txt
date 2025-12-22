@@ -1,0 +1,43 @@
+127.0.0.1 - - [22/Dec/2025 23:03:41] "GET /api/binder/clients/1?domain=medical&user_id=102978595279148299747 HTTP/1.1" 200 -
+binder_service: error during update_client
+Traceback (most recent call last):
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\services\binder_service.py", line 67, in _wrap_and_log
+    return func(*args, **kwargs)
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\binder\interfaces\binder_mixins.py", line 63, in update_client
+    self.adapter.update_child(
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\binder\adapters\united_firebase_adapter.py", line 107, in update_child
+    self._child_ref(domain,user_id, collection, child_id).update(patch)
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\binder\adapters\united_firebase_adapter.py", line 40, in _child_ref
+    return ref if not child_id else ref.child(child_id)
+  File "C:\Users\khaaf\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\firebase_admin\db.py", line 187, in child
+    raise ValueError(
+ValueError: Invalid path argument: "{'name': 'khalid', 'gov_id': '9999999999', 'phone': '0592840353', 'location': 'hebron', 'pmh': 'leukemia', 'allergies': 'chocolate', 'age': '22', 'next': '2025-12-22T21:03', 'btype': 'B+', 'sex': 'M', 'notes': ''}". Path must be a non-empty string.
+[2025-12-22 23:03:46,676] ERROR in binder_routes: Binder service error: Error performing 'update_client': Invalid path argument: "{'name': 'khalid', 'gov_id': '9999999999', 'phone': '0592840353', 'location': 'hebron', 'pmh': 'leukemia', 'allergies': 'chocolate', 'age': '22', 'next': '2025-12-22T21:03', 'btype': 'B+', 'sex': 'M', 'notes': ''}". Path must be a non-empty string.
+Traceback (most recent call last):
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\services\binder_service.py", line 67, in _wrap_and_log
+    return func(*args, **kwargs)
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\binder\interfaces\binder_mixins.py", line 63, in update_client
+    self.adapter.update_child(
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\binder\adapters\united_firebase_adapter.py", line 107, in update_child
+    self._child_ref(domain,user_id, collection, child_id).update(patch)
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\binder\adapters\united_firebase_adapter.py", line 40, in _child_ref
+    return ref if not child_id else ref.child(child_id)
+  File "C:\Users\khaaf\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\firebase_admin\db.py", line 187, in child
+    raise ValueError(
+ValueError: Invalid path argument: "{'name': 'khalid', 'gov_id': '9999999999', 'phone': '0592840353', 'location': 'hebron', 'pmh': 'leukemia', 'allergies': 'chocolate', 'age': '22', 'next': '2025-12-22T21:03', 'btype': 'B+', 'sex': 'M', 'notes': ''}". Path must be a non-empty string.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\khaaf\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\khaaf\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\routes\binder_routes.py", line 270, in patch_client
+    service.update_client(client_id, payload["patch"])
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\services\binder_service.py", line 195, in update_client
+    self._wrap_and_log("update_client", self._binder.update_client, client_id, patch)
+  File "c:\Users\khaaf\Documents\GitHub\BinderSoftware_api\services\binder_service.py", line 73, in _wrap_and_log
+    raise BinderServiceError(f"Error performing '{action_name}': {exc}") from exc
+services.binder_service.BinderServiceError: Error performing 'update_client': Invalid path argument: "{'name': 'khalid', 'gov_id': '9999999999', 'phone': '0592840353', 'location': 'hebron', 'pmh': 'leukemia', 'allergies': 'chocolate', 'age': '22', 'next': '2025-12-22T21:03', 'btype': 'B+', 'sex': 'M', 'notes': ''}". Path must be a non-empty string.
+127.0.0.1 - - [22/Dec/2025 23:03:46] "PATCH /api/binder/clients/1 HTTP/1.1" 400 -
