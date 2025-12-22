@@ -100,7 +100,7 @@ class ProductivityMetric(IMetric):
         total_seconds = 0
         print(a)
         for i in a.keys() :
-            if _parse_date_or_timestamp(i) > start_dt and _parse_date_or_timestamp(i)<end_dt:
+            if _in_range_dt(_parse_date_or_timestamp(i),start_dt ,end_dt):
                 total_seconds += sum(float(l.get("seconds", 0)) for l in a[i].get("time_tracking",[])) 
         
         total_minutes = round(total_seconds / 60.0, 2)
