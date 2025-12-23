@@ -1,11 +1,21 @@
 """
 utils.py
 --------
-Utility functions for time parsing and validation.
+High-performance filtering utilities.
+
+Design principles:
+- Events are the primary index (fast path)
+- Visits are the verification step (slow path)
+- No mutation of entities or visits
+- No preprocessing unless required
 """
 
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Set
+
+# -------------------------
+# Domain mapping
+# -------------------------
 
 DOMAIN_ENTITY_MAP = {
     "medical": "patients",
@@ -13,8 +23,21 @@ DOMAIN_ENTITY_MAP = {
     "sales": "customers",
 }
 
+# -------------------------
+# Event types that imply entity activity
+# -------------------------
+
+RELEVANT_VISIT_EVENTS = {
+    201,  # client added
+    202,  # interaction added
+}
+
+# -------------------------
+# Date parsing
+# -------------------------
+
 def parse_date(value: Optional[str]) -> Optional[datetime]:
-    """Parse string or timestamp into datetime."""
+    """Parse ISO string into datetime (safe)."""
     if not value:
         return None
     try:
@@ -22,152 +45,180 @@ def parse_date(value: Optional[str]) -> Optional[datetime]:
     except Exception:
         return None
 
-def _match_visit(
-    visits: List[Dict],
-    *,
-    details=None,
-    start_date=None,
-    end_date=None,
-    visit_filters=None
-):
-    """Efficient visit filtering with early exit."""
-    for v in visits:
+# -------------------------
+# Event-based candidate extraction
+# -------------------------
 
-        # ---- details filter ----
-        if details and details not in v.get("_details_lc", ""):
+def candidate_entities_from_events(
+    analytics: Dict,
+    *,
+    start_date: Optional[datetime],
+    end_date: Optional[datetime],
+) -> Set[str]:
+    """
+    Extract entity IDs that appear in relevant events
+    within the requested date range.
+    """
+
+    candidates: Set[str] = set()
+
+    for day, payload in analytics.items():
+        try:
+            day_dt = datetime.fromisoformat(day)
+        except Exception:
             continue
 
-        # ---- dynamic visit filters (treatment, lab, service, product, etc.) ----
-        if visit_filters:
-            ok = True
-            for key, value in visit_filters.items():
-                if value and value not in v.get(key, ""):
-                    ok = False
-                    break
-            if not ok:
+        if start_date and day_dt < start_date:
+            continue
+        if end_date and day_dt > end_date:
+            continue
+
+        for e in payload.get("events", []):
+            if e.get("type") not in RELEVANT_VISIT_EVENTS:
                 continue
 
-        # ---- date filter ----
-        if start_date or end_date:
-            vd = v.get("_vd")
-            if not vd:
-                continue
-            if (start_date and vd < start_date) or (end_date and vd > end_date):
-                continue
+            meta = e.get("meta") or {}
+            entity_id = (
+                meta.get("patient")
+                or meta.get("client")
+                or meta.get("entity_id")
+            )
 
-        # if ANY visit matches → patient matches
-        return True
+            if entity_id:
+                candidates.add(entity_id)
 
-    return False
+    return candidates
 
-def filter_patients(patients: List[Dict], f: Dict):
-    # Extract filters
-    details = (f.get("details", "") or "").lower()
-    location = (f.get("location", "") or "").lower()
-    treatment = (f.get("treatment", "") or "").lower()
-    diagnosis = (f.get("diagnosis", "") or "").lower()
-    lab = (f.get("lab", "") or "").lower()
+# -------------------------
+# Visit matcher (lean)
+# -------------------------
 
-    start_raw = f.get("start_date") or f.get("from") or f.get("From")
-    end_raw   = f.get("end_date") or f.get("to") or f.get("To")
+def visit_matches(
+    visit: Dict,
+    *,
+    details: str,
+    filters: Dict[str, str],
+    start_date: Optional[datetime],
+    end_date: Optional[datetime],
+    date_key: str,
+) -> bool:
+    """Return True if a single visit matches all filters."""
 
-    start_date = parse_date(start_raw)
-    end_date   = parse_date(end_raw)
+    if details:
+        v_details = (visit.get("details") or "").lower()
+        if details not in v_details:
+            return False
 
-    # visits filter dict
+    for key, value in filters.items():
+        if value and value not in (visit.get(key) or "").lower():
+            return False
+
+    if start_date or end_date:
+        raw = visit.get(date_key)
+        if not raw:
+            return False
+
+        try:
+            vd = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        except Exception:
+            return False
+
+        if start_date and vd < start_date:
+            return False
+        if end_date and vd > end_date:
+            return False
+
+    return True
+
+# -------------------------
+# Unified entity filter
+# -------------------------
+
+def filter_entities_with_events(
+    entities: List[Dict],
+    *,
+    analytics: Dict,
+    filters: Dict,
+    entity_id_key: str,
+    date_key: str,
+) -> List[Dict]:
+    """
+    Filter entities using:
+    1) Event-based preselection (fast)
+    2) Visit-level verification (accurate)
+    """
+
+    details = (filters.get("details") or "").lower()
+    location = (filters.get("location") or "").lower()
+
     visit_filters = {
-        "treatment": treatment,
-        "diagnosis": diagnosis,
-        "lab": lab
+        k: (filters.get(k) or "").lower()
+        for k in ("treatment", "diagnosis", "lab", "service", "product")
+        if filters.get(k)
     }
 
-    if not start_date and not end_date and treatment == '' and diagnosis == '' and lab == '':
-        return patients
+    start_date = parse_date(filters.get("start_date") or filters.get("from"))
+    end_date   = parse_date(filters.get("end_date")   or filters.get("to"))
+
+    # -------- FAST PATH (events) --------
+
+    candidate_ids = candidate_entities_from_events(
+        analytics,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    if not candidate_ids:
+        return []
+
+    # -------- SLOW PATH (visits) --------
+
     matched = []
-    append = matched.append   # local binding (micro-optim)
 
-    # Precompute lowercase once
-    for p in patients:
-        # ---- patient-level filters ----
-        if location and location != p.get("location", "").lower():
+    for entity in entities:
+        eid = entity.get(entity_id_key)
+        if eid not in candidate_ids:
             continue
 
-        visits = p.get("interactions", [])
-        if not visits:
+        if location and location != (entity.get("location") or "").lower():
             continue
-        
-        if (not type(visits) is list):
+
+        visits = entity.get("interactions") or []
+        if not isinstance(visits, list):
             visits = [visits]
 
-        # Precompute lowercase and parsed dates ONCE
         for v in visits:
-            if "_details_lc" not in v:
-                v["_details_lc"] = v.get("details", "").lower()
-            if "_vd" not in v:
-                v["_vd"] = parse_date(v.get("visit_date"))
-
-        # ---- match visits ----
-        if _match_visit(
-            visits,
-            details=details,
-            start_date=start_date,
-            end_date=end_date,
-            visit_filters=visit_filters
-        ):
-            append(p)
+            if visit_matches(
+                v,
+                details=details,
+                filters=visit_filters,
+                start_date=start_date,
+                end_date=end_date,
+                date_key=date_key,
+            ):
+                matched.append(entity)
+                break
 
     return matched
 
-def filter_clients(clients: List[Dict], f: Dict):
 
-    details = (f.get("details", "") or "").lower()
-    location = (f.get("location", "") or "").lower()
-    service = (f.get("service", "") or "").lower()
-    product = (f.get("product", "") or "").lower()
+def _in_range_dt(ts: datetime, start: datetime = None, end: datetime = None) -> bool:
+    """
+    Check if a datetime is within an optional start and end range (inclusive).
 
-    start_raw = f.get("start_date") or f.get("from") or f.get("From")
-    end_raw   = f.get("end_date") or f.get("to") or f.get("To")
+    Args:
+        ts (datetime): The timestamp to check.
+        start (datetime, optional): Start of the range. Defaults to None.
+        end (datetime, optional): End of the range. Defaults to None.
 
-    start_date = parse_date(start_raw)
-    end_date   = parse_date(end_raw)
+    Returns:
+        bool: True if ts is within range, False otherwise.
+    """
+    if not ts:
+        return False
+    if start and ts < start:
+        return False
+    if end and ts > end:
+        return False
+    return True
 
-    visit_filters = {
-        "service": service,
-        "product": product
-    }
-
-    
-    if not start_date and not end_date and service == '' and product == '':
-        return clients
-
-    matched = []
-    append = matched.append
-
-    for p in clients:
-
-        # patient-level filters
-        if location and location != p.get("location", "").lower():
-            continue
-
-        visits = p.get("interactions", [])
-        if not visits:
-            continue
-
-        # preprocess visit data
-        print(list(visits))
-        for v in list(visits):
-            if "_details_lc" not in v:
-                v["_details_lc"] = v.get("details", "").lower()
-            if "_vd" not in v:
-                v["_vd"] = parse_date(v.get("interaction_date"))
-
-        if _match_visit(
-            visits,
-            details=details,
-            start_date=start_date,
-            end_date=end_date,
-            visit_filters=visit_filters
-        ):
-            append(p)
-
-    return matched

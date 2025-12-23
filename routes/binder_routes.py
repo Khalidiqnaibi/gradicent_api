@@ -331,7 +331,7 @@ def add_interaction(client_id: str):
         service.set_current_user(payload["user_id"])
 
     interaction = service.create_interaction(client_id, payload["interaction"])
-    log_with_service(service,202)
+    log_with_service(service,202,metadata={"id" : client_id , "interaction_no":payload["interaction"].get("vno",payload["interaction"].get("interaction_no"))})
     return make_response(data=interaction, message="Interaction created."), 201
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["GET"])
@@ -373,11 +373,12 @@ def update_interaction(client_id: str):
         raise BadRequest("Missing 'interaction_no' payload")
 
     service = _get_domain_and_service(payload)
+    service.set_current_user(session["user_id"])
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
 
     service.update_interactions(client_id=client_id,interaction_no=payload["interaction_no"],patch = payload["patch"])
-    log_with_service(service,402)
+    log_with_service(service,402,metadata={"id" : client_id , "interaction_no":payload["patch"].get("vno",payload["patch"].get("interaction_no") - 1)-1})
     return make_response(data=payload, message="Updated Interactions."), 201
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["DELETE"])

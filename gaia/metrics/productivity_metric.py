@@ -1,216 +1,123 @@
+"""
+productivity_metric.py
+----------------------
+Compute productivity metrics for a binder user using analytics events/time_tracking.
+
+Outputs:
+- total_time_minutes
+- avg_time_per_session_minutes
+- percent_productive (8–18h)
+- visits_per_active_hour
+- time_vs_patients (labels, minutes, patients)
+"""
+
 from datetime import datetime, timedelta
+from typing import Dict, Any
+import logging
+
 from gaia.interfaces.base_metric import IMetric
 from gaia.registry import MetricRegistry
-from flask import current_app as app
-from gaia.utils import filter_patients,filter_clients
-from binder import normalize_user
+from gaia.utils import parse_date, _in_range_dt
 
-def _parse_date_or_timestamp(value, default = None):
-    if not value:
-        return default
-    try:
-        if len(value) == 10 and value.count("-") == 2:
-            return datetime.fromisoformat(value)
-        return datetime.fromisoformat(value)
-    except Exception:
-        return default
+logger = logging.getLogger(__name__)
 
-def _in_range_dt(ts, start, end):
-    if start and ts < start:
+# Event type constants
+EVENT_CLIENT_ADDED = 201
+EVENT_INTERACTION_ADDED = 202
+
+def _in_range_dt_inclusive(ts: datetime, start: datetime = None, end: datetime = None) -> bool:
+    """
+    Return True if ts is in [start, end] inclusive.
+    Only compares date portion if start or end is date-only.
+    """
+    if not ts:
         return False
-    if end and ts > end:
+    t_date = ts.date()
+    if start and t_date < start.date():
+        return False
+    if end and t_date > end.date():
         return False
     return True
 
-def _get_clients_user(user):
-    user = normalize_user(user)
-    user = user.to_dict() or {}
-    return user.get("clients",[])
+def _parse_ts(value: str):
+    """Parse ISO timestamp (with optional Z) into datetime or return None."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except Exception:
+        return None
 
 class ProductivityMetric(IMetric):
-
     @property
     def name(self):
         return "productivity"
 
+    def compute(self, binder, **kwargs) -> Dict[str, Any]:
+        start_dt = parse_date(kwargs.get("start_date") or kwargs.get("from") or kwargs.get("From"))
+        end_dt   = parse_date(kwargs.get("end_date") or kwargs.get("to") or kwargs.get("To"))
 
-    def compute(self, binder, **kwargs):
-        '''
-        productivity metric for the gaia engin 
-        based on the binder user actions
+        userid = kwargs.get("user_id")
+        if userid:
+            binder.current_user = userid
 
-        kwargs:
-            Common:
-                user_id (str) : binders user id in the db
-                domain (str): "medical" | "business" | "education" | optional
-                start_date | From (str): "YYYY-MM-DD"
-                end_date | To   (str): "YYYY-MM-DD"
-                details    (str): free text
-                location   (str): free text
-                show_date (bool): filter by date
-                show_visit_info (bool): enable visit/transaction filtering
+        meta = binder.adapter.get_child(binder.domain, binder.current_user, "metadata") or {}
+        analytics = meta.get("analytics", {}) or {}
 
-            Medical-only:
-                treatment (str)
-                diagnosis (str)
-                lab (str)
-
-            Business-only:
-                product (str)
-                service (str)
-
-        '''
-        # -------------------------------------------
-        # 0. Extract domain + base user
-        # -------------------------------------------
-        DOMAIN = kwargs.get("domain", "medical")
-        user   = binder.adapter.get_user(binder.domain,binder.current_user) or {}
-        start_dt = kwargs.get("form") or kwargs.get("From") or kwargs.get("start_date")
-        end_dt = kwargs.get("to") or kwargs.get("To") or kwargs.get("end_date")
-
-        start_dt = _parse_date_or_timestamp(start_dt, None)
-        end_dt = _parse_date_or_timestamp(end_dt, None)
-
-        # -------------------------------------------
-        # 1. Select and filter clients
-        # -------------------------------------------
-        # clients = _get_clients_user(user)
-
-        # if DOMAIN == "medical":
-        #     matched = filter_patients(clients, kwargs)
-        # elif DOMAIN == "business":
-        #     matched = filter_clients(clients, kwargs)
-        # else:
-        #     matched = filter_clients(clients, kwargs)   # fallback
-
-        # -------------------------------------------
-        # 2. Aggregate logs from matched clients
-        # -------------------------------------------
-        meta = binder.adapter.get_child(binder.domain,binder.current_user, "metadata")
-        flat_time = meta.get("time_tracking" , [])
-        a = meta.get("analytics",{})
-
-        flat_events = flat_time
-        time_logs = flat_time
-
-
-        # -------------------------------------------
-        # 4. Compute total time
-        # -------------------------------------------
-        total_seconds = 0
-        print(a)
-        for i in a.keys() :
-            if _in_range_dt(_parse_date_or_timestamp(i),start_dt ,end_dt):
-                total_seconds += sum(float(l.get("seconds", 0)) for l in a[i].get("time_tracking",[])) 
-        
-        total_minutes = round(total_seconds / 60.0, 2)
-
-        # -------------------------------------------
-        # 5. Sessions (count unique days)
-        # -------------------------------------------
+        total_seconds = 0.0
+        productive_seconds = 0.0
         session_dates = set()
+        visits = 0
+        by_day: Dict[str, Dict[str, float]] = {}
+        now = datetime.now()
 
-        for log in flat_time:
-            ts_dt = _parse_date_or_timestamp(log.get("timestamp"), None)
-            if not ts_dt:
+        for day_str, payload in analytics.items():
+            day_dt = parse_date(day_str)
+            if day_dt and not _in_range_dt_inclusive(day_dt, start_dt, end_dt):
                 continue
-            if start_dt or end_dt:
-                if not _in_range_dt(ts_dt, start_dt, end_dt):
-                    continue
-            session_dates.add(ts_dt.date().isoformat())
 
+            # time_tracking
+            for t in payload.get("time_tracking", []) or []:
+                ts = _parse_ts(t.get("timestamp"))
+                if not ts or not _in_range_dt_inclusive(ts, start_dt, end_dt):
+                    continue
+
+                seconds = float(t.get("seconds", 0) or 0)
+                total_seconds += seconds
+                if 8 <= ts.hour < 18:
+                    productive_seconds += seconds
+
+                key = ts.date().isoformat()
+                bucket = by_day.setdefault(key, {"minutes": 0.0, "patients": 0})
+                bucket["minutes"] += seconds / 60.0
+                session_dates.add(ts.date().isoformat())
+
+            # events
+            for ev in payload.get("events", []) or []:
+                ts = _parse_ts(ev.get("timestamp"))
+                if not ts or not _in_range_dt_inclusive(ts, start_dt, end_dt):
+                    continue
+
+                etype = ev.get("type")
+                if etype == EVENT_INTERACTION_ADDED:
+                    visits += 1
+                if etype == EVENT_CLIENT_ADDED:
+                    key = ts.date().isoformat()
+                    bucket = by_day.setdefault(key, {"minutes": 0.0, "patients": 0})
+                    bucket["patients"] += 1
+
+        total_minutes = round(total_seconds / 60.0, 2)
         session_count = max(1, len(session_dates))
         avg_per_session = round(total_minutes / session_count, 2)
-
-        # -------------------------------------------
-        # 6. Productive time (8–18)
-        # -------------------------------------------
-        productive_seconds = 0.0
-
-        for log in flat_time:
-            ts_dt = _parse_date_or_timestamp(log.get("timestamp"), None)
-            if not ts_dt:
-                continue
-            if start_dt or end_dt:
-                if not _in_range_dt(ts_dt, start_dt, end_dt):
-                    continue
-            if 8 <= ts_dt.hour < 18:
-                productive_seconds += float(log.get("seconds", 0) or 0)
-
         percent_productive = round((productive_seconds / (total_seconds or 1)) * 100, 1)
-
-        # -------------------------------------------
-        # 7. Visit analytics (New Visit)
-        # -------------------------------------------
-        visits = 0
-        for ev in flat_events:
-            if ev.get("type") != "New Visit":
-                continue
-            ts_dt = _parse_date_or_timestamp(ev.get("timestamp"), None)
-            if not ts_dt:
-                continue
-            if start_dt or end_dt:
-                if not _in_range_dt(ts_dt, start_dt, end_dt):
-                    continue
-            visits += 1
-
         active_hours = max(0.01, total_seconds / 3600.0)
         visits_per_active_hour = round(visits / active_hours, 2)
 
-        # -------------------------------------------
-        # 8. Build "time vs patient" series
-        # -------------------------------------------
-        now = datetime.now()
-        by_day = {}
+        labels = sorted(by_day.keys())
+        minutes = [round(by_day[d]["minutes"], 2) for d in labels]
+        patients = [int(by_day[d]["patients"]) for d in labels]
 
-        # --- Time logs
-        for log in flat_time:
-            ts_dt = _parse_date_or_timestamp(log.get("timestamp"), None)
-            if not ts_dt:
-                continue
-
-            if start_dt or end_dt:
-                if not _in_range_dt(ts_dt, start_dt, end_dt):
-                    continue
-
-            # if no date filter: last 30 days only
-            if not (start_dt or end_dt):
-                if (now.date() - ts_dt.date()).days > 30:
-                    continue
-
-            key = ts_dt.date().isoformat()
-            by_day.setdefault(key, {"minutes": 0, "patients": 0})
-            by_day[key]["minutes"] += float(log.get("seconds", 0) or 0) / 60.0
-
-        # --- New Patient analytics
-        for ev in flat_events:
-            if ev.get("type") != "New Patient":
-                continue
-
-            ts_dt = _parse_date_or_timestamp(ev.get("timestamp"), None)
-            if not ts_dt:
-                continue
-
-            if start_dt or end_dt:
-                if not _in_range_dt(ts_dt, start_dt, end_dt):
-                    continue
-
-            if not (start_dt or end_dt):
-                if (now.date() - ts_dt.date()).days > 30:
-                    continue
-
-            key = ts_dt.date().isoformat()
-            by_day.setdefault(key, {"minutes": 0, "patients": 0})
-            by_day[key]["patients"] += 1
-
-        labels = sorted(by_day.keys()) or []
-        minutes = [round(by_day[d].get("minutes",0), 2) for d in labels]
-        patients = [by_day[d].get("patients") for d in labels] 
-
-        # -------------------------------------------
-        # Return productivity metric
-        # -------------------------------------------
-        return {
+        result = {
             "total_time_minutes": total_minutes,
             "avg_time_per_session_minutes": avg_per_session,
             "percent_productive": percent_productive,
@@ -218,10 +125,13 @@ class ProductivityMetric(IMetric):
             "time_vs_patients": {
                 "labels": labels,
                 "minutes": minutes,
-                "patients": patients
-            }
+                "patients": patients,
+            },
         }
 
+        logger.debug("productivity computed user=%s start=%s end=%s result=%s",
+                     binder.current_user, start_dt, end_dt, result)
 
-# Register metric
+        return result
+
 MetricRegistry.register(ProductivityMetric)
