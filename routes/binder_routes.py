@@ -391,11 +391,11 @@ def update_interaction(client_id: str):
     if not int(client_id) > 0:
         client_id = session["client_id"]
 
-    service.update_interactions(client_id=client_id,interaction_no=payload["interaction_no"],patch = payload["patch"])
+    interaction_no = int(payload["interaction_no"])- 1
+    if not interaction_no > 0 :
+        interaction_no = 0
 
-    interaction_no = payload["patch"].get("vno",payload["patch"].get("interaction_no"))
-    
-    interaction_no = interaction_no-1 or 0
+    service.update_interactions(client_id=client_id,interaction_no=interaction_no,patch = payload["patch"])
 
     log_with_service(service,402,metadata={"id" : client_id , "interaction_no":interaction_no})
     return make_response(data=payload, message="Updated Interactions."), 201
