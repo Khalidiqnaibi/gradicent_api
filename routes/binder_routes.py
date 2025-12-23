@@ -123,7 +123,7 @@ def get_user():
     
     service = _get_domain_and_service(payload=payload)
 
-    return service.get_user(payload['user_id']) , 200
+    return make_response(data=service.get_user(payload['user_id']),message="User retrieved successfully") , 200
 
 @binder_blueprint.route("/user",methods=["POST"])
 def update_user():

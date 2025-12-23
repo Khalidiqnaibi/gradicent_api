@@ -300,10 +300,15 @@
       }
     }
 
-    async function get_user(){
+    async function get_user_id(){
       const url = `/api/auth/me`;
       const data = await safe_fetch(url, { method: 'GET' });
-      return data.data;    
+      return data.data.id;    
+    }
+
+    async  function get_user(user_id,domain='') {
+      const data = await safe_fetch(`/api/binder/user?user_id=${user_id}&domain=${domain}`, { method: 'GET' });
+      return data.data;
     }
 
     async function get_domain() {
@@ -423,11 +428,11 @@
       let res = await get_plan_status()
 
       plan = res.plan
-      user = await get_user();
-      user_id = user.id;
-
+      user_id = await get_user_id();
       domain = await get_domain();
-          
+
+      user = await get_user(user_id,domain);
+
       if(plan==='sec'){ 
         try { 
           document.getElementById("ccc").style.display="none"; 
