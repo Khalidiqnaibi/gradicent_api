@@ -47,8 +47,8 @@ class ClientMixin:
             self.domain,
             self.current_user,
             "clients",
-            client_id,
             data,
+            client_id,
         )
         return data
 
@@ -64,8 +64,8 @@ class ClientMixin:
             self.domain,
             self.current_user,
             "clients",
-            client_id,
             patch,
+            client_id,
         )
 
     def delete_client(self, client_id: str) -> None:
@@ -139,8 +139,8 @@ class EmployeeMixin:
             self.domain,
             self.current_user,
             "employees",
-            emp_id,
             patch,
+            emp_id,
         )
 
     def delete_employee(self, emp_id: str) -> None:
@@ -161,8 +161,8 @@ class ProductMixin:
             self.domain,
             self.current_user,
             "products",
-            prod_id,
             patch,
+            prod_id,
         )
 
     def delete_product(self, prod_id: str) -> None:
@@ -183,8 +183,8 @@ class ServiceMixin:
             self.domain,
             self.current_user,
             "services",
-            svc_id,
             patch,
+            svc_id,
         )
 
     def delete_service(self, svc_id: str) -> None:

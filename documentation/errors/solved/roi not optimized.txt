@@ -1,0 +1,5 @@
+the current bigO is n^2 for the umm of all sessions
+
+##############################
+
+fixed : refactored all the matrics to use the new event system as a sudo hash map

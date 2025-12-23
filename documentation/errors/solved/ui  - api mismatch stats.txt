@@ -1,0 +1,6 @@
+in stats the the api gets the info but the ui dont show it .. maybe a naming issue
+
+
+##############################
+
+fixed : refactored all the matrics to use the new event system as a sudo hash map

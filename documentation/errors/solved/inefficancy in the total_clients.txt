@@ -16,3 +16,7 @@ and others like the test users that had < 10 users took im ms.
 its probably because of the lots of in checks and lots of .lower() and and date parsing. 
 but im not sure 
 probably we can optimize it if we can sort and use biunary srch or other algorithm
+
+##############################
+
+fixed : refactored all the matrics to use the new event system as a sudo hash map

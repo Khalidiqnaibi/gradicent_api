@@ -1,1 +1,0 @@
-the current bigO is n^2 for the umm of all sessions

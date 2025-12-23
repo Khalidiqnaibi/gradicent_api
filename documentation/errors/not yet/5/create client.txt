@@ -1,0 +1,44 @@
+127.0.0.1 - - [23/Dec/2025 14:44:49] "GET /api/binder/get_domain HTTP/1.1" 200 -
+127.0.0.1 - - [23/Dec/2025 14:44:50] "GET /api/binder/get_plan_status HTTP/1.1" 200 -
+binder_service: error during create_client
+Traceback (most recent call last):
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\services\binder_service.py", line 67, in _wrap_and_log
+    return func(*args, **kwargs)
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\binder\interfaces\binder_mixins.py", line 46, in create_client
+    self.adapter.update_child(
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\binder\adapters\united_firebase_adapter.py", line 107, in update_child
+    self._child_ref(domain,user_id, collection, child_id).update(patch)
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\binder\adapters\united_firebase_adapter.py", line 40, in _child_ref
+    return ref if not child_id else ref.child(child_id)
+  File "C:\Users\pc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\firebase_admin\db.py", line 188, in child
+    raise ValueError(f'Invalid path argument: "{path}". Path must be a non-empty string.')
+ValueError: Invalid path argument: "{'name': 'dfe', 'gov_id': '', 'phone': '', 'location': '', 'pmh': '', 'allergies': '', 'btype': '', 'sex': '', 'age': '23', 'debit': 0, 'payed': 0, 'visits': [], 'id': '6'}". Path must be a non-empty string.
+[2025-12-23 14:45:02,563] ERROR in binder_routes: Binder service error: Error performing 'create_client': Invalid path argument: "{'name': 'dfe', 'gov_id': '', 'phone': '', 'location': '', 'pmh': '', 'allergies': '', 'btype': '', 'sex': '', 'age': '23', 'debit': 0, 'payed': 0, 'visits': [], 'id': '6'}". Path must be a non-empty string.
+Traceback (most recent call last):
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\services\binder_service.py", line 67, in _wrap_and_log
+    return func(*args, **kwargs)
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\binder\interfaces\binder_mixins.py", line 46, in create_client
+    self.adapter.update_child(
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\binder\adapters\united_firebase_adapter.py", line 107, in update_child
+    self._child_ref(domain,user_id, collection, child_id).update(patch)
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\binder\adapters\united_firebase_adapter.py", line 40, in _child_ref
+    return ref if not child_id else ref.child(child_id)
+  File "C:\Users\pc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\firebase_admin\db.py", line 188, in child
+    raise ValueError(f'Invalid path argument: "{path}". Path must be a non-empty string.')
+ValueError: Invalid path argument: "{'name': 'dfe', 'gov_id': '', 'phone': '', 'location': '', 'pmh': '', 'allergies': '', 'btype': '', 'sex': '', 'age': '23', 'debit': 0, 'payed': 0, 'visits': [], 'id': '6'}". Path must be a non-empty string.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\pc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\pc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\routes\binder_routes.py", line 225, in add_client
+    client = service.create_client(payload["client"])
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\services\binder_service.py", line 161, in create_client
+    return self._wrap_and_log("create_client", self._binder.create_client, client)
+  File "c:\Users\pc\Documents\GitHub\BinderSoftware_api\services\binder_service.py", line 73, in _wrap_and_log
+    raise BinderServiceError(f"Error performing '{action_name}': {exc}") from exc
+services.binder_service.BinderServiceError: Error performing 'create_client': Invalid path argument: "{'name': 'dfe', 'gov_id': '', 'phone': '', 'location': '', 'pmh': '', 'allergies': '', 'btype': '', 'sex': '', 'age': '23', 'debit': 0, 'payed': 0, 'visits': [], 'id': '6'}". Path must be a non-empty string.
+127.0.0.1 - - [23/Dec/2025 14:45:02] "POST /api/binder/clients HTTP/1.1" 400 -

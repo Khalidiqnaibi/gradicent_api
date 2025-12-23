@@ -223,7 +223,9 @@ def add_client():
         service.set_current_user(payload["user_id"])
 
     client = service.create_client(payload["client"])
-    log_with_service(service,201)
+    client_id = client.get("id")
+
+    log_with_service(service,201 , metadata={"id" : client_id})
     return make_response(data=client, message="Client added successfully."), 201
 
 @binder_blueprint.route("/clients/<client_id>", methods=["GET"])
@@ -243,6 +245,7 @@ def get_client(client_id: str):
 
     client = service.read_client(client_id)
     session["client"]=client["id"]
+
     if client is None:
         raise NotFound(f"Client {client_id} not found")
     return make_response(data=client), 200
@@ -330,8 +333,16 @@ def add_interaction(client_id: str):
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
 
+    if not int(client_id) > 0:
+        client_id = session["client_id"]
+
     interaction = service.create_interaction(client_id, payload["interaction"])
-    log_with_service(service,202,metadata={"id" : client_id , "interaction_no":payload["interaction"].get("vno",payload["interaction"].get("interaction_no"))})
+
+    interaction_no = payload["interaction"].get("vno",payload["interaction"].get("interaction_no")) 
+
+    interaction_no = interaction_no-1 or 0
+
+    log_with_service(service,202,metadata={"id" : client_id , "interaction_no":interaction_no})
     return make_response(data=interaction, message="Interaction created."), 201
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["GET"])
@@ -376,9 +387,17 @@ def update_interaction(client_id: str):
     service.set_current_user(session["user_id"])
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
+    
+    if not int(client_id) > 0:
+        client_id = session["client_id"]
 
     service.update_interactions(client_id=client_id,interaction_no=payload["interaction_no"],patch = payload["patch"])
-    log_with_service(service,402,metadata={"id" : client_id , "interaction_no":payload["patch"].get("vno",payload["patch"].get("interaction_no") - 1)-1})
+
+    interaction_no = payload["patch"].get("vno",payload["patch"].get("interaction_no"))
+    
+    interaction_no = interaction_no-1 or 0
+
+    log_with_service(service,402,metadata={"id" : client_id , "interaction_no":interaction_no})
     return make_response(data=payload, message="Updated Interactions."), 201
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["DELETE"])

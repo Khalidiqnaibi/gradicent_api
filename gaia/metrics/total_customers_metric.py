@@ -7,7 +7,14 @@ Returns:
 - total_customers
 - returning_customers
 - avg_visits_per_customer
-- weekly: { labels, counts (new), returning_counts }
+- weekly: { labels, counts (new unique per week), returning_counts (unique per week) }
+
+Classification rule (updated):
+- If an entity has a NEW event within the period -> it's NEW.
+- It becomes RETURNING only if it has an interaction in the period **after** its NEW event's date.
+- Interactions that occur on the same date as the NEW event do NOT count as returning.
+- Entities created before the period with interactions in the period are RETURNING.
+All timestamp comparisons are inclusive.
 """
 
 from typing import Dict, Any, Set, DefaultDict, List
@@ -20,10 +27,9 @@ from gaia.utils import parse_date
 
 logger = logging.getLogger(__name__)
 
-# Per your note:
+# Event codes (per your mapping)
 EVENT_NEW = 201
-EVENT_RETURNING = 202
-EVENT_INTERACTION = 202
+EVENT_INTERACTION = 402
 
 
 def _parse_iso_ts(value: str):
@@ -40,6 +46,9 @@ def _in_range_inclusive(ts: datetime, start: datetime = None, end: datetime = No
     Inclusive range check: True when start <= ts <= end.
     If start or end is None they are treated as unbounded.
     """
+    if end:
+        end = end.replace(hour=23, minute=59, second=59, microsecond=999999)
+
     if not ts:
         return False
     if start and ts < start:
@@ -73,20 +82,6 @@ class TotalCustomersMetric(IMetric):
         return "total_customers"
 
     def compute(self, binder, **kwargs) -> Dict[str, Any]:
-        """
-        Required kwargs (optional; if missing, treats as unbounded):
-            start_date / From : inclusive start timestamp (ISO or YYYY-MM-DD)
-            end_date   / To   : inclusive end timestamp (ISO or YYYY-MM-DD)
-            domain (optional) : not required for events-only counts
-
-        Returns:
-            {
-              "total_customers": int,
-              "returning_customers": int,
-              "avg_visits_per_customer": float,
-              "weekly": { "labels": [...], "counts": [...], "returning_counts": [...] }
-            }
-        """
         # parse inclusive start/end
         start = parse_date(kwargs.get("start_date") or kwargs.get("from") or kwargs.get("From"))
         end = parse_date(kwargs.get("end_date") or kwargs.get("to") or kwargs.get("To"))
@@ -95,26 +90,25 @@ class TotalCustomersMetric(IMetric):
         meta = binder.adapter.get_child(binder.domain, binder.current_user, "metadata") or {}
         analytics = meta.get("analytics", {}) or {}
 
-        # per-entity counters derived directly from events
+        # per-entity collectors (single pass)
         interaction_counts: DefaultDict[str, int] = defaultdict(int)
-        new_ids: Set[str] = set()
-        returning_ids: Set[str] = set()
-        seen_ids: Set[str] = set()
+        first_new_ts: Dict[str, datetime] = {}         # earliest NEW event ts per eid (within period)
+        first_interaction_ts: Dict[str, datetime] = {} # earliest interaction ts per eid (within period)
+        seen_ids: Set[str] = set()                     # any entity seen in period by any event
 
-        # For weekly aggregation
-        new_week: DefaultDict[datetime, int] = defaultdict(int)
-        returning_week: DefaultDict[datetime, int] = defaultdict(int)
+        # weekly unique sets
+        new_week_unique: DefaultDict[datetime, Set[str]] = defaultdict(set)
+        interaction_week_unique: DefaultDict[datetime, Set[str]] = defaultdict(set)
 
-        # Track min/max event timestamps seen (for building week range if start/end missing)
+        # track min/max timestamps for fallback ranges
         min_ts: datetime = None
         max_ts: datetime = None
 
         # Single pass over analytics -> days -> events
         for day_key, payload in analytics.items():
-            # day_key is typically "YYYY-MM-DD"; events have full timestamps
             day_dt = parse_date(day_key)
 
-            # optional day pruning (quick skip whole-day if outside)
+            # quick skip whole day if outside inclusive date range
             if day_dt:
                 if start and day_dt.date() < start.date():
                     continue
@@ -122,18 +116,18 @@ class TotalCustomersMetric(IMetric):
                     continue
 
             for ev in payload.get("events", []) or []:
-                # Prefer event timestamp for precise inclusion
+                # event timestamp preferred
                 ts = _parse_iso_ts(ev.get("timestamp"))
                 if not ts:
-                    # fallback: if no event timestamp, use day_dt
                     ts = day_dt
                 if not ts:
                     continue
 
+                # inclusive filter using event timestamp
                 if not _in_range_inclusive(ts, start, end):
                     continue
 
-                # update min/max
+                # update min/max event times
                 if min_ts is None or ts < min_ts:
                     min_ts = ts
                 if max_ts is None or ts > max_ts:
@@ -148,39 +142,54 @@ class TotalCustomersMetric(IMetric):
 
                 etype = ev.get("type")
                 if etype == EVENT_NEW:
-                    new_ids.add(eid)
-                    # weekly bucket
+                    # record earliest new ts
+                    prev = first_new_ts.get(eid)
+                    if prev is None or ts < prev:
+                        first_new_ts[eid] = ts
+                    # week bucket unique
                     wk = _monday_of(ts)
-                    new_week[wk] += 1
-                elif etype == EVENT_RETURNING:
-                    returning_ids.add(eid)
-                    wk = _monday_of(ts)
-                    returning_week[wk] += 1
-                elif etype == EVENT_INTERACTION:
-                    # count one interaction occurrence
+                    new_week_unique[wk].add(eid)
+
+                elif etype == EVENT_INTERACTION :
+                    # record earliest interaction ts
+                    prev_i = first_interaction_ts.get(eid)
+                    if prev_i is None or ts < prev_i:
+                        first_interaction_ts[eid] = ts
                     interaction_counts[eid] += 1
+                    wk = _monday_of(ts)
+                    interaction_week_unique[wk].add(eid)
 
-        # total customers: unique entities seen in the period
-        total_ids = set(interaction_counts.keys()) | new_ids | returning_ids | seen_ids
+        total_ids = set(seen_ids) | set(interaction_counts.keys()) | set(first_new_ts.keys())
+        new_ids = set(first_new_ts.keys())
+
+        # Determine returning ids
+        returning_ids: Set[str] = set()
+        for eid in total_ids:
+            if eid in new_ids:
+                # has a NEW event in period
+                fi = first_interaction_ts.get(eid)
+                fn = first_new_ts.get(eid)
+                # Only count as returning if there's an interaction after the creation DATE
+                if fi and fn and fi.date() > fn.date():
+                    returning_ids.add(eid)
+            else:
+                # no new in period, but has interaction(s)
+                if interaction_counts.get(eid, 0) > 0:
+                    returning_ids.add(eid)
+
+        # totals
         total_customers = len(total_ids)
-
-        # returning customers count (per your required mapping)
-        returning_customers = sum(1 for eid in total_ids if eid in returning_ids)
-
-        # average visits per customer: interactions / customers (0 if none)
+        returning_customers = len(returning_ids)
         total_interactions = sum(interaction_counts.values())
         avg_visits = round((total_interactions / total_customers) if total_customers else 0.0, 2)
 
-        # Build weekly series:
-        # Determine week range: use provided start/end if present, else use min_ts/max_ts (or last 12 weeks)
+        # Build weekly series (unique per week)
         if start:
             week_start = _monday_of(start)
         elif min_ts:
             week_start = _monday_of(min_ts)
         else:
-            # fallback to 12 weeks ending this week
-            today = datetime.now()
-            week_start = _monday_of(today - timedelta(weeks=11))
+            week_start = _monday_of(datetime.now() - timedelta(weeks=11))
 
         if end:
             week_end_dt = _monday_of(end)
@@ -189,11 +198,9 @@ class TotalCustomersMetric(IMetric):
         else:
             week_end_dt = _monday_of(datetime.now())
 
-        # Ensure week_end_dt >= week_start
         if week_end_dt < week_start:
             week_end_dt = week_start
 
-        # produce week labels (inclusive)
         labels: List[str] = []
         counts: List[int] = []
         returning_counts: List[int] = []
@@ -201,8 +208,12 @@ class TotalCustomersMetric(IMetric):
         cur = week_start
         while cur <= week_end_dt:
             labels.append(cur.date().isoformat())
-            counts.append(new_week.get(cur, 0))
-            returning_counts.append(returning_week.get(cur, 0))
+            # new unique that week
+            counts.append(len(new_week_unique.get(cur, set())))
+            # returning unique that week: include only those interaction eids that qualify as returning
+            week_interactions = interaction_week_unique.get(cur, set())
+            week_returning = {eid for eid in week_interactions if eid in returning_ids}
+            returning_counts.append(len(week_returning))
             cur = cur + timedelta(days=7)
 
         result = {
