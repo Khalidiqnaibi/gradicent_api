@@ -1,3 +1,0 @@
- /api/auth/me show all of the data for the user in the db and thats cool for them but not for us 
-.. one ssol im think9ing of as i write thiss i that we might jusst not need the stuff in the metadata
-which contains the data we need for ourselves anyway and we dont use /me to get meta data anyway 

@@ -175,10 +175,12 @@ def current_user():
         return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
     
     normalized = normalize_user(user)
+    res = normalized.to_dict()
+    _ = res.pop("metadata", None)  # remove sensitive metadata
     if not normalized:
         return jsonify({"status": "error","data":None, "message": "unrecognized user structure"}), 401
-    
-    return jsonify({"status": "success", "data": normalized.to_dict(),"message":"got user"})
+
+    return jsonify({"status": "success", "data": res,"message":"got user"})
 
 
 @auth_blueprint.route("/refresh", methods=["POST"])

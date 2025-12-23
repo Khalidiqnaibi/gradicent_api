@@ -42,3 +42,7 @@ Traceback (most recent call last):
     raise BinderServiceError(f"Error performing '{action_name}': {exc}") from exc
 services.binder_service.BinderServiceError: Error performing 'create_client': Invalid path argument: "{'name': 'dfe', 'gov_id': '', 'phone': '', 'location': '', 'pmh': '', 'allergies': '', 'btype': '', 'sex': '', 'age': '23', 'debit': 0, 'payed': 0, 'visits': [], 'id': '6'}". Path must be a non-empty string.
 127.0.0.1 - - [23/Dec/2025 14:45:02] "POST /api/binder/clients HTTP/1.1" 400 -
+
+
+######################
+Fixed : This was because of a mismatch of what was updated in the adapter and the mixin

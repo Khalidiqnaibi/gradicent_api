@@ -85,6 +85,19 @@ class TotalCustomersMetric(IMetric):
         # parse inclusive start/end
         start = parse_date(kwargs.get("start_date") or kwargs.get("from") or kwargs.get("From"))
         end = parse_date(kwargs.get("end_date") or kwargs.get("to") or kwargs.get("To"))
+        
+        if not start and not end:
+            clients = binder.adapter.list_children(binder.domain, binder.current_user, "clients") or []
+            return {
+                "total_customers": len(clients),
+                "returning_customers": 0,
+                "avg_visits_per_customer": 0.0,
+                "weekly": {
+                    "labels": [],
+                    "counts": [],
+                    "returning_counts": [],
+                },
+            }
 
         # load analytics (structure: analytics[day]['events'] = [...])
         meta = binder.adapter.get_child(binder.domain, binder.current_user, "metadata") or {}

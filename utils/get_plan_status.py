@@ -46,7 +46,10 @@ def get_plan_data(service):
 
     meta =data.get("metadata")
     if meta:
-        date = meta.get("plan_started_at",datetime.now().isoformat())
+        date = meta.get("plan_started_at")
+        if not date:
+            user = service._binder.adapter.get_user(service._binder.domain,service._binder.current_user)
+            date = user.get("created_at")
         plan = meta.get("plan","free")
     else:
         date = datetime.now().isoformat()

@@ -41,3 +41,8 @@ Traceback (most recent call last):
     raise BinderServiceError(f"Error performing '{action_name}': {exc}") from exc
 services.binder_service.BinderServiceError: Error performing 'update_client': Invalid path argument: "{'name': 'khalid', 'gov_id': '9999999999', 'phone': '0592840353', 'location': 'hebron', 'pmh': 'leukemia', 'allergies': 'chocolate', 'age': '22', 'next': '2025-12-22T21:03', 'btype': 'B+', 'sex': 'M', 'notes': ''}". Path must be a non-empty string.
 127.0.0.1 - - [22/Dec/2025 23:03:46] "PATCH /api/binder/clients/1 HTTP/1.1" 400 -
+
+
+
+##################
+Fixed : Thia was just a mismatch of the updated things in the adapter and not updating them in the mixin
