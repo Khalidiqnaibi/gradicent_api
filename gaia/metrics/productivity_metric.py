@@ -8,7 +8,7 @@ Outputs:
 - avg_time_per_session_minutes
 - percent_productive (8–18h)
 - visits_per_active_hour
-- time_vs_patients (labels, minutes, patients)
+- time_vs_clients (labels, minutes, clients)
 """
 
 from datetime import datetime, timedelta
@@ -88,7 +88,7 @@ class ProductivityMetric(IMetric):
                     productive_seconds += seconds
 
                 key = ts.date().isoformat()
-                bucket = by_day.setdefault(key, {"minutes": 0.0, "patients": 0})
+                bucket = by_day.setdefault(key, {"minutes": 0.0, "clients": 0})
                 bucket["minutes"] += seconds / 60.0
                 session_dates.add(ts.date().isoformat())
 
@@ -103,8 +103,8 @@ class ProductivityMetric(IMetric):
                     visits += 1
                 if etype == EVENT_CLIENT_ADDED:
                     key = ts.date().isoformat()
-                    bucket = by_day.setdefault(key, {"minutes": 0.0, "patients": 0})
-                    bucket["patients"] += 1
+                    bucket = by_day.setdefault(key, {"minutes": 0.0, "clients": 0})
+                    bucket["clients"] += 1
 
         total_minutes = round(total_seconds / 60.0, 2)
         session_count = max(1, len(session_dates))
@@ -115,17 +115,17 @@ class ProductivityMetric(IMetric):
 
         labels = sorted(by_day.keys())
         minutes = [round(by_day[d]["minutes"], 2) for d in labels]
-        patients = [int(by_day[d]["patients"]) for d in labels]
+        clients = [int(by_day[d]["clients"]) for d in labels]
 
         result = {
             "total_time_minutes": total_minutes,
             "avg_time_per_session_minutes": avg_per_session,
             "percent_productive": percent_productive,
             "visits_per_active_hour": visits_per_active_hour,
-            "time_vs_patients": {
+            "time_vs_clients": {
                 "labels": labels,
                 "minutes": minutes,
-                "patients": patients,
+                "clients": clients,
             },
         }
 

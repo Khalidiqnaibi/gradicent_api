@@ -132,11 +132,11 @@
         <button class="tab-btn active-tab" data-tab="roi">ROI</button>
         <button class="tab-btn" data-tab="productivity">Productivity</button>
         <button class="tab-btn" data-tab="finance">Finance</button>
-        <button class="tab-btn" data-tab="patients">Clients</button>
+        <button class="tab-btn" data-tab="clients">Clients</button>
       </nav>
       <!-- Filter bar -->
       <form id="filters" class="flex flex-wrap gap-3 items-center bg-white bg-opacity-50 p-2 rounded-xl">
-        <button id="patients" class="px-4 py-2 rounded-xl bg-[var(--secondary)] text-white font-semibold shadow-md">See clients</button>
+        <button id="clients" class="px-4 py-2 rounded-xl bg-[var(--secondary)] text-white font-semibold shadow-md">See clients</button>
         <label class="flex items-center gap-1 text-sm">
           <span>From:</span>
           <input type="date" id="dateFrom" class="border rounded p-1 text-sm">
@@ -172,7 +172,7 @@
       <div class="card mb-6">
         <h3 class="mb-2">Visits per Active Hour</h3>
         <div id="prod-visits-hour" class="text-xl mb-4">—</div>
-        <canvas id="prod-time-vs-patients"></canvas>
+        <canvas id="prod-time-vs-clients"></canvas>
       </div>
     </section>
 
@@ -181,7 +181,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div class="card"><h3>Total Revenue</h3><div id="fin-total-rev" class="text-2xl mt-2">—</div></div>
         <div class="card"><h3>Total Unpaid</h3><div id="fin-unpaid" class="text-2xl mt-2">—</div></div>
-        <div class="card"><h3>Avg Revenue / Client</h3><div id="fin-avg-per-patient" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Avg Revenue / Client</h3><div id="fin-avg-per-client" class="text-2xl mt-2">—</div></div>
       </div>
       <div class="card mb-6">
         <h3 class="mb-2">Revenue vs Unpaid Trend</h3>
@@ -189,15 +189,15 @@
       </div>
     </section>
 
-    <!-- Patients Tab -->
-    <section id="tab-patients" class="tab-panel hidden">
+    <!-- clients Tab -->
+    <section id="tab-clients" class="tab-panel hidden">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        <div class="card"><h3>Total Patients</h3><div id="pat-total" class="text-2xl mt-2">—</div></div>
-        <div class="card"><h3>Returning Patients</h3><div id="pat-returning" class="text-2xl mt-2">—</div></div>
-        <div class="card"><h3>Avg Visits / Patient</h3><div id="pat-avg-visits" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Total clients</h3><div id="pat-total" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Returning clients</h3><div id="pat-returning" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Avg Visits / client</h3><div id="pat-avg-visits" class="text-2xl mt-2">—</div></div>
       </div>
       <div class="card mb-6">
-        <h3 class="mb-2">New Patients / Week</h3>
+        <h3 class="mb-2">New clients / Week</h3>
         <canvas id="pat-weekly"></canvas>
       </div>
       <div class="card">
@@ -215,8 +215,10 @@
         domain: null, // e.g., 'medical' | 'lab'
         user_id: null
       };
+    var client_list = []
       
     document.addEventListener("DOMContentLoaded", async function() {
+      document.getElementById("clients").style.display = "none";
       const menuBtn = document.querySelector('.hamburger-menu');
       const menuBar = document.getElementById('menuBar');
 
@@ -232,13 +234,27 @@
 
       if (["starter","free"].includes(APP_STATE.plan)){
         document.querySelector('.tab-btn[data-tab="finance"').style.display= 'none';
-        document.querySelector('.tab-btn[data-tab="patients"').style.display= 'none';
+        document.querySelector('.tab-btn[data-tab="clients"').style.display= 'none';
       }
       
 
-      document.getElementById("patients").addEventListener("click", function () {
-        showpats();
+      document.getElementById("clients").addEventListener("click", function () {
+        show_clients();
       });
+
+      
+      setFiltersToLastWeek();
+      // prefer to show ROI tab on load
+      currentTab = 'roi';
+      // ensure UI tab button is active
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+      const activeBtn = document.querySelector('.tab-btn[data-tab="roi"]');
+      if (activeBtn) activeBtn.classList.add('active-tab');
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('tab-roi').classList.remove('hidden');
+
+      loadTab('roi');
+
     });
 
     // ===== Utilities =====
@@ -302,8 +318,8 @@
       return { get_plan_status, get_user, get_user_id, get_domain };
     })(u);  
     
-    function showpats() {
-      window.location.href = `/search_stats`;
+    function show_clients() {
+      window.location.href = `/search_stats?clients=${client_list}`
     }
 
     /**
@@ -435,47 +451,6 @@
       }
     }
 
-    // ===== Load patients list (optionally within date range) =====
-    async function loadPatientsList() {
-      try {
-        const qs = await buildQsFromFilters();
-        const url = qs ? `/api/gaia/compute?metric=matched_entities&${qs}` : `/api/gaia/compute?metrics=matched_entities&domain=${APP_STATE.domain}`;
-        const res = await fetch(url);
-        if (!res.ok) {
-          console.warn('patients list fetch returned', res.status);
-          return;
-        }
-        let data = await res.json();
-        console.log(`before data : ${JSON.stringify(data)}`);
-        data = data.data;
-        console.log(`data : ${JSON.stringify(data)}`);
-        const sel = document.getElementById('patientSelect');
-        sel.innerHTML = '<option value="">All</option>';
-        // expect data = [{id:'...', name:'...'}, ...]
-        if (Array.isArray(data)) {
-          data.forEach(p=>{
-            const opt = document.createElement('option');
-            opt.value = p.id ?? p.name ?? '';
-            opt.textContent = p.name ?? p.id ?? String(p);
-            sel.appendChild(opt);
-          });
-        } else {
-          // fallback: if /api/gaia/patients returns aggregated object, try to extract patient keys
-          const maybePatients = (data?.patients || data?.top_patients || []);
-          if (Array.isArray(maybePatients)) {
-            maybePatients.forEach(p=>{
-              const opt = document.createElement('option');
-              opt.value = p.id ?? p.name ?? '';
-              opt.textContent = p.name ?? p.id ?? String(p);
-              sel.appendChild(opt);
-            });
-          }
-        }
-      } catch (err) {
-        console.error('Error loading patients list:', err);
-      }
-    }
-
     // ===== Tabs wiring =====
     document.querySelectorAll('.tab-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -514,6 +489,7 @@
 
         try {
             if (tab === 'roi') {
+              document.getElementById("clients").style.display = "none";
               url = `/api/gaia/compute?metric=roi&${qs}&plan=${APP_STATE.plan}`;
               const res = await fetch(url);
               if (!res.ok) {
@@ -552,6 +528,7 @@
             }
 
             if (tab === 'productivity') {
+              document.getElementById("clients").style.display = "none";
               url = `/api/gaia/compute?metric=productivity&${qs}`;
               const res = await fetch(url);
               if (!res.ok) {
@@ -559,17 +536,15 @@
                 return;
               }
               let data = await res.json();
-              console.log(`before data : ${JSON.stringify(data)}`);
               data = data.data;
-              console.log(`data : ${JSON.stringify(data)}`);
               document.getElementById('prod-total-time').innerText = (data.total_time_minutes || 0) + ' mins';
               document.getElementById('prod-avg-session').innerText = (data.avg_time_per_session_minutes || 0) + ' mins';
               document.getElementById('prod-productive').innerText = (data.percent_productive || 0) + '%';
               document.getElementById('prod-visits-hour').innerText = (data.visits_per_active_hour || 0) + ' visits/hr';
 
-              const ch = ensureChart('prod-time-vs-patients', 'line', { options: { responsive: true, maintainAspectRatio: false } });
+              const ch = ensureChart('prod-time-vs-clients', 'line', { options: { responsive: true, maintainAspectRatio: false } });
               if (ch) {
-                ch.data.labels = data.time_vs_patients?.labels || [];
+                ch.data.labels = data.time_vs_clients?.labels || [];
                 // make gradients using the chart's canvas context
                 const ctx = ch.canvas.getContext('2d');
                 const secondaryColor = getCssVar('--secondary', '#78cee6');
@@ -578,10 +553,10 @@
                 const lineGradPayed = makeGradientFromCtx(ctx, accentColor);
 
                 ch.data.datasets = [
-                  { label: 'Minutes', data: data.time_vs_patients?.minutes || [], borderWidth: 2,
+                  { label: 'Minutes', data: data.time_vs_clients?.minutes || [], borderWidth: 2,
                     borderColor: hexToRgba(secondaryColor, 1),
                     backgroundColor: lineGradDebit, fill: true },
-                  { label: 'Patients Added', data: data.time_vs_patients?.patients || [], borderWidth: 2,
+                  { label: 'clients Added', data: data.time_vs_clients?.clients || [], borderWidth: 2,
                     borderColor: hexToRgba(accentColor, 1),
                     backgroundColor: lineGradPayed, fill: true }
                 ];
@@ -600,12 +575,12 @@
                 return;
               }
               let data = await res.json();
-              console.log(`before data : ${JSON.stringify(data)}`);
+              document.getElementById("clients").style.display = "block";
               data = data.data;
-              console.log(`data : ${JSON.stringify(data)}`);
+              client_list = data.clients;
               document.getElementById('fin-total-rev').innerText = fmtMoney(data.total_revenue || 0);
               document.getElementById('fin-unpaid').innerText = fmtMoney(data.total_unpaid || 0);
-              document.getElementById('fin-avg-per-patient').innerText = fmtMoney(data.avg_revenue_per_client || 0);
+              document.getElementById('fin-avg-per-client').innerText = fmtMoney(data.avg_revenue_per_client || 0);
 
               const ch = ensureChart('fin-revenue-trend', 'line', { options: { responsive: true, maintainAspectRatio: false } });
               if (ch) {
@@ -627,10 +602,10 @@
                 ch.update();
               }
             }
-            if (tab === 'patients' && !["pro" , "ultra"].includes(APP_STATE.plan )){
+            if (tab === 'clients' && !["pro" , "ultra"].includes(APP_STATE.plan )){
               alert("CANT DO THAT NOW ,CAN U SILLY?");
             }
-            else if (tab === 'patients') {
+            else if (tab === 'clients') {
               url = `/api/gaia/compute?metric=total_customers&${qs}`;
               const res = await fetch(url);
               if (!res.ok) {
@@ -638,9 +613,10 @@
                 return;
               }
               let data = await res.json();
-              console.log(`before data : ${JSON.stringify(data)}`);
+
+              document.getElementById("clients").style.display = "block";
               data = data.data;
-              console.log(`data : ${JSON.stringify(data)}`);
+              client_list = data.clients;
               document.getElementById('pat-total').innerText = data.total_customers || 0;
               document.getElementById('pat-returning').innerText = data.returning_customers || 0;
               document.getElementById('pat-avg-visits').innerText = (data.avg_visits_per_customer || 0).toFixed(2);
@@ -654,15 +630,15 @@
                 const lineGradDebit = makeGradientFromCtx(ctx, secondaryColor);
                 const lineGradPayed = makeGradientFromCtx(ctx, accentColor);
 
-                // returning patients per week: prefer an array from the API, else fallback to a same-length array of the scalar returning_patients
+                // returning clients per week: prefer an array from the API, else fallback to a same-length array of the scalar returning_clients
                 const returningWeekly = data.weekly?.returning_counts ||
-                  (Array.isArray(data.weekly?.counts) ? new Array(data.weekly.counts.length).fill(data.returning_patients || 0) : []);
+                  (Array.isArray(data.weekly?.counts) ? new Array(data.weekly.counts.length).fill(data.returning_clients || 0) : []);
 
                 ch.data.datasets = [
-                  { label: 'New Patients', data: data.weekly?.counts || [], borderWidth: 1 , fill: true,
+                  { label: 'New clients', data: data.weekly?.counts || [], borderWidth: 1 , fill: true,
                     borderColor: hexToRgba(secondaryColor, 1),
                     backgroundColor: lineGradDebit },
-                  { label: 'Returning Patients', data: returningWeekly, borderWidth: 1, fill: true,
+                  { label: 'Returning clients', data: returningWeekly, borderWidth: 1, fill: true,
                     borderColor: hexToRgba(accentColor, 1),
                     backgroundColor: lineGradPayed }
                 ];
@@ -686,24 +662,6 @@
     function reloadCurrentTab() { 
       loadTab(currentTab); 
     }
-
-    // ===== Initialization: set last-week filters, populate patient list, and load ROI tab =====
-    (function init() {
-      setFiltersToLastWeek();
-      // Load patients for that range, then load the default/current tab (roi)
-      loadPatientsList().finally(()=> {
-        // prefer to show ROI tab on load
-        currentTab = 'roi';
-        // ensure UI tab button is active
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-        const activeBtn = document.querySelector('.tab-btn[data-tab="roi"]');
-        if (activeBtn) activeBtn.classList.add('active-tab');
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-        document.getElementById('tab-roi').classList.remove('hidden');
-
-        loadTab('roi');
-      });
-    })();
 
   </script>
 </body>

@@ -211,7 +211,7 @@
   const API_PATCH_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
   const API_OPEN_CLIENT = (id) => `/data/${encodeURIComponent(id)}`;
   const TRACK_ENDPOINT = '/api/binder/track_time';
-
+  const __GAIA_LIST = {{ clients | tojson | safe }};
 
   const APP_STATE = {
     domain: null,
@@ -250,6 +250,21 @@
       }
     }
 
+    function normalize_id_list(value) {
+      if (!value) return [];
+
+      if (Array.isArray(value)) return value;
+
+      if (typeof value === "string") {
+        return value
+          .split(",")
+          .map(v => v.trim())
+          .filter(Boolean);
+      }
+
+      return [];
+    }
+
     function el(id) { return document.getElementById(id); }
 
     function show_toast(message, type = 'info') {
@@ -271,7 +286,7 @@
       return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
-    return { safe_fetch, el, show_toast, escape_html };
+    return { normalize_id_list, safe_fetch, el, show_toast, escape_html };
   })();
 
   /* ----------------------
@@ -324,6 +339,19 @@
       });
     }
 
+    async function load_clients_by_ids(ids) {
+      if (!Array.isArray(ids) || ids.length === 0) return [];
+
+      const requests = ids.map(id =>
+        api_mod.get_client(id-1)
+          .then(res => res?.status === 'success' ? res.data : null)
+          .catch(() => null)
+      );
+
+      const results = await Promise.all(requests);
+      return results.filter(Boolean);
+    }
+
     async function track_time(payload) {
       // best-effort
       try {
@@ -351,7 +379,7 @@
       }
     }
 
-    return { get_plan_status , search, get_client, patch_client, track_time , get_user_id , get_user , get_domain  };
+    return { load_clients_by_ids,get_plan_status , search, get_client, patch_client, track_time , get_user_id , get_user , get_domain  };
   })(utils);
 
   /* ----------------------
@@ -575,12 +603,16 @@
           u_mod.el('query_input').value = APP_STATE.client_id;
           if (resp && resp.status === 'success') ui_mod.render_client_detail(resp.data);
         }
-        if (window.__GAIA_LIST && window.__GAIA_LIST.metric) {
-          const res = await api_mod.search('', { metric: window.__GAIA_LIST.metric });
-          if (res && res.status === 'success') {
-            last_results = res.data || [];
-            ui_mod.render_list(last_results);
+        if (__GAIA_LIST) {
+          const ids = utils.normalize_id_list(__GAIA_LIST);
+          console.log(ids, __GAIA_LIST);
+
+          if (ids.length > 0) {
+            const clients = await api.load_clients_by_ids(ids);
+            APP_STATE.last_results = clients;
+            ui_mod.render_list(clients);
           }
+
         }
       } catch (err) { console.debug('auto render error', err); }
     }

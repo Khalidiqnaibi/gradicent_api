@@ -36,7 +36,7 @@ class MatchedEntitiesMetric(IMetric):
 
     def compute(self, binder, **kwargs) -> Dict[str, Any]:
         domain = kwargs.get("domain", binder.domain)
-        entity_key = DOMAIN_ENTITY_MAP.get(domain, "patients")
+        entity_key = "clients"
 
         # Date range
         start = parse_date(kwargs.get("start_date") or kwargs.get("from") or kwargs.get("From"))
@@ -63,10 +63,10 @@ class MatchedEntitiesMetric(IMetric):
                 meta  = ev.get("meta") or {}
 
                 eid = (
-                    meta.get("entity_id")
-                    or meta.get("patient")
+                    meta.get("id")
                     or meta.get("client")
-                    or meta.get("id")
+                    or meta.get("patient")
+                    or meta.get("entity_id")
                 )
 
                 if not eid:

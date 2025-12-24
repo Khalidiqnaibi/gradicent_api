@@ -70,6 +70,7 @@ class FinanceMetric(IMetric):
 
         # Trends accumulator
         trends_map: Dict[str, Dict[str, float]] = {}
+        total_ids =[]
 
         # Single pass over analytics
         for date_str, day_data in analytics.items():
@@ -101,7 +102,9 @@ class FinanceMetric(IMetric):
                     client = patients[int(client_id)]
                 except (IndexError, ValueError, TypeError):
                     continue
-
+                
+                if client_id not in total_ids:
+                    total_ids.append(client_id)
                 interactions = client.get("interactions")
                 if not interactions:
                     continue
@@ -137,6 +140,7 @@ class FinanceMetric(IMetric):
         return {
             "total_revenue": round(total_revenue, 2),
             "total_unpaid": round(total_unpaid, 2),
+            "clients":total_ids,
             "avg_revenue_per_client": round(avg_revenue, 2),
             "trends": trends,
         }

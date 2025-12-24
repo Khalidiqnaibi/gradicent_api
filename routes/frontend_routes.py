@@ -212,6 +212,13 @@ def srch() -> Any:
     """srch wrapper."""
     return redirect(_render_protected_page("srch"))
 
+@frontend_blueprint.route("/search_stats" , methods = ["GET"])
+@require_login
+def search_stats():
+    ''' render clients on srch.html'''
+    session["clients"] = request.args.get("clients")
+    return redirect(_render_protected_page("search_stats"))
+
 @frontend_blueprint.route("/back", methods=["GET"])
 @require_login
 def back() -> Any:
@@ -246,6 +253,13 @@ def binder_medical() -> Any:
     if page == "back":
         session["page"] = "srch"
         return render_template(f"srch.html", client = session.get("client",1))
+    
+    if page == "search_stats":
+        clients = session["clients"]
+        session["page"] = "srch" 
+        return render_template(f"srch.html", clients = clients)
+
+
     return render_template(f"{page}.html")
 
 

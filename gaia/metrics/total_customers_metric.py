@@ -92,6 +92,7 @@ class TotalCustomersMetric(IMetric):
                 "total_customers": len(clients),
                 "returning_customers": 0,
                 "avg_visits_per_customer": 0.0,
+                "clients" : [],
                 "weekly": {
                     "labels": [],
                     "counts": [],
@@ -233,6 +234,7 @@ class TotalCustomersMetric(IMetric):
             "total_customers": total_customers,
             "returning_customers": returning_customers,
             "avg_visits_per_customer": avg_visits,
+            "clients" : list(total_ids),
             "weekly": {
                 "labels": labels,
                 "counts": counts,
