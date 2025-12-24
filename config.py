@@ -11,6 +11,8 @@ load_dotenv()
 
 ADMIN_SECRET = os.getenv("ADMIN_SECRET","bindersoftware.com")
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # EVENTS
 EVENTS={
     100:"logged in",
@@ -66,7 +68,7 @@ SESSION_LIFETIME_DAYS = int(os.getenv("SESSION_LIFETIME_DAYS","7"))
 USE_HTTPS = os.getenv("USE_HTTPS","False").lower() in ("true", "1", "t")
 
 # OAuth settings
-OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE",r"C:\Users\rasem\Desktop\Personal\BinderSoftware_api\client_secret1.json")
+OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE",os.path.join(BASE_DIR, "client_secret1.json"))
 OAUTH_GOOGLE_CLIENT_ID = os.getenv("OAUTH_GOOGLE_CLIENT_ID","107932074863-nlil9n5j9lmahqfb15cmn52u59evpse9.apps.googleusercontent.com")
 OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI","http://localhost:5000/api/auth/callback")
 OAUTH_SCOPES = [
@@ -79,7 +81,7 @@ ACCESS_TOKEN_TTL_SECONDS = int(os.getenv("ACCESS_TOKEN_TTL_SECONDS", "3600"))
 REFRESH_TOKEN_TTL_SECONDS = int(os.getenv("REFRESH_TOKEN_TTL_SECONDS", str(60*60*24*30)))
 
 # Firebase settings
-FIREBASE_CREDENTIALS_PATH = os.getenv("FIREBASE_CREDENTIALS_PATH",r"C:\Users\rasem\Desktop\Personal\BinderSoftware_api\key2.json")
+FIREBASE_CREDENTIALS_PATH = os.getenv("FIREBASE_CREDENTIALS_PATH",os.path.join(BASE_DIR, "key2.json"))
 FIREBASE_DATABASE_URL = os.getenv("FIREBASE_DATABASE_URL",'https://monydb-f2cdb-default-rtdb.europe-west1.firebasedatabase.app/')
 FIREBASE_STORAGE_BUCKET = os.getenv("FIREBASE_STORAGE_BUCKET",'monydb-f2cdb.appspot.com')
 
