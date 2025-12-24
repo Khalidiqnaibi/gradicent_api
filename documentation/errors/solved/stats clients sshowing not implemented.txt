@@ -1,1 +1,5 @@
 the button that sayss show patients doesn't connect to the right endpoint to show them
+
+
+##############################
+fixed: implemented gaias list and made it render

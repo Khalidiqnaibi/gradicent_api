@@ -211,7 +211,7 @@
   const API_PATCH_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
   const API_OPEN_CLIENT = (id) => `/data/${encodeURIComponent(id)}`;
   const TRACK_ENDPOINT = '/api/binder/track_time';
-  const __GAIA_LIST = {{ clients | tojson | safe }};
+  const __GAIA_LIST = {{ clients | default([]) | tojson }};
 
   const APP_STATE = {
     domain: null,
@@ -343,7 +343,7 @@
       if (!Array.isArray(ids) || ids.length === 0) return [];
 
       const requests = ids.map(id =>
-        api_mod.get_client(id-1)
+        api.get_client(id)
           .then(res => res?.status === 'success' ? res.data : null)
           .catch(() => null)
       );
@@ -526,7 +526,7 @@
           <div>
             <div style="font-weight:800; font-size:1.05rem;">${patient.name || '—'}</div>
             <div style="color:rgba(0,0,0,0.6); margin-top:6px;">
-              ID: ${parseInt(patient.id)+1 || '—'} • Age: ${patient.age || '—'}
+              ID: ${parseInt(patient.id) || '—'} • Age: ${patient.age || '—'}
             </div>
           </div>
           <div style="text-align:right;">
@@ -603,9 +603,8 @@
           u_mod.el('query_input').value = APP_STATE.client_id;
           if (resp && resp.status === 'success') ui_mod.render_client_detail(resp.data);
         }
-        if (__GAIA_LIST) {
+        if (__GAIA_LIST.length >0) {
           const ids = utils.normalize_id_list(__GAIA_LIST);
-          console.log(ids, __GAIA_LIST);
 
           if (ids.length > 0) {
             const clients = await api.load_clients_by_ids(ids);
