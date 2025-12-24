@@ -55,7 +55,7 @@ STRIPE_API_KEY = os.getenv("STRIPE_API_KEY","")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET","")
 
 # other settings
-BACKEND_URL= os.getenv("BACKEND_URL","http://localhost:5000")
+BACKEND_URL= os.getenv("BACKEND_URL","gradicent.pythonanywhere.com")
 FRONTEND_URL = os.getenv("FRONTEND_URL","http://localhost:3000")
 DATABASE_URL = os.getenv("DATABASE_URL","sqlite:///./test.db")
 LOG_LEVEL = os.getenv("LOG_LEVEL","DEBUG")
@@ -70,7 +70,7 @@ USE_HTTPS = os.getenv("USE_HTTPS","False").lower() in ("true", "1", "t")
 # OAuth settings
 OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE",os.path.join(BASE_DIR, "client_secret1.json"))
 OAUTH_GOOGLE_CLIENT_ID = os.getenv("OAUTH_GOOGLE_CLIENT_ID","107932074863-nlil9n5j9lmahqfb15cmn52u59evpse9.apps.googleusercontent.com")
-OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI","http://localhost:5000/api/auth/callback")
+OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI","http://gradicent.pythonanywhere.com/api/auth/callback")
 OAUTH_SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
