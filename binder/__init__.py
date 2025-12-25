@@ -2,7 +2,12 @@ from .adapters import (inmemory_adapter,firebase_crud_adapter)
 from . import binder_business,binder_medical
 from .interfaces import (binder, binder_mixins,storage_adapter,base_repository)
 from .models import models
-from .utils.normlize_user import normalize_user
+from .utils.normlize_user import (
+    normalize_user , 
+    normalize_legacy_file ,
+    normalize_client ,
+    normalize_sex,
+    normalize_interactions)
 from .adapters.firebase_crud_adapter import FirebaseCrudAdapter
 from binder.adapters.united_firebase_adapter import UnitedFirebaseAdapter
 from .binder_business import BinderBusiness
@@ -62,5 +67,6 @@ __all__ = [
     "BaseRepository","BaseRepository", "ClientRepository","EmployeeRepository",
     "InteractionRepository","ServiceRepository","ProductRepository", "UserRepository",
     "TransactionRepository","LegacyUser","AppointmentMixin","normalize_user" , "UnitedFirebaseAdapter"
-    "InteractionMixin","FirebaseFileStorageAdapter" , "PermissionCodeMixin"
+    "InteractionMixin","FirebaseFileStorageAdapter" , "PermissionCodeMixin","normalize_legacy_file" ,
+    "normalize_client" , "normalize_sex","normalize_interactions"
 ]
