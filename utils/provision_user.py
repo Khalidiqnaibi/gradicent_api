@@ -4,7 +4,7 @@ from logging import log
 import sys
 
 
-def _provision_user(adapter,legacy_adapter,file_service,domain:str, provider: str, provider_user: Dict[str, Any]) -> User:
+def _provision_user(adapter,legacy_adapter,file_adapter,domain:str, provider: str, provider_user: Dict[str, Any]) -> User:
     provider_id = str(provider_user.get("id"))
     user_id = f"{provider_id}"
 
@@ -22,7 +22,7 @@ def _provision_user(adapter,legacy_adapter,file_service,domain:str, provider: st
                 email=None,
         )
     
-    legacy = get_legacy_user(legacy_adapter,str(provider_user.get('id')))
+    legacy , legacy_files = get_legacy_user(legacy_adapter,file_adapter,str(provider_user.get('id')))
 
     if legacy:
         '''
@@ -30,14 +30,10 @@ def _provision_user(adapter,legacy_adapter,file_service,domain:str, provider: st
         and making a new account with the prev data
         but with the new format and path
         '''
-        files = new_user.metadata.pop("files")
-        if len(files) > 0:
-            file_service.upload(
-                file=file,
-                client_no=client_no,
-                folder=folder,
-                user_id=user_id,
-            )
+        if len(legacy_files) > 0:
+            for file in legacy_files:
+                file_adapter.migrate_legacy_file(file)
+
         new_user = normalize_user(legacy.to_dict())
         new_user.metadata["provider"] = provider
 
@@ -67,7 +63,7 @@ def _provision_user(adapter,legacy_adapter,file_service,domain:str, provider: st
     adapter.add_user(domain,user_id, new_user.to_dict())
     return new_user
 
-def get_legacy_user(adapter, file_adapter, user_id: str) -> Union[User, None]:
+def get_legacy_user(adapter, file_adapter, user_id: str):
     """
     Fetch a legacy user, normalize it, and attach normalized legacy files.
     
@@ -79,7 +75,7 @@ def get_legacy_user(adapter, file_adapter, user_id: str) -> Union[User, None]:
     Returns:
     - normalized User object with clients
     """
-    print(user_id, file=sys.stderr, flush=True)
+    # print(user_id, file=sys.stderr, flush=True)
 
     # Fetch raw user data
     raw = adapter.get_user(user_id)
@@ -97,25 +93,24 @@ def get_legacy_user(adapter, file_adapter, user_id: str) -> Union[User, None]:
         )
     
     legacy_files = file_adapter.list_legacy_files(user_id=user_id)
-    normalized.metadata["files"] = []
+    files = []
     if legacy_files:
-        
         for lf in legacy_files:
             patient_no = lf.get("patient_no")
-            if patient_no >= len(normalized.clients):
+            if int(patient_no) >= len(normalized.clients):
                 continue  
 
-            client = normalized.clients[patient_no]
+            client = normalized.clients[int(patient_no)]
             if client is None:
                 continue
 
             # normalize file dict
             normalized_file = normalize_legacy_file(lf, client_no=patient_no)
+            files.append(normalized_file)
             
-            normalized.metadata["files"].append(normalized_file)
         
 
-    return normalized
+    return normalized , files
 
 
 if __name__ ==  "__main__":

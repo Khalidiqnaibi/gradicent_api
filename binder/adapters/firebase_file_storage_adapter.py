@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional ,Any
 from firebase_admin import firestore, storage, get_app
 from binder.interfaces.file_storage_adapter import FileStorageAdapter
 
@@ -80,3 +80,42 @@ class FirebaseFileStorageAdapter(FileStorageAdapter):
             return True
 
         return False
+    
+    # Legacy files getter:
+    def list_legacy_files(self, *, user_id: str) -> List[Dict[str, Any]]:
+        """
+        Fetch legacy file documents for a user.
+        Legacy schema:
+        - gid        -> user_id
+        - patient_no -> client index (string)
+        """
+
+        query = (
+            self.db.collection("files")
+            .where("gid", "==", user_id)
+        )
+
+        results: List[Dict[str, Any]] = []
+        for doc in query.stream():
+            data = doc.to_dict()
+            results.append(data)
+
+        return results
+    
+    def migrate_legacy_file(self, file) -> Dict:
+        
+        file_data = {
+            "name": file["name"],
+            "data": file["data"],
+            "file_type": file["file_type"],
+            "upload_date": file["upload_date"],
+            "deleted": False,
+            "deleted_at": None,
+            "user_id": file.get("user_id", ""),
+            "client_no": file["client_no"],
+            "folder": file.get("folder", "misc"),
+            "metadata":file.get("metadata", {}),
+        }
+
+        self.db.collection("gradicent files").add(file_data)
+        return file_data

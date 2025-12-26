@@ -8,7 +8,14 @@ Initializes Flask, Firebase, and registers domain routes.
 from flask import Flask
 from firebase_admin import credentials, initialize_app
 from services.subscription_service import SubscriptionService
-from binder import FirebaseCrudAdapter,BinderMedical, BinderBusiness , UnitedFirebaseAdapter
+from services.file_service import FileService
+from binder import (
+    FirebaseCrudAdapter,
+    BinderMedical, 
+    BinderBusiness, 
+    UnitedFirebaseAdapter,
+    FirebaseFileStorageAdapter
+)
 
 from auth.auth_service import AuthService  # using the new AuthService
 from services.user_service import UserService
@@ -20,6 +27,7 @@ from routes.auth_routes import auth_blueprint
 from routes.frontend_routes import frontend_blueprint
 from routes.file_routes import file_routes
 from config import DefaultConfig
+from services.binder_service import BinderService, BinderServiceError
 
 def create_app(config_name: str = 'default') -> Flask:
     
@@ -52,11 +60,15 @@ def create_app(config_name: str = 'default') -> Flask:
         "scopes": app.config.get("OAUTH_SCOPES", ["openid", "email", "profile"]),
     }
 
+    file_adapter = FirebaseFileStorageAdapter()
+    file_service = FileService(file_adapter)
+    
     auth = AuthService(
         adapter=united_firebase_adapter,
         legacy_adapter=legacy_firebase_adapter_medical,
         google_config=google_config,
         jwt_secret=jwt_secret,
+        file_adapter=file_adapter,
         # optional: access_token_ttl=3600, refresh_token_ttl=2592000
     )
 
@@ -65,6 +77,7 @@ def create_app(config_name: str = 'default') -> Flask:
         "business": auth,
     }
 
+
     # services/adapters
     payment_provider = StripePaymentProvider(app.config["STRIPE_API_KEY"])
     sub = SubscriptionService(united_firebase_adapter, payment_provider)
@@ -72,6 +85,10 @@ def create_app(config_name: str = 'default') -> Flask:
         "medical": sub,
         "business": sub,
     }
+
+    binder_services = {}
+    for i in binders.keys():
+        binder_services[i] = BinderService(binders[i]) 
 
     # register blueprints and pass factories via app extensions
     app.register_blueprint(gaia_blueprint, url_prefix=app.config["GAIA_ROUTE_PREFIX"])
@@ -88,7 +105,8 @@ def create_app(config_name: str = 'default') -> Flask:
         "auth_services": auth_services,
         "subscription_services": subscription_services,
         "payment_provider": payment_provider,
-        "binders": binders,
+        "binder_services": binder_services,
+        "file_service" : file_service
     })
     return app 
 

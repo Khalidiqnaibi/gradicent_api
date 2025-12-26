@@ -49,7 +49,7 @@ def iso(x) -> str:
     return str(x)
 
 
-def normalize_sex(x: str | None) -> str | None:
+def normalize_sex(x: str ) -> str:
     if not x:
         return None
     x = x.lower().strip()
