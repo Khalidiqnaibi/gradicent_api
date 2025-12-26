@@ -1,12 +1,11 @@
-from flask import Blueprint, request, jsonify, session
-
-from services.file_service import FileService
-from binder import FirebaseFileStorageAdapter
+from flask import Blueprint, request, jsonify, session , current_app
 
 file_routes = Blueprint("file_routes", __name__)
 
-file_service = FileService(FirebaseFileStorageAdapter())
-
+def get_file_service():
+    services = current_app.extensions.get("services", {})
+    file_service = services.get("file_service")
+    return file_service
 
 @file_routes.route("/upload_file", methods=["POST"])
 def upload_file():
@@ -14,6 +13,8 @@ def upload_file():
     file = request.files.get("file")
     client_no = request.form.get("client_no")
     folder = request.form.get("folder")
+
+    file_service = get_file_service()
 
     if not all([user_id, file, client_no, folder]):
         return jsonify({"status": "error", "message": "Invalid request"}), 400
@@ -33,6 +34,7 @@ def get_files():
     user_id = session.get("user_id")
     client_no = request.args.get("client_no")
     folder = request.args.get("folder")
+    file_service = get_file_service()
 
     files = file_service.list_files(
         client_no=client_no,
@@ -49,6 +51,7 @@ def delete_file():
     if not file_url:
         return jsonify({"status": "error", "message": "url required"}), 400
 
+    file_service = get_file_service()
     deleted = file_service.delete(file_url=file_url)
 
     if not deleted:

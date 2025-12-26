@@ -47,13 +47,15 @@ def _get_domain_and_service(payload: Dict[str, Any]) -> BinderService:
     Raises:
         BadRequest: if domain is missing or binder not configured.
     """
+    services = current_app.extensions.get("services", {})
+    binder_services = services.get("binder_services")
+
     domain = payload.get("domain", DEFAULT_DOMAIN)
-    binders = current_app.config.get("BINDERS", {})
-    binder_impl = binders.get(domain)
-    if not binder_impl:
+    binder_service = binder_services.get(domain)
+    if not binder_service:
         current_app.logger.error("Binder not configured for domain: %s", domain)
         raise BadRequest(f"Unknown domain: {domain}")
-    return BinderService(binder_impl)
+    return binder_service
 
 # Error handlers for the blueprint
 @binder_blueprint.errorhandler(BinderServiceError)
