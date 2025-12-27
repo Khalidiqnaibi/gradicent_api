@@ -23,15 +23,29 @@ EVENTS={
     201:"client added" ,
     202:"interaction added",
     203:"file uploaded",
+    204:"product added",
+    205:"service added",
+    206:"employee added",
 
     300:"search done",
     301:"analytics shown",
+    303:"gde used",
 
     400:"user updated",
     401:"client updated",
     402:"interaction updated",
+    403:"file updated",
+    404:"product updated",
+    405:"service updated",
+    406:"employee updated",
     
     500:"fooled",
+
+    600:"first payment done",
+    601:"payment done",
+    602:"product purchased",
+    603:"service purchased",
+    604:"employee paid"
 }
 
 # prices
