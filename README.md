@@ -1,79 +1,106 @@
-#  **Gradicent API**
+# Gradicent Developer Handbook
 
-> **Data-Driven. Not Data-Distraction.**
-> Core backend API powering Binder and Gaia — a unified platform for making any business data-driven through structured data, analytics, and automation.
-
----
-
-##  **Overview**
-
-The **Gradicent API** is the unified backend for all Gradicent LLC software products.
-It provides two foundational layers:
-
-1. **Binder Engine** → Handles business logic, entities, and CRUD operations (users, clients, visits, employees, etc.)
-2. **Gaia Engine** → Handles analytics, dashboards, and metric computation for ROI, finance, productivity, and any future insight.
-
-These layers are designed using **SOLID principles** and **Gradicent’s company code standards** to ensure maximum clarity, reusability, and scalability.
+**Gradicent API** – *Data-Driven. Not Data-Distraction.*
+Core backend API powering Binder and Gaia — a unified platform for making businesses data-driven through structured data, analytics, and automation.
 
 ---
 
-##  **Architecture**
+## 1. Overview
+
+Gradicent API is the **unified backend** for all Gradicent LLC software products. It provides three foundational layers:
+
+1. **Binder Engine** – Handles business logic, entities, and CRUD operations (users, clients, visits, employees, etc.).
+2. **Gaia Engine** – Handles analytics, dashboards, and metric computation for ROI, finance, productivity, and other insights.
+3. **GDE (Gradicent Decision Engine)** – Generates **data-driven plans** from Binder and Gaia data for actionable insights.
+
+The system is designed following **SOLID principles** and Gradicent’s **company code standards** to ensure clarity, scalability, and maintainability.
+
+---
+
+## 2. Architecture
 
 ```
 gradicent-api/
 │
 ├── app.py                      # Flask app entry point
-│
+├── config.py                   # DefaultConfig class with env settings
 ├── binder/                     # Business logic and data management
 │   ├── binder_business.py      # Business domain binder
 │   ├── binder_medical.py       # Medical domain binder
-│   ├── adapters/               # Data storage adapters
+│   ├── adapters/               # Storage adapters
 │   │   ├── firebase_crud_adapter.py
+│   │   ├── firebase_file_storage_adapter.py
 │   │   └── inmemory_adapter.py
-│   ├── interfaces/             # Abstract interfaces and contracts
+│   ├── interfaces/             # Abstract interfaces
 │   │   ├── binder.py
 │   │   ├── binder_mixins.py
 │   │   └── storage_adapter.py
-│   ├── models/                 # Uniform data schemas
-│   └── models.py
+│   ├── models/                 # Data models
+│   │   ├── models.py
+│   │   └── legacy_user.py
+│   └── repositories/           # CRUD repositories
 │
-├── gaia/                       # Global analytics engine
-│   ├── engine.py               # Facade for metric computation
-│   ├── registry.py             # Plugin registry for metrics
-│   ├── utils.py                # Time parsing, helpers
+├── gaia/                       # Analytics engine
+│   ├── engine.py               # Metric computation facade
+│   ├── registry.py             # Metric plugin registry
+│   ├── utils.py                # Helpers and time parsing
 │   ├── interfaces/
-│   │   └── base_metric.py      # Abstract metric interface
-│   ├── metrics/                # Pluggable metric modules
+│   │   └── base_metric.py      # Metric interface
+│   ├── metrics/                # Metric implementations
 │   │   ├── conversion_rate_metric.py
 │   │   ├── finance_metric.py
-│   │   └── roi_metric.py
+│   │   ├── roi_metric.py
+│   │   └── productivity_metric.py
 │   └── test/
 │       └── api_test.py
 │
-└── routes/                     # Flask routes (controllers)
-    ├── binder_routes.py
-    ├── gaia_routes.py
-    └── __init__.py
+├── payments/                   # Payment providers
+│   ├── stripe_provider.py
+│   └── payment_provider.py
+│
+├── routes/                     # Flask blueprints
+│   ├── auth_routes.py
+│   ├── binder_routes.py
+│   ├── gaia_routes.py
+│   ├── payments_routes.py
+│   ├── frontend_routes.py
+│   └── file_routes.py
+│
+├── services/                   # Business services
+│   ├── subscription_service.py
+│   ├── user_service.py
+│   └── binder_service.py
+│
+├── utils/                      # Utility functions
+│   ├── log_events.py
+│   ├── provision_user.py
+│   └── get_plan_status.py
+│
+├── decorators/                 # Authorization decorators
+│   ├── req_login.py
+│   └── req_admin.py
+│
+├── static/                     # Frontend assets (images, CSS, JS)
+└── templates/                  # HTML templates
 ```
 
 ---
 
-##  **Core Components**
+## 3. Core Components
 
-### 1. Binder Engine
+### Binder Engine
 
-**Purpose:** Manage entities (users, clients, visits, products, services) through consistent CRUD interfaces.
+* **Purpose:** Manage entities (users, clients, visits, products, services) via uniform CRUD interfaces.
+* **Principles:**
 
-**Principles:**
-
-* Every Binder domain (e.g., `BinderBusiness`, `BinderMedical`) extends from the same abstract interfaces.
-* Each uses a `StorageAdapter` (Firebase, SQL, or in-memory) for persistence.
-* Uniform data models ensure Gaia can analyze any domain seamlessly.
+  * Every Binder domain (e.g., `BinderBusiness`, `BinderMedical`) implements the same abstract interfaces.
+  * Uses a `StorageAdapter` (Firebase, SQL, or in-memory) for persistence.
+  * Uniform data models ensure compatibility with Gaia analytics.
 
 **Example:**
 
 ```python
-from binder import FirebaseCrudAdapter,BinderBusiness
+from binder import FirebaseCrudAdapter, BinderBusiness
 
 adapter = FirebaseCrudAdapter()
 binder = BinderBusiness(adapter)
@@ -85,31 +112,19 @@ binder.create_transaction(client["id"], {"amount": 200.0, "status": "paid"})
 
 ---
 
-### 2. Gaia Engine
+### Gaia Engine
 
-**Purpose:** Perform any kind of data analysis or metric computation with a plugin-based system.
+* **Purpose:** Perform analytics and metric computation using a plugin-based system.
+* **Structure:**
 
-**Structure:**
-
-* `engine.py` → Facade that executes metrics by name.
-* `registry.py` → Keeps track of all metric plugins.
-* `metrics/` → Individual metric definitions (e.g., ROI, Finance, Conversion Rate).
-* `base_metric.py` → Defines the `IMetric` interface for all analytics modules.
-
-**Example:**
-
-```python
-from gaia import GaiaEngine
-
-engine = GaiaEngine()
-results = engine.compute(binder, "roi", From="2025-01-01", To="2025-02-01")
-print(results)
-```
+  * `engine.py` → Executes metrics by name
+  * `registry.py` → Maintains all metric plugins
+  * `metrics/` → Metric implementations (ROI, Finance, Conversion Rate, Productivity)
+  * `base_metric.py` → Defines the `IMetric` interface
 
 **Add a new metric:**
 
 ```python
-# gaia/metrics/customer_growth_metric.py
 from gaia.interfaces.base_metric import IMetric
 from gaia.registry import MetricRegistry
 
@@ -125,7 +140,7 @@ class CustomerGrowthMetric(IMetric):
 MetricRegistry.register(CustomerGrowthMetric)
 ```
 
-No engine changes required - instantly available at:
+**Example API call:**
 
 ```
 GET /api/gaia/compute?metric=customer_growth&domain=business&user_id=u1
@@ -133,24 +148,40 @@ GET /api/gaia/compute?metric=customer_growth&domain=business&user_id=u1
 
 ---
 
-##  **API Overview**
+### Adapters
 
-###  Binder Routes (`/api/binder`)
+Abstract how data is stored or retrieved. Implement the `StorageAdapter` interface to add a new backend.
 
-| Route            | Method | Description                                  |
-| ---------------- | ------ | -------------------------------------------- |
-| `/create_user`   | POST   | Create a user (doctor, business owner, etc.) |
-| `/add_client`    | POST   | Add a client or patient                      |
-| `/update_client` | PATCH  | Update existing client data                  |
+| Adapter             | Description                    |
+| ------------------- | ------------------------------ |
+| FirebaseCrudAdapter | Firebase Realtime Database     |
+| InMemoryAdapter     | Local memory storage (testing) |
 
 ---
 
-###  Gaia Routes (`/api/gaia`)
+### Payments
 
-| Route      | Method | Description                               |
-| ---------- | ------ | ----------------------------------------- |
-| `/metrics` | GET    | List all available metric plugins         |
-| `/compute` | GET    | Compute any registered metric dynamically |
+* Supports multiple providers: Stripe, Paddle, PayPal
+* Implement `IPaymentProvider` to add a new provider
+
+---
+
+## 4. API Overview
+
+### Binder Routes (`/api/binder`)
+
+| Route            | Method | Description                                |
+| ---------------- | ------ | ------------------------------------------ |
+| `/create_user`   | POST   | Create a new user (doctor, business owner) |
+| `/add_client`    | POST   | Add a new client or patient                |
+| `/update_client` | PATCH  | Update client or patient data              |
+
+### Gaia Routes (`/api/gaia`)
+
+| Route      | Method | Description                             |
+| ---------- | ------ | --------------------------------------- |
+| `/metrics` | GET    | List all available metric plugins       |
+| `/compute` | GET    | Compute a registered metric dynamically |
 
 **Example:**
 
@@ -174,53 +205,24 @@ GET /api/gaia/compute?metric=finance&domain=medical&user_id=u1
 
 ---
 
-##  **Adapters**
+## 5. Developer Setup
 
-Adapters abstract how data is stored or retrieved.
-Any backend (Firebase, SQL, local memory) can be used by implementing the `StorageAdapter` interface.
-
-| Adapter               | Description                            |
-| --------------------- | -------------------------------------- |
-| `FirebaseCrudAdapter` | Uses Firebase Realtime Database        |
-| `InMemoryAdapter`     | Local testing adapter (no external DB) |
-
----
-
-##  **Design Principles**
-
-| Principle                     | Applied Through                                                |
-| ----------------------------- | -------------------------------------------------------------- |
-| **S — Single Responsibility** | Each class has one purpose (metric, adapter, binder, route).   |
-| **O — Open/Closed**           | Add metrics or domains without touching core logic.            |
-| **L — Liskov Substitution**   | Any Binder or Adapter can replace another seamlessly.          |
-| **I — Interface Segregation** | Small, focused interfaces (`ICrudService`, `IMetric`).         |
-| **D — Dependency Inversion**  | Business logic depends on abstractions, not concrete adapters. |
-
----
-
-##  **Developer Setup**
-
-### 1. Install dependencies
+1. Clone repository
+2. Create virtual environment (Python 3.10)
+3. Install dependencies:
 
 ```bash
-pip install flask firebase-admin pytest black isort flake8
+pip install -r requirements.txt
 ```
 
-### 2. Firebase setup
-
-Create a service account key and place it at the root:
-
-```
-serviceAccountKey.json
-```
-
-### 3. Run the API
+4. Set `.env` with dev credentials (Firebase, OAuth, Stripe)
+5. Run locally:
 
 ```bash
 python app.py
 ```
 
-Access the API at:
+Access API at:
 
 ```
 http://localhost:5000/api/
@@ -228,49 +230,76 @@ http://localhost:5000/api/
 
 ---
 
-##  **Testing**
+## 6. Testing
 
-Each module has its own test directory (e.g., `gaia/test/api_test.py`).
-
-Example:
+* Tests located in `tests/` and `gaia/test/`
+* Run all tests:
 
 ```bash
 pytest -v
 ```
 
-**Test naming convention:**
-
-```
-test_<function_or_class_name>_returns_expected_result()
-```
+* Follow **test naming conventions**: `test_<function_or_class_name>_returns_expected_result()`
 
 ---
 
-##  **Extending the System**
+## 7. Extending the System
 
-| Extension                           | How to Add                                                                   |
-| ----------------------------------- | ---------------------------------------------------------------------------- |
-| **New Domain (e.g., BinderRetail)** | Create `binder_retail.py` implementing the same interfaces.                  |
-| **New Storage Adapter**             | Add file under `binder/adapters/` and implement `StorageAdapter`.            |
-| **New Metric**                      | Add file under `gaia/metrics/` and register via `MetricRegistry.register()`. |
-| **New Route**                       | Create a file in `/routes/`, following company standards.                    |
+| Extension               | How to Add                                                              |
+| ----------------------- | ----------------------------------------------------------------------- |
+| **New Binder Domain**   | Create a new file implementing existing interfaces                      |
+| **New Storage Adapter** | Implement `StorageAdapter` in `binder/adapters/`                        |
+| **New Metric**          | Implement `IMetric` in `gaia/metrics/` and register in `MetricRegistry` |
+| **New Route**           | Create a new blueprint in `routes/` following company code standards    |
 
 ---
 
-##  **About Gradicent LLC**
+## 8. Onboarding
 
-**Gradicent LLC** helps organizations become **data-driven, not data-distracted**.
-Our goal is to empower teams to make fast, informed decisions through intelligent software systems like **Binder** and **Gaia**.
+1. Manager provides task list for first week
+2. Read **this documentation fully** before touching code
+3. Setup environment and credentials
+4. Pair with a mentor for first 2–3 tasks
+5. Follow code standards provided in onboarding package
+
+---
+
+## 9. Known Issues
+
+* All known errors and troubleshooting guides are in:
+
+```
+documentation/errors/not yet/1 → 5
+```
+
+* Folder numbering = priority (5 = highest)
+
+---
+
+## 10. Design Principles
+
+| Principle                 | Applied Through                                               |
+| ------------------------- | ------------------------------------------------------------- |
+| S – Single Responsibility | Each class has one purpose (metric, adapter, binder, route)   |
+| O – Open/Closed           | Add metrics or domains without touching core logic            |
+| L – Liskov Substitution   | Any Binder or Adapter can replace another seamlessly          |
+| I – Interface Segregation | Small, focused interfaces (`ICrudService`, `IMetric`)         |
+| D – Dependency Inversion  | Business logic depends on abstractions, not concrete adapters |
+
+---
+
+## 11. About Gradicent LLC
+
+Gradicent LLC helps organizations **be data-driven, not data-distracted**, empowering teams to make fast, informed decisions through intelligent software systems like **Binder** and **Gaia**.
 
 **Motto:**
-
-> “Be Data Driven. Not Data Distracted.”
+*“Be Data Driven. Not Data Distracted.”*
 
 **Website:** [gradicent.com](https://gradicent.com)
 
 ---
 
-## **License**
+## 12. License
 
 © 2025 Gradicent LLC — All rights reserved.
 Internal company software. Not for public distribution.
