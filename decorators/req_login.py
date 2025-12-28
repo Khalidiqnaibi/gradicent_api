@@ -6,6 +6,7 @@ Decorator to require login for Flask routes.
 from functools import wraps
 from flask import request, current_app, jsonify, session , redirect
 from auth.auth_service import AuthService
+import sys
 
 def require_login(fn):
     @wraps(fn)
@@ -13,8 +14,11 @@ def require_login(fn):
         domain = session.get("domain", session.get("binder", "business"))
         if len(args)>0 and args[0] in ["business","medical"] :
             domain = args[0]
+            session["domain"] = domain
         elif "domain" in kwargs:
             domain = kwargs["domain"]
+            session["domain"] = domain
+        
 
         if session.get("plan") == "sec":
             user_id = session.get("user_id")

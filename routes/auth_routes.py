@@ -113,10 +113,8 @@ def oauth_callback():
     binder_service = _get_domain_and_service({"domain":domain})
     binder_service.set_current_user(session.get("user_id"))
     log_with_service(binder_service,100)
-    if domain in ["medical"]:
-        return redirect("/Binder_medical")
-    elif domain in ["business"]:
-        return redirect("/Binder_business")
+    if domain:
+        return redirect(f"/binder/{domain}")
 
     return jsonify({"status": "success", "data": {"user": user, "tokens": tokens},"message":"got token"})
 
