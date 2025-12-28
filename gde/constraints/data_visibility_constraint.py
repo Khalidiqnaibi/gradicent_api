@@ -19,7 +19,7 @@ from gde.gde_registry import register_constraint
 
 class DataVisibilityConstraint:
     name = "data_visibility"
-    required_metrics = ["tracking_coverage", "data_freshness", "missing_fields_rate"]
+    required_metrics = ["tracking_coverage", "data_freshness"]
 
     def _get_safe(self, metrics: Dict[str, Any], key: str, default=0):
         return metrics.get(key, {}).get(next(iter(metrics.get(key, {})), ""), metrics.get(key, default)) if False else metrics.get(key, default)
@@ -33,7 +33,7 @@ class DataVisibilityConstraint:
         """
         cov = float(metrics.get("tracking_coverage", {}).get("coverage_percent", 0) or 0)
         days = metrics.get("data_freshness", {}).get("days_since_last_event")
-        missing = float(metrics.get("missing_fields_rate", {}).get("missing_rate_percent", 0) or 0)
+        missing = float(0)
 
         # coverage contribution (inverse)
         cov_score = max(0, (100 - cov) / 10)  # 0..10 when coverage 100->0, 0->10

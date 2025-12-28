@@ -262,6 +262,29 @@ def binder_medical() -> Any:
 
     return render_template(f"{page}.html")
 
+@frontend_blueprint.route("/Binder_business", methods=["GET"])
+@require_login
+def binder_business() -> Any:
+    """
+    Entry point for business binder (replicates previous behavior).
+    The heavy lifting (checking settings, trial, and rendering correct template)
+    remains in fetch_user_data (keeps separation of concerns).
+    """
+    session["binder"] = "business"
+    page = session.get("page","home")
+    if page == "data":
+        return render_template(f"{page}.html", client = session.get("client",1))
+    if page == "back":
+        session["page"] = "srch"
+        return render_template(f"srch.html", client = session.get("client",1))
+    
+    if page == "search_stats":
+        clients = session["clients"]
+        session["page"] = "srch" 
+        return render_template(f"srch.html", clients = clients)
+
+
+    return render_template(f"{page}.html")
 
 @frontend_blueprint.route("/Binder_labratory", methods=["GET"])
 @require_login
