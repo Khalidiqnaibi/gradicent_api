@@ -133,6 +133,7 @@ def sign_out():
     try:
         auth_service.sign_out(domain,user_id)
         session.clear()
+        session["domain"] = domain
     except Exception:
         # non-fatal: continue to clear session
         pass

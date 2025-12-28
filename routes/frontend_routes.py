@@ -99,7 +99,13 @@ def med_sub_ar() -> str:
 @frontend_blueprint.route("/login", methods=["GET"])
 def login_page() -> str:
     """Render login page."""
-    return render_template("logme.html")
+    domain = session.get("domain",session.get("binder","business"))
+    res = "logme.html"
+    if domain in ["medical"]:
+        res = "logme.html"
+    elif domain in ["business"]:
+        res = "logbu.html"
+    return render_template(res)
 
 @frontend_blueprint.route("/logme", methods=["GET"])
 def logme_page() -> str:
