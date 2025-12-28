@@ -11,6 +11,10 @@ def require_login(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         domain = session.get("domain", session.get("binder", "business"))
+        if args[0] in ["business","medical"] :
+            domain = args[0]
+        elif "domain" in kwargs:
+            domain = kwargs["domain"]
 
         if session.get("plan") == "sec":
             user_id = session.get("user_id")

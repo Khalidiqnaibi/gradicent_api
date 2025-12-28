@@ -241,36 +241,18 @@ def lab_public() -> str:
 @frontend_blueprint.route("/Binder_medical", methods=["GET"])
 @require_login
 def binder_medical() -> Any:
-    """
-    Entry point for medical binder (replicates previous behavior).
-    The heavy lifting (checking settings, trial, and rendering correct template)
-    remains in fetch_user_data (keeps separation of concerns).
-    """
-    session["binder"] = "medical"
-    page = session.get("page","home")
-    if page == "data":
-        return render_template(f"{page}.html", client = session.get("client",1))
-    if page == "back":
-        session["page"] = "srch"
-        return render_template(f"srch.html", client = session.get("client",1))
-    
-    if page == "search_stats":
-        clients = session["clients"]
-        session["page"] = "srch" 
-        return render_template(f"srch.html", clients = clients)
+    return redirect("/binder/medical")
 
-
-    return render_template(f"{page}.html")
-
-@frontend_blueprint.route("/Binder_business", methods=["GET"])
+@frontend_blueprint.route("/binder/<domain>", methods=["GET"])
 @require_login
-def binder_business() -> Any:
+def binder(domain) -> Any:
     """
-    Entry point for business binder (replicates previous behavior).
+    Entry point for binder (replicates previous behavior).
     The heavy lifting (checking settings, trial, and rendering correct template)
     remains in fetch_user_data (keeps separation of concerns).
     """
-    session["binder"] = "business"
+    session["domain"] = domain
+    session["binder"] = domain
     page = session.get("page","home")
     if page == "data":
         return render_template(f"{page}.html", client = session.get("client",1))

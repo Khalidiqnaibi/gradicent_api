@@ -132,6 +132,7 @@ def sign_out():
     # revoke server-side refresh token
     try:
         auth_service.sign_out(domain,user_id)
+        session.clear()
     except Exception:
         # non-fatal: continue to clear session
         pass
