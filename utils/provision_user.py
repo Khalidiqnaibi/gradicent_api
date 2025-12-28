@@ -22,7 +22,9 @@ def _provision_user(adapter,legacy_adapter,file_adapter,domain:str, provider: st
                 email=None,
         )
     
-    legacy , legacy_files = get_legacy_user(legacy_adapter,file_adapter,str(provider_user.get('id')))
+    legacy = None
+    if domain == "mediacl":
+        legacy , legacy_files = get_legacy_user(legacy_adapter,file_adapter,str(provider_user.get('id')))
 
     if legacy:
         '''
@@ -94,7 +96,7 @@ def get_legacy_user(adapter, file_adapter, user_id: str):
     
     legacy_files = file_adapter.list_legacy_files(user_id=user_id)
     files = []
-    if legacy_files:
+    if legacy_files :
         for lf in legacy_files:
             patient_no = lf.get("patient_no")
             if int(patient_no) >= len(normalized.clients):
