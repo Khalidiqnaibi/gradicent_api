@@ -150,13 +150,10 @@ def _render_protected_page(page_name: str) -> Any:
     the real template after preparing user_data. Kept small per standards.
     """
     session["page"] = page_name
-    binder = session["binder"]
-    if binder in ["medical"]:
-        res = "/Binder_medical"
-    elif binder in ["business"]:
-        res = "/Binder_business"
+    domain = session["domain"]
+    
         
-    return res
+    return f"/binder/{domain}"
 
 @frontend_blueprint.route("/acc", methods=["GET"])
 @require_login
@@ -274,12 +271,11 @@ def binder(domain) -> Any:
 
     return render_template(f"{page}.html")
 
-@frontend_blueprint.route("/Binder_labratory", methods=["GET"])
+@frontend_blueprint.route("/binder_labratory", methods=["GET"])
 @require_login
 def binder_laboratory() -> Any:
     """Entry point for lab binder type."""
-    session["binder"] = "lab"
-    return redirect("/fetchUserData")
+    return redirect("/binder/lab")
 
 
 def register_frontend(app) -> None:
