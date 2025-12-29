@@ -1,0 +1,70 @@
+
+    :root{
+      --bg-main: #D9C4B0;
+      --accent:  #ce7a35;
+      --secondary:#78cee6;
+      --w: white;
+      --text: #2b2b2b;
+    }
+
+    html {
+      background: linear-gradient(180deg, var(--bg-main) 0%, #E6D6C0 60%);
+      color: var(--text);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* Hamburger icon */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display: block;
+      width: 26px;
+      height: 3px;
+      background-color: var(--accent);
+      position: relative;
+      border-radius: 6px;
+      transition: 0.28s ease;
+    }
+
+    .menu__btn span::before,
+    .menu__btn span::after{
+      content:"";
+      position:absolute;
+      left:0;
+    }
+
+    .menu__btn span::before{ top:-8px;}
+    .menu__btn span::after{ top: 8px;}
+
+    /* Open state */
+    .menu-active .menu__btn span{
+      transform:rotate(45deg);
+      background:var(--accent);
+    }
+
+    .menu-active .menu__btn span::before{
+      transform:rotate(90deg);
+      top:0;
+    }
+
+    .menu-active .menu__btn span::after{
+      opacity:0;
+    }
+
+    /* Menu sliding */
+    .menu__box{
+      transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .2s;
+      transform:translateX(-110%);
+      opacity:0;
+    }
+
+    .menu-active .menu__box{
+      transform:translateX(0);
+      opacity:1;
+    }
+
+    .decorative-card{
+      background: linear-gradient(135deg, rgba(255,255,255,0.72), rgba(255,255,255,0.62));
+      border:1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 8px 28px rgba(18,18,18,0.08);
+    }

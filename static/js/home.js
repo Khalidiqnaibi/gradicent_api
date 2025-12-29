@@ -1,0 +1,219 @@
+
+const API_TIMEOUT_MS = 10_000;
+const POLL_TRACK_INTERVAL_MS = 60_000;
+
+let GLOBAL_USER_ID = null;
+let GLOBAL_DOMAIN = null;
+
+document.addEventListener("DOMContentLoaded", async () => {
+  startUsageTracker("/api/binder/track_time");
+
+  try {
+    menu_init()
+    GLOBAL_USER_ID = await get_user_id();       // ex: 1015974463...
+    GLOBAL_DOMAIN  = await get_domain();        // ex: "medical"
+    let res = await get_plan_status();
+    GLOBAL_PLAN = res.plan;
+
+  } catch (err) {
+    console.error("Failed to load domain/user:", err);
+  }
+});
+
+function menu_init() {
+  const menuBtn = document.querySelector('.hamburger-menu');
+  const menuBar = document.getElementById('menuBar');
+  
+  // Toggle menu (keeps same interaction as previous)
+  menuBtn.addEventListener('click', () => {
+    menuBar.classList.toggle('menu-active');
+  });
+  
+  const menu_box = document.querySelector(".menu__box")
+  // close when clicking outside (improves UX)
+  document.addEventListener('click', (ev) => {
+    if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+      menuBar.classList.remove('menu-active');
+      toggle.setAttribute('aria-expanded', 'false');
+      menu_box.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
+
+// ---------------------------------------------
+//  SAFE FETCH WRAPPER (same across Binder)
+// ---------------------------------------------
+async function safePost(url, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Request failed: ${res.status} → ${t}`);
+  }
+
+  return await res.json();
+}
+
+/**
+ * get_plan_status
+ * Returns { days: number, plan: string } or null.
+ */
+async function get_plan_status() {
+  try {
+    const data = await safe_fetch('/api/binder/get_plan_status', { method: 'GET' });
+    // expected shape: { data: { days: N, plan: 'x' } } or { days: N, plan: 'x' }
+    if (!data) return null;
+    const payload = data.data || data;
+    return { days: Number(payload.days || 0), plan: payload.plan || null };
+  } catch (err) {
+    return null;
+  }
+}
+
+async function safe_fetch(url, opts = {}) {
+ const controller = new AbortController();
+ const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+ opts.signal = controller.signal;
+
+ try {
+   const res = await fetch(url, opts);
+   clearTimeout(timeout);
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      const err = new Error(`HTTP ${res.status} ${res.statusText}`);
+      err.status = res.status;
+      err.body = text;
+      throw err;
+    }
+    // assume JSON by default
+    const ct = (res.headers.get('content-type') || '');
+    if (ct.includes('application/json')) return res.json();
+    return res.text();
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
+  }
+}
+
+async function get_domain() {
+  try {
+    const data = await safe_fetch('/api/binder/get_domain', { method: 'GET' });
+    if (data && (typeof data.data === 'string' || typeof data.domain === 'string')) {
+      return data.data || data.domain;
+    }
+  } catch (err) {
+    console.log(err)
+  }
+  return null;
+}
+
+async function get_user(){
+  const url = `/api/auth/me`;
+  const data = await safe_fetch(url, { method: 'GET' });
+  return data.data;    
+}
+
+async function get_user_id(){
+  user = await get_user();
+  return user.id;    
+}
+
+// ---------------------------------------------
+//  USAGE TRACKER
+// ---------------------------------------------
+function startUsageTracker(endpoint) {
+  let active = true;
+  let seconds = 0;
+
+  document.addEventListener("visibilitychange", () => {
+    active = !document.hidden;
+  });
+  window.addEventListener("focus",  () => active = true);
+  window.addEventListener("blur",   () => active = false);
+
+  setInterval(() => { if (active) seconds++; }, 1000);
+
+  window.addEventListener("beforeunload", () => {
+    if (seconds > 0) {
+      navigator.sendBeacon(endpoint, JSON.stringify({seconds}));
+    }
+  });
+}
+
+
+
+// ---------------------------------------------
+//  BUILD PATIENT OBJECT
+// ---------------------------------------------
+function buildClientObject() {
+  return {
+    name:       document.getElementById("PName").value.trim(),
+    gov_id:     document.getElementById("idnum").value.trim(),
+    phone:      document.getElementById("PNum").value.trim(),
+    location:   document.getElementById("loc").value.trim(),
+    pmh:        document.getElementById("medh").value.trim(),
+    allergies:  document.getElementById("allergies").value.trim(),
+    btype:      document.getElementById("btype").value.trim(),
+    sex:        document.getElementById("sex").value.trim(),
+    age:        document.getElementById("age").value.trim(),
+    debit: 0,
+    payed: 0,
+    visits: []   // empty — first visit will be added later
+  };
+}
+
+
+// ---------------------------------------------
+//  SUBMIT
+// ---------------------------------------------
+
+
+async function submitPatient() {
+  const client = buildClientObject();
+
+  if (!GLOBAL_USER_ID || !GLOBAL_DOMAIN) {
+    alert("Unable to get user or domain. Please refresh the page.");
+    return;
+  }
+
+  if (!client.name || client.age == 0) {
+    alert("Please enter the patient name.");
+    return;
+  }
+
+  try {
+
+    const payload = {
+      domain:GLOBAL_DOMAIN,
+      user_id: GLOBAL_USER_ID,
+      client
+    };
+
+    const result = await safePost("/api/binder/clients", payload);
+
+    alert("Patient added successfully!");
+    document.getElementById("PName").value= '';
+    document.getElementById("idnum").value= '';
+    document.getElementById("PNum").value= '';
+    document.getElementById("loc").value= '';
+    document.getElementById("medh").value= '';
+    document.getElementById("allergies").value= '';
+    document.getElementById("btype").value= '';
+    document.getElementById("sex").value= '';
+    document.getElementById("age").value= '';
+    if (["medical"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
+      window.location.href = `/data/-1`;
+    }
+    else{
+      console.warn("not impleminted yet!")
+    }
+
+  } catch (err) {
+    console.error("Error adding patient:", err);
+    alert("Error adding patient. See console.");
+  }
+}

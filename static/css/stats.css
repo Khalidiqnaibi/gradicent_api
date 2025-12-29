@@ -1,0 +1,49 @@
+
+    :root {
+      --bg-main:#D9C4B0;
+      --accent:#ce7a35;
+      --secondary:#78cee6;
+      --text:#2b2b2b;
+    }
+    body {
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto;
+      background: linear-gradient(180deg, var(--bg-main), #E6D6C0);
+      color:var(--text);
+      min-height:100vh;
+    }
+    /* Hamburger + slide menu */
+    .menu__btn span,
+    .menu__btn span::before,
+    .menu__btn span::after {
+      display:block;
+      width:26px;
+      height:3px;
+      background:var(--accent);
+      border-radius:6px;
+      transition:0.28s ease;
+      position:relative;
+    }
+    .menu__btn span::before,
+    .menu__btn span::after { content:""; position:absolute; left:0; }
+    .menu__btn span::before { top:-8px; }
+    .menu__btn span::after { top:8px; }
+
+    .menu__box {
+      transition: transform 0.28s cubic-bezier(.2,.9,.2,1), opacity .22s;
+      transform: translateX(-110%);
+      opacity: 0;
+    }
+    .menu-active .menu__box {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .menu-active .menu__btn span { transform: rotate(45deg); background:var(--accent); }
+    .menu-active .menu__btn span::before { top:0; transform: rotate(90deg); }
+    .menu-active .menu__btn span::after { opacity:0; }
+
+    .tab-btn { padding:.6rem 1rem; border-radius:999px; cursor:pointer; transition:.2s; }
+    .active-tab { background:var(--accent); color:#fff; }
+    .card { background:rgba(255,255,255,0.92); border-radius:12px; padding:1rem; box-shadow:0 4px 14px rgba(0,0,0,0.05); }
+    .card h3 { font-weight:600; font-size:.9rem; }
+    main { padding:2rem; max-width:1250px; margin:auto; }
+    canvas { max-height:320px; }
