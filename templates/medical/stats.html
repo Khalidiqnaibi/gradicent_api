@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <title>Binder - Powered by GAIA</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link href="/static/css/stats.css">
+</head>
+<body>
+  <main>
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3">
+      <h1 class="text-2xl font-semibold"></h1>
+    </header>
+
+    <!-- Tabs -->
+    <div class="filters gap-4 mb-6 flex flex-row flex-wrap items-center justify-between">
+      <nav class="flex flex-wrap gap-3 items-center bg-white bg-opacity-50 p-2 rounded-xl">
+        <button class="tab-btn active-tab" data-tab="roi">ROI</button>
+        <button class="tab-btn" data-tab="productivity">Productivity</button>
+        <button class="tab-btn" data-tab="finance">Finance</button>
+        <button class="tab-btn" data-tab="clients">Clients</button>
+      </nav>
+      <!-- Filter bar -->
+      <form id="filters" class="flex flex-wrap gap-3 items-center bg-white bg-opacity-50 p-2 rounded-xl">
+        <button id="clients" class="px-4 py-2 rounded-xl bg-[var(--secondary)] text-white font-semibold shadow-md">See clients</button>
+        <label class="flex items-center gap-1 text-sm">
+          <span>From:</span>
+          <input type="date" id="dateFrom" class="border rounded p-1 text-sm">
+        </label>
+        <label class="flex items-center gap-1 text-sm">
+          <span>To:</span>
+          <input type="date" id="dateTo" class="border rounded p-1 text-sm">
+        </label>
+        <button type="submit" class="px-3 py-1 rounded bg-[var(--accent)] text-white text-sm">Apply</button>
+      </form>
+    </div>
+
+    <!-- ROI Tab -->
+    <section id="tab-roi" class="tab-panel">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card"><h3>Hours Saved</h3><div id="roi-hours" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Binder ROI</h3><div id="roi-dollar" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Payback Period</h3><div id="roi-payback" class="text-2xl mt-2">—</div></div>
+      </div>
+      <div class="card mb-6">
+        <h3 class="mb-2">Tasks Automated</h3>
+        <div id="roi-tasks" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- Productivity Tab -->
+    <section id="tab-productivity" class="tab-panel hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card"><h3>Total Time in Binder</h3><div id="prod-total-time" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Avg Time / Session</h3><div id="prod-avg-session" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>% Productive Time</h3><div id="prod-productive" class="text-2xl mt-2">—</div></div>
+      </div>
+      <div class="card mb-6">
+        <h3 class="mb-2">Visits per Active Hour</h3>
+        <div id="prod-visits-hour" class="text-xl mb-4">—</div>
+        <canvas id="prod-time-vs-clients"></canvas>
+      </div>
+    </section>
+
+    <!-- Finance Tab -->
+    <section id="tab-finance" class="tab-panel hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card"><h3>Total Revenue</h3><div id="fin-total-rev" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Total Unpaid</h3><div id="fin-unpaid" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Avg Revenue / Client</h3><div id="fin-avg-per-client" class="text-2xl mt-2">—</div></div>
+      </div>
+      <div class="card mb-6">
+        <h3 class="mb-2">Revenue vs Unpaid Trend</h3>
+        <canvas id="fin-revenue-trend"></canvas>
+      </div>
+    </section>
+
+    <!-- clients Tab -->
+    <section id="tab-clients" class="tab-panel hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card"><h3>Total clients</h3><div id="pat-total" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Returning clients</h3><div id="pat-returning" class="text-2xl mt-2">—</div></div>
+        <div class="card"><h3>Avg Visits / client</h3><div id="pat-avg-visits" class="text-2xl mt-2">—</div></div>
+      </div>
+      <div class="card mb-6">
+        <h3 class="mb-2">New clients / Week</h3>
+        <canvas id="pat-weekly"></canvas>
+      </div>
+      <div class="card">
+        <h3 class="mb-2">Top Diagnoses / Treatments</h3>
+        <div id="pat-top-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <footer class="mt-6 text-sm text-gray-700 text-center">Powered by Gradicent's Decision Engine</footer>
+  </main>
+
+  <script></script>
+</body>
+</html>

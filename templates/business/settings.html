@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Binder Business — Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link href="/static/css/settings.css">
+</head>
+
+<body class="min-h-screen flex items-center justify-center">
+
+  <!-- Menu (kept unchanged) -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png">
+            <h6 id="apph6" class="text-sm font-medium">Meetings</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Settings Card -->
+  <div class="flex items-center justify-center min-h-screen px-6 w-full">
+    <div class="max-w-2xl w-full bg-white/95 backdrop-blur-md shadow-xl rounded-3xl p-8 border border-[var(--secondary)] space-y-6">
+
+      <h1 class="text-3xl font-bold text-center text-gray-900">Business Settings</h1>
+
+      <div class="space-y-4">
+
+        <!-- Business Name -->
+        <div class="flex items-center justify-between gap-4">
+          <label class="font-medium min-w-[36%]">Business name:</label>
+          <input id="drname" type="text"
+                 class="flex-1 px-3 py-2 border rounded-lg"
+                 placeholder="e.g. Binder Solutions Ltd">
+        </div>
+
+        <!-- Default Message -->
+        <div class="flex items-center justify-between gap-4">
+          <label class="font-medium min-w-[36%]">Default message:</label>
+          <input id="msg" type="text"
+                 class="flex-1 px-3 py-2 border rounded-lg"
+                 placeholder="Thank you for your business…">
+        </div>
+
+        <!-- Country Code -->
+        <div class="flex items-center justify-between gap-4">
+          <label class="font-medium min-w-[36%]">Country phone code:</label>
+          <input id="pkey" type="text"
+                 class="flex-1 px-3 py-2 border rounded-lg"
+                 placeholder="+970">
+        </div>
+
+        <!-- Permission Code -->
+        <div id="ccc" class="space-y-2">
+          <label class="font-medium block">Permission code:</label>
+
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="code" type="password"
+                   class="flex-1 px-3 py-2 border rounded-lg"
+                   readonly>
+
+            <div class="flex gap-2">
+              <button id="toggle-visibility" class="px-3 py-2 rounded-lg border">
+                Show
+              </button>
+              <button id="refresh-code" class="px-3 py-2 rounded-lg border">
+                Refresh
+              </button>
+              <button id="copy-code" class="px-3 py-2 rounded-lg border">
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div id="codePreviewWrap" class="hidden">
+            <pre id="codePreview" class="code-preview"></pre>
+          </div>
+        </div>
+
+        <!-- Auto Message -->
+        <div class="flex items-center gap-3">
+          <label class="font-medium min-w-[36%]">
+            Send automatic messages:
+          </label>
+
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="cbx-3" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-400 rounded-full peer-checked:bg-[var(--secondary)]"></div>
+            <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full transition-transform peer-checked:translate-x-5"></div>
+          </label>
+        </div>
+
+      </div>
+
+      <!-- Save -->
+      <div class="pt-4 text-center">
+        <button onclick="savePatientInfo()"
+                class="px-6 py-2 bg-[var(--accent)] text-white font-semibold rounded-xl shadow hover:scale-105 transition">
+          Save changes
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/static/js/settings.js"></script>
+</body>
+</html>

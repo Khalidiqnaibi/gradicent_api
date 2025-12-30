@@ -258,18 +258,18 @@ def binder(domain) -> Any:
     session["binder"] = domain
     page = session.get("page","home")
     if page == "data":
-        return render_template(f"{page}.html", client = session.get("client",1))
+        return render_template(f"{domain}/{page}.html", client = session.get("client",1))
     if page == "back":
         session["page"] = "srch"
-        return render_template(f"srch.html", client = session.get("client",1))
+        return render_template(f"{domain}/srch.html", client = session.get("client",1))
     
     if page == "search_stats":
         clients = session["clients"]
         session["page"] = "srch" 
-        return render_template(f"srch.html", clients = clients)
+        return render_template(f"{domain}/srch.html", clients = clients)
 
 
-    return render_template(f"{page}.html")
+    return render_template(f"{domain}/{page}.html")
 
 @frontend_blueprint.route("/binder_labratory", methods=["GET"])
 @require_login

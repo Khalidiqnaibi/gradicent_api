@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Binder Business — Account</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg" />
+  <meta name="description" content="Binder Business account overview." />
+  <link href="/static/css/acc.css" rel="stylesheet" />
+</head>
+
+<body class="min-h-screen text-gray-800">
+
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/home_page" title="Add Client">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add Client</h6>
+          </a>
+        </li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/srch" title="Search Records">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/stats" title="Business Analytics">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Analytics</h6>
+          </a>
+        </li>
+
+        <li>
+          <a id="appa"
+             class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/appointments" title="Meetings">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Meetings">
+            <h6 id="apph6" class="text-sm font-medium">Meetings</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== Page content ===== -->
+  <main class="min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-md w-full">
+
+      <!-- Account Card -->
+      <section class="bbg rounded-3xl shadow-xl p-6 md:p-8 border border-[var(--secondary)]">
+        <div class="flex flex-col items-center text-center gap-4">
+
+          <img id="avatar"
+               src="/static/images/w3.jpg"
+               alt="Business avatar"
+               class="w-24 h-24 rounded-2xl object-cover border-2 border-white shadow-sm"/>
+
+          <h1 id="hello"
+              class="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">
+            Business Account
+          </h1>
+
+          <p id="msg" class="text-sm text-[var(--muted)]">
+            Manage your business workspace and performance
+          </p>
+
+          <!-- Plan info -->
+          <div class="center-plan flex-wrap justify-center gap-2 mt-2">
+            <span id="plan_badge"
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-[var(--secondary)]/20 text-[var(--secondary)]">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 13l4 4L19 7"/>
+              </svg>
+              Starter Plan
+            </span>
+
+            <span id="trial_days" class="text-xs text-[var(--muted)]">
+              Trial active
+            </span>
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3 w-full">
+            <button id="btn1"
+                    type="button"
+                    class="w-full sm:w-auto px-4 py-2 rounded-xl bg-[var(--accent)] text-gray-900 font-semibold shadow hover:scale-[1.02] transition">
+              Upgrade Plan
+            </button>
+
+            <button id="btn2"
+                    type="button"
+                    class="w-full sm:w-auto px-4 py-2 rounded-xl bg-[var(--secondary)] text-white font-medium shadow hover:opacity-95 transition">
+              Switch Workspace
+            </button>
+          </div>
+
+          <!-- Business metrics -->
+          <div class="mt-6 grid grid-cols-2 gap-3 w-full">
+
+            <div class="p-4 rounded-lg bg-[var(--bg-main)]/10 border border-[var(--secondary)] text-center">
+              <div class="text-xs text-[var(--muted)]">Clients</div>
+              <div id="patients_count" class="text-xl font-bold">0</div>
+            </div>
+
+            <div class="p-4 rounded-lg bg-[var(--bg-main)]/10 border border-[var(--secondary)] text-center">
+              <div class="text-xs text-[var(--muted)]">Meetings</div>
+              <div id="appointments_count" class="text-xl font-bold">0</div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast_container"
+       class="fixed top-4 right-4 z-[9999] space-y-3"
+       aria-live="polite"></div>
+
+  <script src="/static/js/acc.js"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Binder Business — Meetings</title>
+
+  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link href="/static/css/appointments.css">
+</head>
+
+<body class="min-h-screen text-gray-800">
+
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/home_page" title="Add Client">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add Client</h6>
+          </a>
+        </li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/srch" title="Search Records">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/stats" title="Business Analytics">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Analytics</h6>
+          </a>
+        </li>
+
+        <li>
+          <a id="appa"
+             class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/appointments" title="Meetings">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Meetings">
+            <h6 id="apph6" class="text-sm font-medium">Meetings</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+
+  <!-- Page content -->
+  <main class="min-h-screen flex items-start justify-center p-6">
+    <div class="max-wrap w-full">
+      <div class="card">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-5">
+          <h1 class="text-2xl font-bold">Meetings</h1>
+
+          <div class="flex gap-3 items-center">
+            <div class="text-sm muted">Total</div>
+            <div id="count"
+                 class="px-3 py-1 rounded-full bg-[var(--accent)] text-[#071620] font-bold">
+              0
+            </div>
+            <button id="refresh" class="btn-ghost">Refresh</button>
+            <button id="save" class="btn-primary">Save</button>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex gap-4 flex-col sm:flex-row mb-4 items-end">
+
+          <div class="w-full sm:w-64">
+            <label class="text-sm muted">Date</label>
+            <input id="date_input" type="date" class="input" />
+          </div>
+
+          <div class="flex gap-3 items-end">
+            <select id="filter" class="input" style="width:170px;">
+              <option value="all">All</option>
+              <option value="has">With Notes</option>
+              <option value="none">No Notes</option>
+            </select>
+            <button id="clear" class="btn-ghost">Clear notes</button>
+          </div>
+
+        </div>
+
+        <!-- Meetings list -->
+        <div id="list" class="flex flex-col gap-3"></div>
+
+        <div id="empty"
+             class="hidden justify-center bg-white/60 rounded-lg p-8 text-gray-500 border border-gray-200">
+          No meetings scheduled.
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast_container"
+       class="fixed top-4 right-4 z-[9999] space-y-3"
+       aria-live="polite"></div>
+
+  <script src="/static/js/appointments.js"></script>
+
+</body>
+</html>

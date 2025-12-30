@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Binder Medical</title>
+  <link rel="icon" href="/static/images/w3.jpg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="/static/css/data.css">
+</head>
+<body>
+  <!-- Toasts -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 flex flex-col gap-3 z-50"></div>
+
+  <!-- Menu -->
+  <div id="menuBar" class="fixed top-4 left-4 z-50">
+    <div class="hamburger-menu p-2">
+      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
+        <span></span>
+      </label>
+
+      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+            <h6 class="text-sm font-medium">Account</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+            <h6 class="text-sm font-medium">Search</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Stats</h6>
+          </a>
+        </li>
+        <li>
+          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
+            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          </a>
+        </li>
+
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/back">
+            <img class="icoo w-6 h-6" src="/static/images/back.png" alt="Back"/>
+            <h6 class="text-sm font-medium">Back</h6>
+          </a>
+        </li>
+        <li class="border-t border-[var(--secondary)] my-1"></li>
+
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+            <h6 class="text-sm font-medium">Settings</h6>
+          </a>
+        </li>
+        <li>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+            <h6 class="text-sm font-medium">Support</h6>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="card">
+      <div class="flex flex-col md:flex-row md:justify-between mb-6 gap-4">
+        <div class="flex gap-4 items-center">
+          <img src="/static/images/w3.jpg" class="w-16 h-16 rounded-full shadow">
+          <div><h2 class="text-2xl font-semibold">Patient Visit</h2>
+            <p class="text-gray-500 text-sm">Manage visit entries, attach files, print or lock visits.</p></div>
+        </div>
+        <div class="flex gap-2 items-center">
+          <input id="search" type="date" class="input-control w-44"/>
+          <button id="searchButton" class="btn btn-ghost">Search</button>
+        </div>
+      </div>
+
+      <!-- Visit Form -->
+      <form id="visitForm" class="grid md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <label>Visit Date</label><input id="visitDate" type="date" class="input-control"/>
+          <label>Doctor</label><input id="drname" type="text" class="input-control"/>
+          <label>Diagnosis</label><textarea id="diagnosis" class="input-control" placeholder="Enter diagnosis..."></textarea>
+          <label>Treatment</label><textarea id="treatment" class="input-control" placeholder="Enter treatment..."></textarea>
+          <label>Lab</label><textarea id="lab" class="input-control" placeholder="Enter lab results..."></textarea>
+        </div>
+        <div class="space-y-4">
+          <label>Weight (kg)</label><input id="wight" class="input-control" placeholder="Enter weight..."/>
+          <label>Height (cm)</label><input id="height" class="input-control" placeholder="Enter height..."/>
+          <label>Coast</label><input id="coast" class="input-control" placeholder="Enter coast..."/>
+          <label>Paid</label><input id="payed" class="input-control" placeholder="Enter paid amount..."/>
+          <label>Debt</label><input id="debt" class="input-control" placeholder="Enter debt amount..."/>
+        </div>
+        <div class="md:col-span-2">
+          <label>Notes</label><textarea id="details" class="input-control" rows="5" placeholder="Enter additional notes..."></textarea>
+        </div>
+      </form>
+
+      <!-- Controls -->
+      <div class="mt-6 flex flex-col md:flex-row md:justify-between gap-4">
+        <div class="flex flex-wrap gap-2">
+          <button id="firstButton" class="btn btn-ghost">First</button>
+          <button id="prevButton" class="btn btn-ghost">Prev</button>
+          <button id="nextButton" class="btn btn-ghost">Next</button>
+          <button id="lastButton" class="btn btn-ghost">Last</button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button id="openFolderBtn" class="btn btn-accent">Patient Folder</button>
+          <button id="printBtn" class="btn btn-accent">Print Visit</button>
+          <button id="saveBtn" class="btn btn-ghost">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Modal -->
+  <div id="fileModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50">
+    <div class="bg-white rounded-2xl p-6 shadow-xl w-full max-w-3xl mx-auto my-10 flex flex-col relative">
+      <button id="closeModal" class="absolute top-4 right-4 text-2xl">&times;</button>
+      <h3 class="text-xl font-semibold mb-4">Patient Files</h3>
+      <div class="flex gap-2 mb-4">
+        <button class="folder-btn btn btn-ghost" data-folder="drs">Doctor</button>
+        <button class="folder-btn btn btn-ghost" data-folder="radio">Radiology</button>
+        <button class="folder-btn btn btn-ghost" data-folder="lab">Lab</button>
+      </div>
+      <div id="uploadControls" class="hidden flex flex-col gap-3 mb-4">
+        <div id="dropZone" class="w-full border-2 border-dashed rounded-xl p-6 text-center text-gray-500 cursor-pointer hover:border-[var(--accent)]">
+          Drag & Drop or click Choose
+        </div>
+        <div class="flex gap-2">
+          <button id="chooseFile" class="btn btn-ghost">Choose</button>
+          <input id="fileInput" type="file" class="hidden" multiple />
+          <button id="uploadFiles" class="btn btn-accent">Upload</button>
+        </div>
+        <div id="uploadProgressContainer" class="hidden">
+          <progress id="fileUploadProgress" value="0" max="100" class="w-full h-3 rounded-lg"></progress>
+          <span id="progressText" class="block text-center text-sm mt-1 text-gray-600"></span>
+        </div>
+      </div>
+      <div id="filePreviews" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4"></div>
+    </div>
+  </div>
+
+  <script src="/static/js/data.js"></script>
+
+</body>
+</html>
