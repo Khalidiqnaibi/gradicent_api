@@ -15,7 +15,8 @@
   const API_PATCH_CLIENT = (id) => `/api/binder/clients/${encodeURIComponent(id)}`;
   const API_OPEN_CLIENT = (id) => `/data/${encodeURIComponent(id)}`;
   const TRACK_ENDPOINT = '/api/binder/track_time';
-  const __GAIA_LIST = {{ clients | default([]) | tojson }};
+  const __GAIA_LIST = window.__GAIA_LIST__ || [];
+
 
   const APP_STATE = {
     domain: null,
