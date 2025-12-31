@@ -1,0 +1,2 @@
+the client info in the business domain are the same as the medical domain ..
+this is just and issue of the js file of home
