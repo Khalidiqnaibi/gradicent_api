@@ -125,7 +125,11 @@ def get_user():
     
     service = _get_domain_and_service(payload=payload)
 
-    return make_response(data=service.get_user(payload['user_id']),message="User retrieved successfully") , 200
+    user = service.get_user(payload['user_id'])
+    if not user:
+        raise NotFound(f"User {payload['user_id']} not found")
+
+    return make_response(data=user,message="User retrieved successfully") , 200
 
 @binder_blueprint.route("/user",methods=["POST"])
 def update_user():
@@ -246,10 +250,10 @@ def get_client(client_id: str):
         service.set_current_user(user_id)
 
     client = service.read_client(client_id)
-    session["client"]=client["id"]
 
-    if client is None:
+    if not client:
         raise NotFound(f"Client {client_id} not found")
+    session["client"]=client["id"]
     return make_response(data=client), 200
 
 @binder_blueprint.route("/clients/<client_id>", methods=["PATCH"])
