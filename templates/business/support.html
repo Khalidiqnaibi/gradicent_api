@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="icon" href="/static/images/w3.jpg" />
-  <title>Support — Binder Medical</title>
+  <title>Support — Binder</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -25,59 +25,80 @@
       -moz-osx-font-smoothing:grayscale;
     }
 
-    /* Hamburger lines */
+    /* Hamburger */
     .menu__btn span,
     .menu__btn span::before,
     .menu__btn span::after {
-      display: block;
-      width: 25px;
-      height: 3px;
-      background-color: var(--accent);
-      position: relative;
-      border-radius: 6px;
-      transition: 0.3s ease;
+      display:block;
+      width:25px;
+      height:3px;
+      background-color:var(--accent);
+      position:relative;
+      border-radius:6px;
+      transition:0.3s ease;
     }
     .menu__btn span::before,
     .menu__btn span::after {
-      content: "";
-      position: absolute;
-      left: 0;
+      content:"";
+      position:absolute;
+      left:0;
     }
-    .menu__btn span::before { top: -8px; }
-    .menu__btn span::after { top: 8px; }
+    .menu__btn span::before{top:-8px}
+    .menu__btn span::after{top:8px}
 
-    /* Toggle open */
-    .menu-active .menu__btn span {
-      transform: rotate(45deg);
-      background-color: var(--accent);
+    .menu-active .menu__btn span{
+      transform:rotate(45deg);
     }
-    .menu-active .menu__btn span::before {
-      transform: rotate(90deg);
-      top: 0;
+    .menu-active .menu__btn span::before{
+      transform:rotate(90deg);
+      top:0;
     }
-    .menu-active .menu__btn span::after {
-      opacity: 0;
+    .menu-active .menu__btn span::after{
+      opacity:0;
     }
 
-    /* Menu transitions */
-    .menu__box {
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      transform: translateX(-100%);
-      opacity: 0;
+    .menu__box{
+      transition:transform .3s ease,opacity .3s ease;
+      transform:translateX(-100%);
+      opacity:0;
     }
-    .menu-active .menu__box {
-      transform: translateX(0);
-      opacity: 1;
+    .menu-active .menu__box{
+      transform:translateX(0);
+      opacity:1;
     }
-    /* layout */
-    main{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:4rem 1rem; }
-    .card { width:100%; max-width:920px; padding:2rem; }
-    .contact-row{ display:flex; gap:1rem; align-items:center; justify-content:space-between; padding:0.75rem 0.5rem; border-bottom:1px solid rgba(0,0,0,0.04) }
-    .contact-row:last-child{ border-bottom:0 }
-    .muted{ color:rgba(0,0,0,0.55); font-size:.95rem }
-    @media (max-width:768px){
-      .contact-row{ flex-direction:column; align-items:flex-start; gap:.5rem }
-      .menu__box{ width:78vw }
+
+    main{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:4rem 1rem;
+    }
+    .card{
+      width:100%;
+      max-width:920px;
+      padding:2rem;
+    }
+    .contact-row{
+      display:flex;
+      gap:1rem;
+      align-items:center;
+      justify-content:space-between;
+      padding:.75rem .5rem;
+      border-bottom:1px solid rgba(0,0,0,.04);
+    }
+    .contact-row:last-child{border-bottom:0}
+    .muted{
+      color:rgba(0,0,0,.55);
+      font-size:.95rem;
+    }
+    @media(max-width:768px){
+      .contact-row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:.5rem;
+      }
+      .menu__box{width:78vw}
     }
   </style>
 </head>
@@ -91,47 +112,41 @@
 
       <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
-            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png">
             <h6 class="text-sm font-medium">Account</h6>
           </a>
         </li>
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
-            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
-            <h6 class="text-sm font-medium">Add</h6>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png">
+            <h6 class="text-sm font-medium">Add Client</h6>
           </a>
         </li>
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
-            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png">
             <h6 class="text-sm font-medium">Search</h6>
           </a>
         </li>
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
-            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
-            <h6 class="text-sm font-medium">Stats</h6>
-          </a>
-        </li>
-        <li>
-          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
-            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
-            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png">
+            <h6 class="text-sm font-medium">Reports</h6>
           </a>
         </li>
 
         <li class="border-t border-[var(--secondary)] my-1"></li>
 
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
-            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png">
             <h6 class="text-sm font-medium">Settings</h6>
           </a>
         </li>
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
-            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png">
             <h6 class="text-sm font-medium">Support</h6>
           </a>
         </li>
@@ -141,117 +156,90 @@
 
   <main>
     <section class="decorative-card card">
-      <header class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-4">
-          <img src="/static/images/w3.jpg" alt="logo" class="w-14 h-14 rounded-full shadow-sm" />
-          <div>
-            <h1 class="text-xl font-semibold">Customer Support</h1>
-            <p class="muted">We’ll help with accounts, billing, and technical issues.</p>
-          </div>
+      <header class="flex items-center gap-4 mb-4">
+        <img src="/static/images/w3.jpg" class="w-14 h-14 rounded-full shadow-sm">
+        <div>
+          <h1 class="text-xl font-semibold">Business Support</h1>
+          <p class="muted">
+            Help with clients, invoices, reports, and system issues.
+          </p>
         </div>
       </header>
-      
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="contact-row">
-            <div>
-              <div class="font-medium">General email</div>
-              <div class="muted">for inquiries, partnerships</div>
-            </div>
-            <a href="mailto:gradicent@gmail.com" class="text-[var(--accent)] font-medium">gradicent@gmail.com</a>
+        <div class="contact-row">
+          <div>
+            <div class="font-medium">Business Email</div>
+            <div class="muted">billing, integrations, partnerships</div>
           </div>
+          <a href="mailto:gradicent@gmail.com" class="text-[var(--accent)] font-medium">
+            gradicent@gmail.com
+          </a>
+        </div>
 
-          <div class="contact-row">
-            <div>
-              <div class="font-medium">CEO / Co-Founder</div>
-              <div class="muted">fast replies for urgent matters</div>
-            </div>
-            <a href="mailto:khalidqnabi@gmail.com" class="text-[var(--accent)] font-medium">khalidqnabi@gmail.com</a>
+        <div class="contact-row">
+          <div>
+            <div class="font-medium">Founder / Operations</div>
+            <div class="muted">urgent business matters</div>
           </div>
+          <a href="mailto:khalidqnabi@gmail.com" class="text-[var(--accent)] font-medium">
+            khalidqnabi@gmail.com
+          </a>
+        </div>
 
-          <div class="contact-row">
-            <div>
-              <div class="font-medium">Phone</div>
-              <div class="muted">call or SMS</div>
-            </div>
-            <a href="tel:+970592840353" class="text-[var(--accent)] font-medium">+970 592 840 353</a>
+        <div class="contact-row">
+          <div>
+            <div class="font-medium">Phone</div>
+            <div class="muted">call or SMS</div>
           </div>
+          <a href="tel:+972592840353" class="text-[var(--accent)] font-medium">
+            +970 592 840 353
+          </a>
+        </div>
 
-          <div class="contact-row">
-            <div>
-              <div class="font-medium">WhatsApp</div>
-              <div class="muted">quick chat</div>
-            </div>
-            <a href="https://wa.me/970592840353" target="_blank" class="text-[var(--accent)] font-medium">Chat on WhatsApp</a>
+        <div class="contact-row">
+          <div>
+            <div class="font-medium">WhatsApp</div>
+            <div class="muted">fast coordination</div>
           </div>
+          <a href="https://wa.me/972592840353" target="_blank" class="text-[var(--accent)] font-medium">
+            Chat on WhatsApp
+          </a>
+        </div>
+      </div>
     </section>
   </main>
 
   <script>
-    /**
-     * Tracks real active time on the page and sends ONLY one final value:
-     * { seconds: totalActiveSeconds }
-     *
-     * Usage:
-     * startUsageTracker("/track_time");
-     */
-    function startUsageTracker(endpoint) {
-
+    function startUsageTracker(endpoint){
       let totalActiveSeconds = 0;
       let active = true;
 
-      // Count only when the page is visible & focused
       document.addEventListener("visibilitychange", () => {
         active = !document.hidden;
       });
+      window.addEventListener("blur", () => active = false);
+      window.addEventListener("focus", () => active = true);
 
-      window.addEventListener("blur", () => { active = false; });
-      window.addEventListener("focus", () => { active = true; });
-
-      // Tick every second → adds to active use
       setInterval(() => {
-        if (active) totalActiveSeconds += 1;
+        if(active) totalActiveSeconds++;
       }, 1000);
 
-      // Send the final total when the session ends
-      function sendFinal() {
-        if (totalActiveSeconds <= 0) return;
-
-        const payload = JSON.stringify({ seconds: totalActiveSeconds });
-
-        // Use sendBeacon so it always sends before page unload
-        navigator.sendBeacon(endpoint, payload);
+      function sendFinal(){
+        if(totalActiveSeconds <= 0) return;
+        navigator.sendBeacon(endpoint, JSON.stringify({seconds: totalActiveSeconds}));
       }
-
-      // On close / refresh / navigation
       window.addEventListener("beforeunload", sendFinal);
-
-      // Return API for manual flush if needed
-      return {
-        getSeconds: () => totalActiveSeconds,
-        flush: sendFinal
-      };
     }
 
+    document.addEventListener("DOMContentLoaded", () => {
+      const menuBtn = document.querySelector(".hamburger-menu");
+      const menuBar = document.getElementById("menuBar");
+      menuBtn.addEventListener("click", () =>
+        menuBar.classList.toggle("menu-active")
+      );
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const menuBtn = document.querySelector('.hamburger-menu');
-      const menuBar = document.getElementById('menuBar');
-      menuBtn.addEventListener('click', () => menuBar.classList.toggle('menu-active'));
-      const usage = startUsageTracker("/api/binder/track_time");
-      // binder lab mode (keeps parity with other pages)
-      const binder = '{{ binder }}';
-      const appa = document.getElementById('appa');
-      const appimg = document.getElementById('appimg');
-      const apph6 = document.getElementById('apph6');
-      const link = document.querySelector("link[rel~='icon']");
-      if (binder === 'lab') {
-        appa.title = 'Search Lab';
-        appa.href = '/srchlab';
-        appimg.src = '/static/images/srchlab.png';
-        document.title = 'Binder Laboratory';
-        if (link) link.href = '/static/images/binderlab.jpg';
-        apph6.textContent = 'Search Lab';
-      }
+      startUsageTracker("/api/binder/track_time");
     });
   </script>
 </body>

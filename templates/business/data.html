@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Binder Medical</title>
+  <title>Binder</title>
   <link rel="icon" href="/static/images/w3.jpg" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="/static/css/data.css">
+  <link href="/static/css/data.css" rel="stylesheet">
 </head>
+
 <body>
   <!-- Toasts -->
   <div id="toastContainer" class="fixed bottom-6 right-6 flex flex-col gap-3 z-50"></div>
@@ -21,55 +22,52 @@
 
       <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc" title="Account">
-            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="">
             <h6 class="text-sm font-medium">Account</h6>
           </a>
         </li>
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page" title="Add">
-            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
-            <h6 class="text-sm font-medium">Add</h6>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="">
+            <h6 class="text-sm font-medium">Add Client</h6>
           </a>
         </li>
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch" title="Search">
-            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="">
             <h6 class="text-sm font-medium">Search</h6>
           </a>
         </li>
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats" title="Stats">
-            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="">
             <h6 class="text-sm font-medium">Stats</h6>
           </a>
         </li>
+
         <li>
-          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments" title="Appointments">
-            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Appointments">
-            <h6 id="apph6" class="text-sm font-medium">Appointments</h6>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments">
+            <img class="icoo w-6 h-6" src="/static/images/appoint.png" alt="">
+            <h6 class="text-sm font-medium">Meetings</h6>
           </a>
         </li>
 
         <li class="border-t border-[var(--secondary)] my-1"></li>
 
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/back">
-            <img class="icoo w-6 h-6" src="/static/images/back.png" alt="Back"/>
-            <h6 class="text-sm font-medium">Back</h6>
-          </a>
-        </li>
-        <li class="border-t border-[var(--secondary)] my-1"></li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings" title="Settings">
-            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="">
             <h6 class="text-sm font-medium">Settings</h6>
           </a>
         </li>
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support" title="Support">
-            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="">
             <h6 class="text-sm font-medium">Support</h6>
           </a>
         </li>
@@ -83,33 +81,54 @@
       <div class="flex flex-col md:flex-row md:justify-between mb-6 gap-4">
         <div class="flex gap-4 items-center">
           <img src="/static/images/w3.jpg" class="w-16 h-16 rounded-full shadow">
-          <div><h2 class="text-2xl font-semibold">Patient Visit</h2>
-            <p class="text-gray-500 text-sm">Manage visit entries, attach files, print or lock visits.</p></div>
+          <div>
+            <h2 class="text-2xl font-semibold">Client Interaction</h2>
+            <p class="text-gray-500 text-sm">
+              Manage meetings, notes, files, and payments.
+            </p>
+          </div>
         </div>
+
         <div class="flex gap-2 items-center">
           <input id="search" type="date" class="input-control w-44"/>
           <button id="searchButton" class="btn btn-ghost">Search</button>
         </div>
       </div>
 
-      <!-- Visit Form -->
-      <form id="visitForm" class="grid md:grid-cols-2 gap-6">
+      <!-- Interaction Form -->
+      <form id="interactionForm" class="grid md:grid-cols-2 gap-6">
         <div class="space-y-4">
-          <label>Visit Date</label><input id="visitDate" type="date" class="input-control"/>
-          <label>Doctor</label><input id="drname" type="text" class="input-control"/>
-          <label>Diagnosis</label><textarea id="diagnosis" class="input-control" placeholder="Enter diagnosis..."></textarea>
-          <label>Treatment</label><textarea id="treatment" class="input-control" placeholder="Enter treatment..."></textarea>
-          <label>Lab</label><textarea id="lab" class="input-control" placeholder="Enter lab results..."></textarea>
+          <label>Interaction Date</label>
+          <input id="interactionDate" type="date" class="input-control"/>
+
+          <label>Employee / Agent</label>
+          <input id="employeeName" type="text" class="input-control"/>
+
+          <label>Purpose</label>
+          <textarea id="purpose" class="input-control" placeholder="Meeting purpose, deal discussion..."></textarea>
+
+          <label>Outcome</label>
+          <textarea id="outcome" class="input-control" placeholder="Result, follow-up actions..."></textarea>
+
+          <label>Notes</label>
+          <textarea id="notes" class="input-control" placeholder="Internal notes..."></textarea>
         </div>
+
         <div class="space-y-4">
-          <label>Weight (kg)</label><input id="wight" class="input-control" placeholder="Enter weight..."/>
-          <label>Height (cm)</label><input id="height" class="input-control" placeholder="Enter height..."/>
-          <label>Coast</label><input id="coast" class="input-control" placeholder="Enter coast..."/>
-          <label>Paid</label><input id="payed" class="input-control" placeholder="Enter paid amount..."/>
-          <label>Debt</label><input id="debt" class="input-control" placeholder="Enter debt amount..."/>
-        </div>
-        <div class="md:col-span-2">
-          <label>Notes</label><textarea id="details" class="input-control" rows="5" placeholder="Enter additional notes..."></textarea>
+          <label>Service / Product</label>
+          <input id="service" class="input-control" placeholder="Service or product name"/>
+
+          <label>Cost</label>
+          <input id="cost" class="input-control" placeholder="Total cost"/>
+
+          <label>Paid</label>
+          <input id="paid" class="input-control" placeholder="Paid amount"/>
+
+          <label>Outstanding</label>
+          <input id="debt" class="input-control" placeholder="Remaining balance"/>
+
+          <label>Next Follow-up</label>
+          <input id="nextFollowUp" type="date" class="input-control"/>
         </div>
       </form>
 
@@ -121,9 +140,10 @@
           <button id="nextButton" class="btn btn-ghost">Next</button>
           <button id="lastButton" class="btn btn-ghost">Last</button>
         </div>
+
         <div class="flex flex-wrap gap-2">
-          <button id="openFolderBtn" class="btn btn-accent">Patient Folder</button>
-          <button id="printBtn" class="btn btn-accent">Print Visit</button>
+          <button id="openFolderBtn" class="btn btn-accent">Client Files</button>
+          <button id="printBtn" class="btn btn-accent">Print Summary</button>
           <button id="saveBtn" class="btn btn-ghost">Save</button>
         </div>
       </div>
@@ -134,31 +154,38 @@
   <div id="fileModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50">
     <div class="bg-white rounded-2xl p-6 shadow-xl w-full max-w-3xl mx-auto my-10 flex flex-col relative">
       <button id="closeModal" class="absolute top-4 right-4 text-2xl">&times;</button>
-      <h3 class="text-xl font-semibold mb-4">Patient Files</h3>
+      <h3 class="text-xl font-semibold mb-4">Client Files</h3>
+
       <div class="flex gap-2 mb-4">
-        <button class="folder-btn btn btn-ghost" data-folder="drs">Doctor</button>
-        <button class="folder-btn btn btn-ghost" data-folder="radio">Radiology</button>
-        <button class="folder-btn btn btn-ghost" data-folder="lab">Lab</button>
+        <button class="folder-btn btn btn-ghost" data-folder="contracts">Contracts</button>
+        <button class="folder-btn btn btn-ghost" data-folder="invoices">Invoices</button>
+        <button class="folder-btn btn btn-ghost" data-folder="docs">Documents</button>
       </div>
+
       <div id="uploadControls" class="hidden flex flex-col gap-3 mb-4">
-        <div id="dropZone" class="w-full border-2 border-dashed rounded-xl p-6 text-center text-gray-500 cursor-pointer hover:border-[var(--accent)]">
+        <div id="dropZone" class="w-full border-2 border-dashed rounded-xl p-6 text-center text-gray-500 cursor-pointer">
           Drag & Drop or click Choose
         </div>
+
         <div class="flex gap-2">
           <button id="chooseFile" class="btn btn-ghost">Choose</button>
           <input id="fileInput" type="file" class="hidden" multiple />
           <button id="uploadFiles" class="btn btn-accent">Upload</button>
         </div>
+
         <div id="uploadProgressContainer" class="hidden">
           <progress id="fileUploadProgress" value="0" max="100" class="w-full h-3 rounded-lg"></progress>
           <span id="progressText" class="block text-center text-sm mt-1 text-gray-600"></span>
         </div>
       </div>
+
       <div id="filePreviews" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4"></div>
     </div>
   </div>
 
+  <script>
+    window.domainType = 'business';
+  </script>
   <script src="/static/js/data.js"></script>
-
 </body>
 </html>

@@ -3,22 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Welcome — Binder Medical</title>
+  <title>Welcome — Binder Business</title>
   <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <link href="/static/css.signin.css">
+  <link href="/static/css.signin.css" rel="stylesheet">
 </head>
+
 <body>
   <div class="onboard-wrap">
     <div class="card" role="main" aria-labelledby="welcome-title">
 
-      <!-- LEFT: intro + progress -->
-      <div class="left-panel" aria-hidden="false">
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
         <img src="/static/images/w3.jpg" alt="Binder logo" class="logo" />
+
         <div>
-          <div class="h1" id="welcome-title">Almost there — set up your clinic</div>
-          <div class="muted" style="margin-top:6px">Quick: tell us the clinic name, specialty, location and phone so patients can find you.</div>
+          <div class="h1" id="welcome-title">
+            Almost there — set up your business
+          </div>
+          <div class="muted" style="margin-top:6px">
+            Quick setup: business name, industry, location and phone.
+            This helps clients find and contact you.
+          </div>
         </div>
 
         <div class="step" style="width:100%; margin-top:8px;">
@@ -28,56 +35,116 @@
           </div>
 
           <div style="flex:1;">
-            <div class="progress" aria-hidden="true"><i></i></div>
+            <div class="progress"><i></i></div>
           </div>
         </div>
-        <p class="note" style="margin-top:10px;">By continuing you agree to our <a href="/terms" class="underline" style="color:var(--secondary)">Terms</a> and <a href="/privacy" class="underline" style="color:var(--secondary)">Privacy</a>.</p>
-        <!--div style="margin-top:6px" class="note">You can change these later in Settings. This helps us prefill your clinic profile.</div-->
+
+        <p class="note" style="margin-top:10px;">
+          By continuing you agree to our
+          <a href="/terms" class="underline" style="color:var(--secondary)">Terms</a>
+          and
+          <a href="/privacy" class="underline" style="color:var(--secondary)">Privacy</a>.
+        </p>
       </div>
 
-      <!-- RIGHT: form -->
+      <!-- RIGHT PANEL -->
       <div class="right-panel">
 
-        <form id="signupForm" onsubmit="event.preventDefault(); sign();" novalidate>
+        <form id="signupForm"
+              onsubmit="event.preventDefault(); sign();"
+              novalidate>
 
+          <!-- Business name -->
           <div>
-            <label class="field">Doctor / Clinic name</label>
-            <input id="drname" class="input" type="text" inputmode="text" autocomplete="organization" placeholder="Dr. Khalid — Binder Clinic" required />
+            <label class="field">Business name</label>
+            <input
+              id="drname"
+              class="input"
+              type="text"
+              inputmode="text"
+              autocomplete="organization"
+              placeholder="Binder Solutions Ltd"
+              required
+            />
           </div>
 
+          <!-- Business type / industry -->
           <div>
-            <label class="field">Specialty</label>
+            <label class="field">Business type</label>
+
             <div class="specialty" id="specialtyRoot">
-              <button type="button" id="specBtn" class="spec-button" aria-haspopup="listbox" aria-expanded="false" onclick="toggleDropdown()">
+              <button
+                type="button"
+                id="specBtn"
+                class="spec-button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                onclick="toggleDropdown()">
+
                 <img src="/static/images/down.png" alt="" aria-hidden="true" />
-                <span id="specValue" class="muted">Family and General Medicine</span>
-                <div style="margin-left:auto; font-size:13px; color:var(--muted)">Choose / Search</div>
+                <span id="specValue" class="muted">
+                  Consulting / Services / Retail
+                </span>
+                <div style="margin-left:auto; font-size:13px; color:var(--muted)">
+                  Choose / Search
+                </div>
               </button>
 
-              <!-- dropdown (hidden by default) -->
-              <div id="specDropdown" class="dropdown" role="listbox" aria-label="Specialty list" style="display:none;">
+              <!-- Dropdown -->
+              <div
+                id="specDropdown"
+                class="dropdown"
+                role="listbox"
+                aria-label="Business type list"
+                style="display:none;">
+
                 <div class="search">
-                  <input id="specSearch" type="search" placeholder="Search specialties…" aria-label="Search specialties" oninput="filterFunction()" />
+                  <input
+                    id="specSearch"
+                    type="search"
+                    placeholder="Search business types…"
+                    aria-label="Search business types"
+                    oninput="filterFunction()"
+                  />
                 </div>
+
                 <div class="list" id="specList" tabindex="0">
-                  <!-- specialty links inserted here (JS will populate) -->
+                  <!-- populated by JS -->
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- Location -->
           <div>
-            <label class="field">Clinic location</label>
-            <input id="location" class="input" type="text" placeholder="Hebron, Palestine (street / area)" required />
+            <label class="field">Business location</label>
+            <input
+              id="location"
+              class="input"
+              type="text"
+              placeholder="Hebron, Palestine (street / area)"
+              required
+            />
           </div>
 
+          <!-- Phone -->
           <div>
-            <label class="field">Phone</label>
-            <input id="phone" class="input" type="tel" inputmode="tel" placeholder="+970 59 000 0000" required />
+            <label class="field">Phone number</label>
+            <input
+              id="phone"
+              class="input"
+              type="tel"
+              inputmode="tel"
+              placeholder="+970 59 000 0000"
+              required
+            />
           </div>
 
+          <!-- Submit -->
           <div style="display:flex; gap:12px; align-items:center; margin-top:8px; flex-wrap:wrap;">
-            <button type="submit" class="btn-primary">Finish setup</button>
+            <button type="submit" class="btn-primary">
+              Finish setup
+            </button>
           </div>
         </form>
 
@@ -85,7 +152,7 @@
     </div>
   </div>
 
-  <!-- toast container -->
+  <!-- Toasts -->
   <div id="toasts" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
   <script src="/static/js/signin"></script>

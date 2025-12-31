@@ -5,6 +5,23 @@ const POLL_TRACK_INTERVAL_MS = 60_000;
 let GLOBAL_USER_ID = null;
 let GLOBAL_DOMAIN = null;
 
+function el(id) { return document.getElementById(id); }
+
+function show_toast(message, type = 'info') {
+  const container = el('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast-item';
+  t.style.padding = '10px 12px';
+  t.style.borderRadius = '10px';
+  t.style.fontWeight = 700;
+  t.textContent = message;
+  if (type === 'error') { t.style.background = '#fee2e2'; t.style.color = '#991b1b'; t.style.borderLeft = '6px solid #ef4444'; }
+  else if (type === 'success') { t.style.background = '#dcfce7'; t.style.color = '#065f46'; t.style.borderLeft = '6px solid #10b981'; }
+  else { t.style.background = '#dbeafe'; t.style.color = '#1e3a8a'; t.style.borderLeft = '6px solid #3b82f6'; }
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   startUsageTracker("/api/binder/track_time");
 
@@ -16,7 +33,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     GLOBAL_PLAN = res.plan;
 
   } catch (err) {
-    console.error("Failed to load domain/user:", err);
+    console.error(`Failed to load domain/user: ${err}`, "error");
+    show_toast(`Failed to load domain/user`, "error");
   }
 });
 
@@ -106,7 +124,8 @@ async function get_domain() {
       return data.data || data.domain;
     }
   } catch (err) {
-    console.log(err)
+    show_toast(`Failed to load domain`, "error");
+    console.error(err,"error");
   }
   return null;
 }
@@ -176,12 +195,12 @@ async function submitPatient() {
   const client = buildClientObject();
 
   if (!GLOBAL_USER_ID || !GLOBAL_DOMAIN) {
-    alert("Unable to get user or domain. Please refresh the page.");
+    show_toast("Unable to get user or domain. Please refresh the page." , "error");
     return;
   }
 
   if (!client.name || client.age == 0) {
-    alert("Please enter the patient name.");
+    show_toast("Please enter the patient name." , "info");
     return;
   }
 
@@ -195,7 +214,7 @@ async function submitPatient() {
 
     const result = await safePost("/api/binder/clients", payload);
 
-    alert("Patient added successfully!");
+    show_toast("Patient added successfully!" , "success");
     document.getElementById("PName").value= '';
     document.getElementById("idnum").value= '';
     document.getElementById("PNum").value= '';
@@ -209,11 +228,11 @@ async function submitPatient() {
       window.location.href = `/data/-1`;
     }
     else{
-      console.warn("not impleminted yet!")
+      show_toast("not impleminted yet!","info")
     }
 
   } catch (err) {
-    console.error("Error adding patient:", err);
-    alert("Error adding patient. See console.");
+    show_toast("Error adding patient." ,"error");
+    console.error(`Error adding patient: ${err}`, "error" );
   }
 }

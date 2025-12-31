@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="icon" href="/static/images/w3.jpg" />
-  <title>Support — Binder Medical</title>
+  <title>Support — Binder</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -173,7 +173,7 @@
               <div class="font-medium">Phone</div>
               <div class="muted">call or SMS</div>
             </div>
-            <a href="tel:+970592840353" class="text-[var(--accent)] font-medium">+970 592 840 353</a>
+            <a href="tel:+972592840353" class="text-[var(--accent)] font-medium">+970 592 840 353</a>
           </div>
 
           <div class="contact-row">
@@ -181,7 +181,7 @@
               <div class="font-medium">WhatsApp</div>
               <div class="muted">quick chat</div>
             </div>
-            <a href="https://wa.me/970592840353" target="_blank" class="text-[var(--accent)] font-medium">Chat on WhatsApp</a>
+            <a href="https://wa.me/972592840353" target="_blank" class="text-[var(--accent)] font-medium">Chat on WhatsApp</a>
           </div>
     </section>
   </main>
@@ -238,20 +238,12 @@
       const menuBar = document.getElementById('menuBar');
       menuBtn.addEventListener('click', () => menuBar.classList.toggle('menu-active'));
       const usage = startUsageTracker("/api/binder/track_time");
-      // binder lab mode (keeps parity with other pages)
-      const binder = '{{ binder }}';
+     
       const appa = document.getElementById('appa');
       const appimg = document.getElementById('appimg');
       const apph6 = document.getElementById('apph6');
       const link = document.querySelector("link[rel~='icon']");
-      if (binder === 'lab') {
-        appa.title = 'Search Lab';
-        appa.href = '/srchlab';
-        appimg.src = '/static/images/srchlab.png';
-        document.title = 'Binder Laboratory';
-        if (link) link.href = '/static/images/binderlab.jpg';
-        apph6.textContent = 'Search Lab';
-      }
+      
     });
   </script>
 </body>
