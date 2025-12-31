@@ -227,6 +227,9 @@ async function submitPatient() {
     if (["medical"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
       window.location.href = `/data/-1`;
     }
+    else if (["business"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
+      window.location.href = `/data/-1`;
+    }
     else{
       show_toast("not impleminted yet!","info")
     }
