@@ -12,7 +12,7 @@
 
 <body class="min-h-screen flex items-center justify-center">
 
-  <!-- Menu (kept unchanged) -->
+  <!-- Menu -->
   <div id="menuBar" class="fixed top-4 left-4 z-50">
     <div class="hamburger-menu p-2">
       <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
@@ -20,33 +20,44 @@
       </label>
 
       <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/acc">
-            <img class="icoo w-6 h-6" src="/static/images/acc.png">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/acc" title="Account">
+            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
             <h6 class="text-sm font-medium">Account</h6>
           </a>
         </li>
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/home_page">
-            <img class="icoo w-6 h-6" src="/static/images/hoo.png">
-            <h6 class="text-sm font-medium">Add</h6>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/home_page" title="Add Client">
+            <img class="icoo w-6 h-6" src="/static/images/hoo.png" alt="Add">
+            <h6 class="text-sm font-medium">Add Client</h6>
           </a>
         </li>
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/srch">
-            <img class="icoo w-6 h-6" src="/static/images/sss.png">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/srch" title="Search Records">
+            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
             <h6 class="text-sm font-medium">Search</h6>
           </a>
         </li>
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/stats">
-            <img class="icoo w-6 h-6" src="/static/images/stst.png">
-            <h6 class="text-sm font-medium">Stats</h6>
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/stats" title="Business Analytics">
+            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
+            <h6 class="text-sm font-medium">Analytics</h6>
           </a>
         </li>
+
         <li>
-          <a id="appa" class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/appointments">
-            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png">
+          <a id="appa"
+             class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/appointments" title="Meetings">
+            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Meetings">
             <h6 id="apph6" class="text-sm font-medium">Meetings</h6>
           </a>
         </li>
@@ -54,17 +65,21 @@
         <li class="border-t border-[var(--secondary)] my-1"></li>
 
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/settings">
-            <img class="icoo w-6 h-6" src="/static/images/sett.png">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/settings" title="Settings">
+            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
             <h6 class="text-sm font-medium">Settings</h6>
           </a>
         </li>
+
         <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition" href="/support">
-            <img class="icoo w-6 h-6" src="/static/images/supp.png">
+          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
+             href="/support" title="Support">
+            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
             <h6 class="text-sm font-medium">Support</h6>
           </a>
         </li>
+
       </ul>
     </div>
   </div>
