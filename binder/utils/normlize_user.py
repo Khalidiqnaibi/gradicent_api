@@ -124,7 +124,7 @@ def normalize_client(raw: Dict[str, Any] , domain : str) -> Dict[str, Any]:
 
     for i in raw.keys():
         if not client.get(i) and not client.get("metadata").get(i):
-            client["metadata"][i]= raw[i]
+            client[i]= raw[i]
 
     return client
 
