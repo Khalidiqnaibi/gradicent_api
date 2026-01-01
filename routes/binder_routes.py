@@ -339,7 +339,7 @@ def add_interaction(client_id: str):
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
 
-    if not int(client_id) < 0:
+    if not int(client_id) > 0:
         client_id = session["client_id"]
 
     interaction = service.create_interaction(client_id, payload["interaction"])
