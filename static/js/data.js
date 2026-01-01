@@ -336,7 +336,7 @@ const FILE_API_BASE = '/api/binder/files';
 
 
 /* ---------- Open / Close ---------- */
-function openFile() {
+function openFolderBtn() {
   if (["pro","ultra"].includes(plan)){
     $('#fileModal').style.display = 'flex';
     selectFolder('drs');
