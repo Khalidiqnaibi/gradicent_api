@@ -166,23 +166,48 @@ function startUsageTracker(endpoint) {
 
 
 // ---------------------------------------------
-//  BUILD PATIENT OBJECT
+//  BUILD client OBJECT
 // ---------------------------------------------
+
+// Map domain → { htmlId: backendKey }
+const FIELD_MAP = {
+  medical: {
+    PName:      "name",
+    idnum:      "gov_id",
+    PNum:       "phone",
+    loc:        "location",
+    medh:       "pmh",
+    allergies:  "allergies",
+    btype:      "btype",
+    sex:        "sex",
+    age:        "age"
+  },
+  business: {
+    PName:      "name",
+    idnum:      "gov_id",
+    PNum:       "phone",
+    loc:        "location",
+    medh:       "company",       
+    allergies:  "industry",
+    btype:      "email",   
+    sex:        "account_manager",  
+    age:        "company_size"    
+  }
+};
+
+
 function buildClientObject() {
-  return {
-    name:       document.getElementById("PName").value.trim(),
-    gov_id:     document.getElementById("idnum").value.trim(),
-    phone:      document.getElementById("PNum").value.trim(),
-    location:   document.getElementById("loc").value.trim(),
-    pmh:        document.getElementById("medh").value.trim(),
-    allergies:  document.getElementById("allergies").value.trim(),
-    btype:      document.getElementById("btype").value.trim(),
-    sex:        document.getElementById("sex").value.trim(),
-    age:        document.getElementById("age").value.trim(),
-    debit: 0,
-    payed: 0,
-    visits: []   // empty — first visit will be added later
-  };
+  const domain = GLOBAL_DOMAIN || "business";
+  const map = FIELD_MAP[domain];
+
+  const client = { debit: 0, payed: 0, interactions: [] };
+
+  for (const [htmlId, key] of Object.entries(map)) {
+    const el = document.getElementById(htmlId);
+    if (el) client[key] = el.value.trim();
+  }
+
+  return client;
 }
 
 
@@ -191,7 +216,7 @@ function buildClientObject() {
 // ---------------------------------------------
 
 
-async function submitPatient() {
+async function submitClient() {
   const client = buildClientObject();
 
   if (!GLOBAL_USER_ID || !GLOBAL_DOMAIN) {
@@ -199,8 +224,13 @@ async function submitPatient() {
     return;
   }
 
-  if (!client.name || client.age == 0) {
-    show_toast("Please enter the patient name." , "info");
+  if (!client.name) {
+    show_toast("Please enter the Client name." , "info");
+    return;
+  }
+
+  if (GLOBAL_DOMAIN == "medical" && client.age == 0){
+    show_toast("Please enter the patient age." , "info");
     return;
   }
 
@@ -214,7 +244,7 @@ async function submitPatient() {
 
     const result = await safePost("/api/binder/clients", payload);
 
-    show_toast("Patient added successfully!" , "success");
+    show_toast("Client added successfully!" , "success");
     document.getElementById("PName").value= '';
     document.getElementById("idnum").value= '';
     document.getElementById("PNum").value= '';
@@ -224,18 +254,14 @@ async function submitPatient() {
     document.getElementById("btype").value= '';
     document.getElementById("sex").value= '';
     document.getElementById("age").value= '';
-    if (["medical"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
+    if (["medical","business"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
       window.location.href = `/data/-1`;
-    }
-    else if (["business"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
-      window.location.href = `/data/-1`;
-    }
-    else{
+    }else{
       show_toast("not impleminted yet!","info")
     }
 
   } catch (err) {
-    show_toast("Error adding patient." ,"error");
-    console.error(`Error adding patient: ${err}`, "error" );
+    show_toast("Error adding client." ,"error");
+    console.error(`Error adding client: ${err}`, "error" );
   }
 }

@@ -1,2 +1,6 @@
 the client info in the business domain are the same as the medical domain ..
 this is just and issue of the js file of home
+
+===============================
+Fixed:
+made a map with teh buttons and domain keys and vals for each domain
