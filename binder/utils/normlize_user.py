@@ -59,7 +59,7 @@ def normalize_sex(x: str ) -> str:
         return "female"
     return x
 
-def get_interaction_per_domain(raw: Dict[str, Any], domain: str) -> Dict[str, Any]:
+def get_interaction_per_domain(raw: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "coast": f(raw.get("coast", raw.get("cost", 0))),
         "debit": f(raw.get("debit", 0)),
@@ -77,16 +77,16 @@ def get_interaction_per_domain(raw: Dict[str, Any], domain: str) -> Dict[str, An
         "metadata": raw.get("metadata", {}),
     }
 
-def normalize_interactions(raw: Any , domain:str) -> List[Dict[str, Any]]:
+def normalize_interactions(raw: Any) -> List[Dict[str, Any]]:
     if not raw:
         return []
     if isinstance(raw, list):
-        return [get_interaction_per_domain(v,domain) for v in raw if isinstance(v, dict)]
+        return [get_interaction_per_domain(v) for v in raw if isinstance(v, dict)]
     if isinstance(raw, dict):
-        return [get_interaction_per_domain(raw,domain)]
+        return [get_interaction_per_domain(raw)]
     return []
 
-def normalize_client(raw: Dict[str, Any] , domain : str) -> Dict[str, Any]:
+def normalize_client(raw: Dict[str, Any]) -> Dict[str, Any]:
     """
     Returns a client dict WITHOUT id.
     id is assigned later based on list index.
