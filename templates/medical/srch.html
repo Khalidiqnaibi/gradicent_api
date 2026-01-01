@@ -89,6 +89,7 @@
   <div id="toasts" class="toast-wrap" aria-live="polite"></div>
   <script>
     window.__GAIA_LIST__ = {{ clients | default([]) | tojson | safe }};
+    window.__client__ = "{{client}}";
   </script>
 
   <script src="/static/js/srch.js"></script>

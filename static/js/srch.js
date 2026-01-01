@@ -25,7 +25,7 @@
     last_query: '',
     usage_tracker: null,
     plan : 'free',
-    client_id: "{{client}}" || null,
+    client_id: window.__client__ || null,
   };
 
   /* ----------------------
