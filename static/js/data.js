@@ -70,7 +70,7 @@ const cfg = () => DOMAIN_CONFIG[domain];
 let user_id = '';
 let visits = [];
 let currentVisitIndex = 0;
-let patientNumber = '{{client}}';
+let patientNumber = window.__client__ || 0;
 
 /* ============================================================
    Fetch helpers

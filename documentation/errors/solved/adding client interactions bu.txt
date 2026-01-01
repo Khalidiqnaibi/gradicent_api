@@ -1,0 +1,11 @@
+in the ss (interaction adding error.png) you can see the errors ..
+
+this is most likly a difference onm the model on interaction in bu and me domains
+
+the permanent solution is to make a new model for it 
+
+
+===================================================
+Fixed:
+the error was because the interaction page ( data.html ) not the thing that accepts the jinja 
+but the js. now the correct way for jinja is implemented 

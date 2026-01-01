@@ -1,5 +1,0 @@
-in the ss you can see the errors ..
-
-this is most likly a difference onm the model on interaction in bu and me domains
-
-the permanent solution is to make a new model for it 

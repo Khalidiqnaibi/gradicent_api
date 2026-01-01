@@ -101,6 +101,9 @@ class ClientMixin:
                 return found
 
         if q.isdigit():
+            if q > 0:
+                q -= 1
+                
             found = self.adapter.find_children_by_field(
                 self.domain,
                 self.current_user,
