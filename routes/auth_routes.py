@@ -158,10 +158,12 @@ def current_user():
             return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
 
         normalized = normalize_user(user)
+        res = normalized.to_dict()
+        _ = res.pop("metadata", None) 
         if not normalized:
             return jsonify({"status": "error","data":None, "message": "unrecognized user structure"}), 401
 
-        return jsonify({"status": "success", "data": normalized.to_dict(),"message":"got user"})
+        return jsonify({"status": "success", "data": res,"message":"got user"})
     domain = request.args.get("domain", session.get("domain",session.get("binder", "business")))
     auth_service = _get_auth_service(domain)
     auth_header: Optional[str] = request.headers.get("Authorization")

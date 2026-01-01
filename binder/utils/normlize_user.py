@@ -59,7 +59,7 @@ def normalize_sex(x: str ) -> str:
         return "female"
     return x
 
-def normalize_interaction(raw: Dict[str, Any]) -> Dict[str, Any]:
+def get_interaction_per_domain(raw: Dict[str, Any], domain: str) -> Dict[str, Any]:
     return {
         "coast": f(raw.get("coast", raw.get("cost", 0))),
         "debit": f(raw.get("debit", 0)),
@@ -77,16 +77,16 @@ def normalize_interaction(raw: Dict[str, Any]) -> Dict[str, Any]:
         "metadata": raw.get("metadata", {}),
     }
 
-def normalize_interactions(raw: Any) -> List[Dict[str, Any]]:
+def normalize_interactions(raw: Any , domain:str) -> List[Dict[str, Any]]:
     if not raw:
         return []
     if isinstance(raw, list):
-        return [normalize_interaction(v) for v in raw if isinstance(v, dict)]
+        return [get_interaction_per_domain(v,domain) for v in raw if isinstance(v, dict)]
     if isinstance(raw, dict):
-        return [normalize_interaction(raw)]
+        return [get_interaction_per_domain(raw,domain)]
     return []
 
-def normalize_client(raw: Dict[str, Any]) -> Dict[str, Any]:
+def normalize_client(raw: Dict[str, Any] , domain : str) -> Dict[str, Any]:
     """
     Returns a client dict WITHOUT id.
     id is assigned later based on list index.
@@ -107,12 +107,11 @@ def normalize_client(raw: Dict[str, Any]) -> Dict[str, Any]:
         "gov_id": s(raw.get("gov_id", raw.get("id"))),
         "legacy_no": raw.get("no"),
         "sex": normalize_sex(raw.get("sex")),
-        "age": raw["age"] ,
+        "age": raw.get("age") ,
         "btype": raw.get("btype"),
         "location": raw.get("location"),
         "pmh": raw.get("pmh"),
         "metadata": {
-            "legacy": True,
             # preserve legacy arrays safely
             **({"lab": raw.get("lab")} if raw.get("lab") else {}),
             **({"pharma": raw.get("pharma")} if raw.get("pharma") else {}),
@@ -123,24 +122,9 @@ def normalize_client(raw: Dict[str, Any]) -> Dict[str, Any]:
         "transactions": [],
     }
 
-    # infer transactions
-    if raw.get("payed") is not None:
-        client["transactions"].append({
-            "id": "tx-payed",
-            "amount": f(raw.get("payed")),
-            "method": "legacy",
-            "timestamp": client["created_at"],
-            "metadata": {},
-        })
-
-    if raw.get("debit"):
-        client["transactions"].append({
-            "id": "tx-debit",
-            "amount": -f(raw.get("debit")),
-            "method": "legacy",
-            "timestamp": client["created_at"],
-            "metadata": {},
-        })
+    for i in raw.keys():
+        if not client.get(i) and not client.get("metadata").get(i):
+            client["metadata"][i]= raw[i]
 
     return client
 
