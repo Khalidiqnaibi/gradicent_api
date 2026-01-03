@@ -215,30 +215,13 @@
       });
     }
 
-    function render_client_detail(patient) {
+    function render_client_detail(client) {
       clear();
-      const el = results_el;
 
-      if (!patient) {
+      if (!client || typeof client !== 'object') {
         utils.show_toast("Client not found", "error");
         return;
       }
-
-      const labels = [
-        { key: 'name', text: 'Patient Name' },
-        { key: 'gov_id', text: 'ID Number' },
-        { key: 'phone', text: 'Phone Number' },
-        { key: 'location', text: 'Location' },
-        { key: 'pmh', text: 'Medical History' },
-        { key: 'allergies', text: 'Allergies' },
-        { key: 'age', text: 'Age' },
-        { key: 'next', text: 'Next visit' },
-        { key: 'btype', text: 'Blood Type' },
-        { key: 'sex', text: 'Sex' },
-        { key: 'payed', text: 'Paid' },
-        { key: 'debit', text: 'Debit' },
-        { key: 'notes', text: 'Notes' }
-      ];
 
       const panel = document.createElement('div');
       panel.className = 'patient-card decorative-card';
@@ -247,30 +230,31 @@
       const grid = document.createElement('div');
       grid.className = 'patient-info-grid';
 
-      labels.forEach(lbl => {
+      Object.entries(client).forEach(([key, value]) => {
+        if (key === 'id') return;
+
         const wrap = document.createElement('div');
 
-        const l = document.createElement('div');
-        l.className = 'patient-label';
-        l.textContent = lbl.text + ':';
+        const label = document.createElement('div');
+        label.className = 'patient-label';
+        label.textContent = key.replace(/_/g, ' ') + ':';
 
         const input = document.createElement('input');
         input.className = 'patient-value';
-        input.setAttribute('data-key', lbl.key);
+        input.dataset.key = key;
 
-        if (lbl.key === 'next') {
+        // auto-detect datetime
+        if (typeof value === 'string' && value.includes('T')) {
           input.type = 'datetime-local';
-          input.value = patient.next || new Date().toISOString().slice(0, 16);
-        }else {
+          input.value = value.slice(0, 16);
+        } else {
           input.type = 'text';
-          input.value = patient[lbl.key] || '';
+          input.value = value ?? '';
         }
 
-        if (APP_STATE.plan !== "sec" || ! ["payed" , "debit"].includes(lbl.key)){
-          wrap.appendChild(l);
-          wrap.appendChild(input);
-          grid.appendChild(wrap);
-        }
+        wrap.appendChild(label);
+        wrap.appendChild(input);
+        grid.appendChild(wrap);
       });
 
       const btnRow = document.createElement('div');
@@ -278,27 +262,24 @@
       btnRow.style.gap = '10px';
       btnRow.style.marginTop = '16px';
 
-      if (APP_STATE.plan === "sec"){
-        btnRow.innerHTML = `
-          <button class="big-btn btn-primary" id="save_btn">Save</button>
-          <button class="big-btn btn-ghost" id="back_btn">Back</button>
-        `;
-      }else{
-        btnRow.innerHTML = `
+      btnRow.innerHTML = `
         <button class="big-btn btn-primary" id="save_btn">Save</button>
-        <button class="big-btn btn-primary" id="open_btn">Open</button>
         <button class="big-btn btn-ghost" id="back_btn">Back</button>
       `;
-      }
-      
+
       panel.appendChild(grid);
       panel.appendChild(btnRow);
-      el.appendChild(panel);
+      results_el.appendChild(panel);
 
-      document.getElementById('back_btn').addEventListener('click', () => controller.render_last());
-      document.getElementById('save_btn').addEventListener('click', () => controller.save_client(patient.id, collectPatientValues()));
-      document.getElementById('open_btn').addEventListener('click', () => controller.open_client(parseInt(patient.id)+1));
+      document.getElementById('back_btn')
+        .addEventListener('click', () => controller.render_last());
+
+      document.getElementById('save_btn')
+        .addEventListener('click', () =>
+          controller.save_client(client.id, collectPatientValues())
+        );
     }
+
 
     function collectPatientValues() {
       const inputs = results_el.querySelectorAll('[data-key]');
@@ -311,47 +292,64 @@
     }
 
 
-   function render_list(list) {
-    clear();
-    const el = results_el;
+    function render_list(list) {
+      clear();
+      const el = results_el;
 
-    if (!list || list.length === 0) {
-      const no = document.createElement('div');
-      no.className = 'patient-card decorative-card';
-      no.textContent = 'No patients found.';
-      el.appendChild(no);
-      return;
-    }
+      if (!list || list.length === 0) {
+        const no = document.createElement('div');
+        no.className = 'patient-card decorative-card';
+        no.textContent = 'No clients found.';
+        el.appendChild(no);
+        return;
+      }
 
-    list.forEach(patient => {
-      const card = document.createElement('div');
-      card.className = 'patient-card decorative-card';
-      card.innerHTML = `
-        <div class="patient-row" style="justify-content:space-between;">
-          <div>
-            <div style="font-weight:800; font-size:1.05rem;">${patient.name || '—'}</div>
-            <div style="color:rgba(0,0,0,0.6); margin-top:6px;">
-              ID: ${parseInt(patient.id) || '—'} • Age: ${patient.age || '—'}
+      list.forEach(client => {
+        const card = document.createElement('div');
+        card.className = 'patient-card decorative-card';
+
+        // name fallback order
+        const title =
+          client.name ||
+          client.company ||
+          client.title ||
+          `Client #${client.id ?? '—'}`;
+
+        // show first 3 non-system fields
+        const meta = Object.entries(client)
+          .filter(([k]) => !['id', 'name'].includes(k))
+          .slice(0, 3)
+          .map(([k, v]) => `${k}: ${v ?? '—'}`)
+          .join(' • ');
+
+        card.innerHTML = `
+          <div class="patient-row" style="justify-content:space-between;">
+            <div>
+              <div style="font-weight:800; font-size:1.05rem;">
+                ${utils.escape_html(title)}
+              </div>
+              <div style="color:rgba(0,0,0,0.6); margin-top:6px;">
+                ${utils.escape_html(meta)}
+              </div>
+            </div>
+            <div>
+              <button class="big-btn btn-secondary" data-id="${client.id}">
+                Open
+              </button>
             </div>
           </div>
-          <div style="text-align:right;">
-            <button 
-              class="big-btn btn-secondary" 
-              style="min-width:110px;" 
-              data-id="${patient.id}"
-            >
-              Open
-            </button>
-          </div>
-        </div>
-      `;
-      el.appendChild(card);
-    });
+        `;
 
-    el.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', ev => controller.view_client(ev.target.dataset.id));
-    });
-  }
+        el.appendChild(card);
+      });
+
+      el.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', ev =>
+          controller.view_client(ev.target.dataset.id)
+        );
+      });
+    }
+
   return { clear, menu_init, render_list , render_client_detail };
 
   })(utils)
