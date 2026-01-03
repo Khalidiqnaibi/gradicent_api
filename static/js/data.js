@@ -190,6 +190,7 @@ function bindControls() {
   $('#lastButton')?.addEventListener('click', last);
   $('#saveBtn')?.addEventListener('click', save);
   $('#printBtn')?.addEventListener('click', printInteraction);
+  $('#openFolderBtn')?.addEventListener('click', openFolder);
 }
 
 /* ============================================================
@@ -355,14 +356,24 @@ function printInteraction() {
 // FILES:
 const FILE_API_BASE = '/api/binder/files';
 
+let selectedFolder = '';
+
+
+if (["medical"].includes(domain)){
+  selectedFolder = 'drs';
+}else if (["business"].includes(domain)){
+  selectedFolder = 'contracts';
+}else{
+  show_toast("Not implemented", "error");
+}
 
 /* ---------- Open / Close ---------- */
-function openFolderBtn() {
+function openFolder() {
   if (["pro","ultra"].includes(plan)){
     $('#fileModal').style.display = 'flex';
     selectFolder();
   }else{
-    showToast("This feature is for the Pro and Ultra plans only");
+    show_toast("This feature is for the Pro and Ultra plans only");
   }
 }
 function closeFileModal() {
@@ -373,7 +384,7 @@ function closeFileModal() {
 /* ---------- Folder Handling ---------- */
 function selectFolder(folder) {
   selectedFolder = folder ;
-  if (!selectFolder){
+  if (!folder){
     if (["medical"].includes(domain)){
       selectFolder('drs');
     }else if (["business"].includes(domain)){
@@ -398,7 +409,7 @@ async function fetchFiles() {
       renderFiles(res.data || []);
     } catch (err) {
       console.error(err);
-      showToast('Failed to fetch files', 'error');
+      show_toast('Failed to fetch files', 'error');
     }
   }else{
     alert("Hmm thats weird right?");
@@ -407,14 +418,14 @@ async function fetchFiles() {
 
 /* ---------- Upload Files ---------- */
 function onFilesSelected(e){
-  if($('#fileInput').files.length) showToast(`${$('#fileInput').files.length} files selected`,'info');
+  if($('#fileInput').files.length) show_toast(`${$('#fileInput').files.length} files selected`,'info');
 }
 
 function uploadFile() {
   if (["pro","ultra"].includes(plan)){
     const files = $('#fileInput').files;
-    if (!files.length) return showToast('No files selected', 'error');
-    if (["medical"].includes(domain) && selectedFolder !== 'drs') return showToast('Uploads only allowed in Doctor folder', 'error');
+    if (!files.length) return show_toast('No files selected', 'error');
+    if (["medical"].includes(domain) && selectedFolder !== 'drs') return show_toast('Uploads only allowed in Doctor folder', 'error');
     const total = files.length;
     let index = 0;
     $('#uploadProgressContainer').style.display = 'block';
@@ -423,7 +434,7 @@ function uploadFile() {
       if (index >= total) {
         $('#uploadProgressContainer').style.display = 'none';
         $('#fileInput').value = '';
-        showToast('All files uploaded', 'success');
+        show_toast('All files uploaded', 'success');
         fetchFiles();
         return;
       }
@@ -441,13 +452,13 @@ function uploadFile() {
             index++;
             uploadNext();
           } else {
-            showToast('Upload failed', 'error');
+            show_toast('Upload failed', 'error');
             $('#uploadProgressContainer').style.display = 'none';
           }
         })
         .catch(err => {
           console.error(err);
-          showToast('Upload error', 'error');
+          show_toast('Upload error', 'error');
           $('#uploadProgressContainer').style.display = 'none';
         });
     };
@@ -499,11 +510,11 @@ async function deleteFile(url) {
   if (["pro","ultra"].includes(plan)){
     try {
       const res = await safe_fetch(`${FILE_API_BASE}/delete_file?url=${encodeURIComponent(url)}`, { method: 'DELETE' });
-      if (res.status === 'success') showToast('File deleted', 'success');
+      if (res.status === 'success') show_toast('File deleted', 'success');
       fetchFiles();
     } catch (err) {
       console.error(err);
-      showToast('Delete failed', 'error');
+      show_toast('Delete failed', 'error');
     }
   }
 }
