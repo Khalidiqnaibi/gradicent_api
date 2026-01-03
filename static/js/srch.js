@@ -230,9 +230,40 @@
       const grid = document.createElement('div');
       grid.className = 'patient-info-grid';
 
-      Object.entries(client).forEach(([key, value]) => {
-        if (key === 'id') return;
+      /* -----------------------------
+        Field classification helpers
+        ----------------------------- */
 
+      function detect_type(key, value) {
+        if (value === null || value === undefined) return 'text';
+
+        // explicit datetime keys OR ISO-like strings
+        if (
+          key === 'next' ||
+          (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value))
+        ) return 'datetime';
+
+        // numeric values
+        if (typeof value === 'number') return 'number';
+
+        // numeric strings
+        if (typeof value === 'string' && value !== '' && !isNaN(value)) {
+          return 'number';
+        }
+
+        if (typeof value === 'boolean') return 'boolean';
+
+        return 'text';
+      }
+
+      function should_hide_field(key) {
+        if (APP_STATE.plan !== "sec" && ["payed", "debit"].includes(key)) {
+          return true;
+        }
+        return false;
+      }
+
+      function create_field(key, value) {
         const wrap = document.createElement('div');
 
         const label = document.createElement('div');
@@ -243,10 +274,17 @@
         input.className = 'patient-value';
         input.dataset.key = key;
 
-        // auto-detect datetime
-        if (typeof value === 'string' && value.includes('T')) {
+        const type = detect_type(key, value);
+
+        if (type === 'datetime') {
           input.type = 'datetime-local';
-          input.value = value.slice(0, 16);
+          input.value = value ? String(value).slice(0, 16) : '';
+        } else if (type === 'number') {
+          input.type = 'number';
+          input.value = value ?? '';
+        } else if (type === 'boolean') {
+          input.type = 'checkbox';
+          input.checked = Boolean(value);
         } else {
           input.type = 'text';
           input.value = value ?? '';
@@ -254,22 +292,76 @@
 
         wrap.appendChild(label);
         wrap.appendChild(input);
-        grid.appendChild(wrap);
+        return wrap;
+      }
+
+      /* -----------------------------
+        Sort fields by type priority
+        ----------------------------- */
+
+      const TYPE_ORDER = {
+        text: 1,
+        datetime: 2,
+        number: 3,
+        boolean: 4,
+        other: 5
+      };
+
+      if (Object.entries(client).includes("name")){
+        const fieldEl = create_field("name", client["name"]);
+        grid.appendChild(fieldEl);
+      }
+
+      const fields = Object.entries(client)
+        .filter(([key]) => !['id','name', 'interaction'].includes(key))
+        .filter(([key]) => !should_hide_field(key))
+        .map(([key, value]) => ({
+          key,
+          value,
+          type: detect_type(key, value)
+        }))
+        .sort((a, b) => {
+          return (TYPE_ORDER[a.type] || 99) - (TYPE_ORDER[b.type] || 99);
+        });
+
+      /* -----------------------------
+        Render fields
+        ----------------------------- */
+
+      fields.forEach(({ key, value }) => {
+        const fieldEl = create_field(key, value);
+        grid.appendChild(fieldEl);
       });
+
+      /* -----------------------------
+        Action buttons
+        ----------------------------- */
 
       const btnRow = document.createElement('div');
       btnRow.style.display = 'flex';
       btnRow.style.gap = '10px';
       btnRow.style.marginTop = '16px';
 
-      btnRow.innerHTML = `
-        <button class="big-btn btn-primary" id="save_btn">Save</button>
-        <button class="big-btn btn-ghost" id="back_btn">Back</button>
-      `;
+      if (APP_STATE.plan === "sec") {
+        btnRow.innerHTML = `
+          <button class="big-btn btn-primary" id="save_btn">Save</button>
+          <button class="big-btn btn-ghost" id="back_btn">Back</button>
+        `;
+      } else {
+        btnRow.innerHTML = `
+          <button class="big-btn btn-primary" id="save_btn">Save</button>
+          <button class="big-btn btn-primary" id="open_btn">Open</button>
+          <button class="big-btn btn-ghost" id="back_btn">Back</button>
+        `;
+      }
 
       panel.appendChild(grid);
       panel.appendChild(btnRow);
       results_el.appendChild(panel);
+
+      /* -----------------------------
+        Events
+        ----------------------------- */
 
       document.getElementById('back_btn')
         .addEventListener('click', () => controller.render_last());
@@ -278,7 +370,15 @@
         .addEventListener('click', () =>
           controller.save_client(client.id, collectPatientValues())
         );
+
+      const openBtn = document.getElementById('open_btn');
+      if (openBtn) {
+        openBtn.addEventListener('click', () =>
+          controller.open_client(client.id)
+        );
+      }
     }
+
 
 
     function collectPatientValues() {
@@ -332,11 +432,15 @@
                 ${utils.escape_html(meta)}
               </div>
             </div>
-            <div>
-              <button class="big-btn btn-secondary" data-id="${client.id}">
+            <div style="text-align:right;">
+              <button 
+                class="big-btn btn-secondary" 
+                style="min-width:110px;" 
+                data-id="${client.id}"
+              >
                 Open
               </button>
-            </div>
+          </div>
           </div>
         `;
 
