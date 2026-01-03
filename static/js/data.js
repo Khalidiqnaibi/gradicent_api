@@ -109,6 +109,25 @@ function startUsageTracker(endpoint) {
   };
 }
 
+function menu_init() {
+  const menuBtn = document.querySelector('.hamburger-menu');
+  const menuBar = document.getElementById('menuBar');
+  
+  // Toggle menu (keeps same interaction as previous)
+  menuBtn.addEventListener('click', () => {
+    menuBar.classList.toggle('menu-active');
+  });
+  
+  const menu_box = document.querySelector(".menu__box")
+  // close when clicking outside (improves UX)
+  document.addEventListener('click', (ev) => {
+    if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+      menuBar.classList.remove('menu-active');
+      toggle.setAttribute('aria-expanded', 'false');
+      menu_box.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
 
 function el(id) { return document.getElementById(id); }
 
@@ -153,6 +172,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const usage = startUsageTracker("/api/binder/track_time");
   domain = (await safe_fetch('/api/binder/get_domain')).data || 'medical';
   user_id = (await safe_fetch('/api/auth/me')).data.id;
+
+  menu_init();
 
   bindControls();
   fetchClientData();
@@ -339,7 +360,7 @@ const FILE_API_BASE = '/api/binder/files';
 function openFolderBtn() {
   if (["pro","ultra"].includes(plan)){
     $('#fileModal').style.display = 'flex';
-    selectFolder('drs');
+    selectFolder();
   }else{
     showToast("This feature is for the Pro and Ultra plans only");
   }
@@ -351,7 +372,17 @@ function closeFileModal() {
 
 /* ---------- Folder Handling ---------- */
 function selectFolder(folder) {
-  selectedFolder = folder || 'drs';
+  selectedFolder = folder ;
+  if (!selectFolder){
+    if (["medical"].includes(domain)){
+      selectFolder('drs');
+    }else if (["business"].includes(domain)){
+      selectFolder('contracts');
+    }else{
+      show_toast("Not implemented", "error");
+    }
+  }
+    
   $('#uploadControls').style.display = selectedFolder === 'drs' ? 'flex' : 'none';
   fetchFiles();
 }
@@ -376,15 +407,14 @@ async function fetchFiles() {
 
 /* ---------- Upload Files ---------- */
 function onFilesSelected(e){
-    if($('#fileInput').files.length) showToast(`${$('#fileInput').files.length} files selected`,'info');
-  }
+  if($('#fileInput').files.length) showToast(`${$('#fileInput').files.length} files selected`,'info');
+}
 
 function uploadFile() {
   if (["pro","ultra"].includes(plan)){
     const files = $('#fileInput').files;
     if (!files.length) return showToast('No files selected', 'error');
-    if (selectedFolder !== 'drs') return showToast('Uploads only allowed in Doctor folder', 'error');
-
+    if (["medical"].includes(domain) && selectedFolder !== 'drs') return showToast('Uploads only allowed in Doctor folder', 'error');
     const total = files.length;
     let index = 0;
     $('#uploadProgressContainer').style.display = 'block';
@@ -451,7 +481,7 @@ function renderFiles(files) {
         const txt = document.createElement('div'); txt.className = 'p-3 border rounded txtPrev'; txt.textContent = file.name || 'file'; link.appendChild(txt);
       }
 
-      if (selectedFolder === 'drs') {
+      if (["docs","invoices","contracts",'drs'].includes(selectedFolder)) {
         const remove = document.createElement('div');
         remove.className = 'file-remove'; remove.innerHTML = '&times;';
         remove.onclick = (e) => { e.preventDefault(); if(confirm('Delete this file?')) deleteFile(file.data); };
