@@ -257,7 +257,7 @@
       }
 
       function should_hide_field(key) {
-        if (APP_STATE.plan !== "sec" && ["payed", "debit"].includes(key)) {
+        if (APP_STATE.plan === "sec" && ["payed", "debit"].includes(key)) {
           return true;
         }
         return false;

@@ -1,3 +1,4 @@
 the client info are sshowing correctly but the js is showing the medical fields also
 in the srch.js should be changes for the renderiong of the client info based on
 domain.
+=======================fixed :implemented a loop over all the fields that the backend returns then sorted them based on input type
