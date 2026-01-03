@@ -63,6 +63,7 @@ const DOMAIN_CONFIG = {
 
 let domain = 'medical';
 const cfg = () => DOMAIN_CONFIG[domain];
+let plan = "free";
 
 /**
  * Tracks real active time on the page and sends ONLY one final value:
@@ -165,6 +166,18 @@ async function safe_fetch(url, opts = {}) {
   return r.json();
 }
 
+async function get_plan_status() {
+  try {
+    const data = await safe_fetch('/api/binder/get_plan_status', { method: 'GET' });
+    // expected shape: { data: { days: N, plan: 'x' } } or { days: N, plan: 'x' }
+    if (!data) return null;
+    const payload = data.data || data;
+    return { days: Number(payload.days || 0), plan: payload.plan || null };
+  } catch (err) {
+    return null;
+  }
+}
+
 /* ============================================================
    Init
 ============================================================ */
@@ -172,6 +185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const usage = startUsageTracker("/api/binder/track_time");
   domain = (await safe_fetch('/api/binder/get_domain')).data || 'medical';
   user_id = (await safe_fetch('/api/auth/me')).data.id;
+  plan = (await get_plan_status()).plan;
 
   menu_init();
 
