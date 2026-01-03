@@ -280,7 +280,7 @@
           input.type = 'datetime-local';
           input.value = value ? String(value).slice(0, 16) : '';
         } else if (type === 'number') {
-          input.type = 'number';
+          input.type = 'text';
           input.value = value ?? '';
         } else if (type === 'boolean') {
           input.type = 'checkbox';
@@ -307,13 +307,11 @@
         other: 5
       };
 
-      if (Object.entries(client).includes("name")){
-        const fieldEl = create_field("name", client["name"]);
-        grid.appendChild(fieldEl);
-      }
+      const fieldEl = create_field("name", client["name"]);
+      grid.appendChild(fieldEl);
 
       const fields = Object.entries(client)
-        .filter(([key]) => !['id','name', 'interaction'].includes(key))
+        .filter(([key]) => !['id','name', 'interactions'].includes(key))
         .filter(([key]) => !should_hide_field(key))
         .map(([key, value]) => ({
           key,
