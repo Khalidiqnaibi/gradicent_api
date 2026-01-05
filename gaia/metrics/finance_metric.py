@@ -117,8 +117,10 @@ class FinanceMetric(IMetric):
                 else:
                     interaction = interactions
 
-                payed = float(interaction.get("payed", 0))
-                debit = float(interaction.get("debit", 0))
+                payed = float(interaction.get("payed", interaction.get("paid")))
+                debit = float(interaction.get("debit", None))
+                if debit is None:
+                    debit =float (interaction.get("balance")) *-1
 
                 # Aggregate totals
                 total_revenue += payed
