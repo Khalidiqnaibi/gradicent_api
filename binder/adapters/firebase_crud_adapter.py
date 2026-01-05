@@ -145,6 +145,12 @@ class FirebaseCrudAdapter(StorageAdapter):
 
         nested_id = str(len(content))
         obj["interaction_no"] = int(nested_id)
+        if nested_id == "1":
+            content = [content]
+            content.append(obj)
+            ref.set(content)
+            return nested_id
+            
 
         ref.child(nested_id).set(obj)
         return nested_id
