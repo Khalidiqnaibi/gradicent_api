@@ -12,14 +12,8 @@ from importlib.resources import path
 from typing import Any, Dict, List, Optional
 from firebase_admin import db
 from ..interfaces.storage_adapter import StorageAdapter
-import re , sys
+import re 
 
-import logging
-
-logging.basicConfig(
-    level=logging.ERROR,
-    format="%(asctime)s %(levelname)s %(message)s"
-)
 
 
 def normalize_digits(s: str) -> str:
@@ -128,31 +122,29 @@ class FirebaseCrudAdapter(StorageAdapter):
 
         return result
 
-    def add_nested(
-        self,
-        user_id: str,
-        collection: str,
-        child_id: str,
-        nested: str,
-        obj: Dict
-    ) -> str:
-
+    def add_nested(self, user_id, collection, child_id, nested, obj):
         ref = self._nested_ref(user_id, collection, child_id, nested)
-        content = ref.get() or {}
+        raw = ref.get()
 
-        if not isinstance(content, dict):
-            content = {}
+        # LEGACY: flat object at parent → normalize and replace
+        if isinstance(raw, dict) and not any(k.isdigit() for k in raw.keys()):
+            ref.set({
+                "0": raw,
+                "1": obj
+            })
+            return "1"
 
-        nested_id = str(len(content))
+        items = self.list_nested(user_id, collection, child_id, nested)
+        nested_id = str(len(items))
         obj["interaction_no"] = int(nested_id)
-        if nested_id == "1":
-            content = [content]
-            content.append(obj)
-            ref.set(content)
-            return nested_id
-            
 
-        ref.child(nested_id).set(obj)
+        data = {
+            item["id"]: {k: v for k, v in item.items() if k != "id"}
+            for item in items
+        }
+        data[nested_id] = obj
+
+        ref.set(data)   # FULL REPLACE
         return nested_id
 
     def update_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
