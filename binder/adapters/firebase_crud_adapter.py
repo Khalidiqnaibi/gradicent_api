@@ -124,28 +124,27 @@ class FirebaseCrudAdapter(StorageAdapter):
 
     def add_nested(self, user_id, collection, child_id, nested, obj):
         ref = self._nested_ref(user_id, collection, child_id, nested)
-        raw = ref.get()
+        raw = ref.get() or {}
 
-        # LEGACY: flat object at parent → normalize and replace
-        if isinstance(raw, dict) and not any(k.isdigit() for k in raw.keys()):
-            ref.set({
-                "0": raw,
-                "1": obj
-            })
+        # If raw is a single legacy object, wrap it in "0"
+        if isinstance(raw, dict) and not all(k.isdigit() for k in raw.keys()):
+            old = raw.copy()
+            old["interaction_no"] = 0
+            obj["interaction_no"] = 1
+            ref.set({"0": old, "1": obj})
             return "1"
 
-        items = self.list_nested(user_id, collection, child_id, nested)
-        nested_id = str(len(items))
-        obj["interaction_no"] = int(nested_id)
+        # If raw is already numeric-keyed dict
+        if isinstance(raw, dict):
+            next_id = str(len(raw))
+            obj["interaction_no"] = int(next_id)
+            ref.child(next_id).set(obj)  # append without touching existing
+            return next_id
 
-        data = {
-            item["id"]: {k: v for k, v in item.items() if k != "id"}
-            for item in items
-        }
-        data[nested_id] = obj
-
-        ref.set(data)   # FULL REPLACE
-        return nested_id
+        # If empty or invalid, create "0"
+        obj["interaction_no"] = 0
+        ref.set({"0": obj})
+        return "0"
 
     def update_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
         self._nested_ref(user_id, collection, child_id, nested, nested_id).update(patch)

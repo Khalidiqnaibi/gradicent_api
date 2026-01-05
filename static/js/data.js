@@ -320,9 +320,8 @@ function buildPayload() {
 
 function save() {
   const payload = buildPayload();
-
-  // Determine if this is a new interaction
-  const isNew = payload.vno > visits.length;
+  // vno is 1-based; visits.length is number of existing items
+  const isNew = payload.vno === visits.length;
 
   const method = isNew ? 'POST' : 'PATCH';
   const body = isNew
@@ -343,6 +342,7 @@ function save() {
     console.error("Error saving interaction", err);
   });
 }
+
 
 /* ============================================================
    Print
