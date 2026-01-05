@@ -320,7 +320,7 @@ function buildPayload() {
 
 function save() {
   const payload = buildPayload();
-  if (payload.vno > visits.length){
+  if (payload.vno >= visits.length){
     fetch(`/api/binder/clients/${patientNumber}/interactions`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
@@ -328,11 +328,11 @@ function save() {
         domain,
         user_id,
         interaction: payload,
-        interaction_no: currentVisitIndex + 1
+        interaction_no: payload.vno
       })
     }).then(data =>{
       fetchClientData();
-      show_toast("Interaction saved ", "success");
+      show_toast("Interaction added ", "success");
     }).catch(err => {
       show_toast("Error saving interaction" , "error");
       console.error("Error saving interaction",err);
@@ -345,7 +345,7 @@ function save() {
         domain,
         user_id,
         patch: payload,
-        interaction_no: currentVisitIndex + 1
+        interaction_no: payload.vno
       })
     }).then(data =>{
       fetchClientData();
