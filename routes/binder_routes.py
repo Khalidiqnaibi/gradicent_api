@@ -394,7 +394,7 @@ def update_interaction(client_id: str):
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
     
-    if not int(client_id) > 0:
+    if  int(client_id) < 0:
         client_id = session["client_id"]
 
     interaction_no = int(payload["interaction_no"])- 1
