@@ -344,9 +344,9 @@ def add_interaction(client_id: str):
 
     interaction = service.create_interaction(client_id, payload["interaction"])
 
-    interaction_no = payload["interaction"].get("vno",payload["interaction"].get("interaction_no",0)) 
+    interaction_no = payload["interaction"].get("vno",payload["interaction"].get("interaction_no")) 
 
-    # interaction_no = interaction_no-1 or 0
+    interaction_no = interaction_no-1 or 0
 
     log_with_service(service,202,metadata={"id" : client_id , "interaction_no":interaction_no})
     return make_response(data=interaction, message="Interaction created."), 201
