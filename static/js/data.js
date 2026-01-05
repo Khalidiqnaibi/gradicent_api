@@ -320,7 +320,7 @@ function buildPayload() {
 
 function save() {
   const payload = buildPayload();
-  if (payload.vno > visits.length()){
+  if (payload.vno > visits.length){
     fetch(`/api/binder/clients/${patientNumber}/interactions`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
