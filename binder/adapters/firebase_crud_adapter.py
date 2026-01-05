@@ -127,8 +127,9 @@ class FirebaseCrudAdapter(StorageAdapter):
         if full_ref_content:
             inter_length = len(full_ref_content)
             nested_id = inter_length
-            ref = full_ref.update(obj)
-            ref.update({"interaction_no": nested_id})
+            full_ref_content.append(obj)
+            obj.update({"interaction_no": nested_id})
+            ref = full_ref.set(full_ref_content)
             return nested_id
         
         inter_length = 0
