@@ -320,22 +320,42 @@ function buildPayload() {
 
 function save() {
   const payload = buildPayload();
-  fetch(`/api/binder/clients/${patientNumber}/interactions`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      domain,
-      user_id,
-      interaction: payload,
-      interaction_no: currentVisitIndex + 1
-    })
-  }).then(data =>{
-    fetchClientData();
-    show_toast("Interaction saved ", "success");
-  }).catch(err => {
-    show_toast("Error saving interaction" , "error");
-    console.error("Error saving interaction",err);
-  });
+  if (payload.vno > visits.length()){
+    fetch(`/api/binder/clients/${patientNumber}/interactions`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        domain,
+        user_id,
+        interaction: payload,
+        interaction_no: currentVisitIndex + 1
+      })
+    }).then(data =>{
+      fetchClientData();
+      show_toast("Interaction saved ", "success");
+    }).catch(err => {
+      show_toast("Error saving interaction" , "error");
+      console.error("Error saving interaction",err);
+    });
+  }else{
+    fetch(`/api/binder/clients/${patientNumber}/interactions`, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        domain,
+        user_id,
+        patch: payload,
+        interaction_no: currentVisitIndex + 1
+      })
+    }).then(data =>{
+      fetchClientData();
+      show_toast("Interaction saved ", "success");
+    }).catch(err => {
+      show_toast("Error saving interaction" , "error");
+      console.error("Error saving interaction",err);
+    });
+  }
+    
 }
 
 /* ============================================================
