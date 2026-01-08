@@ -124,30 +124,26 @@ class FirebaseCrudAdapter(StorageAdapter):
 
     def add_nested(self, user_id, collection, child_id, nested, obj):
         ref = self._nested_ref(user_id, collection, child_id, nested)
-        raw = ref.get() or {}
+        old = ref.get() or {}
+        if old == {}:
+            index = "0"
+        else:
+            index = "1"
 
-        # If raw is a single legacy object, wrap it in "0"
-        if isinstance(raw, dict) and not all(k.isdigit() for k in raw.keys()):
-            old = raw.copy()
-            old["interaction_no"] = 0
-            obj["interaction_no"] = 1
-            ref.set({"0": old, "1": obj})
-            return "1"
-
-        # If raw is already numeric-keyed dict
-        if isinstance(raw, dict):
-            next_id = str(len(raw))
-            obj["interaction_no"] = int(next_id)
-            ref.child(next_id).set(obj)  # append without touching existing
-            return next_id
-
-        # If empty or invalid, create "0"
-        obj["interaction_no"] = 0
-        ref.set({"0": obj})
-        return "0"
+        old[index] = obj
+        ref.set(old)
+        return index
 
     def update_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
-        self._nested_ref(user_id, collection, child_id, nested, nested_id).update(patch)
+        ref = self._nested_ref(user_id, collection, child_id, nested, nested_id)
+        content = ref.get()
+        if isinstance(content,list) :
+            new = {str(i): v for i, v in enumerate(content)}
+        else:
+            new = content
+        index = len(new)
+        new[index] = patch
+        self._nested_ref(user_id, collection, child_id, nested, nested_id).set(new)
 
     def delete_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str) -> None:
         self._nested_ref(user_id, collection, child_id, nested, nested_id).delete()
