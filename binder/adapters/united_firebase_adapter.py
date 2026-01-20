@@ -129,26 +129,27 @@ class UnitedFirebaseAdapter(StorageAdapter):
         return result
 
     def add_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
-        ref = self._nested_ref(user_id, collection, child_id, nested)
+        ref = self._nested_ref(domain,user_id, collection, child_id, nested)
         content = ref.get()
-        print(content)
         if isinstance(content,list) :
             nested_id = len(content)
         elif content and content.get("vno"):
             nested_id = 1
             interactions = {'0':content,'1':obj}
-            ref.push(interactions)
+            ref.set(interactions)
             return nested_id
         else:
             nested_id = 0
             interactions = {'0':obj}
 
-        full_ref = self._nested_ref(user_id,collection,child_id,nested,str(nested_id)).push(obj)
+        full_ref = self._nested_ref(domain,user_id,collection,child_id,nested,str(nested_id)).set(obj)
         
         return nested_id
 
     def update_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
-        self._nested_ref(domain,user_id, collection, child_id, nested, nested_id).update(patch)
+        ref = self._nested_ref(domain,user_id, collection, child_id, nested, nested_id)
+        
+        ref.update(patch)
 
     def delete_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str) -> None:
         self._nested_ref(domain,user_id, collection, child_id, nested, nested_id).delete()
