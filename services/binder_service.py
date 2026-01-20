@@ -51,7 +51,7 @@ class BinderService:
         Side effects:
             - Raises BinderServiceError on validation failure.
         """
-        if not payload or field not in payload or not payload[field]:
+        if  payload== None or field not in payload or payload[field]== None:
             raise BinderServiceError(f"Payload must include non-empty '{field}'")
 
     def _wrap_and_log(self, action_name: str, func, *args, **kwargs):
@@ -134,7 +134,7 @@ class BinderService:
             user_id (str): non-empty user identifier.
         """
         
-        if not user_id:
+        if user_id== None:
             raise BinderServiceError("user_id cannot be empty")
 
 
@@ -170,7 +170,7 @@ class BinderService:
         Returns:
             Optional[dict]: client dict if found, else None.
         """
-        if not client_id:
+        if client_id== None:
             raise BinderServiceError("client_id cannot be empty")
         return self._wrap_and_log("read_client", self._binder.read_client, client_id)
 
@@ -188,9 +188,9 @@ class BinderService:
         Raises:
             BinderServiceError: on validation or binder failure.
         """
-        if not client_id:
+        if client_id== None:
             raise BinderServiceError("client_id cannot be empty")
-        if not patch:
+        if patch== None:
             raise BinderServiceError("patch cannot be empty")
         self._wrap_and_log("update_client", self._binder.update_client, client_id, patch)
         # return the up-to-date record when possible
@@ -211,7 +211,7 @@ class BinderService:
         Side effects:
             - Calls binder.delete_client.
         """
-        if not client_id:
+        if client_id== None:
             raise BinderServiceError("client_id cannot be empty")
         self._wrap_and_log("delete_client", self._binder.delete_client, client_id)
 
@@ -220,7 +220,7 @@ class BinderService:
         Unified search facade used by routes.
         Delegates to binder implementation's `search_clients`.
         """
-        if not query:
+        if query== None:
             return []
         # binder implementations implement search_clients(query)
         return self._binder.search_clients(query)
@@ -251,9 +251,9 @@ class BinderService:
         Returns:
             str: Newly generated code.
         """
-        if not domain:
+        if domain== None:
             raise BinderServiceError("domain cannot be empty")
-        if not user_id:
+        if user_id== None:
             raise BinderServiceError("user_id cannot be empty")
 
         return self._wrap_and_log(
@@ -268,9 +268,9 @@ class BinderService:
         """
         Validate a permission code and return ownership metadata.
         """
-        if not domain:
+        if domain== None:
             raise BinderServiceError("domain cannot be empty")
-        if not code:
+        if code== None:
             raise BinderServiceError("code cannot be empty")
 
         return self._wrap_and_log(
@@ -284,7 +284,7 @@ class BinderService:
         """
         Increment usage counter for a permission code.
         """
-        if not domain or not owner_user_id:
+        if domain== None or owner_user_id== None:
             raise BinderServiceError("domain and owner_user_id are required")
 
         self._wrap_and_log(
@@ -309,11 +309,11 @@ class BinderService:
         Raises:
             BinderServiceError: on validation or binder failure.
         """
-        if not client_id:
+        if client_id == None:
             raise BinderServiceError("client_id cannot be empty")
-        if not interaction_no:
+        if interaction_no== None:
             raise BinderServiceError("interaction_no cannot be empty")
-        if not patch:
+        if patch== None:
             raise BinderServiceError("patch cannot be empty")
         self._wrap_and_log("update_interaction", self._binder.update_interaction, client_id,interaction_no, patch)
         # return the up-to-date record when possible
@@ -335,9 +335,9 @@ class BinderService:
         Side effects:
             - Calls binder.delete_interaction.
         """
-        if not interaction_no:
+        if interaction_no == None:
             raise BinderServiceError("interaction_no cannot be empty")
-        if not client_id:
+        if client_id== None:
             raise BinderServiceError("client_id cannot be empty")
         self._wrap_and_log("delete_interaction", self._binder.delete_interaction, client_id,interaction_no)
 
@@ -352,9 +352,9 @@ class BinderService:
         Returns:
             dict: created interaction record.
         """
-        if not client_id:
+        if client_id == None:
             raise BinderServiceError("client_id cannot be empty")
-        if not interaction:
+        if interaction == None:
             raise BinderServiceError("interaction payload cannot be empty")
         return self._wrap_and_log("create_interaction", self._binder.create_interaction, client_id, interaction)
 
@@ -368,7 +368,7 @@ class BinderService:
         Returns:
             list[dict]: list of interactions (empty list if none).
         """
-        if not client_id:
+        if client_id== None:
             raise BinderServiceError("client_id cannot be empty")
         return self._wrap_and_log("list_interactions", self._binder.list_interactions, client_id)
 
