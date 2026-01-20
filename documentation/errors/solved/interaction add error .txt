@@ -20,3 +20,11 @@ override or add in thisss shape : {
   "service_name": "",s
   "vno": 1
 }
+
+
+=================================
+Fixed : 
+the right way to add lists in firebase is : {0:value, 1:value}
+no other way will work , 
+why it didnt work on no interactiuons? 
+because the interactions when 0 the vno that is added is not as the length (1 != 0) so it goes to update which is wrong
