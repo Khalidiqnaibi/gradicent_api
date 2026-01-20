@@ -129,14 +129,22 @@ class UnitedFirebaseAdapter(StorageAdapter):
         return result
 
     def add_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
-        full_ref = self._nested_ref(domain,user_id, collection, child_id, nested)
-        full_ref_content = full_ref.get()
-        if full_ref_content:
-            inter_length = len(full_ref_content)
+        ref = self._nested_ref(user_id, collection, child_id, nested)
+        content = ref.get()
+        print(content)
+        if isinstance(content,list) :
+            nested_id = len(content)
+        elif content and content.get("vno"):
+            nested_id = 1
+            interactions = {'0':content,'1':obj}
+            ref.push(interactions)
+            return nested_id
         else:
-            inter_length = 0
-        nested_id = inter_length
-        ref = full_ref.set(obj)
+            nested_id = 0
+            interactions = {'0':obj}
+
+        full_ref = self._nested_ref(user_id,collection,child_id,nested,str(nested_id)).push(obj)
+        
         return nested_id
 
     def update_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:

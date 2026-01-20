@@ -322,7 +322,6 @@ function save() {
   const payload = buildPayload();
   // vno is 1-based; visits.length is number of existing items
   const isNew = payload.vno === visits.length || visits.length === 0;
-  show_toast(`${isNew} , ${payload.vno} , ${visits.length}`)
 
   const method = isNew ? 'POST' : 'PATCH';
   const body = isNew

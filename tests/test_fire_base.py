@@ -62,24 +62,23 @@ def _nested_ref(
 
 def add_nested(user_id, collection, child_id, nested, obj):
     ref = _nested_ref(user_id, collection, child_id, nested)
-    def txn(current):
-        if current is None:
-            current = {}
-        if isinstance(current, list):
-            current = {str(i): v for i, v in enumerate(current)}
-        keys = [int(k) for k in current.keys() if k.isdigit()] or [-1]
-        next_idx = max(keys) + 1
-        current[str(next_idx)] = obj
-        return current
-    updated = ref.transaction(txn)
-    # return the new index (best-effort)
-    idxs = [int(k) for k in (updated or {}).keys() if k.isdigit()]
-    print(str(max(idxs)) if idxs else None) 
-    print(updated)
-    return str(max(idxs)) if idxs else None
+    content = ref.get()
+    if isinstance(content,list) :
+        nested_id = len(content)
+    elif content and content.get("vno"):
+        nested_id = 1
+        interactions = {'0':content,'1':obj}
+        ref.set(interactions)
+        return nested_id
+    else:
+        nested_id = 0
+        interactions = {'0':obj}
 
+    full_ref = _nested_ref(user_id,collection,child_id,nested,str(nested_id)).set(obj)
+    
+    return nested_id
 
-add_nested("101597446369752496399","clients",'0',"interactions",{
+x = {
   "amount": 0,
   "balance": 0,
   "date": "2026-01-02",
@@ -89,4 +88,8 @@ add_nested("101597446369752496399","clients",'0',"interactions",{
   "paid": 0,
   "service_name": "rdfdgdg",
   "vno": 1
-})
+}
+add_nested("101597446369752496399","clients",'0',"interactions",x)
+
+
+# _nested_ref("101597446369752496399","clients",'0',"interactions","0").set(x)

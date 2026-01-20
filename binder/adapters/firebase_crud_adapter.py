@@ -14,8 +14,6 @@ from firebase_admin import db
 from ..interfaces.storage_adapter import StorageAdapter
 import re 
 
-
-
 def normalize_digits(s: str) -> str:
     """Remove all non-digits."""
     return re.sub(r"\D", "", s or "")
@@ -122,21 +120,24 @@ class FirebaseCrudAdapter(StorageAdapter):
 
         return result
 
-    def add_nested(self, user_id, collection, child_id, nested, obj):
+    def add_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
         ref = self._nested_ref(user_id, collection, child_id, nested)
-        def txn(current):
-            if current is None:
-                current = {}
-            if isinstance(current, list):
-                current = {str(i): v for i, v in enumerate(current)}
-            keys = [int(k) for k in current.keys() if k.isdigit()] or [-1]
-            next_idx = max(keys) + 1
-            current[str(next_idx)] = obj
-            return current
-        updated = ref.transaction(txn)
-        # return the new index (best-effort)
-        idxs = [int(k) for k in (updated or {}).keys() if k.isdigit()]
-        return str(max(idxs)) if idxs else None
+        content = ref.get()
+        print(content)
+        if isinstance(content,list) :
+            nested_id = len(content)
+        elif content and content.get("vno"):
+            nested_id = 1
+            interactions = {'0':content,'1':obj}
+            ref.push(interactions)
+            return nested_id
+        else:
+            nested_id = 0
+            interactions = {'0':obj}
+
+        full_ref = self._nested_ref(user_id,collection,child_id,nested,str(nested_id)).push(obj)
+        
+        return nested_id
 
     def update_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
         ref = self._nested_ref(user_id, collection, child_id, nested, nested_id)
@@ -147,7 +148,7 @@ class FirebaseCrudAdapter(StorageAdapter):
             new = content
         index = len(new)
         new[index] = patch
-        self._nested_ref(user_id, collection, child_id, nested, nested_id).set(new)
+        ref.update(new)
 
     def delete_nested(self, user_id: str, collection: str, child_id: str, nested: str, nested_id: str) -> None:
         self._nested_ref(user_id, collection, child_id, nested, nested_id).delete()
