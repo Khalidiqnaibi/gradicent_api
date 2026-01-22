@@ -140,16 +140,13 @@ class UnitedFirebaseAdapter(StorageAdapter):
             return nested_id
         else:
             nested_id = 0
-            interactions = {'0':obj}
 
-        full_ref = self._nested_ref(domain,user_id,collection,child_id,nested,str(nested_id)).set(obj)
+        self._nested_ref(domain,user_id,collection,child_id,nested,str(nested_id)).set(obj)
         
         return nested_id
 
     def update_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
-        ref = self._nested_ref(domain,user_id, collection, child_id, nested, nested_id)
-        
-        ref.update(patch)
+        self._nested_ref(domain,user_id,collection,child_id,nested,str(nested_id)).set(patch)
 
     def delete_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str) -> None:
         self._nested_ref(domain,user_id, collection, child_id, nested, nested_id).delete()

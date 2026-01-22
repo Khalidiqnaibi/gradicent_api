@@ -19,7 +19,10 @@ const DOMAIN_CONFIG = {
       notes: '#details',
       cost: '#coast',
       paid: '#payed',
-      debt: '#debt'
+      debt: '#debt',
+      detail1 : '#weight',
+      detail2 : '#height',
+      detail3 : "#lab"
     },
     fields: {
       date: 'visit_date',
@@ -29,7 +32,10 @@ const DOMAIN_CONFIG = {
       notes: 'details',
       cost: 'coast',
       paid: 'payed',
-      debt: 'debit'
+      debt: 'debit',
+      detail1 : 'weight',
+      detail2 :"height",
+      detail3 : 'lab'
     },
     lockOnPrint: true
   },
@@ -41,21 +47,25 @@ const DOMAIN_CONFIG = {
       date: '#interactionDate',
       owner: '#employeeName',
       title: '#purpose',
-      service: '#outcome',
+      service: '#service',
       notes: '#notes',
       cost: '#cost',
       paid: '#paid',
-      debt: '#debt'
+      debt: '#debt',
+      detail1 : '#outcome',
+      detail2 : '#nextFollowUp',
     },
     fields: {
       date: 'date',
       owner: 'handled_by',
       title: 'service_name',
-      service: 'description',
+      service: 'service',
       notes: 'notes',
       cost: 'amount',
       paid: 'paid',
-      debt: 'balance'
+      debt: 'balance',
+      detail1 : 'description',
+      detail2 : 'next',
     },
     lockOnPrint: true
   }
@@ -221,6 +231,9 @@ function normalize(raw = {}) {
     cost: Number(raw[f.cost] || 0),
     paid: Number(raw[f.paid] || 0),
     debt: Number(raw[f.debt] || 0),
+    detail1: raw[f.detail1] || '',
+    detail2: raw[f.detail2] || '',
+    detail3: raw[f.detail3] || '',
     printed: !!raw.printed,
     vno: raw.vno || 1
   };
@@ -241,6 +254,11 @@ function populate(raw) {
   $(d.cost).value = v.cost;
   $(d.paid).value = v.paid;
   $(d.debt).value = v.debt;
+  $(d.detail1).value = v.detail1;
+  $(d.detail2).value = v.detail2;
+  if (d.detail3 !== null){
+    $(d.detail3).value = v.detail3;
+  }
 
   const locked = v.printed && cfg().lockOnPrint;
   $(`${cfg().formId}`)?.querySelectorAll('input, textarea')
@@ -309,6 +327,9 @@ function buildPayload() {
     [f.notes]: $(d.notes).value,
     [f.cost]: Number($(d.cost).value || 0),
     [f.paid]: Number($(d.paid).value || 0),
+    [f.detail1]: $(d.detail1).value,
+    [f.detail2]: $(d.detail2).value,
+    [f.detail3]: $(d.detail3).value,
     vno: visits[currentVisitIndex]?.vno || currentVisitIndex + 1
   };
 
