@@ -135,8 +135,25 @@ class ClientMixin:
 # EMPLOYEES
 class EmployeeMixin:
     def create_employee(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return self.adapter.add_child(self.domain, "employees", data)
+        employees = self.adapter.list_children(self.domain, self.current_user, "employees") or []
+        employee_id = str(len(employees))
+        data["id"] = employee_id
+        self.adapter.update_child(
+            self.domain,
+            self.current_user,
+            "employees",
+            data,
+            employee_id,
+        )
+        return data
 
+    def read_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:
+        employees = self.adapter.list_children(self.domain, self.current_user, "employees")
+        try:
+            return employees[int(employee_id)]
+        except Exception:
+            return None
+        
     def update_employee(self, emp_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(
             self.domain,
@@ -156,8 +173,25 @@ class EmployeeMixin:
 
 # PRODUCTS
 class ProductMixin:
-    def create_product(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return self.adapter.add_child(self.domain, "products", data)
+    def create_products(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        products = self.adapter.list_children(self.domain, self.current_user, "products") or []
+        product_id = str(len(products))
+        data["id"] = product_id
+        self.adapter.update_child(
+            self.domain,
+            self.current_user,
+            "products",
+            data,
+            product_id,
+        )
+        return data
+
+    def read_product(self, product_id: str) -> Optional[Dict[str, Any]]:
+        products = self.adapter.list_children(self.domain, self.current_user, "products")
+        try:
+            return products[int(product_id)]
+        except Exception:
+            return None
 
     def update_product(self, prod_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(
@@ -179,7 +213,24 @@ class ProductMixin:
 # SERVICES
 class ServiceMixin:
     def create_service(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return self.adapter.add_child(self.domain, "services", data)
+        services = self.adapter.list_children(self.domain, self.current_user, "services") or []
+        service_id = str(len(services))
+        data["id"] = service_id
+        self.adapter.update_child(
+            self.domain,
+            self.current_user,
+            "services",
+            data,
+            service_id,
+        )
+        return data
+
+    def read_service(self, service_id: str) -> Optional[Dict[str, Any]]:
+        services = self.adapter.list_children(self.domain, self.current_user, "services")
+        try:
+            return services[int(service_id)]
+        except Exception:
+            return None
 
     def update_service(self, svc_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(

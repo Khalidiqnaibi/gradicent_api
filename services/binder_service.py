@@ -9,20 +9,24 @@ Responsibilities:
 - Provide clear, typed API for controllers and tests.
 - Wrap and normalize errors into BinderServiceError.
 
-Design constraints:
-- No hidden state: this service does not keep user-specific state; it delegates to
-  the binder implementation which may be stateless or stateful depending on your choice.
-- Each public method is small (aim <= 30 lines).
-- No external dependencies (optional pydantic usage should be added separately).
+Notes:
+- This module follows company code standards:
+  * snake_case for functions/variables
+  * small functions (aim <= 30 lines)
+  * docstrings for every public function explaining what/inputs/outputs/side-effects
+  * no hidden state (binder.current_user is always set explicitly)
+  * use logging instead of prints
+# TODO: add pytest tests under /tests/test_binder_service.py
 """
 
-from typing import Any, Dict, List, Optional, Protocol
+from typing import Any, Callable, Dict, List, Optional
 import logging
+
 from binder import Binder
+
 
 class BinderServiceError(Exception):
     """Raised when the BinderService cannot complete an operation."""
-    pass
 
 
 class BinderService:
@@ -46,29 +50,51 @@ class BinderService:
 
     def _ensure_id(self, payload: Dict[str, Any], field: str) -> None:
         """
-        Ensure payload contains non-empty 'field'.
+        Ensure payload contains a non-empty 'field'.
 
-        Side effects:
-            - Raises BinderServiceError on validation failure.
+        Args:
+            payload (Dict[str, Any]): incoming payload to validate.
+            field (str): required field name.
+
+        Raises:
+            BinderServiceError: when validation fails.
         """
-        if  payload== None or field not in payload or payload[field]== None:
+        if payload is None or field not in payload or payload[field] is None:
             raise BinderServiceError(f"Payload must include non-empty '{field}'")
 
-    def _wrap_and_log(self, action_name: str, func, *args, **kwargs):
+    def _wrap_and_log(self, action_name: str, func: Callable[..., Any], *args, **kwargs) -> Any:
         """
         Execute func and map any exception to BinderServiceError with logging.
 
+        Args:
+            action_name (str): descriptive action name for logs.
+            func (Callable): function to execute.
+            *args: positional args forwarded to func.
+            **kwargs: keyword args forwarded to func.
+
         Returns:
             Any: result of func(*args, **kwargs)
+
+        Raises:
+            BinderServiceError: on failure (wraps original exception).
         """
         try:
-            self._logger.debug("binder_service: performing action %s with args=%s kwargs=%s",
-                               action_name, args, {k: "REDACTED" if k.lower().endswith("_token") else v for k, v in kwargs.items()})
+            # redact tokens in kwargs for logging
+            safe_kwargs = {
+                k: ("REDACTED" if (isinstance(k, str) and k.lower().endswith("_token")) else v)
+                for k, v in kwargs.items()
+            }
+            self._logger.debug(
+                "binder_service: performing action %s with args=%s kwargs=%s",
+                action_name,
+                args,
+                safe_kwargs,
+            )
             return func(*args, **kwargs)
         except BinderServiceError:
             # let BinderServiceError bubble through unchanged
             raise
-        except Exception as exc:  # catch and rewrap all binder-level exceptions
+        except Exception as exc:
             self._logger.exception("binder_service: error during %s", action_name)
             raise BinderServiceError(f"Error performing '{action_name}': {exc}") from exc
 
@@ -76,32 +102,34 @@ class BinderService:
 
     def get_user(self, user_id: str) -> Dict[str, Any]:
         """
-        Gets a users data and set them as the current user in the binder.
+        Get a user's record and set them as the current user in the binder.
 
         Args:
-            user_id (str): the target user id
+            user_id (str): target user id.
 
         Returns:
-            dict: the user record (as returned by binder.read).
+            Dict[str, Any]: the user record as returned by binder.read.
 
         Raises:
             BinderServiceError: on validation or binder failure.
         """
-        
-        got = self._wrap_and_log("get_user", self._binder.read, user_id)
+        if user_id is None:
+            raise BinderServiceError("user_id cannot be empty")
+
+        user = self._wrap_and_log("get_user", self._binder.read, user_id)
         # set current user to avoid hidden state surprises in downstream code
         self.set_current_user(user_id=user_id)
-        return got
+        return user
 
     def create_user(self, user: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a user and set them as the current user in the binder.
 
         Args:
-            user (dict): user payload. MUST include 'id'.
+            user (Dict[str, Any]): user payload. MUST include 'id'.
 
         Returns:
-            dict: created user record (as returned by binder.create).
+            Dict[str, Any]: created user record (as returned by binder.create).
 
         Raises:
             BinderServiceError: on validation or binder failure.
@@ -111,20 +139,32 @@ class BinderService:
         # set current user to avoid hidden state surprises in downstream code
         self.set_current_user(user["id"])
         return created
-    
-    def update_user(self,user_id:str, user: Dict[str, Any]) -> Dict[str, Any]:
+
+    def update_user(self, user_id: str, user: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Updates a user in binder.
+        Update a user record and return the updated record.
 
         Args:
-            user_id (str) : the updated user id.
-            user (dict): new user payload.
+            user_id (str): id of the user to update.
+            user (Dict[str, Any]): patch or full payload.
+
+        Returns:
+            Dict[str, Any]: updated user record (empty dict if binder returns None).
 
         Raises:
             BinderServiceError: on validation or binder failure.
         """
-        
-        self._wrap_and_log("update_user", self._binder.update,user_id, user)
+        if user_id is None:
+            raise BinderServiceError("user_id cannot be empty")
+        if user is None:
+            raise BinderServiceError("user payload cannot be empty")
+
+        self._wrap_and_log("update_user", self._binder.update, user_id, user)
+        updated = self._wrap_and_log("read_user_after_update", self._binder.read, user_id)
+        if updated is None:
+            self._logger.warning("update_user: user %s updated but read returned None", user_id)
+            return {}
+        return updated
 
     def set_current_user(self, user_id: str) -> None:
         """
@@ -132,13 +172,14 @@ class BinderService:
 
         Args:
             user_id (str): non-empty user identifier.
+
+        Side effects:
+            - Mutates self._binder.current_user via binder contract.
         """
-        
-        if user_id== None:
+        if user_id is None:
             raise BinderServiceError("user_id cannot be empty")
 
-
-        def _setter(uid):
+        def _setter(uid: str) -> None:
             self._binder.current_user = uid
 
         self._wrap_and_log("set_current_user", _setter, user_id)
@@ -147,20 +188,26 @@ class BinderService:
 
     def create_client(self, client: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Create a client (or patient) under the current user context.
+        Create a client (patient) under the current user context.
+
+        Note:
+            Some binder implementations auto-assign an 'id' for clients. Do not rely
+            on the presence of 'id' in the input; the binder may mutate/assign it.
 
         Args:
-            client (dict): client payload. MUST include 'id'.
+            client (Dict[str, Any]): client payload.
 
         Returns:
-            dict: created client record.
+            Dict[str, Any]: created client record.
 
         Raises:
             BinderServiceError: on validation or binder failure.
         """
+        if client is None:
+            raise BinderServiceError("client payload cannot be empty")
         return self._wrap_and_log("create_client", self._binder.create_client, client)
 
-    def  read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
+    def read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
         """
         Fetch a client by id.
 
@@ -168,9 +215,12 @@ class BinderService:
             client_id (str): client identifier.
 
         Returns:
-            Optional[dict]: client dict if found, else None.
+            Optional[Dict[str, Any]]: client dict if found, else None.
+
+        Raises:
+            BinderServiceError: on validation failure.
         """
-        if client_id== None:
+        if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
         return self._wrap_and_log("read_client", self._binder.read_client, client_id)
 
@@ -180,23 +230,22 @@ class BinderService:
 
         Args:
             client_id (str): id of the client to update.
-            patch (dict): partial update document (non-empty).
+            patch (Dict[str, Any]): partial update document (non-empty).
 
         Returns:
-            dict: updated client document.
+            Dict[str, Any]: updated client document (empty dict if binder read returns None).
 
         Raises:
             BinderServiceError: on validation or binder failure.
         """
-        if client_id== None:
+        if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
-        if patch== None:
+        if patch is None:
             raise BinderServiceError("patch cannot be empty")
+
         self._wrap_and_log("update_client", self._binder.update_client, client_id, patch)
-        # return the up-to-date record when possible
         updated = self._wrap_and_log("read_client_after_update", self._binder.read_client, client_id)
         if updated is None:
-            # binder might choose to not return the item after update; still treat as success
             self._logger.warning("update_client: client %s updated but read returned None", client_id)
             return {}
         return updated
@@ -211,37 +260,77 @@ class BinderService:
         Side effects:
             - Calls binder.delete_client.
         """
-        if client_id== None:
+        if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
         self._wrap_and_log("delete_client", self._binder.delete_client, client_id)
 
     def search_client(self, query: str) -> List[Dict[str, Any]]:
         """
-        Unified search facade used by routes.
-        Delegates to binder implementation's `search_clients`.
-        """
-        if query== None:
-            return []
-        # binder implementations implement search_clients(query)
-        return self._binder.search_clients(query)
-    
-    # --- appointments ---
-    def get_appointments(self, date: str) -> list:
-        return self._binder.get_appointments(date)
+        Unified search facade used by routes. Delegates to binder.search_clients.
 
-    def save_appointments(self, date: str, appointments: list) -> None:
-        return self._binder.save_appointments(date, appointments)
+        Args:
+            query (str): search string.
+
+        Returns:
+            List[Dict[str, Any]]: matching client records (possibly empty list).
+        """
+        if query is None:
+            return []
+        return self._wrap_and_log("search_client", self._binder.search_clients, query)
+
+    # --- appointments ---
+
+    def get_appointments(self, date: str) -> List[Dict[str, Any]]:
+        """
+        Retrieve appointments for a date.
+
+        Args:
+            date (str): date in binder-expected format.
+
+        Returns:
+            List[Dict[str, Any]]: appointment list (may be empty).
+        """
+        if date is None:
+            raise BinderServiceError("date cannot be empty")
+        return self._wrap_and_log("get_appointments", self._binder.get_appointments, date)
+
+    def save_appointments(self, date: str, appointments: List[Dict[str, Any]]) -> None:
+        """
+        Save appointments for a date.
+
+        Args:
+            date (str): target date.
+            appointments (List[Dict[str, Any]]): appointments payload.
+
+        Side effects:
+            - Calls binder.save_appointments.
+        """
+        if date is None:
+            raise BinderServiceError("date cannot be empty")
+        if appointments is None:
+            raise BinderServiceError("appointments cannot be empty")
+        self._wrap_and_log("save_appointments", self._binder.save_appointments, date, appointments)
 
     def lock_appointment(self, date: str, no: str) -> bool:
-        return self._binder.lock_appointment(date, no)
-    
-    # codes
+        """
+        Acquire a lock for a specific appointment number on a date.
+
+        Args:
+            date (str): target date.
+            no (str): appointment number (string).
+
+        Returns:
+            bool: True if lock acquired, False otherwise.
+        """
+        if date is None or no is None:
+            raise BinderServiceError("date and no are required")
+        return self._wrap_and_log("lock_appointment", self._binder.lock_appointment, date, no)
+
+    # --- permission codes ---
+
     def rotate_permission_code(self, domain: str, user_id: str, plan: str = "sec") -> str:
         """
         Rotate or create a permission code for a user.
-
-        This is a thin facade over PermissionCodeMixin to keep
-        controllers unaware of mixin internals.
 
         Args:
             domain (str): Domain name (e.g. 'drs').
@@ -251,9 +340,9 @@ class BinderService:
         Returns:
             str: Newly generated code.
         """
-        if domain== None:
+        if domain is None:
             raise BinderServiceError("domain cannot be empty")
-        if user_id== None:
+        if user_id is None:
             raise BinderServiceError("user_id cannot be empty")
 
         return self._wrap_and_log(
@@ -264,13 +353,20 @@ class BinderService:
             plan,
         )
 
-    def validate_permission_code(self,  domain: str, code: str) -> Optional[Dict[str, Any]]:
+    def validate_permission_code(self, domain: str, code: str) -> Optional[Dict[str, Any]]:
         """
         Validate a permission code and return ownership metadata.
+
+        Args:
+            domain (str): domain name.
+            code (str): code to validate.
+
+        Returns:
+            Optional[Dict[str, Any]]: metadata if valid, else None.
         """
-        if domain== None:
+        if domain is None:
             raise BinderServiceError("domain cannot be empty")
-        if code== None:
+        if code is None:
             raise BinderServiceError("code cannot be empty")
 
         return self._wrap_and_log(
@@ -283,8 +379,15 @@ class BinderService:
     def consume_permission_code(self, domain: str, owner_user_id: str) -> None:
         """
         Increment usage counter for a permission code.
+
+        Args:
+            domain (str): domain name.
+            owner_user_id (str): owner id.
+
+        Side effects:
+            - Calls binder.consume_permission_code.
         """
-        if domain== None or owner_user_id== None:
+        if domain is None or owner_user_id is None:
             raise BinderServiceError("domain and owner_user_id are required")
 
         self._wrap_and_log(
@@ -293,53 +396,53 @@ class BinderService:
             domain,
             owner_user_id,
         )
+
     # ------- Public API: Interactions (visits/transactions) -------
-    def update_interactions(self,client_id: str,interaction_no: int,patch:list[Any])-> Dict[str, Any]:
+
+    def update_interaction(self, client_id: str, interaction_no: int, patch: List[Any]) -> Dict[str, Any]:
         """
-        Update a interactions's fields and return the updated interactions.
+        Update a single interaction (visit/transaction) and return the client's up-to-date record.
 
         Args:
             client_id (str): id of the client to update.
-            interaction_no (int): id of the interaction to update.
-            patch (dict): partial update document (non-empty).
+            interaction_no (int): index/id of the interaction to update.
+            patch (List[Any]): partial update document (non-empty).
 
         Returns:
-            dict: updated interaction.
-
-        Raises:
-            BinderServiceError: on validation or binder failure.
+            Dict[str, Any]: updated client document (empty dict if read returns None).
         """
-        if client_id == None:
+        if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
-        if interaction_no== None:
+        if interaction_no is None:
             raise BinderServiceError("interaction_no cannot be empty")
-        if patch== None:
+        if patch is None:
             raise BinderServiceError("patch cannot be empty")
-        self._wrap_and_log("update_interaction", self._binder.update_interaction, client_id,interaction_no, patch)
-        # return the up-to-date record when possible
-        updated = self._wrap_and_log("read_interaction_after_update", self._binder.read_client, client_id)
+
+        self._wrap_and_log("update_interaction", self._binder.update_interaction, client_id, interaction_no, patch)
+        updated = self._wrap_and_log("read_client_after_interaction_update", self._binder.read_client, client_id)
         if updated is None:
-            # binder might choose to not return the item after update; still treat as success
-            self._logger.warning("update_interaction: interaction %s updated but read returned None", client_id)
+            self._logger.warning(
+                "update_interaction: client %s updated but read returned None", client_id
+            )
             return {}
         return updated
 
-    def delete_interaction(self,client_id: str,interaction_no: int)-> Dict[str, Any]:
+    def delete_interaction(self, client_id: str, interaction_no: int) -> None:
         """
-        Delete a interaction.
+        Delete an interaction for a client.
 
         Args:
-            client_id (str): id of the client to remove.
-            interaction_no (int): id of the interaction to remove.
+            client_id (str): id of the client.
+            interaction_no (int): id/index of the interaction.
 
         Side effects:
             - Calls binder.delete_interaction.
         """
-        if interaction_no == None:
-            raise BinderServiceError("interaction_no cannot be empty")
-        if client_id== None:
+        if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
-        self._wrap_and_log("delete_interaction", self._binder.delete_interaction, client_id,interaction_no)
+        if interaction_no is None:
+            raise BinderServiceError("interaction_no cannot be empty")
+        self._wrap_and_log("delete_interaction", self._binder.delete_interaction, client_id, interaction_no)
 
     def create_interaction(self, client_id: str, interaction: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -347,14 +450,14 @@ class BinderService:
 
         Args:
             client_id (str): target client id.
-            interaction (dict): interaction payload; must be non-empty.
+            interaction (Dict[str, Any]): interaction payload; must be non-empty.
 
         Returns:
-            dict: created interaction record.
+            Dict[str, Any]: created interaction record.
         """
-        if client_id == None:
+        if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
-        if interaction == None:
+        if interaction is None:
             raise BinderServiceError("interaction payload cannot be empty")
         return self._wrap_and_log("create_interaction", self._binder.create_interaction, client_id, interaction)
 
@@ -366,41 +469,47 @@ class BinderService:
             client_id (str): client id.
 
         Returns:
-            list[dict]: list of interactions (empty list if none).
+            List[Dict[str, Any]]: list of interactions (empty list if none).
         """
-        if client_id== None:
+        if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
         return self._wrap_and_log("list_interactions", self._binder.list_interactions, client_id)
 
 
 if __name__ == "__main__":
+    # NOTE: demo only. In production, instantiate BinderService from application bootstrap.
     logging.basicConfig(level=logging.DEBUG)
-    from binder import BinderBusiness,FirebaseCrudAdapter
-    adapter =FirebaseCrudAdapter('test')
+    from binder import BinderBusiness, FirebaseCrudAdapter
+
+    adapter = FirebaseCrudAdapter("test")
     demo_binder = BinderBusiness(adapter)
     service = BinderService(demo_binder)
 
     # create user
     user = {"id": "u1", "name": "Alice"}
-    print("create_user ->", service.create_user(user))
+    created_user = service.create_user(user)
+    print("create_user ->", created_user)
 
     # create client
-    client = {"id": "c1", "name": "Bob"}
-    print("create_client ->", service.create_client(client))
+    client = {"name": "Bob"}  # binder may assign id
+    created_client = service.create_client(client)
+    print("create_client ->", created_client)
 
     # add interaction
-    interaction = {"id": "i1", "type": "visit", "notes": "Initial checkup"}
-    print("create_interaction ->", service.create_interaction("c1", interaction))
+    interaction = {"type": "visit", "notes": "Initial checkup"}
+    created_interaction = service.create_interaction(created_client.get("id", "0"), interaction)
+    print("create_interaction ->", created_interaction)
 
     # list interactions
-    print("list_interactions ->", service.list_interactions("c1"))
+    print("list_interactions ->", service.list_interactions(created_client.get("id", "0")))
 
     # update client
-    print("update_client ->", service.update_client("c1", {"name": "Bobby"}))
+    updated_client = service.update_client(created_client.get("id", "0"), {"name": "Bobby"})
+    print("update_client ->", updated_client)
 
     # read client
-    print("read_client ->", service.read_client("c1"))
+    print("read_client ->", service.read_client(created_client.get("id", "0")))
 
     # delete client
-    service.delete_client("c1")
-    print("read_client after delete ->", service.read_client("c1"))
+    service.delete_client(created_client.get("id", "0"))
+    print("read_client after delete ->", service.read_client(created_client.get("id", "0")))
