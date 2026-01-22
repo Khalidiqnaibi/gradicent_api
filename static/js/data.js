@@ -256,7 +256,7 @@ function populate(raw) {
   $(d.debt).value = v.debt;
   $(d.detail1).value = v.detail1;
   $(d.detail2).value = v.detail2;
-  if (d.detail3 !== null){
+  if (Boolean(d.detail3)){
     $(d.detail3).value = v.detail3;
   }
 
@@ -329,10 +329,11 @@ function buildPayload() {
     [f.paid]: Number($(d.paid).value || 0),
     [f.detail1]: $(d.detail1).value,
     [f.detail2]: $(d.detail2).value,
-    [f.detail3]: $(d.detail3).value,
     vno: visits[currentVisitIndex]?.vno || currentVisitIndex + 1
   };
-
+  if (Boolean(d.detail3)){
+    data[f.detail3]= $(d.detail3).value;
+  }
   data[f.debt] = data[f.cost] - data[f.paid];
   $(d.debt).value = data[f.debt];
 
