@@ -102,9 +102,9 @@ def login_page() -> str:
     domain = session.get("domain",session.get("binder","business"))
     res = "logme.html"
     if domain in ["medical"]:
-        res = "logme.html"
+        res = "medical/logme.html"
     elif domain in ["business"]:
-        res = "logbu.html"
+        res = "business/logbu.html"
     return render_template(res)
 
 @frontend_blueprint.route("/logme", methods=["GET"])
