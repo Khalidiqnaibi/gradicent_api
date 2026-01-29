@@ -372,7 +372,7 @@
       const openBtn = document.getElementById('open_btn');
       if (openBtn) {
         openBtn.addEventListener('click', () =>
-          controller.open_client(client.id)
+          controller.open_client(parseInt(client.id) + 1)
         );
       }
     }
