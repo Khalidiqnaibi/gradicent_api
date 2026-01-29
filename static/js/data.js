@@ -215,6 +215,7 @@ function bindControls() {
   $('#saveBtn')?.addEventListener('click', save);
   $('#printBtn')?.addEventListener('click', printInteraction);
   $('#openFolderBtn')?.addEventListener('click', openFolder);
+  $('#closeModal')?.addEventListener('click',closeFileModal)
 }
 
 /* ============================================================
