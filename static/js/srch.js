@@ -505,7 +505,7 @@
       try {
         if (APP_STATE.client_id) {
           const resp = await api_mod.get_client(APP_STATE.client_id);
-          u_mod.el('query_input').value = APP_STATE.client_id;
+          u_mod.el('query_input').value = parseInt(APP_STATE.client_id)+1;
           if (resp && resp.status === 'success') ui_mod.render_client_detail(resp.data);
         }
         if (__GAIA_LIST.length >0) {
