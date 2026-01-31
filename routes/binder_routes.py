@@ -102,8 +102,8 @@ def get_domain():
     domain = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
     return make_response(data=domain) , 200
 
-@binder_blueprint.route("/user",methods=["GET"])
-def get_user():
+@binder_blueprint.route("/user/<user_id>",methods=["GET"])
+def get_user(user_id):
     '''
     get user data from binder
 
@@ -116,7 +116,7 @@ def get_user():
     '''
 
     payload = {
-        "user_id":request.args.get("user_id"),
+        "user_id":user_id,
         "domain" : request.args.get("domain",session.get("domain", session.get("binder", DEFAULT_DOMAIN)))
     }
 
@@ -131,23 +131,22 @@ def get_user():
 
     return make_response(data=user,message="User retrieved successfully") , 200
 
-@binder_blueprint.route("/user",methods=["POST"])
-def update_user():
+@binder_blueprint.route("/user/<user_id>",methods=["PATCH"])
+def update_user(user_id):
     '''
     updatess user info ussing the current binder service
 
     expects:
-        user_id (str)
         domain (str)
         user (dict[str:Any]) # new user data
 
     '''
     payload = request.get_json(force=True)
 
-    if not payload.get("user_id"):
+    if user_id is None:
         return make_response(message="user_id cann not be null", status="error") , 400
 
-    if not payload.get("user_id") == session.get("user_id"):
+    if not user_id == session.get("user_id"):
         return make_response(None, message="Unauthorized action", status="error") , 401
     
     if payload.get("domain"):
@@ -164,7 +163,7 @@ def update_user():
     log_with_service(service,400)
     return make_response(data=payload , message="updated successfully")
 
-@binder_blueprint.route("/create_user", methods=["POST"])
+@binder_blueprint.route("/user", methods=["POST"])
 def create_user():
     """
     Create a user in the selected Binder domain.
@@ -214,7 +213,7 @@ def add_client():
     Expected JSON:
     {
         "domain": "...",
-        "user_id": "...",          # optional if session / token used
+        "user_id": "...",          # optional
         "client": { ... }
     }
 
@@ -619,3 +618,370 @@ def check_activation_code():
     session["user_id"] = res["owner_user_id"]
 
     return redirect("/home_page")
+
+@binder_blueprint.route("/employees/<eid>", methods=["GET"])
+def get_employee(eid):
+    """
+    Retrieve a single employee by id for the current user.
+
+    Query param:
+        domain (optional)
+        user_id (optional)
+    """
+    if eid is None:
+        return make_response(message="Employee id can not be None" , status="error") , 400
+    
+    domain = request.args.get("domain", DEFAULT_DOMAIN)
+    user_id = request.args.get("user_id")
+    service = _get_domain_and_service({"domain": domain})
+    if user_id:
+        service.set_current_user(user_id)
+
+    employee = service.read_employee(eid)
+
+    if not employee:
+        raise NotFound(f"Employee {eid} not found")
+    
+    return make_response(data=employee), 200 
+
+@binder_blueprint.route("/employees", methods=["POST"]) 
+def add_employee():
+    '''
+    Add an employee 
+
+    Request JSON:
+        {
+            "domain" : "medical" || "business"
+            "user_id": "...",          # optional
+            "employee" :{ ... }
+        }
+
+    Response:
+        { "data": "<new_employee>" , message : "" , status : "success" }
+    '''
+    payload = request.get_json(force=True)
+
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+
+    if not payload.get('domain'):
+       return make_response(message="Domain can not be None",status="error"),400
+    
+    if not payload.get("employee"):
+        return make_response(message="New employee data can not be None"),400
+    
+    service = _get_domain_and_service(payload)
+    employee = service.create_employee(data=payload["employee"])
+    log_with_service(service,206)
+
+    return make_response(data=employee, message="Created new employee"),200
+
+@binder_blueprint.route("/employee/<eid>", methods=["PATCH"])
+def update_employee(eid):
+    '''
+    Update a employee for the current user.
+
+    Expected JSON:
+    {
+       "domain": "...",
+       "user_id": "...",
+       "patch": { ... }
+    }
+    '''
+
+    payload = request.get_json(force=True)
+    if "patch" not in payload:
+        raise BadRequest("Missing 'patch' payload")
+
+    service = _get_domain_and_service(payload)
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+
+    employee = service.update_employee(eid, payload["patch"])
+    log_with_service(service,406)
+    return make_response(data=employee,message="Employee updated successfully."), 200
+
+@binder_blueprint.route("/employee/<eid>", methods=["DELETE"])
+def delete_employee(eid):
+    '''
+    Delete employee by id
+    '''
+    if eid is None:
+        return make_response(message="Employee id can not be None",status="error"), 400
+    
+    payload = request.get_json(silent=True) or {}
+    service = _get_domain_and_service(payload)
+    user_id = payload.get("user_id")
+    if user_id:
+        service.set_current_user(user_id)
+
+    service.delete_employee(eid)
+    return make_response(message="Client deleted."), 200
+    
+@binder_blueprint.route("/products", methods=["POST"])
+def create_product():
+    """
+    Create a product.
+
+    Input JSON:
+        {
+            "domain": str,
+            "user_id": str,
+            "product": dict
+        }
+
+    Returns:
+        JSON envelope containing created product.
+    """
+    payload = request.get_json(force=True)
+    if "product" not in payload:
+        raise BadRequest("Missing 'product' payload")
+
+    service = _get_domain_and_service(payload)
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    product = service.create_product(payload["product"])
+    log_with_service(service, 204)
+
+    return make_response(data=product, message="Product created successfully."), 201
+
+@binder_blueprint.route("/products/<product_id>", methods=["GET"])
+def read_product(product_id: str):
+    """
+    Read a single product.
+
+    Query Params:
+        domain (str)
+        user_id (str)
+
+    Returns:
+        JSON envelope containing product data.
+    """
+    payload = {
+        "domain": request.args.get("domain"),
+        "user_id": request.args.get("user_id"),
+    }
+
+    service = _get_domain_and_service(payload)
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    product = service.read_product(product_id)
+    if not product:
+        raise NotFound(f"Product {product_id} not found")
+
+    return make_response(data=product), 200
+
+@binder_blueprint.route("/products/<product_id>", methods=["PATCH"])
+def update_product(product_id: str):
+    """
+    Update a product.
+
+    Input JSON:
+        {
+            "domain": str,
+            "user_id": str,
+            "patch": dict
+        }
+
+    Returns:
+        JSON envelope with status message.
+    """
+    payload = request.get_json(force=True)
+    if "patch" not in payload:
+        raise BadRequest("Missing 'patch' payload")
+
+    service = _get_domain_and_service(payload)
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    service.update_product(product_id, payload["patch"])
+    log_with_service(service, 404)
+
+    return make_response(message="Product updated successfully."), 200
+
+@binder_blueprint.route("/products/<product_id>", methods=["DELETE"])
+def delete_product(product_id: str):
+    """
+    Delete a product.
+
+    Input JSON (optional):
+        {
+            "domain": str,
+            "user_id": str
+        }
+
+    Returns:
+        JSON envelope with status message.
+    """
+    payload = request.get_json(silent=True) or {}
+    service = _get_domain_and_service(payload)
+
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    service.delete_product(product_id)
+
+    return make_response(message="Product deleted successfully."), 200
+
+@binder_blueprint.route("/services", methods=["POST"])
+def create_service():
+    """
+    Create a service offering.
+
+    Input JSON:
+        {
+            "domain": str,
+            "user_id": str,
+            "service": dict
+        }
+
+    Returns:
+        JSON envelope containing created service.
+    """
+    payload = request.get_json(force=True)
+    if "service" not in payload:
+        raise BadRequest("Missing 'service' payload")
+
+    service = _get_domain_and_service(payload)
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    svc = service.create_service(payload["service"])
+    log_with_service(service, 205)
+
+    return make_response(data=svc, message="Service created successfully."), 201
+
+
+@binder_blueprint.route("/services/<service_id>", methods=["GET"])
+def read_service(service_id: str):
+    """
+    Read a service offering.
+
+    Query Params:
+        domain (str)
+        user_id (str)
+
+    Returns:
+        JSON envelope containing service data.
+    """
+    payload = {
+        "domain": request.args.get("domain"),
+        "user_id": request.args.get("user_id"),
+    }
+
+    service = _get_domain_and_service(payload)
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    svc = service.read_service(service_id)
+    if not svc:
+        raise NotFound(f"Service {service_id} not found")
+
+    return make_response(data=svc), 200
+
+@binder_blueprint.route("/services/<service_id>", methods=["PATCH"])
+def update_service(service_id: str):
+    """
+    Update a service offering.
+
+    Input JSON:
+        {
+            "domain": str,
+            "user_id": str,
+            "patch": dict
+        }
+
+    Returns:
+        JSON envelope with status message.
+    """
+    payload = request.get_json(force=True)
+    if "patch" not in payload:
+        raise BadRequest("Missing 'patch' payload")
+
+    service = _get_domain_and_service(payload)
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    service.update_service(service_id, payload["patch"])
+    log_with_service(service, 405)
+
+    return make_response(message="Service updated successfully."), 200
+
+@binder_blueprint.route("/services/<service_id>", methods=["DELETE"])
+def delete_service(service_id: str):
+    """
+    Delete a service offering.
+
+    Input JSON (optional):
+        {
+            "domain": str,
+            "user_id": str
+        }
+
+    Returns:
+        JSON envelope with status message.
+    """
+    payload = request.get_json(silent=True) or {}
+    service = _get_domain_and_service(payload)
+
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    service.delete_service(service_id)
+
+    return make_response(message="Service deleted successfully."), 200
+
+@binder_blueprint.route("/clients/<client_id>/transactions", methods=["POST"])
+def create_transaction(client_id: str):
+    """
+    Create a transaction for a client.
+
+    Input JSON:
+        {
+            "domain": str,
+            "user_id": str,
+            "transaction": dict
+        }
+
+    Returns:
+        JSON envelope containing created transaction.
+    """
+    payload = request.get_json(force=True)
+    if "transaction" not in payload:
+        raise BadRequest("Missing 'transaction' payload")
+
+    service = _get_domain_and_service(payload)
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    transaction = service.create_transaction(client_id, payload["transaction"])
+    log_with_service(service, 207, metadata={"client_id": client_id})
+
+    return make_response(data=transaction, message="Transaction created successfully."), 201
+
+@binder_blueprint.route("/clients/<client_id>/transactions", methods=["GET"])
+def list_transactions(client_id: str):
+    """
+    List all transactions for a client.
+
+    Query Params:
+        domain (str)
+        user_id (str)
+
+    Returns:
+        JSON envelope containing list of transactions.
+    """
+    payload = {
+        "domain": request.args.get("domain"),
+        "user_id": request.args.get("user_id"),
+    }
+
+    service = _get_domain_and_service(payload)
+    if payload.get("user_id"):
+        service.set_current_user(payload["user_id"])
+
+    transactions = service.list_transactions(client_id)
+
+    return make_response(data=transactions), 200

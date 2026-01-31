@@ -93,7 +93,6 @@ class AuthService:
             "expires_in": self.access_token_ttl,
         }
 
-
     def verify_token_and_get_user(self,domain:str, token: str) -> Optional[Dict[str, Any]]:
         if not token:
             return None

@@ -26,6 +26,7 @@ EVENTS={
     204:"product added",
     205:"service added",
     206:"employee added",
+    207: "transaction added",
 
     300:"search done",
     301:"analytics shown",
@@ -38,6 +39,7 @@ EVENTS={
     404:"product updated",
     405:"service updated",
     406:"employee updated",
+    407:"transaction updated",
     
     500:"fooled",
 
