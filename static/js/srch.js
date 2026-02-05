@@ -198,19 +198,20 @@
     function menu_init() {
       const menuBtn = document.querySelector('.hamburger-menu');
       const menuBar = document.getElementById('menuBar');
+      const menu_box = document.querySelector(".menu__box");
+      
+      if (!menuBtn || !menuBar) return;
       
       // Toggle menu (keeps same interaction as previous)
-      menuBtn.addEventListener('click', () => {
+      menuBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
         menuBar.classList.toggle('menu-active');
       });
       
-      const menu_box = document.querySelector(".menu__box")
       // close when clicking outside (improves UX)
       document.addEventListener('click', (ev) => {
         if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
           menuBar.classList.remove('menu-active');
-          toggle.setAttribute('aria-expanded', 'false');
-          menu_box.setAttribute('aria-hidden', 'true');
         }
       });
     }
@@ -489,14 +490,20 @@
   const controller = (function (api_mod, ui_mod, u_mod) {
     let last_results = [];
     async function init() {
-      APP_STATE.user_id =  await api_mod.get_user_id();
-      APP_STATE.domain = await api_mod.get_domain();
-      let res = await api_mod.get_plan_status();
-      APP_STATE.plan = res.plan;
+      // Wire up UI first so page is always interactive
       ui_mod.menu_init();
-      // wire UI
       u_mod.el('search_btn').addEventListener('click', () => do_search());
       u_mod.el('query_input').addEventListener('keydown', (e) => { if (e.key === 'Enter') do_search(); });
+      
+      // Then load user state (non-blocking)
+      try {
+        APP_STATE.user_id = await api_mod.get_user_id();
+        APP_STATE.domain = await api_mod.get_domain();
+        let res = await api_mod.get_plan_status();
+        APP_STATE.plan = res?.plan || 'free';
+      } catch (err) {
+        console.warn('Failed to load user state:', err);
+      }
 
       // start usage tracker
       APP_STATE.usage_tracker = start_usage_tracker(TRACK_ENDPOINT);
