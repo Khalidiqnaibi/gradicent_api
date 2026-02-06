@@ -211,12 +211,19 @@ def srch() -> Any:
     """srch wrapper."""
     return redirect(_render_protected_page("srch"))
 
+@frontend_blueprint.route("/client", methods=["GET"])
+@require_login
+def client_page() -> Any:
+    """Client management page."""
+    return render_template("business/client.html")
+
 @frontend_blueprint.route("/search_stats" , methods = ["GET"])
 @require_login
 def search_stats():
     ''' render clients on srch.html'''
     session["clients"] = request.args.get("clients")
     return redirect(_render_protected_page("search_stats"))
+
 
 @frontend_blueprint.route("/back", methods=["GET"])
 @require_login

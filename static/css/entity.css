@@ -843,3 +843,48 @@ html, body {
     width: 100%;
   }
 }
+
+/* ====== Footer ====== */
+.site-footer {
+  padding: 24px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  background: var(--bg-glass);
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-brand {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.footer-copyright {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.footer-links a {
+  font-size: 0.8125rem;
+  color: var(--text-light);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--accent);
+}

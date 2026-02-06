@@ -299,12 +299,20 @@ const EntityManager = (function() {
   // Add form toggle
   function toggleAddForm() {
     const form = $('add-form');
+    const results = $('results');
     if (form) {
       const isVisible = form.style.display !== 'none';
       form.style.display = isVisible ? 'none' : 'block';
       if (!isVisible) {
         // Focus first input when opening
         form.querySelector('input')?.focus();
+        // Hide empty state when form is open
+        const emptyState = results?.querySelector('.empty-state');
+        if (emptyState) emptyState.style.display = 'none';
+      } else {
+        // Show empty state again when form is closed (if no items)
+        const emptyState = results?.querySelector('.empty-state');
+        if (emptyState && STATE.items.length === 0) emptyState.style.display = 'flex';
       }
     }
   }
