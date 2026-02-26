@@ -1,0 +1,131 @@
+/* Login Page Styles */
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.login-card {
+  padding: 32px;
+}
+
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.login-header img {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.login-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.login-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.terms-box {
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(17, 113, 187, 0.08);
+  border: 1px solid rgba(17, 113, 187, 0.15);
+  margin-bottom: 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.terms-box input {
+  margin-top: 2px;
+  width: auto;
+  min-width: 20px;
+}
+
+.terms-box label {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.terms-box a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.terms-box a:hover {
+  text-decoration: underline;
+}
+
+.auth-section {
+  margin-bottom: 24px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.code-section {
+  margin-bottom: 24px;
+}
+
+.code-section label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.code-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.code-input-group input {
+  flex: 1;
+}
+
+.btn:disabled {
+  background: var(--bg-light) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed !important;
+  border: 1px solid var(--border);
+  opacity: 0.6;
+}
+
+.btn:disabled:hover {
+  background: var(--bg-light) !important;
+}

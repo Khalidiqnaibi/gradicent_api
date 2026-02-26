@@ -247,31 +247,7 @@
       return str.replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
     }
 
-    /**
-     * menu_init
-     * Wire menu toggle and ARIA updates.
-     */
-    function menu_init() {
-      const menuBtn = document.querySelector('.hamburger-menu');
-      const menuBar = document.getElementById('menuBar');
-      
-      // Toggle menu (keeps same interaction as previous)
-      menuBtn.addEventListener('click', () => {
-        menuBar.classList.toggle('menu-active');
-      });
-      
-      const menu_box = document.querySelector(".menu__box")
-      // close when clicking outside (improves UX)
-      document.addEventListener('click', (ev) => {
-        if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
-          menuBar.classList.remove('menu-active');
-          toggle.setAttribute('aria-expanded', 'false');
-          menu_box.setAttribute('aria-hidden', 'true');
-        }
-      });
-    }
-
-    return { create_toast, menu_init };
+    return { create_toast };
   })();
 
   /* =========================
@@ -394,7 +370,7 @@
     async function init() {
       try {
         const usage = startUsageTracker("/api/binder/track_time");
-        ui_mod.menu_init();
+        
         wire_buttons();
 
         // Prefetch plan and domain concurrently
@@ -432,4 +408,5 @@
 
     // start when DOM is ready
     document.addEventListener('DOMContentLoaded', init);
+
   })(api, ui, utils);

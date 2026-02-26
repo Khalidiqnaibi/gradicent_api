@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Welcome — Binder Medical</title>
   <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link href="/static/css.signin.css" rel="stylesheet">
+  <!-- Entity theme + onboarding styles -->
+  <link href="/static/css/entity.css" rel="stylesheet">
+  <link href="/static/css/signin.css" rel="stylesheet">
 </head>
 <body>
+  <!-- Centered onboarding shell -->
   <div class="onboard-wrap">
     <div class="card" role="main" aria-labelledby="welcome-title">
 
@@ -35,26 +36,29 @@
         <!--div style="margin-top:6px" class="note">You can change these later in Settings. This helps us prefill your clinic profile.</div-->
       </div>
 
-      <!-- RIGHT: form -->
+      <!-- RIGHT: clinic setup form -->
       <div class="right-panel">
+        <a href="/login" class="btn-ghost back-link">Back to login</a>
 
         <form id="signupForm" onsubmit="event.preventDefault(); sign();" novalidate>
 
+          <!-- Clinic name field -->
           <div>
             <label class="field">Doctor / Clinic name</label>
             <input id="drname" class="input" type="text" inputmode="text" autocomplete="organization" placeholder="Dr. Khalid — Binder Clinic" required />
           </div>
 
+          <!-- Specialty selector -->
           <div>
-            <label class="field">Specialty</label>
+            <label class="field">Clinic Specialty</label>
             <div class="specialty" id="specialtyRoot">
               <button type="button" id="specBtn" class="spec-button" aria-haspopup="listbox" aria-expanded="false" onclick="toggleDropdown()">
                 <img src="/static/images/down.png" alt="" aria-hidden="true" />
-                <span id="specValue" class="muted">Family and General Medicine</span>
-                <div style="margin-left:auto; font-size:13px; color:var(--muted)">Choose / Search</div>
+                <span id="specValue" class="muted">Select a specialty</span>
+                <div style="margin-left:auto; font-size:13px; color:var(--text-muted)">Select / Search</div>
               </button>
 
-              <!-- dropdown (hidden by default) -->
+              <!-- Dropdown: searchable specialty list (hidden by default) -->
               <div id="specDropdown" class="dropdown" role="listbox" aria-label="Specialty list" style="display:none;">
                 <div class="search">
                   <input id="specSearch" type="search" placeholder="Search specialties…" aria-label="Search specialties" oninput="filterFunction()" />
@@ -66,16 +70,19 @@
             </div>
           </div>
 
+          <!-- Location field -->
           <div>
             <label class="field">Clinic location</label>
             <input id="location" class="input" type="text" placeholder="Hebron, Palestine (street / area)" required />
           </div>
 
+          <!-- Phone field -->
           <div>
             <label class="field">Phone</label>
             <input id="phone" class="input" type="tel" inputmode="tel" placeholder="+970 59 000 0000" required />
           </div>
 
+          <!-- Submit action -->
           <div style="display:flex; gap:12px; align-items:center; margin-top:8px; flex-wrap:wrap;">
             <button type="submit" class="btn-primary">Finish setup</button>
           </div>
@@ -85,9 +92,10 @@
     </div>
   </div>
 
-  <!-- toast container -->
+  <!-- Toasts: status messages (success/error) -->
   <div id="toasts" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="/static/js/signin"></script>
+  <!-- Onboarding behavior (dropdown, validation, submit) -->
+  <script src="/static/js/signin.js"></script>
 </body>
 </html>

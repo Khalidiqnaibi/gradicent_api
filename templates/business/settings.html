@@ -2,175 +2,203 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Binder — Settings</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Binder — Settings</title>
   <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg">
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link href="/static/css/settings.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/static/css/entity.css" rel="stylesheet">
 </head>
-
-<body class="min-h-screen flex items-center justify-center">
-
-  <!-- Menu -->
-  <div id="menuBar" class="fixed top-4 left-4 z-50">
-    <div class="hamburger-menu p-2">
-      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
-        <span></span>
-      </label>
-
-      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/acc" title="Account">
-            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
-            <h6 class="text-sm font-medium">Account</h6>
-          </a>
-        </li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/home_page" title="Add Client">
-            <img class="icoo w-6 h-6" src="/static/images/hoo1.png" alt="Add">
-            <h6 class="text-sm font-medium">Add Client</h6>
-          </a>
-        </li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/srch" title="Search Records">
-            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
-            <h6 class="text-sm font-medium">Search</h6>
-          </a>
-        </li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/stats" title="Business Analytics">
-            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
-            <h6 class="text-sm font-medium">Analytics</h6>
-          </a>
-        </li>
-
-        <li>
-          <a id="appa"
-             class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/appointments" title="Meetings">
-            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Meetings">
-            <h6 id="apph6" class="text-sm font-medium">Meetings</h6>
-          </a>
-        </li>
-
-        <li class="border-t border-[var(--secondary)] my-1"></li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/settings" title="Settings">
-            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
-            <h6 class="text-sm font-medium">Settings</h6>
-          </a>
-        </li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/support" title="Support">
-            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
-            <h6 class="text-sm font-medium">Support</h6>
-          </a>
-        </li>
-
-      </ul>
+<body>
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <img src="/static/images/w3.jpg" alt="Binder" class="sidebar-logo">
+      <span class="sidebar-brand">Binder</span>
+      <button class="sidebar-close" onclick="EntityManager.closeSidebar()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
-  </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Management</div>
+        <a href="/client" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Clients
+        </a>
+        <a href="/prod" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Products
+        </a>
+        <a href="/service" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Services
+        </a>
+        <a href="/employee" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          Employees
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Overview</div>
+        <a href="/stats" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </a>
+        <a href="/plan" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 10h20"/></svg>
+          Plans
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Account</div>
+        <a href="/acc" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Account
+        </a>
+        <a href="/settings" class="sidebar-link active">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Settings
+        </a>
+      </div>
+    </nav>
+  </aside>
 
-  <!-- Settings Card -->
-  <div class="flex items-center justify-center min-h-screen px-6 w-full">
-    <div class="max-w-2xl w-full bg-white/95 backdrop-blur-md shadow-xl rounded-3xl p-8 border border-[var(--secondary)] space-y-6">
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
-      <h1 class="text-3xl font-bold text-center text-gray-900">Business Settings</h1>
+  <!-- Main Content -->
+  <div class="app-container">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <button id="menu-toggle" class="menu-toggle">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <div class="top-bar-title">Settings</div>
+    </header>
 
-      <div class="space-y-4">
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-title-row">
+        <h1 class="page-title">Business Settings</h1>
+        <p class="page-subtitle">Configure your business profile and preferences</p>
+      </div>
 
-        <!-- Business Name -->
-        <div class="flex items-center justify-between gap-4">
-          <label class="font-medium min-w-[36%]">Business name:</label>
-          <input id="drname" type="text"
-                 class="flex-1 px-3 py-2 border rounded-lg"
-                 placeholder="e.g. Binder Solutions Ltd">
-        </div>
+      <!-- Settings Card -->
+      <section class="card">
+        <div class="card-body">
+          <!-- Business Name -->
+          <div class="form-group">
+            <label class="form-label">Business Name</label>
+            <input id="drname" type="text" class="form-input" placeholder="e.g. Binder Solutions Ltd">
+          </div>
 
-        <!-- Default Message -->
-        <div class="flex items-center justify-between gap-4">
-          <label class="font-medium min-w-[36%]">Default message:</label>
-          <input id="msg" type="text"
-                 class="flex-1 px-3 py-2 border rounded-lg"
-                 placeholder="Thank you for your business…">
-        </div>
+          <!-- Default Message -->
+          <div class="form-group">
+            <label class="form-label">Default Message</label>
+            <input id="msg" type="text" class="form-input" placeholder="Thank you for your business…">
+          </div>
 
-        <!-- Country Code -->
-        <div class="flex items-center justify-between gap-4">
-          <label class="font-medium min-w-[36%]">Country phone code:</label>
-          <input id="pkey" type="text"
-                 class="flex-1 px-3 py-2 border rounded-lg"
-                 placeholder="+970">
-        </div>
+          <!-- Country Phone Code -->
+          <div class="form-group">
+            <label class="form-label">Country Phone Code</label>
+            <input id="pkey" type="text" class="form-input" placeholder="+970">
+          </div>
 
-        <!-- Permission Code -->
-        <div id="ccc" class="space-y-2">
-          <label class="font-medium block">Permission code:</label>
-
-          <div class="flex flex-col sm:flex-row gap-2">
-            <input id="code" type="password"
-                   class="flex-1 px-3 py-2 border rounded-lg"
-                   readonly>
-
-            <div class="flex gap-2">
-              <button id="toggle-visibility" class="px-3 py-2 rounded-lg border">
-                Show
-              </button>
-              <button id="refresh-code" class="px-3 py-2 rounded-lg border">
-                Refresh
-              </button>
-              <button id="copy-code" class="px-3 py-2 rounded-lg border">
-                Copy
-              </button>
+          <!-- Permission Code -->
+          <div class="form-group">
+            <label class="form-label">Permission Code</label>
+            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+              <input id="code" type="password" class="form-input" readonly style="flex: 1;">
+              <button id="toggle-visibility" type="button" class="btn btn-secondary" style="min-width: 100px;">Show</button>
+              <button id="refresh-code" type="button" class="btn btn-secondary" style="min-width: 100px;">Refresh</button>
+              <button id="copy-code" type="button" class="btn btn-secondary" style="min-width: 100px;">Copy</button>
+            </div>
+            <div id="codePreviewWrap" style="display: none; margin-top: 12px;">
+              <pre id="codePreview" style="background: var(--bg-light); padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; word-wrap: break-word; white-space: pre-wrap;"></pre>
             </div>
           </div>
 
-          <div id="codePreviewWrap" class="hidden">
-            <pre id="codePreview" class="code-preview"></pre>
+          <!-- Auto Message Toggle -->
+          <div style="display: flex; align-items: center; gap: 16px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+            <label class="form-label" style="margin: 0;">Send Automatic Messages</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cbx-3">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- Save Button -->
+          <div style="display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end;">
+            <button type="button" onclick="savePatientInfo()" class="btn btn-primary">Save Changes</button>
           </div>
         </div>
+      </section>
+    </main>
 
-        <!-- Auto Message -->
-        <div class="flex items-center gap-3">
-          <label class="font-medium min-w-[36%]">
-            Send automatic messages:
-          </label>
-
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="cbx-3" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-400 rounded-full peer-checked:bg-[var(--secondary)]"></div>
-            <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full transition-transform peer-checked:translate-x-5"></div>
-          </label>
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-content">
+        <span class="footer-copyright">© 2026 <span class="footer-brand">Gradicent</span>. All rights reserved.</span>
+        <div class="footer-links">
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
         </div>
-
       </div>
-
-      <!-- Save -->
-      <div class="pt-4 text-center">
-        <button onclick="savePatientInfo()"
-                class="px-6 py-2 bg-[var(--accent)] text-white font-semibold rounded-xl shadow hover:scale-105 transition">
-          Save changes
-        </button>
-      </div>
-
-    </div>
+    </footer>
   </div>
 
-  <div id="toast" class="toast"></div>
+  <div id="toast" class="toast-container" aria-live="polite"></div>
 
+  <style>
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+      cursor: pointer;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--bg-light);
+      border: 1px solid var(--border);
+      transition: 0.3s;
+      border-radius: 28px;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+    input:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+  </style>
+
+  <script src="/static/js/entity.js"></script>
   <script src="/static/js/settings.js"></script>
 </body>
 </html>

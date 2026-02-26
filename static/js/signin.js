@@ -1,9 +1,11 @@
-// set the domain type dynamically, e.g. from server or config
-// 'medical' = clinic onboarding, 'business' = business onboarding
-const domainType = '';
+// ===== Config =====
+// Domain type is resolved at runtime: 'medical' = clinic, 'business' = company.
+let domainType = '';
 
+// Abort slow API calls to keep the UI responsive.
 const API_TIMEOUT_MS = 10_000;
 
+// Fetch helper with timeout + JSON handling.
 async function safe_fetch(url, opts = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
@@ -21,6 +23,7 @@ async function safe_fetch(url, opts = {}) {
   }
 }
 
+// Ask the backend which domain is active.
 async function get_domain() {
   try {
     const r = await safe_fetch('/api/binder/get_domain');
@@ -28,7 +31,7 @@ async function get_domain() {
   } catch { return 'medical'; }
 }
 
-// define options for each domain
+// Domain-specific dropdown options.
 const optionsByDomain = {
   medical: [
     "Accident and emergency medicine","Allergist","Anaesthetics","Cardiology","Child psychiatry",
@@ -57,6 +60,7 @@ const optionsByDomain = {
 
 
 
+// DOM references used by the dropdown.
 const specListEl = document.getElementById('specList');
 const specDropdown = document.getElementById('specDropdown');
 const specBtn = document.getElementById('specBtn');
@@ -64,15 +68,17 @@ const specValue = document.getElementById('specValue');
 const specSearch = document.getElementById('specSearch');
 
 
+// Initialize options once the page is ready.
 document.addEventListener('DOMContentLoaded', async () => {
+  if (!specListEl) return;
   domainType = await get_domain();
-  const options = optionsByDomain[domainType];
-  
+  const options = optionsByDomain[domainType] || optionsByDomain.medical;
   buildOptionList(options);
 });
 
-// populate options
+// Populate dropdown with the given options.
 function buildOptionList(options) {
+  if (!specListEl) return;
   specListEl.innerHTML = '';
   options.forEach(opt => {
     const a = document.createElement('a');
@@ -84,7 +90,9 @@ function buildOptionList(options) {
   });
 }
 
+// Open/close the dropdown and manage focus.
 function toggleDropdown(open){
+  if (!specDropdown || !specBtn || !specSearch) return;
   const isOpen = specDropdown.style.display !== 'none';
   const show = (open===undefined) ? !isOpen : !!open;
   specDropdown.style.display = show ? 'flex' : 'none';
@@ -92,12 +100,16 @@ function toggleDropdown(open){
   if(show){ specSearch.focus(); specSearch.select(); } else { specSearch.value=''; filterFunction(); }
 }
 
+// Set the selected option and close the dropdown.
 function selectOption(opt){
+  if (!specValue) return;
   specValue.textContent = opt;
   toggleDropdown(false);
 }
 
+// Filter visible options based on search input.
 function filterFunction(){
+  if (!specSearch || !specListEl) return;
   const q = specSearch.value.trim().toUpperCase();
   Array.from(specListEl.children).forEach(a=>{
     const txt = (a.textContent||'').toUpperCase();
@@ -105,13 +117,15 @@ function filterFunction(){
   });
 }
 
-// close dropdown when clicking outside or pressing Esc
+// Close dropdown when clicking outside or pressing Esc.
 document.addEventListener('click', (e) => {
-  if (!document.getElementById('specialtyRoot').contains(e.target)) toggleDropdown(false);
+  const root = document.getElementById('specialtyRoot');
+  if (!root) return;
+  if (!root.contains(e.target)) toggleDropdown(false);
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleDropdown(false); });
 
-// simple toast
+// Simple toast helper for status feedback.
 function toast(msg, type='info'){
   const wrap = document.getElementById('toasts');
   const el = document.createElement('div');
@@ -127,7 +141,7 @@ function toast(msg, type='info'){
   }, 3500);
 }
 
-// submit form
+// Submit form to create/update the business/clinic profile.
 async function sign(){
   const name = document.getElementById('drname').value.trim();
   const specialty = specValue.textContent.trim();

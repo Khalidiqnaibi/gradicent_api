@@ -1,148 +1,149 @@
 <!DOCTYPE html>
-<html lang="en" class="antialiased">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Binder — Meetings</title>
-
-  <link rel="icon" type="image/x-icon" href="/static/images/w3.jpg" />
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link href="/static/css/appointments.css" rel="stylesheet">
+  <link rel="icon" href="/static/images/w3.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/static/css/entity.css" rel="stylesheet">
 </head>
-
-<body class="min-h-screen text-gray-800">
-
-  
-  <!-- Menu -->
-  <div id="menuBar" class="fixed top-4 left-4 z-50">
-    <div class="hamburger-menu p-2">
-      <label class="menu__btn cursor-pointer inline-flex items-center justify-center p-2 rounded-lg">
-        <span></span>
-      </label>
-
-      <ul class="menu__box absolute mt-3 left-0 w-64 bg-[var(--bg-main)]/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 space-y-2 border border-[var(--secondary)]">
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/acc" title="Account">
-            <img class="icoo w-6 h-6" src="/static/images/acc.png" alt="Account">
-            <h6 class="text-sm font-medium">Account</h6>
-          </a>
-        </li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/home_page" title="Add Client">
-            <img class="icoo w-6 h-6" src="/static/images/hoo1.png" alt="Add">
-            <h6 class="text-sm font-medium">Add Client</h6>
-          </a>
-        </li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/srch" title="Search Records">
-            <img class="icoo w-6 h-6" src="/static/images/sss.png" alt="Search">
-            <h6 class="text-sm font-medium">Search</h6>
-          </a>
-        </li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/stats" title="Business Analytics">
-            <img class="icoo w-6 h-6" src="/static/images/stst.png" alt="Stats">
-            <h6 class="text-sm font-medium">Analytics</h6>
-          </a>
-        </li>
-
-        <li>
-          <a id="appa"
-             class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/appointments" title="Meetings">
-            <img id="appimg" class="icoo w-6 h-6" src="/static/images/appoint.png" alt="Meetings">
-            <h6 id="apph6" class="text-sm font-medium">Meetings</h6>
-          </a>
-        </li>
-
-        <li class="border-t border-[var(--secondary)] my-1"></li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/settings" title="Settings">
-            <img class="icoo w-6 h-6" src="/static/images/sett.png" alt="Settings">
-            <h6 class="text-sm font-medium">Settings</h6>
-          </a>
-        </li>
-
-        <li>
-          <a class="menu__item flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--accent)]/35 transition"
-             href="/support" title="Support">
-            <img class="icoo w-6 h-6" src="/static/images/supp.png" alt="Support">
-            <h6 class="text-sm font-medium">Support</h6>
-          </a>
-        </li>
-
-      </ul>
+<body>
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <img src="/static/images/w3.jpg" alt="Binder" class="sidebar-logo">
+      <span class="sidebar-brand">Binder</span>
+      <button class="sidebar-close" onclick="EntityManager.closeSidebar()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Management</div>
+        <a href="/client" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Clients
+        </a>
+        <a href="/prod" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Products
+        </a>
+        <a href="/service" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Services
+        </a>
+        <a href="/employee" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          Employees
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Overview</div>
+        <a href="/stats" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </a>
+        <a href="/plan" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 10h20"/></svg>
+          Plans
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Account</div>
+        <a href="/acc" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Account
+        </a>
+        <a href="/settings" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Settings
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- Main Content -->
+  <div class="app-container">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <button id="menu-toggle" class="menu-toggle">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <div class="top-bar-title">Meetings</div>
+    </header>
+
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-title-row">
+        <h1 class="page-title">Meetings</h1>
+        <p class="page-subtitle">Schedule and manage your client meetings</p>
+      </div>
+
+      <!-- Meetings Card -->
+      <section class="card">
+        <div class="card-body">
+          <!-- Controls -->
+          <div style="display: flex; gap: 12px; margin-bottom: 24px; align-items: flex-end; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <label class="form-label">Date</label>
+              <input id="date_input" type="date" class="form-input"/>
+            </div>
+
+            <div style="flex: 1; min-width: 170px;">
+              <label class="form-label">Filter</label>
+              <select id="filter" class="form-input">
+                <option value="all">All</option>
+                <option value="has">With Notes</option>
+                <option value="none">No Notes</option>
+              </select>
+            </div>
+
+            <button id="clear" type="button" class="btn btn-secondary">Clear Notes</button>
+            <button id="refresh" type="button" class="btn btn-secondary">Refresh</button>
+            <button id="save" type="button" class="btn btn-primary">Save</button>
+          </div>
+
+          <!-- Meetings Count -->
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Total</span>
+            <span id="count" style="padding: 6px 12px; border-radius: 20px; background: var(--accent); color: #071620; font-weight: 600;">0</span>
+          </div>
+
+          <!-- Meetings List -->
+          <div id="list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
+          <!-- Empty State -->
+          <div id="empty" style="display: none; justify-content: center; background: rgba(255, 255, 255, 0.6); border-radius: 8px; padding: 32px 16px; color: var(--text-muted); border: 1px solid var(--border); text-align: center;">
+            No meetings scheduled.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-content">
+        <span class="footer-copyright">© 2026 <span class="footer-brand">Gradicent</span>. All rights reserved.</span>
+        <div class="footer-links">
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+        </div>
+      </div>
+    </footer>
   </div>
 
-  <!-- Page content -->
-  <main class="min-h-screen flex items-start justify-center p-6">
-    <div class="max-wrap w-full">
-      <div class="card">
+  <!-- Toast Container -->
+  <div id="toast_container" class="toast-container" aria-live="polite"></div>
 
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-5">
-          <h1 class="text-2xl font-bold">Meetings</h1>
-
-          <div class="flex gap-3 items-center">
-            <div class="text-sm muted">Total</div>
-            <div id="count"
-                 class="px-3 py-1 rounded-full bg-[var(--accent)] text-[#071620] font-bold">
-              0
-            </div>
-            <button id="refresh" class="btn-ghost">Refresh</button>
-            <button id="save" class="btn-primary">Save</button>
-          </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="flex gap-4 flex-col sm:flex-row mb-4 items-end">
-
-          <div class="w-full sm:w-64">
-            <label class="text-sm muted">Date</label>
-            <input id="date_input" type="date" class="input" />
-          </div>
-
-          <div class="flex gap-3 items-end">
-            <select id="filter" class="input" style="width:170px;">
-              <option value="all">All</option>
-              <option value="has">With Notes</option>
-              <option value="none">No Notes</option>
-            </select>
-            <button id="clear" class="btn-ghost">Clear notes</button>
-          </div>
-
-        </div>
-
-        <!-- Meetings list -->
-        <div id="list" class="flex flex-col gap-3"></div>
-
-        <div id="empty"
-             class="hidden justify-center bg-white/60 rounded-lg p-8 text-gray-500 border border-gray-200">
-          No meetings scheduled.
-        </div>
-
-      </div>
-    </div>
-  </main>
-
-  <!-- Toast container -->
-  <div id="toast_container"
-       class="fixed top-4 right-4 z-[9999] space-y-3"
-       aria-live="polite"></div>
-
+  <script src="/static/js/entity.js"></script>
   <script src="/static/js/appointments.js"></script>
-
 </body>
 </html>

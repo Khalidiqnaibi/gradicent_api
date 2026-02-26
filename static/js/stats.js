@@ -8,18 +8,18 @@
       
     document.addEventListener("DOMContentLoaded", async function() {
       document.getElementById("clients").style.display = "none";
-      const menuBtn = document.querySelector('.hamburger-menu');
-      const menuBar = document.getElementById('menuBar');
+
+      // Sidebar controls
+      const menuToggle = document.getElementById('menu-toggle');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (menuToggle) menuToggle.addEventListener('click', StatsPage.toggleSidebar);
+      if (overlay) overlay.addEventListener('click', StatsPage.closeSidebar);
 
       const usage = startUsageTracker("/api/binder/track_time");
       APP_STATE.user_id = await api.get_user_id();
       APP_STATE.domain = await api.get_domain();
       let res = await api.get_plan_status();
       APP_STATE.plan = res.plan;
-      // Toggle menu and spin transition
-      menuBtn.addEventListener('click', () => {
-        menuBar.classList.toggle('menu-active');
-      });
 
       if (["starter","free"].includes(APP_STATE.plan)){
         document.querySelector('.tab-btn[data-tab="finance"').style.display= 'none';
@@ -452,4 +452,32 @@
       loadTab(currentTab); 
     }
 
+    // Sidebar controls
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (!sidebar || !overlay) return;
+      const isOpen = sidebar.classList.contains('open');
+      if (isOpen) {
+        sidebar.classList.remove('open');
+        sidebar.classList.add('closed');
+        overlay.classList.remove('open');
+      } else {
+        sidebar.classList.add('open');
+        sidebar.classList.remove('closed');
+        overlay.classList.add('open');
+      }
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (!sidebar || !overlay) return;
+      sidebar.classList.remove('open');
+      sidebar.classList.add('closed');
+      overlay.classList.remove('open');
+    }
+
+    // Export for template
+    window.StatsPage = { toggleSidebar, closeSidebar };
   

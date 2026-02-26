@@ -120,25 +120,7 @@ function startUsageTracker(endpoint) {
   };
 }
 
-function menu_init() {
-  const menuBtn = document.querySelector('.hamburger-menu');
-  const menuBar = document.getElementById('menuBar');
-  
-  // Toggle menu (keeps same interaction as previous)
-  menuBtn.addEventListener('click', () => {
-    menuBar.classList.toggle('menu-active');
-  });
-  
-  const menu_box = document.querySelector(".menu__box")
-  // close when clicking outside (improves UX)
-  document.addEventListener('click', (ev) => {
-    if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
-      menuBar.classList.remove('menu-active');
-      toggle.setAttribute('aria-expanded', 'false');
-      menu_box.setAttribute('aria-hidden', 'true');
-    }
-  });
-}
+
 
 function el(id) { return document.getElementById(id); }
 
@@ -189,15 +171,32 @@ async function get_plan_status() {
 }
 
 /* ============================================================
+   Menu Initialization
+============================================================ */
+function menu_init() {
+  const menuBtn = document.querySelector('.hamburger-menu');
+  const menuBar = document.getElementById('menuBar');
+  if (!menuBtn || !menuBar) return;
+  menuBtn.addEventListener('click', () => {
+    menuBar.classList.toggle('menu-active');
+  });
+  document.addEventListener('click', (ev) => {
+    if (!menuBar.contains(ev.target) && !menuBtn.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+      menuBar.classList.remove('menu-active');
+    }
+  });
+}
+
+/* ============================================================
    Init
 ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
+  menu_init();
+
   const usage = startUsageTracker("/api/binder/track_time");
   domain = (await safe_fetch('/api/binder/get_domain')).data || 'medical';
   user_id = (await safe_fetch('/api/auth/me')).data.id;
   plan = (await get_plan_status()).plan;
-
-  menu_init();
 
   bindControls();
   fetchClientData();
@@ -561,4 +560,3 @@ async function deleteFile(url) {
     }
   }
 }
-

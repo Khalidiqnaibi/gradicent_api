@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Binder — Account</title>
+  <title>Binder — Plans</title>
   <link rel="icon" href="/static/images/w3.jpg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="/static/css/entity.css" rel="stylesheet">
+  <link href="/static/css/plan.css" rel="stylesheet">
 </head>
 <body>
   <!-- Sidebar -->
@@ -14,7 +15,7 @@
     <div class="sidebar-header">
       <img src="/static/images/w3.jpg" alt="Binder" class="sidebar-logo">
       <span class="sidebar-brand">Binder</span>
-      <button class="sidebar-close" onclick="EntityManager.closeSidebar()">
+      <button class="sidebar-close" onclick="PlanPage.closeSidebar()">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -46,14 +47,14 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Analytics
         </a>
-        <a href="/plan" class="sidebar-link">
+        <a href="/plan" class="sidebar-link active">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 10h20"/></svg>
           Plans
         </a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Account</div>
-        <a href="/acc" class="sidebar-link active">
+        <a href="/acc" class="sidebar-link">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Account
         </a>
@@ -77,52 +78,31 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
       </button>
-      <div class="top-bar-title">Account</div>
+      <div class="top-bar-title">Plans</div>
+      <a href="/settings" class="btn-add">Manage Billing</a>
     </header>
 
     <main class="main-content">
-      <!-- Page Header -->
-      <div class="page-title-row">
-        <h1 class="page-title">Business Account</h1>
-        <p class="page-subtitle">Manage your business workspace and performance</p>
-      </div>
-
-      <!-- Account Card -->
-      <section class="card" style="max-width: 600px;">
-        <div class="card-body">
-          <!-- Plan info -->
-          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px;">
-            <span id="plan_badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: rgba(17, 113, 187, 0.12); color: var(--accent-dark);">
-              <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              Starter Plan
+      <section class="plan-shell">
+        <div class="plan-hero">
+          <div class="plan-hero-title">
+            <h1 class="page-title">Plans & Pricing</h1>
+            <p>Pick a plan that matches your growth targets, automation goals, and reporting needs.</p>
+          </div>
+          <div class="billing-toggle" aria-label="Billing cycle selector">
+            <button type="button" id="billing-monthly" class="is-active">Monthly</button>
+            <span class="toggle-track" id="billing-track" aria-hidden="true">
+              <span class="toggle-thumb"></span>
             </span>
-            <span id="trial_days" style="font-size: 0.85rem; color: var(--text-muted); padding: 6px 12px;">Trial active</span>
-          </div>
-
-          <!-- Actions -->
-          <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-            <button id="btn1" type="button" class="btn btn-primary" style="width: 100%;">Upgrade Plan</button>
-            <button id="btn2" type="button" class="btn btn-secondary" style="width: 100%;">Switch Workspace</button>
-          </div>
-
-          <!-- Business metrics -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div style="padding: 20px; border-radius: var(--radius); background: var(--bg-light); border: 1px solid var(--border); text-align: center;">
-              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Clients</div>
-              <div id="patients_count" style="font-size: 1.5rem; font-weight: 700;">0</div>
-            </div>
-            <div style="padding: 20px; border-radius: var(--radius); background: var(--bg-light); border: 1px solid var(--border); text-align: center;">
-              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Meetings</div>
-              <div id="appointments_count" style="font-size: 1.5rem; font-weight: 700;">0</div>
-            </div>
+            <button type="button" id="billing-yearly">Yearly</button>
+            <span class="toggle-badge">2 months free</span>
           </div>
         </div>
+
+        <section class="plan-grid" id="plan-grid" aria-live="polite"></section>
       </section>
     </main>
 
-    <!-- Footer -->
     <footer class="site-footer">
       <div class="footer-content">
         <span class="footer-copyright">© 2026 <span class="footer-brand">Gradicent</span>. All rights reserved.</span>
@@ -134,9 +114,6 @@
     </footer>
   </div>
 
-  <div id="toast_container" class="toast-container" aria-live="polite"></div>
-
-  <script src="/static/js/entity.js"></script>
-  <script src="/static/js/acc.js"></script>
+  <script src="/static/js/plan.js"></script>
 </body>
 </html>

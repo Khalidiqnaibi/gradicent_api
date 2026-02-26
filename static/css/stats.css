@@ -1,14 +1,5 @@
 
-    :root {
-      --bg-main:#D9C4B0;
-      --accent:#ce7a35;
-      --secondary:#78cee6;
-      --text:#2b2b2b;
-    }
     body {
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto;
-      background: linear-gradient(180deg, var(--bg-main), #E6D6C0);
-      color:var(--text);
       min-height:100vh;
     }
     /* Hamburger + slide menu */
@@ -43,7 +34,29 @@
 
     .tab-btn { padding:.6rem 1rem; border-radius:999px; cursor:pointer; transition:.2s; }
     .active-tab { background:var(--accent); color:#fff; }
-    .card { background:rgba(255,255,255,0.92); border-radius:12px; padding:1rem; box-shadow:0 4px 14px rgba(0,0,0,0.05); }
+    .card { background:var(--bg-card); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow); margin-bottom:1.5rem; }
     .card h3 { font-weight:600; font-size:.9rem; }
+    .card-title { font-size:1.125rem; font-weight:600; margin-bottom:1rem; color:var(--text); }
+    
+    .tab-nav { display:flex; gap:0.5rem; margin-bottom:2rem; flex-wrap:wrap; }
+    .hidden { display:none !important; }
+    
+    /* Stats Grid */
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem; }
+    .stat-card { background:var(--bg-card); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-xs); }
+    .stat-label { font-size:0.875rem; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
+    .stat-value { font-size:2rem; font-weight:700; color:var(--text); margin-bottom:0.25rem; }
+    .stat-value.stat-accent { color:var(--accent); }
+    .stat-value.stat-secondary { color:var(--secondary); }
+    .stat-value.stat-danger { color:var(--error); }
+    .stat-desc { font-size:0.875rem; color:var(--text-muted); }
+    .stat-highlight { font-size:1.5rem; font-weight:600; color:var(--accent); margin-bottom:1rem; }
+    
+    /* Task Grid */
+    .task-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; }
+    
+    /* Top List */
+    .top-list { display:flex; flex-direction:column; gap:0.75rem; }
+    
     main { padding:2rem; max-width:1250px; margin:auto; }
     canvas { max-height:320px; }
