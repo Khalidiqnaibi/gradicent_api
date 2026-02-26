@@ -56,10 +56,58 @@ PRO_PRICE = os.getenv("PRO_PRICE","25")
 ULTRA_PRICE = os.getenv("ULTRA_PRICE","125")
 PACKAGE_PRICE = os.getenv("PACKAGE_PRICE","1000")
 PLANS = {
-    "starter": float(STARTER_PRICE),
-    "pro": float(PRO_PRICE),
-    "ultra": float(ULTRA_PRICE),
-    "package": float(PACKAGE_PRICE),
+    "starter": {
+        "key": "starter",
+        "name": "Starter",
+        "badge": "Great for solo",
+        "description": "Core client management and light reporting for new teams.",
+        "price": float(STARTER_PRICE),
+        "featured": False,
+        "features": [
+            "Client and contact tracking",
+            "Basic analytics dashboards",
+            "Email support"
+        ]
+    },
+    "pro": {
+        "key": "pro",
+        "name": "Pro",
+        "badge": "Most popular",
+        "description": "Automation-ready workflows with deeper reporting insights.",
+        "price": float(PRO_PRICE),
+        "featured": True,
+        "features": [
+            "Advanced analytics views",
+            "Team collaboration tools",
+            "Priority support"
+        ]
+    },
+    "ultra": {
+        "key": "ultra",
+        "name": "Ultra",
+        "badge": "Enterprise",
+        "description": "Full-featured platform with advanced automation and insights.",
+        "price": float(ULTRA_PRICE),
+        "featured": False,
+        "features": [
+            "Custom integrations",
+            "Dedicated account manager",
+            "24/7 phone support"
+        ]
+    },
+    "package": {
+        "key": "package",
+        "name": "Package",
+        "badge": "Custom",
+        "description": "Tailored solution for large organizations with unique needs.",
+        "price": float(PACKAGE_PRICE),
+        "featured": False,
+        "features": [
+            "White-label options",
+            "On-premise deployment",
+            "SLA guarantees"
+        ]
+    }
 }
 
 # payment providers
