@@ -86,11 +86,11 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 52px;
+  height: 52px;
   border-radius: var(--radius-sm);
   background: var(--bg-card);
-  border: 1.5px solid var(--border);
+  border: 2px solid var(--border);
   cursor: pointer;
   flex-shrink: 0;
   transition: border-color 0.2s ease;
@@ -101,8 +101,8 @@ html, body {
 }
 
 .menu-toggle svg {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   color: var(--text-muted);
   transition: color 0.2s ease;
 }
@@ -114,15 +114,19 @@ html, body {
 .search-container {
   flex: 1;
   max-width: 500px;
+  position: relative;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .search-input {
-  width: 100%;
-  height: 46px;
+  flex: 1;
+  height: 52px;
   padding: 0 18px;
   border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
-  font-size: 1rem;
+  border: 2px solid var(--border);
+  font-size: 1.0625rem;
   background: var(--bg-card);
   color: var(--text);
   outline: none;
@@ -142,18 +146,45 @@ html, body {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
+.btn-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(17, 113, 187, 0.3);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-search:hover {
+  background: var(--accent-dark);
+  box-shadow: 0 4px 16px rgba(17, 113, 187, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-search svg {
+  width: 22px;
+  height: 22px;
+}
+
 .btn-add {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 46px;
-  padding: 0 22px;
+  height: 52px;
+  padding: 0 24px;
   border-radius: var(--radius-sm);
   background: var(--accent);
   color: #ffffff;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 1rem;
   letter-spacing: 0.01em;
   border: none;
   cursor: pointer;
@@ -203,6 +234,12 @@ html, body {
   width: 280px;
   height: 100vh;
   background: var(--bg-sidebar);
+  background-image: 
+    linear-gradient(rgba(33, 45, 64, 0.92), rgba(33, 45, 64, 0.95)),
+    url('/static/images/w3.jpg');
+  background-size: cover, 200px;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
   color: white;
   z-index: 100;
   transform: translateX(-100%);
@@ -384,11 +421,11 @@ html, body {
 }
 
 .form-input {
-  height: 44px;
-  padding: 0 14px;
+  height: 52px;
+  padding: 0 16px;
   border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
-  font-size: 0.9375rem;
+  border: 2px solid var(--border);
+  font-size: 1.0625rem;
   background: var(--bg-card);
   color: var(--text);
   outline: none;
@@ -423,10 +460,10 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 42px;
-  padding: 0 20px;
+  height: 48px;
+  padding: 0 24px;
   border-radius: var(--radius-sm);
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -449,7 +486,7 @@ html, body {
 .btn-secondary {
   background: var(--bg-card);
   color: var(--text);
-  border: 1.5px solid var(--border);
+  border: 2px solid var(--border);
 }
 
 .btn-secondary:hover {
@@ -492,9 +529,10 @@ html, body {
 .entity-card {
   background: var(--bg-card);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 20px;
+  border: 2px solid var(--border);
+  padding: 24px;
   transition: all 0.2s ease;
+  min-height: 180px;
 }
 
 .entity-card:hover {
@@ -513,7 +551,7 @@ html, body {
 
 .entity-name {
   font-weight: 600;
-  font-size: 1.0625rem;
+  font-size: 1.25rem;
   color: var(--text);
 }
 
@@ -557,9 +595,9 @@ html, body {
 }
 
 .btn-sm {
-  height: 34px;
-  padding: 0 14px;
-  font-size: 0.8125rem;
+  height: 42px;
+  padding: 0 18px;
+  font-size: 0.9375rem;
 }
 
 .btn-ghost {
@@ -887,69 +925,72 @@ html, body {
 
 .footer-links a:hover {
   /* ====== Support Contact Styles ====== */
-  .contact-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.5rem;
-    padding: 1rem 0;
-  }
+/* ====== Support Contact Styles (Fixed outside nested scope) ====== */
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 1.75rem 0;
+}
 
-  .contact-icon {
-    width: 56px;
-    height: 56px;
-    background: var(--accent-glow);
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
+.contact-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--accent-glow);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
-  .contact-icon svg {
-    width: 28px;
-    height: 28px;
-    stroke: var(--accent);
-    fill: none;
-  }
+.contact-icon svg {
+  width: 40px;
+  height: 40px;
+  stroke: var(--accent);
+  fill: none;
+}
 
-  .contact-info {
-    flex: 1;
-  }
+.contact-info {
+  flex: 1;
+}
 
-  .contact-info h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text);
-  }
+.contact-info h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
 
-  .contact-info p {
-    font-size: 0.9375rem;
-    color: var(--text-muted);
-    margin-bottom: 0.75rem;
-  }
+.contact-info p {
+  font-size: 1.125rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
 
-  .contact-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--accent);
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
+}
 
-  .contact-link:hover {
-    color: var(--accent-dark);
-    text-decoration: underline;
-  }
+.contact-link:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
 
-  .contact-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 0.5rem 0;
-  }
+.contact-divider {
+  height: 2px;
+  background: var(--border);
+  margin: 1rem 0;
+}
 
   color: var(--accent);
 }

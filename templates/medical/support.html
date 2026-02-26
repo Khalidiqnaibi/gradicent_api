@@ -71,12 +71,14 @@
     }
     /* layout */
     main{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:4rem 1rem; }
-    .card { width:100%; max-width:920px; padding:2rem; }
-    .contact-row{ display:flex; gap:1rem; align-items:center; justify-content:space-between; padding:0.75rem 0.5rem; border-bottom:1px solid rgba(0,0,0,0.04) }
+    .card { width:100%; max-width:920px; padding:3rem; }
+    .contact-row{ display:flex; gap:1.5rem; align-items:center; justify-content:space-between; padding:1.5rem 0.75rem; border-bottom:2px solid rgba(0,0,0,0.06) }
     .contact-row:last-child{ border-bottom:0 }
-    .muted{ color:rgba(0,0,0,0.55); font-size:.95rem }
+    .contact-row .font-medium{ font-size:1.25rem; font-weight:600; margin-bottom:0.5rem }
+    .contact-row a{ font-size:1.125rem; font-weight:600 }
+    .muted{ color:rgba(0,0,0,0.55); font-size:1.0625rem; line-height:1.5 }
     @media (max-width:768px){
-      .contact-row{ flex-direction:column; align-items:flex-start; gap:.5rem }
+      .contact-row{ flex-direction:column; align-items:flex-start; gap:.75rem }
       .menu__box{ width:78vw }
     }
   </style>
@@ -141,11 +143,11 @@
 
   <main>
     <section class="decorative-card card">
-      <header class="flex items-center justify-between mb-4">
+      <header class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-4">
-          <img src="/static/images/w3.jpg" alt="logo" class="w-14 h-14 rounded-full shadow-sm" />
+          <img src="/static/images/w3.jpg" alt="logo" class="w-20 h-20 rounded-full shadow-sm" />
           <div>
-            <h1 class="text-xl font-semibold">Customer Support</h1>
+            <h1 class="text-3xl font-bold mb-2">Customer Support</h1>
             <p class="muted">We’ll help with accounts, billing, and technical issues.</p>
           </div>
         </div>

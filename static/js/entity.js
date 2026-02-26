@@ -397,18 +397,21 @@ const EntityManager = (function() {
       }, { passive: true });
     }
 
-    // Search on enter and as you type
+    // Search on Enter key only
     const queryInput = $('query_input');
     if (queryInput) {
       queryInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') search();
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          search();
+        }
       });
-      // Real-time search with debounce
-      let searchTimeout;
-      queryInput.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => search(), 300);
-      });
+    }
+
+    // Search button click
+    const searchBtn = $('search_btn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => search());
     }
 
     // Add form toggle
