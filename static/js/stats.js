@@ -7,13 +7,14 @@
     var client_list = []
       
     document.addEventListener("DOMContentLoaded", async function() {
-      document.getElementById("clients").style.display = "none";
-
-      // Sidebar controls
+      // Sidebar controls (must be attached before any async operations)
       const menuToggle = document.getElementById('menu-toggle');
       const overlay = document.getElementById('sidebar-overlay');
       if (menuToggle) menuToggle.addEventListener('click', StatsPage.toggleSidebar);
       if (overlay) overlay.addEventListener('click', StatsPage.closeSidebar);
+
+      const clientsEl = document.getElementById("clients");
+      if (clientsEl) clientsEl.style.display = "none";
 
       const usage = startUsageTracker("/api/binder/track_time");
       APP_STATE.user_id = await api.get_user_id();
@@ -22,14 +23,18 @@
       APP_STATE.plan = res.plan;
 
       if (["starter","free"].includes(APP_STATE.plan)){
-        document.querySelector('.tab-btn[data-tab="finance"').style.display= 'none';
-        document.querySelector('.tab-btn[data-tab="clients"').style.display= 'none';
+        const financeTab = document.querySelector('.tab-btn[data-tab="finance"]');
+        const clientsTab = document.querySelector('.tab-btn[data-tab="clients"]');
+        if (financeTab) financeTab.style.display = 'none';
+        if (clientsTab) clientsTab.style.display = 'none';
       }
       
 
-      document.getElementById("clients").addEventListener("click", function () {
-        show_clients();
-      });
+      if (clientsEl) {
+        clientsEl.addEventListener("click", function () {
+          show_clients();
+        });
+      }
 
       
       setFiltersToLastWeek();
@@ -203,20 +208,25 @@
       const toStr = formatDateInput(to);
       filters.from = fromStr;
       filters.to = toStr;
-      document.getElementById('dateFrom').value = fromStr;
-      document.getElementById('dateTo').value = toStr;
+      const dateFromEl = document.getElementById('dateFrom');
+      const dateToEl = document.getElementById('dateTo');
+      if (dateFromEl) dateFromEl.value = fromStr;
+      if (dateToEl) dateToEl.value = toStr;
     }
 
     // wire form submit to update filters and reload
-    document.getElementById('filters').addEventListener('submit', e=>{
-      e.preventDefault();
-      const f = document.getElementById('dateFrom').value;
-      const t = document.getElementById('dateTo').value;
-      filters.from = f || null;
-      filters.to = t || null;
-      
-      reloadCurrentTab();
-    });
+    const filtersForm = document.getElementById('filters');
+    if (filtersForm) {
+      filtersForm.addEventListener('submit', e=>{
+        e.preventDefault();
+        const f = document.getElementById('dateFrom').value;
+        const t = document.getElementById('dateTo').value;
+        filters.from = f || null;
+        filters.to = t || null;
+        
+        reloadCurrentTab();
+      });
+    }
 
     // builds a query string only with present filters
     async function buildQsFromFilters() {
@@ -460,12 +470,10 @@
       const isOpen = sidebar.classList.contains('open');
       if (isOpen) {
         sidebar.classList.remove('open');
-        sidebar.classList.add('closed');
-        overlay.classList.remove('open');
+        overlay.classList.remove('active');
       } else {
         sidebar.classList.add('open');
-        sidebar.classList.remove('closed');
-        overlay.classList.add('open');
+        overlay.classList.add('active');
       }
     }
 
@@ -474,8 +482,7 @@
       const overlay = document.getElementById('sidebar-overlay');
       if (!sidebar || !overlay) return;
       sidebar.classList.remove('open');
-      sidebar.classList.add('closed');
-      overlay.classList.remove('open');
+      overlay.classList.remove('active');
     }
 
     // Export for template

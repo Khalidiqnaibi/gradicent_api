@@ -4,6 +4,35 @@ const PlanPage = (function () {
     billing: 'monthly'
   };
 
+  const MOCK_PLANS = {
+    starter: {
+      key: 'starter',
+      name: 'Starter',
+      badge: 'Great for solo',
+      description: 'Core client management and light reporting for new teams.',
+      price: 12,
+      featured: false,
+      features: [
+        'Client and contact tracking',
+        'Basic analytics dashboards',
+        'Email support'
+      ]
+    },
+    pro: {
+      key: 'pro',
+      name: 'Pro',
+      badge: 'Most popular',
+      description: 'Automation-ready workflows with deeper reporting insights.',
+      price: 29,
+      featured: true,
+      features: [
+        'Advanced analytics views',
+        'Team collaboration tools',
+        'Priority support'
+      ]
+    }
+  };
+
   const elements = {
     grid: document.getElementById('plan-grid'),
     billingMonthly: document.getElementById('billing-monthly'),
@@ -122,9 +151,12 @@ const PlanPage = (function () {
       const res = await safeFetch('/api/payments/plans');
       const priceMap = res?.data?.plans || {};
       state.plans = mergePlans(priceMap);
+      if (!state.plans.length) {
+        state.plans = mergePlans(MOCK_PLANS);
+      }
     } catch (err) {
       console.warn('Failed to load plans:', err);
-      state.plans = mergePlans(null);
+      state.plans = mergePlans(MOCK_PLANS);
     }
 
     renderPlans(state.plans);
