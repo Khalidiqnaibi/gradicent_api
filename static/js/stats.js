@@ -250,6 +250,19 @@
       }
     }
 
+    // ===== Pro upgrade overlay =====
+    function showProOverlay(panelId, title, description) {
+      const panel = document.getElementById(panelId);
+      if (!panel) return;
+      panel.innerHTML = `
+        <div class="pro-overlay">
+          <div class="pro-icon">&#9733;</div>
+          <div class="pro-title">${title}</div>
+          <p class="pro-desc">${description}</p>
+          <a href="/plan" class="pro-btn">Upgrade to Pro</a>
+        </div>`;
+    }
+
     // ===== Tabs wiring =====
     document.querySelectorAll('.tab-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -281,7 +294,7 @@
       let tbs = ["productivity" , "roi"];
       let pln = ["pro" , "ultra"];
       
-      if(tbs.includes(tab) || pln.includes(APP_STATE.plan)){
+      if(tbs.includes(tab) || pln.includes(APP_STATE.plan) || tab === 'finance' || tab === 'clients'){
       {
         const qs = await buildQsFromFilters();
         let url = `/api/gaia/`;
@@ -364,7 +377,7 @@
             }
 
             if (tab === 'finance' && !["pro" , "ultra"].includes(APP_STATE.plan )){
-              alert("Sorry, finance metrics are only available for Pro and Ultra plans. Please upgrade to access this feature.");
+              showProOverlay('tab-finance', 'Finance Analytics', 'Finance metrics like revenue, outstanding balances, and trends are available on the Pro and Ultra plans.');
             }
             else if (tab === 'finance') {
               url = `/api/gaia/compute?metric=finance&${qs}`;
@@ -402,7 +415,7 @@
               }
             }
             if (tab === 'clients' && !["pro" , "ultra"].includes(APP_STATE.plan )){
-              alert("Sorry, client metrics are only available for Pro and Ultra plans. Please upgrade to access this feature.");
+              showProOverlay('tab-clients', 'Customer Analytics', 'Customer insights like retention, top services, and weekly trends are available on the Pro and Ultra plans.');
             }
             else if (tab === 'clients') {
               url = `/api/gaia/compute?metric=total_customers&${qs}`;
@@ -454,7 +467,7 @@
           }
         }
       }else{
-        alert("Sorry, this feature is only available for Pro and Ultra plans. Please upgrade to access this feature.");
+        showProOverlay('tab-' + tab, 'Pro Feature', 'This feature is only available on the Pro and Ultra plans. Upgrade now to unlock advanced analytics.');
       };
     }
 
