@@ -364,7 +364,7 @@
             }
 
             if (tab === 'finance' && !["pro" , "ultra"].includes(APP_STATE.plan )){
-              alert("CANT DO THAT NOW ,CAN U SILLY?");
+              alert("Sorry, finance metrics are only available for Pro and Ultra plans. Please upgrade to access this feature.");
             }
             else if (tab === 'finance') {
               url = `/api/gaia/compute?metric=finance&${qs}`;
@@ -402,7 +402,7 @@
               }
             }
             if (tab === 'clients' && !["pro" , "ultra"].includes(APP_STATE.plan )){
-              alert("CANT DO THAT NOW ,CAN U SILLY?");
+              alert("Sorry, client metrics are only available for Pro and Ultra plans. Please upgrade to access this feature.");
             }
             else if (tab === 'clients') {
               url = `/api/gaia/compute?metric=total_customers&${qs}`;
@@ -454,7 +454,7 @@
           }
         }
       }else{
-        alert("CANT DO THAT NOW ,CAN U SILLY?");
+        alert("Sorry, this feature is only available for Pro and Ultra plans. Please upgrade to access this feature.");
       };
     }
 

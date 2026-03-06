@@ -90,13 +90,23 @@
       <!-- Account Card -->
       <section class="card" style="max-width: 600px;">
         <div class="card-body">
+          <!-- User Info -->
+          <div id="user_info" style="text-align: center; padding: 12px 0; margin-bottom: 20px; border-bottom: 1px solid var(--border);">
+            <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+              <span id="user_name">Loading...</span>
+            </div>
+            <div id="domain_label" style="font-size: 0.85rem; color: var(--text-muted);">
+              Business Workspace
+            </div>
+          </div>
+
           <!-- Plan info -->
           <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px;">
             <span id="plan_badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: rgba(17, 113, 187, 0.12); color: var(--accent-dark);">
               <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              Starter Plan
+              Loading...
             </span>
             <span id="trial_days" style="font-size: 0.85rem; color: var(--text-muted); padding: 6px 12px;">Trial active</span>
           </div>
@@ -111,11 +121,19 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div style="padding: 20px; border-radius: var(--radius); background: var(--bg-light); border: 1px solid var(--border); text-align: center;">
               <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Clients</div>
-              <div id="patients_count" style="font-size: 1.5rem; font-weight: 700;">0</div>
+              <div id="patients_count" style="font-size: 1.5rem; font-weight: 700;">-</div>
             </div>
             <div style="padding: 20px; border-radius: var(--radius); background: var(--bg-light); border: 1px solid var(--border); text-align: center;">
-              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Meetings</div>
-              <div id="appointments_count" style="font-size: 1.5rem; font-weight: 700;">0</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Meetings Today</div>
+              <div id="appointments_count" style="font-size: 1.5rem; font-weight: 700;">-</div>
+            </div>
+            <div style="padding: 20px; border-radius: var(--radius); background: var(--bg-light); border: 1px solid var(--border); text-align: center;">
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Revenue</div>
+              <div id="revenue_count" style="font-size: 1.5rem; font-weight: 700;">-</div>
+            </div>
+            <div style="padding: 20px; border-radius: var(--radius); background: var(--bg-light); border: 1px solid var(--border); text-align: center;">
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Profit</div>
+              <div id="profit_count" style="font-size: 1.5rem; font-weight: 700;">-</div>
             </div>
           </div>
         </div>

@@ -5,9 +5,11 @@
   background: linear-gradient(120deg, #ffffff 0%, #ffffff 52%, #f1f6fb 52%, #f8fbff 100%);
   border: 1px solid var(--border);
   border-radius: 24px;
-  padding: 32px;
+  padding: 48px;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .plan-shell::before {
@@ -36,7 +38,7 @@
 }
 
 .plan-hero-title h1 {
-  font-size: 2rem;
+  font-size: 2.25rem;
   letter-spacing: -0.02em;
 }
 
@@ -114,9 +116,9 @@
 
 .plan-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(260px, 1fr));
-  gap: 20px;
-  max-width: 820px;
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  gap: 28px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
@@ -126,10 +128,10 @@
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: 0 10px 26px rgba(33, 45, 64, 0.08);
-  padding: 22px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease, opacity 0.25s ease;
 }
 
@@ -164,7 +166,7 @@
 }
 
 .plan-name {
-  font-size: 1.125rem;
+  font-size: 1.35rem;
   font-weight: 700;
 }
 
@@ -182,39 +184,40 @@
 }
 
 .plan-price {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   color: var(--text);
 }
 
 .plan-price span {
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
 .plan-description {
   color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.6;
+  font-size: 0.95rem;
 }
 
 .plan-features {
   display: grid;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .plan-feature {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .plan-feature svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   color: var(--success);
   flex-shrink: 0;
 }
