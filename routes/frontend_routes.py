@@ -171,6 +171,29 @@ def support() -> Any:
     """Support wrapper."""
     return redirect(_render_protected_page("support"))
 
+@frontend_blueprint.route("/employee", methods=["GET"])
+@require_login
+def employee() -> Any:
+    """employee wrapper."""
+    return redirect(_render_protected_page("employee"))
+
+@frontend_blueprint.route("/service", methods=["GET"])
+@require_login
+def service() -> Any:
+    """service wrapper."""
+    return redirect(_render_protected_page("service"))
+
+@frontend_blueprint.route("/plan", methods=["GET"])
+@require_login
+def plan() -> Any:
+    """plan wrapper."""
+    return redirect(_render_protected_page("plan"))
+
+@frontend_blueprint.route("/prod", methods=["GET"])
+@require_login
+def prod() -> Any:
+    """prod wrapper."""
+    return redirect(_render_protected_page("prod"))
 
 @frontend_blueprint.route("/settings", methods=["GET"])
 @require_login
