@@ -853,7 +853,6 @@ def create_service():
 
     return make_response(data=svc, message="Service created successfully."), 201
 
-
 @binder_blueprint.route("/services/<service_id>", methods=["GET"])
 def read_service(service_id: str):
     """

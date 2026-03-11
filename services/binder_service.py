@@ -626,7 +626,7 @@ class BinderService:
     # Services CRUD
     # --------------------
 
-    def create_service_record(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def create_service(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a service (business offering) under current user.
 

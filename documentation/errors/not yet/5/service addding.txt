@@ -41,3 +41,8 @@ this error came : 2026-03-11 08:41:59,253: Binder not configured for domain: Non
 
 
 it seems to be that the domain is not being read somehow.. but the same way in other routes is working fine like /products post
+
+
+
+######################################################
+Fixed : the error wasn't in the domain at all. it was just a naming error of the method for creating the new services
