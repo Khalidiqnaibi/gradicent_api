@@ -66,7 +66,8 @@
       const payload = JSON.stringify({ seconds: totalActiveSeconds });
 
       // Use sendBeacon so it always sends before page unload
-      navigator.sendBeacon(endpoint, payload);
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon(endpoint, blob);
     }
 
     // On close / refresh / navigation
@@ -143,7 +144,7 @@
     }
 
     async function get_user_id(){
-      user = await get_user();
+      const user = await get_user();
       return user.id;    
     }
 

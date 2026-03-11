@@ -78,7 +78,7 @@
       }
 
       async function get_user_id(){
-        user = await get_user();
+        const user = await get_user();
         return user.id;    
       }
 
@@ -113,7 +113,7 @@
     })(u);  
     
     function show_clients() {
-      window.location.href = `/search_stats?clients=${client_list}`
+      window.location.href = `/search_stats?clients=${encodeURIComponent(JSON.stringify(client_list))}`;
     }
 
     /**
@@ -148,7 +148,8 @@
         const payload = JSON.stringify({ seconds: totalActiveSeconds });
 
         // Use sendBeacon so it always sends before page unload
-        navigator.sendBeacon(endpoint, payload);
+        const blob = new Blob([payload], { type: 'application/json' });
+        navigator.sendBeacon(endpoint, blob);
       }
 
       // On close / refresh / navigation
@@ -230,24 +231,16 @@
 
     // builds a query string only with present filters
     async function buildQsFromFilters() {
-      if (APP_STATE.domain && APP_STATE.user_id){
-        const params = new URLSearchParams();
-        if (filters.from) params.append('from', filters.from);
-        if (filters.to) params.append('to', filters.to);
-        if (APP_STATE.domain) params.append('domain', APP_STATE.domain);
-        if (APP_STATE.user_id) params.append('user_id', APP_STATE.user_id);
-        return params.toString();
-      }else{
-        APP_STATE.domain  = await api.get_domain()
-        APP_STATE.user_id = await api.get_user_id()
-        
-        const params = new URLSearchParams();
-        if (filters.from) params.append('from', filters.from);
-        if (filters.to) params.append('to', filters.to);
-        if (APP_STATE.domain) params.append('domain', APP_STATE.domain);
-        if (APP_STATE.user_id) params.append('user_id', APP_STATE.user_id);
-        return params.toString();
+      if (!APP_STATE.domain || !APP_STATE.user_id) {
+        APP_STATE.domain  = await api.get_domain();
+        APP_STATE.user_id = await api.get_user_id();
       }
+      const params = new URLSearchParams();
+      if (filters.from) params.append('from', filters.from);
+      if (filters.to) params.append('to', filters.to);
+      if (APP_STATE.domain) params.append('domain', APP_STATE.domain);
+      if (APP_STATE.user_id) params.append('user_id', APP_STATE.user_id);
+      return params.toString();
     }
 
     // ===== Pro upgrade overlay =====
@@ -295,7 +288,6 @@
       let pln = ["pro" , "ultra"];
       
       if(tbs.includes(tab) || pln.includes(APP_STATE.plan) || tab === 'finance' || tab === 'clients'){
-      {
         const qs = await buildQsFromFilters();
         let url = `/api/gaia/`;
 
@@ -329,7 +321,10 @@
               for (const [type, count] of Object.entries(taskCounts)) {
               const d = document.createElement('div');
               d.className = 'p-2 border rounded text-center';
-              d.innerHTML = `<div class="text-sm">${type}</div>`;
+              const inner = document.createElement('div');
+              inner.className = 'text-sm';
+              inner.textContent = type;
+              d.appendChild(inner);
               
               const countEl = document.createElement('div');
               countEl.className = 'text-2xl font-semibold';
@@ -465,7 +460,6 @@
           } catch (err) {
             console.error('Error loading tab', tab, err);
           }
-        }
       }else{
         showProOverlay('tab-' + tab, 'Pro Feature', 'This feature is only available on the Pro and Ultra plans. Upgrade now to unlock advanced analytics.');
       };

@@ -63,8 +63,9 @@ const EntityManager = (function() {
           type === 'error' ? '<circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>' :
           '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>'}
       </svg>
-      <span>${message}</span>
+      <span></span>
     `;
+    t.querySelector('span').textContent = message;
     container.appendChild(t);
     setTimeout(() => t.remove(), 4000);
   }
@@ -96,10 +97,10 @@ const EntityManager = (function() {
           <div class="entity-card" data-id="${item.id ?? idx}">
             <div class="entity-card-header">
               <span class="entity-name">${escapeHtml(item.name || item.id || `#${idx + 1}`)}</span>
-              ${item.status ? `<span class="entity-badge">${item.status}</span>` : ''}
+              ${item.status ? `<span class="entity-badge">${escapeHtml(item.status)}</span>` : ''}
             </div>
             <div class="entity-meta">
-              ${displayFields.slice(1).map(field => item[field] ? `
+              ${displayFields.slice(1).map(field => (item[field] != null && item[field] !== '') ? `
                 <div class="entity-meta-item">
                   <span>${formatLabel(field)}:</span>
                   <strong>${escapeHtml(String(item[field]))}</strong>
@@ -107,8 +108,8 @@ const EntityManager = (function() {
               ` : '').join('')}
             </div>
             <div class="entity-actions">
-              <button class="btn btn-sm btn-secondary" onclick="EntityManager.view('${item.id ?? idx}')">View</button>
-              <button class="btn btn-sm btn-ghost" onclick="EntityManager.edit('${item.id ?? idx}')">Edit</button>
+              <button class="btn btn-sm btn-secondary" data-action="view" data-id="${escapeHtml(String(item.id ?? idx))}">View</button>
+              <button class="btn btn-sm btn-ghost" data-action="edit" data-id="${escapeHtml(String(item.id ?? idx))}">Edit</button>
             </div>
           </div>
         `).join('')}
@@ -282,8 +283,8 @@ const EntityManager = (function() {
     const item = STATE.items.find(i => String(i.id) === String(id));
     if (!item) return;
     
-    // Switch to add tab and populate fields
-    switchTab('add');
+    // Switch to add form and populate fields
+    toggleAddForm();
     
     const fields = CONFIG.fields?.add || [];
     fields.forEach(f => {
@@ -423,6 +424,19 @@ const EntityManager = (function() {
     // Sidebar
     $('menu-toggle')?.addEventListener('click', toggleSidebar);
     $('sidebar-overlay')?.addEventListener('click', closeSidebar);
+
+    // Entity card action delegation (view/edit) — attached once to avoid listener stacking
+    const resultsContainer = $('results');
+    if (resultsContainer) {
+      resultsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        if (action === 'view') view(id);
+        else if (action === 'edit') edit(id);
+      });
+    }
 
     // Load initial data
     await loadAll();

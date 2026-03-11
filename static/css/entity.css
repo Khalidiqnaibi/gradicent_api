@@ -7,9 +7,9 @@
   --accent-glow: rgba(17, 113, 187, 0.2);
   --secondary: #FF9F1C;
   --secondary-dark: #e88f19;
-  --bg-gradient: linear-gradient(180deg, #FFFCF9 0%, #f5f2ef 100%);
+  --bg-gradient: linear-gradient(180deg, #e8eef6 0%, #dce4f0 100%);
   --bg-card: #ffffff;
-  --bg-glass: rgba(255, 252, 249, 0.95);
+  --bg-glass: rgba(255, 255, 255, 0.95);
   --bg-sidebar: #212D40;
   --text: #212D40;
   --text-secondary: #3d4a5c;

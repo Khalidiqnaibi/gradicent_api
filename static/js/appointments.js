@@ -50,7 +50,8 @@
       const payload = JSON.stringify({ seconds: totalActiveSeconds });
 
       // Use sendBeacon so it always sends before page unload
-      navigator.sendBeacon(endpoint, payload);
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon(endpoint, blob);
     }
 
     // On close / refresh / navigation
@@ -168,7 +169,7 @@
      */
     async function lock_appointment(no, domain, date_iso, user_id) {
       const url = `/api/binder/appointments/lock`;
-      return await utils.safe_fetch(url, {
+      return await u.safe_fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ no, user_id, date: date_iso, domain }) 

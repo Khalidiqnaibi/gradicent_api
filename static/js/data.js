@@ -107,7 +107,8 @@ function startUsageTracker(endpoint) {
     const payload = JSON.stringify({ seconds: totalActiveSeconds });
 
     // Use sendBeacon so it always sends before page unload
-    navigator.sendBeacon(endpoint, payload);
+    const blob = new Blob([payload], { type: 'application/json' });
+    navigator.sendBeacon(endpoint, blob);
   }
 
   // On close / refresh / navigation
@@ -145,7 +146,7 @@ function show_toast(message, type = 'info') {
 let user_id = '';
 let visits = [];
 let currentVisitIndex = 0;
-let patientNumber = window.__client__ || 0;
+let patientNumber = window.__client__ ?? 0;
 
 /* ============================================================
    Fetch helpers
@@ -153,7 +154,9 @@ let patientNumber = window.__client__ || 0;
 async function safe_fetch(url, opts = {}) {
   const r = await fetch(url, opts);
   if (!r.ok) {
-    show_toast(r.status , "error");
+    const text = await r.text().catch(() => '');
+    show_toast(`Error: ${r.status}`, "error");
+    throw new Error(`HTTP ${r.status}: ${text}`);
   }
   return r.json();
 }
@@ -307,7 +310,7 @@ function search() {
   const d = $('#search').value;
   const f = cfg().fields.date;
   const found = visits.find(v => v[f] === d);
-  if (!found) return alert('Not found');
+  if (!found) return show_toast('Not found', 'info');
   currentVisitIndex = visits.indexOf(found);
   populate(found);
 }
@@ -342,8 +345,8 @@ function buildPayload() {
 
 function save() {
   const payload = buildPayload();
-  // vno is 1-based; visits.length is number of existing items
-  const isNew = currentVisitIndex === visits.length || visits.length === 0;
+  // vno is 1-based; treat empty objects (from next()) as new
+  const isNew = visits.length === 0 || Object.keys(visits[currentVisitIndex] || {}).length === 0;
 
   const method = isNew ? 'POST' : 'PATCH';
   const body = isNew
@@ -400,17 +403,17 @@ const FILE_API_BASE = '/api/binder/files';
 
 let selectedFolder = '';
 
-
-if (["medical"].includes(domain)){
-  selectedFolder = 'drs';
-}else if (["business"].includes(domain)){
-  selectedFolder = 'contracts';
-}else{
-  show_toast("Not implemented", "error");
+function initSelectedFolder() {
+  if (["medical"].includes(domain)){
+    selectedFolder = 'drs';
+  }else if (["business"].includes(domain)){
+    selectedFolder = 'contracts';
+  }
 }
 
 /* ---------- Open / Close ---------- */
 function openFolder() {
+  if (!selectedFolder) initSelectedFolder();
   if (["pro","ultra"].includes(plan)){
     $('#fileModal').style.display = 'flex';
     selectFolder();
@@ -454,7 +457,7 @@ async function fetchFiles() {
       show_toast('Failed to fetch files', 'error');
     }
   }else{
-    alert("Hmm thats weird right?");
+    show_toast("This feature is for the Pro and Ultra plans only", "info");
   }
 }
 
@@ -507,7 +510,7 @@ function uploadFile() {
 
     uploadNext();
   }else{
-    alert("Hmm thats weird right?");
+    show_toast("This feature is for the Pro and Ultra plans only", "info");
   }
 }
 

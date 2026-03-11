@@ -84,8 +84,8 @@ function buildOptionList(options) {
     const a = document.createElement('a');
     a.setAttribute('role','option');
     a.textContent = opt;
-    a.href = 'javascript:void(0)';
-    a.addEventListener('click', () => selectOption(opt));
+    a.href = '#';
+    a.addEventListener('click', (e) => { e.preventDefault(); selectOption(opt); });
     specListEl.appendChild(a);
   });
 }
@@ -128,6 +128,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleDrop
 // Simple toast helper for status feedback.
 function toast(msg, type='info'){
   const wrap = document.getElementById('toasts');
+  if (!wrap) return;
   const el = document.createElement('div');
   el.className = 'toast';
   el.textContent = msg;

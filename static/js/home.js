@@ -4,6 +4,7 @@ const POLL_TRACK_INTERVAL_MS = 60_000;
 
 let GLOBAL_USER_ID = null;
 let GLOBAL_DOMAIN = null;
+let GLOBAL_PLAN = null;
 
 function el(id) { return document.getElementById(id); }
 
@@ -41,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 function menu_init() {
   const menuBtn = document.querySelector('.hamburger-menu');
   const menuBar = document.getElementById('menuBar');
+  if (!menuBtn || !menuBar) return;
   
   // Toggle menu (keeps same interaction as previous)
   menuBtn.addEventListener('click', () => {
@@ -50,10 +52,10 @@ function menu_init() {
   const menu_box = document.querySelector(".menu__box")
   // close when clicking outside (improves UX)
   document.addEventListener('click', (ev) => {
-    if (!menuBar.contains(ev.target) && menuBar.classList.contains('menu-active')) {
+    if (!menuBar.contains(ev.target) && !menuBtn.contains(ev.target) && menuBar.classList.contains('menu-active')) {
       menuBar.classList.remove('menu-active');
-      toggle.setAttribute('aria-expanded', 'false');
-      menu_box.setAttribute('aria-hidden', 'true');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      if (menu_box) menu_box.setAttribute('aria-hidden', 'true');
     }
   });
 }
@@ -137,7 +139,7 @@ async function get_user(){
 }
 
 async function get_user_id(){
-  user = await get_user();
+  const user = await get_user();
   return user.id;    
 }
 
@@ -158,7 +160,8 @@ function startUsageTracker(endpoint) {
 
   window.addEventListener("beforeunload", () => {
     if (seconds > 0) {
-      navigator.sendBeacon(endpoint, JSON.stringify({seconds}));
+      const blob = new Blob([JSON.stringify({seconds})], { type: 'application/json' });
+      navigator.sendBeacon(endpoint, blob);
     }
   });
 }
@@ -229,7 +232,7 @@ async function submitClient() {
     return;
   }
 
-  if (GLOBAL_DOMAIN == "medical" && client.age == 0){
+  if (GLOBAL_DOMAIN === "medical" && client.age === 0){
     show_toast("Please enter the patient age." , "info");
     return;
   }
@@ -257,7 +260,7 @@ async function submitClient() {
     if (["medical","business"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
       window.location.href = `/data/-1`;
     }else{
-      show_toast("not impleminted yet!","info")
+      show_toast("Not implemented yet!","info")
     }
 
   } catch (err) {

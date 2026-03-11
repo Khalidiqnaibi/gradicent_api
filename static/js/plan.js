@@ -33,15 +33,7 @@ const PlanPage = (function () {
     }
   };
 
-  const elements = {
-    grid: document.getElementById('plan-grid'),
-    billingMonthly: document.getElementById('billing-monthly'),
-    billingYearly: document.getElementById('billing-yearly'),
-    billingTrack: document.getElementById('billing-track'),
-    menuToggle: document.getElementById('menu-toggle'),
-    sidebar: document.getElementById('sidebar'),
-    overlay: document.getElementById('sidebar-overlay')
-  };
+  const elements = {};
 
   async function safeFetch(url, opts = {}) {
     const res = await fetch(url, {
@@ -87,6 +79,11 @@ const PlanPage = (function () {
     });
   }
 
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
   function renderPlans(plans) {
     if (!elements.grid) return;
 
@@ -102,13 +99,13 @@ const PlanPage = (function () {
         const priceLabel = formatPrice(priceValue, state.billing);
         const priceSuffix = isYearly ? 'per year (2 months free)' : 'per month';
         return `
-          <article class="plan-card ${plan.featured ? 'featured' : ''}" data-plan="${plan.key}">
+          <article class="plan-card ${plan.featured ? 'featured' : ''}" data-plan="${escapeHtml(plan.key)}">
             <div class="plan-header">
-              <div class="plan-name">${plan.name}</div>
-              <span class="plan-badge">${plan.badge}</span>
+              <div class="plan-name">${escapeHtml(plan.name)}</div>
+              <span class="plan-badge">${escapeHtml(plan.badge)}</span>
             </div>
             <div class="plan-price">${priceLabel} <span>${priceSuffix}</span></div>
-            <p class="plan-description">${plan.description}</p>
+            <p class="plan-description">${escapeHtml(plan.description)}</p>
             <div class="plan-features">
               ${plan.features
                 .map(
@@ -117,7 +114,7 @@ const PlanPage = (function () {
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                       </svg>
-                      <span>${feature}</span>
+                      <span>${escapeHtml(feature)}</span>
                     </div>
                   `
                 )
@@ -125,7 +122,7 @@ const PlanPage = (function () {
             </div>
             <div class="plan-actions">
               <button class="btn ${plan.featured ? 'btn-primary' : 'btn-secondary'}" type="button">
-                ${plan.featured ? 'Upgrade to ' + plan.name : 'Select ' + plan.name}
+                ${plan.featured ? 'Upgrade to ' + escapeHtml(plan.name) : 'Select ' + escapeHtml(plan.name)}
               </button>
             </div>
           </article>
@@ -195,6 +192,14 @@ const PlanPage = (function () {
   }
 
   function init() {
+    elements.grid = document.getElementById('plan-grid');
+    elements.billingMonthly = document.getElementById('billing-monthly');
+    elements.billingYearly = document.getElementById('billing-yearly');
+    elements.billingTrack = document.getElementById('billing-track');
+    elements.menuToggle = document.getElementById('menu-toggle');
+    elements.sidebar = document.getElementById('sidebar');
+    elements.overlay = document.getElementById('sidebar-overlay');
+
     bindEvents();
     setBilling('monthly');
     loadPlans();
