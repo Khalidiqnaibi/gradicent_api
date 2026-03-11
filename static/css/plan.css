@@ -1,5 +1,9 @@
 /* Plan page layout and pricing cards */
 
+body.plan-page {
+  min-height: 100vh;
+}
+
 .plan-shell {
   position: relative;
   background: linear-gradient(120deg, #ffffff 0%, #ffffff 52%, #f1f6fb 52%, #f8fbff 100%);
@@ -83,13 +87,17 @@
 .toggle-track {
   width: 44px;
   height: 24px;
-  background: var(--accent);
+  background: #9ca3af;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   padding: 3px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
   cursor: pointer;
+}
+
+.toggle-track.is-yearly {
+  background: var(--accent);
 }
 
 .toggle-thumb {
@@ -232,6 +240,16 @@
 .plan-actions .btn {
   width: 100%;
   justify-content: center;
+}
+
+body.plan-page .site-footer {
+  background: var(--bg-glass);
+  backdrop-filter: blur(6px);
+}
+
+body.plan-page .top-bar {
+  background: var(--bg-glass);
+  backdrop-filter: blur(6px);
 }
 
 .plan-note {

@@ -104,7 +104,8 @@
         const payload = JSON.stringify({ seconds: totalActiveSeconds });
 
         // Use sendBeacon so it always sends before page unload
-        navigator.sendBeacon(endpoint, payload);
+        const blob = new Blob([payload], { type: 'application/json' });
+        navigator.sendBeacon(endpoint, blob);
       }
 
       // On close / refresh / navigation
@@ -127,18 +128,21 @@
     }
 
 
+    // Module-level state so savePatientInfo can access them
+    let _user = {};
+    let _user_id = '';
+
     // Save settings (keeps your original semantics)
     function savePatientInfo(){
-      user.drname = document.getElementById("drname").value;
-      user.msg = document.getElementById("msg").value;
-      user.pkey = document.getElementById("pkey").value;
-      user.code = document.getElementById("code").value;
-      user.send = document.getElementById("cbx-3").checked;
-      console.log(user);
+      _user.drname = document.getElementById("drname").value;
+      _user.msg = document.getElementById("msg").value;
+      _user.pkey = document.getElementById("pkey").value;
+      _user.code = document.getElementById("code").value;
+      _user.send = document.getElementById("cbx-3").checked;
       fetch('/api/binder/user', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({user_id,  user })
+        body: JSON.stringify({user_id: _user_id, user: _user })
       })
       .then(r => r.json())
       .then(()=> showToast('Settings saved'))
@@ -149,11 +153,9 @@
     document.addEventListener('DOMContentLoaded', async function() {
       const menuBtn=document.querySelector('.hamburger-menu');
       const menuBar=document.getElementById('menuBar');
-      menuBtn.addEventListener('click',()=>menuBar.classList.toggle('menu-active'));
+      if (menuBtn && menuBar) menuBtn.addEventListener('click',()=>menuBar.classList.toggle('menu-active'));
       
       let plan = 'free';
-      let user_id = '';
-      let user = {};
       let domain = '';
 
       const usage = startUsageTracker("/api/binder/track_time");
@@ -161,10 +163,10 @@
       let res = await get_plan_status()
 
       plan = res.plan
-      user_id = await get_user_id();
+      _user_id = await get_user_id();
       domain = await get_domain();
 
-      user = await get_user(user_id,domain);
+      _user = await get_user(_user_id,domain);
 
       if(plan==='sec'){ 
         try { 
@@ -172,13 +174,13 @@
         } catch(e){} 
       }
 
-      sett = user.metadata.settings;
+      let sett = (_user.metadata && _user.metadata.settings) || null;
       
       if (!sett){
         sett = {
           "send": false,
           "pkey": "",
-          "drname" : user.name,
+          "drname" : _user.name,
           "msg": "",
           "ac" : {
             "code": "/* no code yet */",
@@ -187,15 +189,15 @@
       }
       document.getElementById("cbx-3").checked=!!sett.send??false;
       document.getElementById("pkey").value=sett.pkey ?? '';
-      document.getElementById("drname").value=sett.drname ?? user.name;
+      document.getElementById("drname").value=sett.drname ?? _user.name;
       document.getElementById("msg").value=sett.msg ?? '';
       if (plan !=='sec'){
-        document.getElementById("code").value=sett.ac.code ?? '';
+        document.getElementById("code").value=(sett.ac && sett.ac.code) ? sett.ac.code : '';
       }else {
-        document.getElementById("code").value= "you are not smart yk?"
+        document.getElementById("code").value= "This feature is not available on your plan.";
       }
       // also show preview content initially hidden
-      document.getElementById("codePreview").textContent = sett.ac.code ?? '/* no code yet */';
+      document.getElementById("codePreview").textContent = (sett.ac && sett.ac.code) ? sett.ac.code : '/* no code yet */';
       
       
       // copy code to clipboard
@@ -231,7 +233,7 @@
           const res = await fetch('/api/binder/code', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ user_id , domain ,  code: document.getElementById("code").value})
+            body: JSON.stringify({ user_id: _user_id, domain,  code: document.getElementById("code").value})
           });
           const d = await res.json();
           if (d?.data) {
