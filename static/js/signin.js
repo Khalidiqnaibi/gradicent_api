@@ -1,3 +1,18 @@
+/**
+ * signin.js — Business/Clinic Profile Setup Page
+ * -----------------------------------------------
+ * First-time setup after login. The user picks their specialty
+ * (medical) or business type (business) from a searchable dropdown,
+ * enters name, location, and phone, then submits via /savesign.
+ *
+ * Domain detection:
+ *   The dropdown options are domain-specific. get_domain() asks the
+ *   backend which domain is active; the options list is then loaded
+ *   from optionsByDomain[domain].
+ *
+ * After saving, the user is redirected to /acc (account dashboard).
+ */
+
 // ===== Config =====
 // Domain type is resolved at runtime: 'medical' = clinic, 'business' = company.
 let domainType = '';

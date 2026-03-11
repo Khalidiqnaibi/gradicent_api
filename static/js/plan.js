@@ -1,3 +1,15 @@
+/**
+ * plan.js — Pricing / Plans Page
+ * -------------------------------
+ * Displays available subscription plans (starter, pro) with
+ * monthly/yearly billing toggle.
+ *
+ * Plans are fetched from /api/payments/plans. If the API fails
+ * or returns empty, MOCK_PLANS are used as a fallback so the
+ * page always renders.
+ *
+ * Yearly price = monthly price * 10 (2 months free).
+ */
 const PlanPage = (function () {
   const state = {
     plans: [],

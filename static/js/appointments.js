@@ -1,18 +1,22 @@
 
   /**
-   * appointments_page.js
-   * --------------------
-   * Single-file modular structure:
-   * - utils: helpers (time, dom, safe_fetch)
-   * - api: network calls (binder)
-   * - ui: toasts + menu wiring
-   * - controller: page wiring and rendering
+   * appointments.js — Appointment / Meeting Management Page
+   * -------------------------------------------------------
+   * Lets the user view, edit, save, and lock appointments for
+   * a selected date. Each appointment slot shows patient/client
+   * name, number, phone, and a message textarea.
    *
-   * Conforms to company standards:
-   * - snake_case naming
-   * - small functions (<= ~30 lines)
-   * - explicit APP_STATE
-   * - doc-comments explaining what each exported function does
+   * Architecture (single-file modular):
+   *   utils      – date helpers, safe_fetch, el() shorthand
+   *   api        – binder network calls (get/save/lock appointments)
+   *   ui         – toasts and hamburger menu wiring
+   *   controller – page init, render loop, button wiring
+   *
+   * Key conventions:
+   *   - APP_STATE.appointments holds the working copy of today's slots
+   *   - "Lock" marks an appointment as finalized server-side
+   *   - Filter dropdown: "all" / "has" (with message) / "none" (empty)
+   *   - escape_html() is used in innerHTML to prevent XSS
    */
 
   /* =========================

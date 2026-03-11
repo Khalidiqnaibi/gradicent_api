@@ -1,6 +1,22 @@
 /**
- * entity.js - Shared controller for entity management pages
- * Supports: clients, products, services, employees
+ * entity.js — Generic Entity Management Controller
+ * -------------------------------------------------
+ * Shared by: clients, products, services, employees pages.
+ *
+ * Each HTML page sets window.__ENTITY_CONFIG__ and window.__ENTITY_TYPE__
+ * before this script loads. CONFIG tells entity.js:
+ *   - apiBase         : POST endpoint for creating entities
+ *   - listEndpoint    : GET endpoint for fetching all (may be null)
+ *   - searchEndpoint  : POST endpoint for searching (may be null)
+ *   - detailUrl       : URL pattern for viewing a single entity ("{id}" placeholder)
+ *   - labels          : { singular, plural } for UI text
+ *   - fields.display  : which fields to show on entity cards
+ *   - fields.search   : which fields to filter on (client-side fallback)
+ *   - fields.add      : which fields appear in the "add new" form
+ *
+ * If listEndpoint is missing or fails, the page falls back to
+ * searching/filtering the local STATE.items array. This makes
+ * the page usable even when the backend doesn't support list-all.
  */
 
 const EntityManager = (function() {
@@ -144,7 +160,7 @@ const EntityManager = (function() {
           })
         });
         items = res.data ? Object.values(res.data) : [];
-      } else {
+      } else if (CONFIG.listEndpoint) {
         // Use list endpoint and filter client-side
         const res = await safeFetch(`${CONFIG.listEndpoint}?domain=${STATE.domain}&user_id=${STATE.user_id}`);
         items = Array.isArray(res.data) ? res.data : Object.values(res.data || {});
@@ -157,6 +173,14 @@ const EntityManager = (function() {
             )
           );
         }
+      } else if (query && STATE.items.length > 0) {
+        // No endpoints — filter local state
+        const q = query.toLowerCase();
+        items = STATE.items.filter(item =>
+          CONFIG.fields?.search?.some(f =>
+            String(item[f] || '').toLowerCase().includes(q)
+          )
+        );
       }
 
       STATE.items = items;
@@ -174,19 +198,23 @@ const EntityManager = (function() {
 
   async function loadAll() {
     if (!CONFIG.listEndpoint) {
-      // No list endpoint - show add prompt
-      const container = $('results');
-      if (container) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                d="M12 4v16m8-8H4"/>
-            </svg>
-            <h3>Add your first ${CONFIG.labels?.singular || 'item'}</h3>
-            <p>Click "Add New" to create a new ${CONFIG.labels?.singular?.toLowerCase() || 'item'}</p>
-          </div>
-        `;
+      // No list endpoint — render any items already in state, or show search prompt
+      if (STATE.items.length > 0) {
+        renderItems(STATE.items);
+      } else {
+        const container = $('results');
+        if (container) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <h3>Search for ${CONFIG.labels?.plural || 'items'}</h3>
+              <p>Use the search bar or click "Add New" to get started</p>
+            </div>
+          `;
+        }
       }
       return;
     }
@@ -198,19 +226,23 @@ const EntityManager = (function() {
       STATE.items = items;
       renderItems(items);
     } catch (err) {
-      // List endpoint failed - show search prompt instead
-      const container = $('results');
-      if (container) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <h3>Search for ${CONFIG.labels?.plural || 'items'}</h3>
-            <p>Enter a search term above to find ${CONFIG.labels?.plural?.toLowerCase() || 'items'}</p>
-          </div>
-        `;
+      // List endpoint failed — render items in state or show search prompt
+      if (STATE.items.length > 0) {
+        renderItems(STATE.items);
+      } else {
+        const container = $('results');
+        if (container) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <h3>Search for ${CONFIG.labels?.plural || 'items'}</h3>
+              <p>Enter a search term above to find ${CONFIG.labels?.plural?.toLowerCase() || 'items'}</p>
+            </div>
+          `;
+        }
       }
     } finally {
       setLoading(false);
@@ -242,10 +274,15 @@ const EntityManager = (function() {
       };
       payload[TYPE] = data;
 
-      await safeFetch(CONFIG.apiBase, {
+      const res = await safeFetch(CONFIG.apiBase, {
         method: 'POST',
         body: JSON.stringify(payload)
       });
+
+      // Add the returned item to local state so it renders immediately
+      const created = res.data || data;
+      STATE.items.push(created);
+      renderItems(STATE.items);
 
       toast(`${CONFIG.labels?.singular || 'Item'} added successfully`, 'success');
       
@@ -255,9 +292,8 @@ const EntityManager = (function() {
         if (el) el.value = '';
       });
 
-      // Close add form and reload
+      // Close add form
       toggleAddForm();
-      await loadAll();
     } catch (err) {
       toast(err.message || 'Failed to add', 'error');
     } finally {

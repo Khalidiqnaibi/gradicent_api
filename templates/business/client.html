@@ -169,6 +169,8 @@
     window.__ENTITY_TYPE__ = "client";
     window.__ENTITY_CONFIG__ = {
       apiBase: '/api/binder/clients',
+      listEndpoint: '/api/binder/clients',
+      searchEndpoint: '/api/binder/search/client',
       fields: {
         search: ['name', 'email', 'phone', 'company'],
         add: ['name', 'email', 'phone', 'company', 'address', 'notes'],
