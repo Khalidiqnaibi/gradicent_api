@@ -1,0 +1,43 @@
+while trying : http://gradicent.pythonanywhere.com/api/binder/services , 
+
+with the body: {
+    "domain" : "business",
+    "user_id" : "101597446369752496399",
+    "service" : {
+        "id":0,
+        "name":"business plan overview meeting",
+        "hourly_rate":300,
+        "metadata":{
+            "team":["taqi","khalid"]
+        }
+    }
+}
+
+
+this error came : 2026-03-11 08:41:59,253: Binder not configured for domain: None
+2026-03-11 08:41:59,254: Bad request: 400 Bad Request: Unknown domain: None
+2026-03-11 08:47:31,913: Error running WSGI application
+2026-03-11 08:47:31,916: AttributeError: 'BinderService' object has no attribute 'create_service'
+2026-03-11 08:47:31,916:   File "/home/gradicent/gradicent_api/venv/lib/python3.10/site-packages/flask/app.py", line 1536, in __call__
+2026-03-11 08:47:31,916:     return self.wsgi_app(environ, start_response)
+2026-03-11 08:47:31,917: 
+2026-03-11 08:47:31,917:   File "/home/gradicent/gradicent_api/venv/lib/python3.10/site-packages/flask/app.py", line 1514, in wsgi_app
+2026-03-11 08:47:31,918:     response = self.handle_exception(e)
+2026-03-11 08:47:31,918: 
+2026-03-11 08:47:31,918:   File "/home/gradicent/gradicent_api/venv/lib/python3.10/site-packages/flask/app.py", line 1511, in wsgi_app
+2026-03-11 08:47:31,918:     response = self.full_dispatch_request()
+2026-03-11 08:47:31,918: 
+2026-03-11 08:47:31,918:   File "/home/gradicent/gradicent_api/venv/lib/python3.10/site-packages/flask/app.py", line 919, in full_dispatch_request
+2026-03-11 08:47:31,919:     rv = self.handle_user_exception(e)
+2026-03-11 08:47:31,919: 
+2026-03-11 08:47:31,919:   File "/home/gradicent/gradicent_api/venv/lib/python3.10/site-packages/flask/app.py", line 917, in full_dispatch_request
+2026-03-11 08:47:31,919:     rv = self.dispatch_request()
+2026-03-11 08:47:31,919: 
+2026-03-11 08:47:31,919:   File "/home/gradicent/gradicent_api/venv/lib/python3.10/site-packages/flask/app.py", line 902, in dispatch_request
+2026-03-11 08:47:31,920:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+2026-03-11 08:47:31,920: 
+2026-03-11 08:47:31,920:   File "/home/gradicent/gradicent_api/routes/binder_routes.py", line 851, in create_service
+2026-03-11 08:47:31,921:     svc = service.create_service(payload["service"])
+
+
+it seems to be that the domain is not being read somehow.. but the same way in other routes is working fine like /products post
