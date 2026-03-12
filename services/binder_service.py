@@ -23,7 +23,7 @@ Standards applied:
 from typing import Any, Callable, Dict, List, Optional
 import logging
 
-from binder import Binder
+from binder import Binder,Product,Service,Employee,Transaction,Interaction
 
 
 class BinderServiceError(Exception):
@@ -466,7 +466,20 @@ class BinderService:
         """
         if data is None:
             raise BinderServiceError("employee payload cannot be empty")
-        return self._wrap_and_log("create_employee", self._binder.create_employee, data)
+        
+        CORE_FIELDS = {"id", "name", "role", "salary","created_at"}
+
+        metadata = {k: v for k, v in data.items() if k not in CORE_FIELDS}
+
+        emp =Employee(
+            id=data["id"],
+            name=data["name"],
+            role=data["role"],
+            salary=float(data.get("salary", 0)),
+            metadata=metadata
+        )
+
+        return self._wrap_and_log("create_employee", self._binder.create_employee, emp.to_dict())
 
     def read_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -552,10 +565,21 @@ class BinderService:
         if data is None:
             raise BinderServiceError("product payload cannot be empty")
 
-        # binder mixin defines create_products (plural); call it but keep service API singular.
+        CORE_FIELDS = {"id", "name", "price", "stock"}
+
+        metadata = {k: v for k, v in data.items() if k not in CORE_FIELDS}
+
+        prod =Product(
+            id=data["id"],
+            name=data["name"],
+            price=float(data["price"]),
+            stock=int(data.get("stock", 0)),
+            metadata=metadata
+        )
+
         if hasattr(self._binder, "create_product"):
-            return self._wrap_and_log("create_product", self._binder.create_product, data)
-        return self._wrap_and_log("create_products", self._binder.create_products, data)
+            return self._wrap_and_log("create_product", self._binder.create_product, prod.to_dict())
+        return self._wrap_and_log("create_products", self._binder.create_products, prod.to_dict())
 
     def read_product(self, product_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -638,7 +662,20 @@ class BinderService:
         """
         if data is None:
             raise BinderServiceError("service payload cannot be empty")
-        return self._wrap_and_log("create_service", self._binder.create_service, data)
+        
+           
+        CORE_FIELDS = {"id", "name", "hourly_rate"}
+
+        metadata = {k: v for k, v in data.items() if k not in CORE_FIELDS}
+
+        serv =Service(
+            id=data["id"],
+            name=data["name"],
+            hourly_rate=float(data["hourly_rate"]),
+            metadata=metadata
+        )
+
+        return self._wrap_and_log("create_service", self._binder.create_service, serv.to_dict())
 
     def read_service(self, service_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -724,7 +761,19 @@ class BinderService:
             raise BinderServiceError("client_id cannot be empty")
         if data is None:
             raise BinderServiceError("transaction payload cannot be empty")
-        return self._wrap_and_log("create_transaction", self._binder.create_transaction, client_id, data)
+        
+        CORE_FIELDS = {"id", "amount", "method", "timestamp"}
+
+        metadata = {k: v for k, v in data.items() if k not in CORE_FIELDS}
+
+        tran =Transaction(
+            id=data["id"],
+            amount=data["amount"],
+            method=data["method"],
+            timestamp=data["timestamp"],
+            metadata=metadata
+        )
+        return self._wrap_and_log("create_transaction", self._binder.create_transaction, client_id, tran.to_dict())
 
     def list_transactions(self, client_id: str) -> List[Dict[str, Any]]:
         """
