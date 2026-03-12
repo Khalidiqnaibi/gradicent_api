@@ -1,3 +1,16 @@
+/**
+ * home.js — Client Registration Page
+ * -----------------------------------
+ * Lets the user add a new client (patient or business contact).
+ *
+ * Key conventions:
+ *   - FIELD_MAP maps HTML element IDs → backend field names per domain.
+ *     The same HTML IDs are reused across domains but map to different keys
+ *     (e.g. "medh" → "pmh" in medical, "company" in business).
+ *   - After adding a client, redirects to /data/-1 where -1 means
+ *     "the most recently created client" (resolved server-side).
+ *   - "sec" plan = security/restricted plan that limits navigation.
+ */
 
 const API_TIMEOUT_MS = 10_000;
 const POLL_TRACK_INTERVAL_MS = 60_000;
@@ -172,7 +185,18 @@ function startUsageTracker(endpoint) {
 //  BUILD client OBJECT
 // ---------------------------------------------
 
-// Map domain → { htmlId: backendKey }
+// ---------------------------------------------
+//  FIELD_MAP
+//  Maps HTML element IDs to backend field names.
+//  Both domains reuse the same HTML form but the
+//  backend expects different keys for each domain.
+//
+//  medical:  medh → pmh (past medical history)
+//            allergies, btype (blood type), sex, age
+//  business: medh → company, allergies → industry,
+//            btype → email, sex → account_manager,
+//            age → company_size
+// ---------------------------------------------
 const FIELD_MAP = {
   medical: {
     PName:      "name",
@@ -257,6 +281,8 @@ async function submitClient() {
     document.getElementById("btype").value= '';
     document.getElementById("sex").value= '';
     document.getElementById("age").value= '';
+    // Redirect to data page for new client (id=-1 = latest)
+    // "sec" plan restricts navigation, so show a toast instead
     if (["medical","business"].includes(GLOBAL_DOMAIN) && GLOBAL_PLAN !== "sec"){
       window.location.href = `/data/-1`;
     }else{

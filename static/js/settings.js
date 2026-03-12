@@ -1,3 +1,24 @@
+    /**
+     * settings.js — User Settings Page
+     * ---------------------------------
+     * Lets the user configure:
+     *   - drname   : Doctor/business display name
+     *   - msg      : Default message template (e.g. for appointment SMS)
+     *   - pkey     : External API key (custom integrations)
+     *   - code     : Activation / embed code (hidden by default)
+     *   - send     : Toggle for auto-sending messages (checkbox cbx-3)
+     *
+     * Plan gating:
+     *   - "sec" plan hides the code section entirely (#ccc element).
+     *     This plan has restricted features.
+     *
+     * Domain variants:
+     *   - "lab" domain changes icons, titles, and links to lab-specific
+     *     pages (same pattern as acc.js).
+     *
+     * Settings are stored in user.metadata.settings on the backend.
+     * If no settings exist yet, defaults are created locally.
+     */
 
     const API_TIMEOUT_MS = 10_000;
     const POLL_TRACK_INTERVAL_MS = 60_000;
@@ -128,9 +149,9 @@
     }
 
 
-    // Module-level state so savePatientInfo can access them
-    let _user = {};
-    let _user_id = '';
+    // Module-level state so savePatientInfo() can access them
+    let _user = {};        // full user object from API
+    let _user_id = '';     // user ID string
 
     // Save settings (keeps your original semantics)
     function savePatientInfo(){
@@ -168,12 +189,14 @@
 
       _user = await get_user(_user_id,domain);
 
+      // \"sec\" plan: hide the code section entirely
       if(plan==='sec'){ 
         try { 
           document.getElementById("ccc").style.display="none"; 
         } catch(e){} 
       }
 
+      // Build default settings object if user has none saved yet
       let sett = (_user.metadata && _user.metadata.settings) || null;
       
       if (!sett){
@@ -247,6 +270,7 @@
         }
       });
 
+      // "lab" domain variant: override icons, titles, and links
       if(domain==='lab'){
         const appa=document.getElementById('appa');
         const appimg=document.getElementById('appimg');

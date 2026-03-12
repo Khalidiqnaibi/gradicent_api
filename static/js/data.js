@@ -1,3 +1,27 @@
+/**
+ * data.js — Client/Patient Interaction Page
+ * ------------------------------------------
+ * Handles viewing, creating, editing, and printing interactions
+ * ("visits" in medical, "transactions" in business).
+ *
+ * Architecture:
+ *   DOMAIN_CONFIG maps each domain → { dom selectors, backend field names }
+ *   normalize()    converts raw API data  → generic internal shape
+ *   populate()     writes internal shape   → DOM form inputs
+ *   buildPayload() reads DOM form inputs   → API payload
+ *
+ * Key conventions:
+ *   - "vno" = visit/interaction number (1-based)
+ *   - "detail1/2/3" = domain-specific extra fields
+ *       medical:  detail1=weight, detail2=height, detail3=lab
+ *       business: detail1=outcome, detail2=next follow-up (no detail3)
+ *   - Backend field names like "coast", "payed", "debit" are intentional —
+ *     they match the database schema and must NOT be renamed here.
+ *   - Plan gating: file features (upload/view/delete) require "pro" or "ultra".
+ *   - patientNumber comes from the URL via window.__client__.
+ *     Value -1 means "newly created client" (redirected after adding).
+ */
+
 /* ============================================================
    Helpers
 ============================================================ */
@@ -6,36 +30,46 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 
 /* ============================================================
    Domain Configuration
+   --------------------
+   Each domain defines:
+     label       – UI display name ("Visit" / "Transaction")
+     formId      – CSS selector of the HTML <form>
+     dom         – CSS selectors for each form input (keyed generically)
+     fields      – backend/database field names (keyed generically)
+     lockOnPrint – if true, disable form inputs after printing
+
+   The generic keys (date, owner, cost, detail1 …) let normalize(),
+   populate(), and buildPayload() work domain-agnostically.
 ============================================================ */
 const DOMAIN_CONFIG = {
   medical: {
     label: 'Visit',
     formId: '#visitForm',
     dom: {
-      date: '#visitDate',
-      owner: '#drname',
-      title: '#diagnosis',
+      date:    '#visitDate',
+      owner:   '#drname',        // doctor name
+      title:   '#diagnosis',
       service: '#treatment',
-      notes: '#details',
-      cost: '#coast',
-      paid: '#payed',
-      debt: '#debt',
-      detail1 : '#weight',
-      detail2 : '#height',
-      detail3 : "#lab"
+      notes:   '#details',
+      cost:    '#coast',         // HTML id (matches backend "coast")
+      paid:    '#payed',         // HTML id (matches backend "payed")
+      debt:    '#debt',
+      detail1: '#weight',        // medical → patient weight
+      detail2: '#height',        // medical → patient height
+      detail3: '#lab'            // medical → lab results
     },
     fields: {
-      date: 'visit_date',
-      owner: 'drname',
-      title: 'diagnosis',
+      date:    'visit_date',
+      owner:   'drname',
+      title:   'diagnosis',
       service: 'treatment',
-      notes: 'details',
-      cost: 'coast',
-      paid: 'payed',
-      debt: 'debit',
-      detail1 : 'weight',
-      detail2 :"height",
-      detail3 : 'lab'
+      notes:   'details',
+      cost:    'coast',          // backend field name (not a typo)
+      paid:    'payed',          // backend field name (not a typo)
+      debt:    'debit',          // backend field name (not a typo)
+      detail1: 'weight',
+      detail2: 'height',
+      detail3: 'lab'
     },
     lockOnPrint: true
   },
@@ -44,36 +78,38 @@ const DOMAIN_CONFIG = {
     label: 'Transaction',
     formId: '#interactionForm',
     dom: {
-      date: '#interactionDate',
-      owner: '#employeeName',
-      title: '#purpose',
+      date:    '#interactionDate',
+      owner:   '#employeeName',  // employee who handled it
+      title:   '#purpose',
       service: '#service',
-      notes: '#notes',
-      cost: '#cost',
-      paid: '#paid',
-      debt: '#debt',
-      detail1 : '#outcome',
-      detail2 : '#nextFollowUp',
+      notes:   '#notes',
+      cost:    '#cost',
+      paid:    '#paid',
+      debt:    '#debt',
+      detail1: '#outcome',       // business → transaction outcome
+      detail2: '#nextFollowUp'   // business → next follow-up date
+      // no detail3 for business
     },
     fields: {
-      date: 'date',
-      owner: 'handled_by',
-      title: 'service_name',
+      date:    'date',
+      owner:   'handled_by',
+      title:   'service_name',
       service: 'service',
-      notes: 'notes',
-      cost: 'amount',
-      paid: 'paid',
-      debt: 'balance',
-      detail1 : 'description',
-      detail2 : 'next',
+      notes:   'notes',
+      cost:    'amount',
+      paid:    'paid',
+      debt:    'balance',
+      detail1: 'description',
+      detail2: 'next'
+      // no detail3 for business
     },
     lockOnPrint: true
   }
 };
 
-let domain = 'medical';
-const cfg = () => DOMAIN_CONFIG[domain];
-let plan = "free";
+let domain = 'medical';                    // set from API on page load
+const cfg = () => DOMAIN_CONFIG[domain];   // shorthand to get active config
+let plan = "free";                          // user subscription plan
 
 /**
  * Tracks real active time on the page and sends ONLY one final value:
@@ -144,9 +180,9 @@ function show_toast(message, type = 'info') {
    Global State
 ============================================================ */
 let user_id = '';
-let visits = [];
-let currentVisitIndex = 0;
-let patientNumber = window.__client__ ?? 0;
+let visits = [];               // array of interaction objects for this client
+let currentVisitIndex = 0;     // index into visits[] currently shown in form
+let patientNumber = window.__client__ ?? 0;  // client number from URL (-1 = new)
 
 /* ============================================================
    Fetch helpers
@@ -222,6 +258,9 @@ function bindControls() {
 
 /* ============================================================
    Normalize
+   Converts a raw API interaction object into a generic shape
+   using the active domain's field mapping. This lets populate()
+   and the rest of the code work without knowing which domain.
 ============================================================ */
 function normalize(raw = {}) {
   const f = cfg().fields;
@@ -244,6 +283,9 @@ function normalize(raw = {}) {
 
 /* ============================================================
    Populate
+   Writes a normalized interaction into the DOM form inputs.
+   If the interaction was printed and lockOnPrint is set,
+   all inputs are disabled so the record can't be changed.
 ============================================================ */
 function populate(raw) {
   const v = normalize(raw);
@@ -270,6 +312,8 @@ function populate(raw) {
 
 /* ============================================================
    Fetch Client
+   Loads all interactions for the current client (patientNumber)
+   and displays the most recent one.
 ============================================================ */
 function fetchClientData() {
   fetch(`/api/binder/clients/${patientNumber}?domain=${domain}&user_id=${user_id}`)
@@ -288,6 +332,8 @@ function fetchClientData() {
 
 /* ============================================================
    Navigation
+   Walk through the visits[] array. "next" past the last visit
+   creates a blank entry so the user can add a new interaction.
 ============================================================ */
 function first(){ if(visits.length){ currentVisitIndex=0; populate(visits[0]); } }
 function last(){ if(visits.length){ currentVisitIndex=visits.length-1; populate(visits[currentVisitIndex]); } }
@@ -317,6 +363,9 @@ function search() {
 
 /* ============================================================
    Save
+   buildPayload() reads form inputs → API-shaped object.
+   save() decides POST (new) vs PATCH (existing) based on
+   whether the current visits[] slot is empty.
 ============================================================ */
 function buildPayload() {
   const f = cfg().fields;
@@ -371,9 +420,12 @@ function save() {
 
 /* ============================================================
    Print
+   Generates a .docx download. In medical domain, printing
+   also "locks" the interaction so it can't be edited afterward
+   (printed=true flag, enforced by populate).
 ============================================================ */
 function printInteraction() {
-  let lock  = ["medical"].includes(domain);
+  let lock  = ["medical"].includes(domain);  // only medical locks on print
   if (lock && !confirm(`Lock this ${cfg().label}?`)) return;
   fetch('/kkprint',{
     method:'POST',
@@ -398,20 +450,26 @@ function printInteraction() {
   });
 }
 
-// FILES:
+/* ============================================================
+   FILES SECTION
+   Client file management (upload, view, delete).
+   All file features are gated behind the "pro" or "ultra" plan.
+   Default folder: "drs" (medical) or "contracts" (business).
+============================================================ */
 const FILE_API_BASE = '/api/binder/files';
 
 let selectedFolder = '';
 
+// Default folder per domain
 function initSelectedFolder() {
   if (["medical"].includes(domain)){
-    selectedFolder = 'drs';
+    selectedFolder = 'drs';          // doctor-uploaded files
   }else if (["business"].includes(domain)){
-    selectedFolder = 'contracts';
+    selectedFolder = 'contracts';    // business contracts
   }
 }
 
-/* ---------- Open / Close ---------- */
+/* ---------- Open / Close (plan-gated) ---------- */
 function openFolder() {
   if (!selectedFolder) initSelectedFolder();
   if (["pro","ultra"].includes(plan)){
@@ -426,7 +484,7 @@ function closeFileModal() {
   $('#filePreviews').innerHTML = '';
 }
 
-/* ---------- Folder Handling ---------- */
+/* ---------- Folder Handling (falls back to domain default) ---------- */
 function selectFolder(folder) {
   selectedFolder = folder ;
   if (!folder){
@@ -443,7 +501,7 @@ function selectFolder(folder) {
   fetchFiles();
 }
 
-/* ---------- Fetch Files ---------- */
+/* ---------- Fetch Files (plan-gated) ---------- */
 async function fetchFiles() {
   
   if (["pro","ultra"].includes(plan)){
@@ -461,7 +519,7 @@ async function fetchFiles() {
   }
 }
 
-/* ---------- Upload Files ---------- */
+/* ---------- Upload Files (sequential, with progress bar) ---------- */
 function onFilesSelected(e){
   if($('#fileInput').files.length) show_toast(`${$('#fileInput').files.length} files selected`,'info');
 }
@@ -514,7 +572,7 @@ function uploadFile() {
   }
 }
 
-/* ---------- Render Files ---------- */
+/* ---------- Render Files (images, videos, or generic file links) ---------- */
 function renderFiles(files) {
   if (["pro","ultra"].includes(plan)){
     const container = $('#filePreviews');
@@ -550,7 +608,7 @@ function renderFiles(files) {
   }
 }
 
-/* ---------- Delete File ---------- */
+/* ---------- Delete File (plan-gated) ---------- */
 async function deleteFile(url) {
   if (["pro","ultra"].includes(plan)){
     try {

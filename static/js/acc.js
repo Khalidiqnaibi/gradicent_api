@@ -1,17 +1,22 @@
 
   /**
-   * account_page.js (single-file modular structure)
-   * ------------------------------------------------
-   * Single HTML file with embedded JS structured as small modules:
-   * - utils: helpers (time, dom)
-   * - api: network calls (binder/gaia)
-   * - ui: menu and toast components
-   * - controller: page initialization and wiring
+   * acc.js — Account Dashboard Page
+   * --------------------------------
+   * Shows the user's subscription plan, client counts, today's
+   * appointments, and a finance summary.
+   *
+   * Architecture: single HTML file structured as small modules:
+   *   utils      – date helpers, safe_fetch
+   *   api        – network calls (binder + gaia analytics)
+   *   ui         – toast notifications
+   *   controller – page initialization, rendering, wiring
    *
    * Conventions:
-   * - snake_case function and variable names
-   * - small functions (aim <= 30 lines)
-   * - explicit APP_STATE object (no hidden state)
+   *   - snake_case for function and variable names
+   *   - APP_STATE is the explicit single source of truth
+   *   - "lab" domain variant changes icons and links to lab-specific pages
+   *   - Plan names: "free", "starter", "pro", "ultra", "sec"
+   *     "sec" = security/restricted plan with limited features
    */
 
   /* =========================

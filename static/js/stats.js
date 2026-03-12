@@ -1,5 +1,27 @@
+    /**
+     * stats.js — Analytics Dashboard
+     * ------------------------------
+     * Four tabs: ROI, Productivity, Finance, Clients.
+     *
+     * Plan gating:
+     *   - "roi" and "productivity" tabs are available on ALL plans.
+     *   - "finance" and "clients" tabs require "pro" or "ultra" plan.
+     *   - On "starter" / "free" plans the finance & clients tab buttons
+     *     are hidden entirely.
+     *   - Non-pro users see a "upgrade to pro" overlay if they reach
+     *     a gated tab via direct navigation.
+     *
+     * Charts:
+     *   Uses Chart.js. Charts are cached in the `charts` object so
+     *   switching tabs reuses the same canvas instead of re-creating.
+     *   Colors are pulled from CSS variables (--secondary, --accent).
+     *
+     * client_list:
+     *   Populated by the finance/clients API response. Used to
+     *   navigate to a search-by-clients page via show_clients().
+     */
 
-      const APP_STATE = {
+    const APP_STATE = {
         plan: null,
         domain: null, // e.g., 'medical' | 'lab'
         user_id: null
@@ -257,6 +279,9 @@
     }
 
     // ===== Tabs wiring =====
+    // loadTab() is called whenever a tab button is clicked.
+    // The tab name ("roi", "productivity", "finance", "clients")
+    // determines which API endpoint to call and which DOM panel to fill.
     document.querySelectorAll('.tab-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active-tab'));
@@ -283,9 +308,14 @@
     }
 
     // ===== Data loader for each tab =====
+    // Plan gating logic:
+    //   tbs = tabs available to ALL plans (roi, productivity)
+    //   pln = plans that unlock ALL tabs (pro, ultra)
+    //   If the tab is in tbs OR the user's plan is in pln, show data.
+    //   Otherwise show the pro upgrade overlay.
     async function loadTab(tab) {
-      let tbs = ["productivity" , "roi"];
-      let pln = ["pro" , "ultra"];
+      let tbs = ["productivity" , "roi"];    // free-tier tabs
+      let pln = ["pro" , "ultra"];           // plans that unlock everything
       
       if(tbs.includes(tab) || pln.includes(APP_STATE.plan) || tab === 'finance' || tab === 'clients'){
         const qs = await buildQsFromFilters();
