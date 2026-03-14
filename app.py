@@ -157,3 +157,5 @@ def create_app(config_name: str = 'default') -> Flask:
 # --- WSGI entrypoint variable (used by PythonAnywhere / uWSGI) ---
 # Creating `app` at module level is deliberate so WSGI can import it:
 app = create_app()
+if __name__ == "__main__":
+    app.run(debug=True)

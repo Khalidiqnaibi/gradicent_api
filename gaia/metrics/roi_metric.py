@@ -4,8 +4,9 @@ roi_metric.py
 Computes ROI: (hours_saved * hourly_rate) - subscription_cost.
 """
 
+from tracemalloc import start
 from typing import Dict, Any
-from datetime import datetime
+from datetime import date, datetime
 from ..interfaces.base_metric import IMetric
 from ..registry import MetricRegistry
 from ..utils import parse_date
@@ -29,26 +30,40 @@ class RoiMetric(IMetric):
         end = parse_date(kwargs.get("To",kwargs.get("to")))
         hourly_rate = float(kwargs.get("avg_hourly", 50))
         plan= kwargs.get("plan", 'free')
-        plan_price = float(price[plan])
+        plan_price = float(price.get(plan, 0))
 
         # Example dummy logic using binder data
         meta = binder.adapter.get_child(binder.domain,binder.current_user, "metadata")
         a = meta.get("analytics",{})
         total_seconds = 0
-        for i in a.keys() :
-            total_seconds += sum(float(l.get("seconds", 0)) for l in a[i].get("time_tracking",[])) 
-        
+        for i in a.keys():
+            d = parse_date(i)
+
+            if start and d < start:
+                continue
+            if end and d > end:
+                continue
+
+            total_seconds += sum(
+            float(l.get("seconds", 0)) 
+            for l in a[i].get("time_tracking", [])
+    )
         hours_saved = total_seconds / 3600.0
         binder_roi = round(hours_saved * hourly_rate - plan_price, 2)
         events = []
         for i in a:
-            if parse_date(i) >= start and parse_date(i) <= end:
-                for j in a[i].get("events",[]):
-                    res = j
-                    res["type"] = EVENTS.get(j.get("type", 100), "Unknown")
-                    events.append(res)
-                    
-        
+            date = parse_date(i)
+
+            if start and d < start:
+                continue
+            if end and d > end:
+                continue
+            for j in a[i].get("events", []):
+                total_seconds += float(j.get("seconds_saved", 0))
+                res = j.copy()
+                res["type"] = EVENTS.get(j.get("type", 100), "Unknown")
+                events.append(res)
+
         return {
             "hours_saved": hours_saved,
             "roi": binder_roi,
