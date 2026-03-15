@@ -32,6 +32,13 @@ const EntityManager = (function() {
     loading: false
   };
 
+  const FIELD_ALIASES = {
+    quantity: ['stock'],
+    stock: ['quantity'],
+    price: ['hourly_rate'],
+    hourly_rate: ['price']
+  };
+
   // DOM helpers
   const $ = (id) => document.getElementById(id);
   const $$ = (sel) => document.querySelectorAll(sel);
@@ -116,12 +123,16 @@ const EntityManager = (function() {
               ${item.status ? `<span class="entity-badge">${escapeHtml(item.status)}</span>` : ''}
             </div>
             <div class="entity-meta">
-              ${displayFields.slice(1).map(field => (item[field] != null && item[field] !== '') ? `
+              ${displayFields.slice(1).map(field => {
+                const value = getFieldValue(item, field);
+                if (value == null || value === '') return '';
+                return `
                 <div class="entity-meta-item">
                   <span>${formatLabel(field)}:</span>
-                  <strong>${escapeHtml(String(item[field]))}</strong>
+                  <strong>${escapeHtml(String(value))}</strong>
                 </div>
-              ` : '').join('')}
+              `;
+              }).join('')}
             </div>
             <div class="entity-actions">
               <button class="btn btn-sm btn-secondary" data-action="view" data-id="${escapeHtml(String(item.id ?? idx))}">View</button>
@@ -159,6 +170,43 @@ const EntityManager = (function() {
 
   function isNumericQuery(query) {
     return /^\d+$/.test(query);
+  }
+
+  function getFieldValue(item, field) {
+    if (!item || !field) return undefined;
+
+    if (item[field] != null && item[field] !== '') return item[field];
+
+    const aliases = FIELD_ALIASES[field] || [];
+    for (const alias of aliases) {
+      if (item[alias] != null && item[alias] !== '') return item[alias];
+    }
+
+    const metadata = item.metadata;
+    if (metadata && typeof metadata === 'object') {
+      if (metadata[field] != null && metadata[field] !== '') return metadata[field];
+      for (const alias of aliases) {
+        if (metadata[alias] != null && metadata[alias] !== '') return metadata[alias];
+      }
+    }
+
+    return undefined;
+  }
+
+  function normalizeOutboundData(data) {
+    const normalized = { ...data };
+
+    // Backend product model expects stock while UI currently uses quantity.
+    if (TYPE === 'product' && normalized.stock == null && normalized.quantity != null) {
+      normalized.stock = normalized.quantity;
+    }
+
+    // Backend service model expects hourly_rate while UI currently uses price.
+    if (TYPE === 'service' && normalized.hourly_rate == null && normalized.price != null) {
+      normalized.hourly_rate = normalized.price;
+    }
+
+    return normalized;
   }
 
   // Actions
@@ -207,7 +255,7 @@ const EntityManager = (function() {
           const q = query.toLowerCase();
           items = items.filter(item => 
             searchFields.some(f => 
-              String(item[f] || '').toLowerCase().includes(q)
+              String(getFieldValue(item, f) || '').toLowerCase().includes(q)
             )
           );
         }
@@ -216,7 +264,7 @@ const EntityManager = (function() {
         const q = query.toLowerCase();
         items = STATE.items.filter(item =>
           searchFields.some(f =>
-            String(item[f] || '').toLowerCase().includes(q)
+            String(getFieldValue(item, f) || '').toLowerCase().includes(q)
           )
         );
       }
@@ -298,8 +346,10 @@ const EntityManager = (function() {
       }
     }
 
+    const normalizedData = normalizeOutboundData(data);
+
     // Validate required fields (at minimum, name)
-    if (!data.name?.trim()) {
+    if (!normalizedData.name?.trim()) {
       toast('Name is required', 'error');
       return;
     }
@@ -310,7 +360,7 @@ const EntityManager = (function() {
         domain: STATE.domain,
         user_id: STATE.user_id
       };
-      payload[TYPE] = data;
+      payload[TYPE] = normalizedData;
 
       const res = await safeFetch(CONFIG.apiBase, {
         method: 'POST',
@@ -363,8 +413,9 @@ const EntityManager = (function() {
     const fields = CONFIG.fields?.add || [];
     fields.forEach(f => {
       const el = $(f);
-      if (el && item[f] !== undefined) {
-        el.value = item[f];
+      const value = getFieldValue(item, f);
+      if (el && value !== undefined) {
+        el.value = value;
       }
     });
     

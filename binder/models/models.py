@@ -116,3 +116,26 @@ class Transaction:
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+
+# UI field schema for generic entity pages.
+# Top-level model fields are listed first; metadata-backed fields are included
+# so client-side search/render can resolve both sources.
+ENTITY_UI_SCHEMA: Dict[str, Dict[str, List[str]]] = {
+    "client": {
+        "search": ["id", "name", "contact"],
+        "display": ["name", "contact", "created_at"],
+    },
+    "employee": {
+        "search": ["id", "name", "role", "salary", "email", "department"],
+        "display": ["name", "role", "email", "department", "salary"],
+    },
+    "product": {
+        "search": ["id", "name", "price", "stock", "sku", "category", "description"],
+        "display": ["name", "price", "stock", "category"],
+    },
+    "service": {
+        "search": ["id", "name", "hourly_rate", "category", "description", "duration"],
+        "display": ["name", "hourly_rate", "category", "duration"],
+    },
+}
