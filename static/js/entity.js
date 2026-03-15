@@ -141,9 +141,30 @@ const EntityManager = (function() {
     if (addBtn) addBtn.disabled = loading;
   }
 
+  function normalizeItems(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.results)) return data.results;
+    if (typeof data === 'object') return Object.values(data);
+    return [];
+  }
+
+  function buildContextQuery() {
+    const params = new URLSearchParams();
+    if (STATE.domain) params.set('domain', STATE.domain);
+    if (STATE.user_id) params.set('user_id', STATE.user_id);
+    const query = params.toString();
+    return query ? `?${query}` : '';
+  }
+
+  function isNumericQuery(query) {
+    return /^\d+$/.test(query);
+  }
+
   // Actions
   async function search() {
     const query = ($('query_input')?.value || '').trim();
+    const searchFields = ['id', ...(CONFIG.fields?.search || [])];
     
     setLoading(true);
     try {
@@ -159,16 +180,33 @@ const EntityManager = (function() {
             user_id: STATE.user_id
           })
         });
-        items = res.data ? Object.values(res.data) : [];
+        items = normalizeItems(res.data);
       } else if (CONFIG.listEndpoint) {
+        if (query && isNumericQuery(query)) {
+          // Fast path: support direct lookup by numeric id
+          try {
+            const one = await safeFetch(`${CONFIG.listEndpoint}/${encodeURIComponent(query)}${buildContextQuery()}`);
+            items = one?.data ? [one.data] : [];
+            STATE.items = items;
+            renderItems(items);
+
+            if (items.length > 0) {
+              toast(`Found 1 ${CONFIG.labels?.singular || 'item'}`, 'success');
+            }
+            return;
+          } catch {
+            // If direct id lookup fails, continue to list + filter fallback.
+          }
+        }
+
         // Use list endpoint and filter client-side
-        const res = await safeFetch(`${CONFIG.listEndpoint}?domain=${STATE.domain}&user_id=${STATE.user_id}`);
-        items = Array.isArray(res.data) ? res.data : Object.values(res.data || {});
+        const res = await safeFetch(`${CONFIG.listEndpoint}${buildContextQuery()}`);
+        items = normalizeItems(res.data);
         
         if (query) {
           const q = query.toLowerCase();
           items = items.filter(item => 
-            CONFIG.fields?.search?.some(f => 
+            searchFields.some(f => 
               String(item[f] || '').toLowerCase().includes(q)
             )
           );
@@ -177,7 +215,7 @@ const EntityManager = (function() {
         // No endpoints — filter local state
         const q = query.toLowerCase();
         items = STATE.items.filter(item =>
-          CONFIG.fields?.search?.some(f =>
+          searchFields.some(f =>
             String(item[f] || '').toLowerCase().includes(q)
           )
         );
@@ -221,8 +259,8 @@ const EntityManager = (function() {
 
     setLoading(true);
     try {
-      const res = await safeFetch(`${CONFIG.listEndpoint}?domain=${STATE.domain}&user_id=${STATE.user_id}`);
-      const items = Array.isArray(res.data) ? res.data : Object.values(res.data || {});
+      const res = await safeFetch(`${CONFIG.listEndpoint}${buildContextQuery()}`);
+      const items = normalizeItems(res.data);
       STATE.items = items;
       renderItems(items);
     } catch (err) {
