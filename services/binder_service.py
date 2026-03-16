@@ -548,6 +548,19 @@ class BinderService:
             "employees",
         )
 
+    def search_employee(self, query: str) -> List[Dict[str, Any]]:
+        """
+        Unified search facade used by routes. Delegates to binder.search_employees.
+
+        Args:
+            query (str): search string.
+
+        Returns:
+            List[Dict[str, Any]]: matching employee records (possibly empty list).
+        """
+        if query is None:
+            return []
+        return self._wrap_and_log("search_employee", self._binder.search_employees, query)
     # --------------------
     # Products CRUD
     # --------------------
@@ -646,6 +659,19 @@ class BinderService:
             "products",
         )
 
+    def search_product(self, query: str) -> List[Dict[str, Any]]:
+        """
+        Unified search facade used by routes. Delegates to binder.products.
+
+        Args:
+            query (str): search string.
+
+        Returns:
+            List[Dict[str, Any]]: matching product records (possibly empty list).
+        """
+        if query is None:
+            return []
+        return self._wrap_and_log("search_product", self._binder.search_products, query)
     # --------------------
     # Services CRUD
     # --------------------
@@ -742,6 +768,20 @@ class BinderService:
             "services",
         )
 
+    def search_service(self, query: str) -> List[Dict[str, Any]]:
+        """
+        Unified search facade used by routes. Delegates to binder.services.
+
+        Args:
+            query (str): search string.
+
+        Returns:
+            List[Dict[str, Any]]: matching service records (possibly empty list).
+        """
+        if query is None:
+            return []
+        return self._wrap_and_log("search_service", self._binder.search_services, query)
+    
     # --------------------
     # Transactions (nested) CRUD
     # --------------------
