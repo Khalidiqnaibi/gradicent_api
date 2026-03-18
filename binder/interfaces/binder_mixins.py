@@ -171,6 +171,41 @@ class EmployeeMixin:
             emp_id,
         )
 
+    def search_employees(self, query: str) -> List[Dict[str, Any]]:
+        q = (query or "").strip()
+        if not q:
+            return []
+
+        # search by id
+        if q.isdigit():
+            found = self.adapter.find_children_by_field(
+                self.domain,
+                self.current_user,
+                "employees",
+                "id",
+                q,
+            )
+            if found:
+                return found
+
+        # search by exact role
+        found = self.adapter.find_children_by_predicate(
+            self.domain,
+            self.current_user,
+            "employees",
+            lambda e: (e.get("role") or "").lower() == q.lower(),
+        )
+        if found:
+            return found
+
+        # fallback to name substring
+        return self.adapter.find_by_name_substring(
+            self.domain,
+            self.current_user,
+            "employees",
+            q,
+        )
+
 # PRODUCTS
 class ProductMixin:
     def create_products(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -210,6 +245,41 @@ class ProductMixin:
             prod_id,
         )
 
+    def search_products(self, query: str) -> List[Dict[str, Any]]:
+        q = (query or "").strip()
+        if not q:
+            return []
+
+        # search by id
+        if q.isdigit():
+            found = self.adapter.find_children_by_field(
+                self.domain,
+                self.current_user,
+                "products",
+                "id",
+                q,
+            )
+            if found:
+                return found
+
+        # search by sku in metadata
+        found = self.adapter.find_children_by_predicate(
+            self.domain,
+            self.current_user,
+            "products",
+            lambda p: (p.get("metadata", {}).get("sku", "")).lower() == q.lower(),
+        )
+        if found:
+            return found
+
+        # fallback to name substring
+        return self.adapter.find_by_name_substring(
+            self.domain,
+            self.current_user,
+            "products",
+            q,
+        )
+
 # SERVICES
 class ServiceMixin:
     def create_service(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -247,6 +317,31 @@ class ServiceMixin:
             self.current_user,
             "services",
             svc_id,
+        )
+
+    def search_services(self, query: str) -> List[Dict[str, Any]]:
+        q = (query or "").strip()
+        if not q:
+            return []
+
+        # search by id
+        if q.isdigit():
+            found = self.adapter.find_children_by_field(
+                self.domain,
+                self.current_user,
+                "services",
+                "id",
+                q,
+            )
+            if found:
+                return found
+
+        # fallback to name substring
+        return self.adapter.find_by_name_substring(
+            self.domain,
+            self.current_user,
+            "services",
+            q,
         )
 
 # INTERACTIONS (NESTED)

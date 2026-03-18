@@ -293,7 +293,7 @@ def remove_client(client_id: str):
     service.delete_client(client_id)
     return make_response(message="Client deleted."), 200
 
-@binder_blueprint.route("/search/client", methods=["POST"])
+@binder_blueprint.route("/client/search", methods=["POST"])
 def client_search():
     """
     Unified search for clients endpoint. Backend decides strategy (number vs name vs fuzzy).
@@ -717,7 +717,31 @@ def delete_employee(eid):
 
     service.delete_employee(eid)
     return make_response(message="Client deleted."), 200
-    
+
+@binder_blueprint.route("/employee/search", methods=["POST"])
+def employee_search():
+    """
+    Unified search for employee endpoint.
+    Request JSON:
+      { "domain": "...", "user_id": "...", "query": "..." }
+    Response:
+      { status, data: { results: [...] }, message }
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    query = payload.get("query", "")
+    if not query:
+        raise BadRequest("Missing 'query' in request body")
+
+    service = _get_domain_and_service(payload)
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+
+    results = service.search_employee(query)
+    resp = make_response(data=results, message="Search completed.")
+    resp.status_code = 200
+    log_with_service(service,300)
+    return resp
+
 @binder_blueprint.route("/products", methods=["POST"])
 def create_product():
     """
@@ -825,6 +849,30 @@ def delete_product(product_id: str):
 
     return make_response(message="Product deleted successfully."), 200
 
+@binder_blueprint.route("/products/search", methods=["POST"])
+def product_search():
+    """
+    Unified search for product endpoint.
+    Request JSON:
+      { "domain": "...", "user_id": "...", "query": "..." }
+    Response:
+      { status, data: { results: [...] }, message }
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    query = payload.get("query", "")
+    if not query:
+        raise BadRequest("Missing 'query' in request body")
+
+    service = _get_domain_and_service(payload)
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+
+    results = service.search_product(query)
+    resp = make_response(data=results, message="Search completed.")
+    resp.status_code = 200
+    log_with_service(service,300)
+    return resp
+
 @binder_blueprint.route("/services", methods=["POST"])
 def create_service():
     """
@@ -931,6 +979,30 @@ def delete_service(service_id: str):
     service.delete_service(service_id)
 
     return make_response(message="Service deleted successfully."), 200
+
+@binder_blueprint.route("/services/search", methods=["POST"])
+def service_search():
+    """
+    Unified search for service endpoint.
+    Request JSON:
+      { "domain": "...", "user_id": "...", "query": "..." }
+    Response:
+      { status, data: { results: [...] }, message }
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    query = payload.get("query", "")
+    if not query:
+        raise BadRequest("Missing 'query' in request body")
+
+    service = _get_domain_and_service(payload)
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+
+    results = service.search_service(query)
+    resp = make_response(data=results, message="Search completed.")
+    resp.status_code = 200
+    log_with_service(service,300)
+    return resp
 
 @binder_blueprint.route("/clients/<client_id>/transactions", methods=["POST"])
 def create_transaction(client_id: str):
