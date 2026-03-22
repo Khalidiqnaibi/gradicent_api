@@ -209,6 +209,16 @@ body.plan-page {
   font-size: 0.95rem;
 }
 
+.plan-pitch {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.92rem;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed rgba(17, 113, 187, 0.35);
+  background: rgba(17, 113, 187, 0.06);
+}
+
 .plan-features {
   display: grid;
   gap: 12px;
@@ -260,6 +270,101 @@ body.plan-page .top-bar {
   border-radius: var(--radius-sm);
   padding: 12px 14px;
   font-size: 0.9rem;
+}
+
+/* Fancy upgrade CTA for featured plan */
+.plan-card.featured .plan-actions .btn {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ff9f1c 0%, #ff7a18 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fffaf3;
+  text-shadow: 0 1px 2px rgba(93, 34, 0, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(255, 159, 28, 0.25) inset,
+    0 10px 24px rgba(255, 122, 24, 0.45),
+    0 0 34px rgba(255, 159, 28, 0.35);
+}
+
+.plan-card.featured .plan-actions .btn::before,
+.plan-card.featured .plan-actions .btn::after {
+  content: '*';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff4d9;
+  font-size: 1rem;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.95), 0 0 14px rgba(255, 213, 139, 0.8);
+  animation: planSparkle 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.plan-card.featured .plan-actions .btn::before {
+  left: 14px;
+}
+
+.plan-card.featured .plan-actions .btn::after {
+  right: 14px;
+  animation-delay: 0.55s;
+}
+
+.plan-card.featured .plan-actions .btn:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 143, 0.45) inset,
+    0 14px 30px rgba(255, 122, 24, 0.55),
+    0 0 42px rgba(255, 159, 28, 0.5);
+}
+
+@keyframes planSparkle {
+  0%, 100% {
+    opacity: 0.55;
+    transform: translateY(-50%) scale(0.9) rotate(0deg);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.15) rotate(10deg);
+  }
+  70% {
+    opacity: 0.8;
+    transform: translateY(-50%) scale(0.98) rotate(-8deg);
+  }
+}
+
+/* Dark mode adjustments specific to plan visuals */
+body.theme-dark .plan-shell {
+  background: linear-gradient(120deg, #111827 0%, #111827 52%, #0f172a 52%, #111b2f 100%);
+  border-color: var(--border);
+}
+
+body.theme-dark .billing-toggle {
+  background: #0f172a;
+  border-color: var(--border);
+}
+
+body.theme-dark .toggle-track {
+  background: #475569;
+}
+
+body.theme-dark .toggle-thumb {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+}
+
+body.theme-dark .plan-card {
+  background: linear-gradient(180deg, #1f2937 0%, #192433 100%);
+  border-color: var(--border);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+body.theme-dark .plan-pitch {
+  border-color: rgba(90, 168, 230, 0.35);
+  background: rgba(90, 168, 230, 0.1);
+}
+
+body.theme-dark .plan-note {
+  background: rgba(55, 65, 81, 0.92);
+  border-color: #92400e;
+  color: #fcd9a7;
 }
 
 @media (max-width: 720px) {

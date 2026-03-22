@@ -29,7 +29,10 @@ const EntityManager = (function() {
     domain: null,
     user_id: null,
     items: [],
-    loading: false
+    loading: false,
+    editingId: null,
+    defaultAddButtonText: null,
+    viewingOnly: false
   };
 
   const FIELD_ALIASES = {
@@ -38,6 +41,9 @@ const EntityManager = (function() {
     price: ['hourly_rate'],
     hourly_rate: ['price']
   };
+
+  const ID_FIELDS = ['id', '_id', 'client_id', 'employee_id', 'product_id', 'service_id'];
+  const THEME_KEY = 'gradicent_theme';
 
   // DOM helpers
   const $ = (id) => document.getElementById(id);
@@ -71,6 +77,77 @@ const EntityManager = (function() {
       const res = await safeFetch('/api/auth/me');
       return res.data?.id;
     } catch { return null; }
+  }
+
+  // Theme helpers
+  function getTheme() {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === 'dark' || stored === 'light') return stored;
+    return 'light';
+  }
+
+  function applyTheme(theme) {
+    const resolved = theme === 'dark' ? 'dark' : 'light';
+    document.body.classList.toggle('theme-dark', resolved === 'dark');
+    document.documentElement.setAttribute('data-theme', resolved);
+
+    const iconPath = resolved === 'dark'
+      ? 'M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364l-1.414-1.414M7.05 7.05 5.636 5.636m12.728 0-1.414 1.414M7.05 16.95l-1.414 1.414M12 8a4 4 0 100 8 4 4 0 000-8z'
+      : 'M21 12.79A9 9 0 1111.21 3c-.07.32-.11.65-.11 1a9 9 0 009.9 8.79z';
+
+    const toggles = document.querySelectorAll('[data-theme-toggle]');
+    toggles.forEach((btn) => {
+      btn.setAttribute('aria-pressed', String(resolved === 'dark'));
+      btn.setAttribute('title', resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+
+      const icon = btn.querySelector('svg path');
+      if (icon) {
+        icon.setAttribute('d', iconPath);
+      }
+
+      const label = btn.querySelector('[data-theme-label]');
+      if (label) {
+        label.textContent = resolved === 'dark' ? 'Dark mode: On' : 'Dark mode: Off';
+      }
+    });
+  }
+
+  function setTheme(theme) {
+    const resolved = theme === 'dark' ? 'dark' : 'light';
+    localStorage.setItem(THEME_KEY, resolved);
+    applyTheme(resolved);
+    return resolved;
+  }
+
+  function toggleTheme() {
+    const next = getTheme() === 'dark' ? 'light' : 'dark';
+    return setTheme(next);
+  }
+
+  function ensureSidebarThemeToggle() {
+    const header = document.querySelector('.sidebar-header');
+    if (!header) return;
+    if (document.getElementById('sidebar-theme-toggle')) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'sidebar-theme-toggle';
+    btn.className = 'sidebar-theme-toggle';
+    btn.setAttribute('data-theme-toggle', 'sidebar');
+    btn.setAttribute('aria-label', 'Toggle dark mode');
+    btn.innerHTML = `
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3c-.07.32-.11.65-.11 1a9 9 0 009.9 8.79z"/>
+      </svg>
+    `;
+    btn.addEventListener('click', () => toggleTheme());
+
+    const closeBtn = header.querySelector('.sidebar-close');
+    if (closeBtn) {
+      header.insertBefore(btn, closeBtn);
+    } else {
+      header.appendChild(btn);
+    }
   }
 
   // Toast notifications
@@ -113,13 +190,28 @@ const EntityManager = (function() {
     }
 
     const displayFields = CONFIG.fields?.display || ['name'];
+    const customActions = Array.isArray(CONFIG.actions) ? CONFIG.actions : [];
+
+    const renderCustomActions = (item, idx) => {
+      if (!customActions.length) return '';
+      return customActions.map((action) => {
+        const key = action?.key;
+        if (!key) return '';
+        const label = action?.label || key;
+        let cls = 'btn btn-sm btn-secondary';
+        if (action?.variant === 'primary') cls = 'btn btn-sm btn-primary';
+        else if (action?.variant === 'ghost') cls = 'btn btn-sm btn-ghost';
+
+        return `<button class="${cls}" data-action="${escapeHtml(String(key))}" data-id="${escapeHtml(String(getEntityId(item, idx)))}">${escapeHtml(String(label))}</button>`;
+      }).join('');
+    };
     
     container.innerHTML = `
       <div class="entity-grid">
         ${items.map((item, idx) => `
-          <div class="entity-card" data-id="${item.id ?? idx}">
+          <div class="entity-card" data-id="${escapeHtml(String(getEntityId(item, idx)))}">
             <div class="entity-card-header">
-              <span class="entity-name">${escapeHtml(item.name || item.id || `#${idx + 1}`)}</span>
+              <span class="entity-name">${escapeHtml(item.name || getEntityId(item, idx) || `#${idx + 1}`)}</span>
               ${item.status ? `<span class="entity-badge">${escapeHtml(item.status)}</span>` : ''}
             </div>
             <div class="entity-meta">
@@ -135,8 +227,9 @@ const EntityManager = (function() {
               }).join('')}
             </div>
             <div class="entity-actions">
-              <button class="btn btn-sm btn-secondary" data-action="view" data-id="${escapeHtml(String(item.id ?? idx))}">View</button>
-              <button class="btn btn-sm btn-ghost" data-action="edit" data-id="${escapeHtml(String(item.id ?? idx))}">Edit</button>
+              <button class="btn btn-sm btn-secondary" data-action="view" data-id="${escapeHtml(String(getEntityId(item, idx)))}">View</button>
+              <button class="btn btn-sm btn-ghost" data-action="edit" data-id="${escapeHtml(String(getEntityId(item, idx)))}">Edit</button>
+              ${renderCustomActions(item, idx)}
             </div>
           </div>
         `).join('')}
@@ -209,6 +302,116 @@ const EntityManager = (function() {
     return normalized;
   }
 
+  function getUpdateEndpoint(id) {
+    const base = CONFIG.updateEndpointBase || CONFIG.apiBase;
+    return `${base}/${encodeURIComponent(String(id))}`;
+  }
+
+  function getUpdateEndpointCandidates(id) {
+    const encodedId = encodeURIComponent(String(id));
+    const bases = [];
+    const addBase = (value) => {
+      if (!value || typeof value !== 'string') return;
+      if (!bases.includes(value)) bases.push(value);
+    };
+
+    addBase(CONFIG.updateEndpointBase);
+    addBase(CONFIG.apiBase);
+
+    if (typeof CONFIG.apiBase === 'string') {
+      addBase(CONFIG.apiBase.replace(/\/employees$/, '/employee'));
+      addBase(CONFIG.apiBase.replace(/\/employee$/, '/employees'));
+      addBase(CONFIG.apiBase.replace(/\/clients$/, '/client'));
+      addBase(CONFIG.apiBase.replace(/\/client$/, '/clients'));
+      addBase(CONFIG.apiBase.replace(/\/products$/, '/product'));
+      addBase(CONFIG.apiBase.replace(/\/product$/, '/products'));
+      addBase(CONFIG.apiBase.replace(/\/services$/, '/service'));
+      addBase(CONFIG.apiBase.replace(/\/service$/, '/services'));
+    }
+
+    return bases.map(base => `${base}/${encodedId}`);
+  }
+
+  function getEntityId(item, idx) {
+    if (!item || typeof item !== 'object') return idx;
+
+    for (const field of ID_FIELDS) {
+      const value = item[field];
+      if (value != null && String(value).trim() !== '') return value;
+    }
+
+    if (item.metadata && typeof item.metadata === 'object') {
+      for (const field of ID_FIELDS) {
+        const value = item.metadata[field];
+        if (value != null && String(value).trim() !== '') return value;
+      }
+    }
+
+    return idx;
+  }
+
+  function setEditingMode(id = null) {
+    STATE.editingId = id;
+    const addBtn = $('add_btn');
+    if (!addBtn) return;
+
+    if (!STATE.defaultAddButtonText) {
+      STATE.defaultAddButtonText = (addBtn.textContent || '').trim() || 'Add';
+    }
+
+    addBtn.textContent = id == null ? STATE.defaultAddButtonText : `Save ${CONFIG.labels?.singular || 'Item'}`;
+  }
+
+  function setViewOnlyMode(enabled) {
+    STATE.viewingOnly = !!enabled;
+
+    const form = $('add-form');
+    const addBtn = $('add_btn');
+    const fields = CONFIG.fields?.add || [];
+
+    fields.forEach((field) => {
+      const el = $(field);
+      if (!el) return;
+
+      if (enabled) {
+        if (el.tagName === 'SELECT') el.disabled = true;
+        else el.readOnly = true;
+      } else {
+        if (el.tagName === 'SELECT') el.disabled = false;
+        else el.readOnly = false;
+      }
+    });
+
+    if (form) {
+      form.classList.toggle('view-only', enabled);
+    }
+
+    if (addBtn) {
+      addBtn.style.display = enabled ? 'none' : '';
+    }
+  }
+
+  function setAddFormVisible(visible) {
+    const form = $('add-form');
+    const results = $('results');
+    if (!form) return;
+
+    form.style.display = visible ? 'block' : 'none';
+    if (results) {
+      results.style.display = visible ? 'none' : 'block';
+    }
+
+    if (visible) {
+      form.querySelector('input')?.focus();
+      const emptyState = results?.querySelector('.empty-state');
+      if (emptyState) emptyState.style.display = 'none';
+      return;
+    }
+
+    const emptyState = results?.querySelector('.empty-state');
+    if (emptyState && STATE.items.length === 0) emptyState.style.display = 'flex';
+  }
+
   // Actions
   async function search() {
     const query = ($('query_input')?.value || '').trim();
@@ -274,6 +477,8 @@ const EntityManager = (function() {
       
       if (items.length > 0) {
         toast(`Found ${items.length} ${items.length === 1 ? CONFIG.labels?.singular : CONFIG.labels?.plural}`, 'success');
+      } else {
+        toast('Nothing found', 'info');
       }
     } catch (err) {
       toast(err.message || 'Search failed', 'error');
@@ -336,6 +541,11 @@ const EntityManager = (function() {
   }
 
   async function add() {
+    if (STATE.viewingOnly) {
+      toast('View only mode: editing is disabled', 'info');
+      return;
+    }
+
     const fields = CONFIG.fields?.add || [];
     const data = {};
     
@@ -356,23 +566,60 @@ const EntityManager = (function() {
 
     setLoading(true);
     try {
-      const payload = {
-        domain: STATE.domain,
-        user_id: STATE.user_id
-      };
-      payload[TYPE] = normalizedData;
+      if (STATE.editingId != null) {
+        const patchPayload = {
+          domain: STATE.domain,
+          user_id: STATE.user_id,
+          patch: normalizedData
+        };
 
-      const res = await safeFetch(CONFIG.apiBase, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
+        let res = null;
+        let lastErr = null;
+        const endpoints = getUpdateEndpointCandidates(STATE.editingId);
+        for (const endpoint of endpoints) {
+          try {
+            res = await safeFetch(endpoint, {
+              method: 'PATCH',
+              body: JSON.stringify(patchPayload)
+            });
+            break;
+          } catch (err) {
+            lastErr = err;
+          }
+        }
 
-      // Add the returned item to local state so it renders immediately
-      const created = res.data || data;
-      STATE.items.push(created);
-      renderItems(STATE.items);
+        if (!res) {
+          throw lastErr || new Error('Update failed');
+        }
 
-      toast(`${CONFIG.labels?.singular || 'Item'} added successfully`, 'success');
+        const updated = res.data || { ...normalizedData, id: STATE.editingId };
+        STATE.items = STATE.items.map((item, idx) =>
+          String(getEntityId(item, idx)) === String(STATE.editingId)
+            ? { ...item, ...updated }
+            : item
+        );
+        renderItems(STATE.items);
+        toast('Changes saved', 'success');
+        setEditingMode(null);
+      } else {
+        const payload = {
+          domain: STATE.domain,
+          user_id: STATE.user_id
+        };
+        payload[TYPE] = normalizedData;
+
+        const res = await safeFetch(CONFIG.apiBase, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        // Add the returned item to local state so it renders immediately
+        const created = res.data || data;
+        STATE.items.push(created);
+        renderItems(STATE.items);
+
+        toast(`${CONFIG.labels?.singular || 'Item'} added successfully`, 'success');
+      }
       
       // Clear form
       fields.forEach(f => {
@@ -381,7 +628,7 @@ const EntityManager = (function() {
       });
 
       // Close add form
-      toggleAddForm();
+      setAddFormVisible(false);
     } catch (err) {
       toast(err.message || 'Failed to add', 'error');
     } finally {
@@ -390,25 +637,40 @@ const EntityManager = (function() {
   }
 
   function view(id) {
-    const item = STATE.items.find(i => String(i.id) === String(id));
+    const item = STATE.items.find((i, idx) => String(getEntityId(i, idx)) === String(id));
     if (!item) return;
-    
-    // Could open modal or navigate - for now just log
-    console.log('View item:', item);
+
+    // Open form in view-only mode and populate fields.
+    setAddFormVisible(true);
+    setEditingMode(null);
+    setViewOnlyMode(true);
+
+    const fields = CONFIG.fields?.add || [];
+    fields.forEach((f) => {
+      const el = $(f);
+      const value = getFieldValue(item, f);
+      if (el) {
+        el.value = value == null ? '' : value;
+      }
+    });
+
     toast(`Viewing ${item.name || id}`, 'info');
-    
-    // Navigate to detail page if exists
-    if (CONFIG.detailUrl) {
-      window.location.href = CONFIG.detailUrl.replace('{id}', id);
-    }
   }
 
   function edit(id) {
-    const item = STATE.items.find(i => String(i.id) === String(id));
+    const itemIndex = STATE.items.findIndex((i, idx) => String(getEntityId(i, idx)) === String(id));
+    const item = itemIndex >= 0 ? STATE.items[itemIndex] : null;
     if (!item) return;
+
+    const resolvedId = getEntityId(item, itemIndex);
+    if (resolvedId == null || String(resolvedId).trim() === '') {
+      toast('Cannot edit this item because it has no id', 'error');
+      return;
+    }
     
-    // Switch to add form and populate fields
-    toggleAddForm();
+    // Open add form and populate fields for update flow
+    setAddFormVisible(true);
+    setViewOnlyMode(false);
     
     const fields = CONFIG.fields?.add || [];
     fields.forEach(f => {
@@ -418,28 +680,50 @@ const EntityManager = (function() {
         el.value = value;
       }
     });
+
+    setEditingMode(resolvedId);
     
     toast(`Editing ${item.name || id}`, 'info');
+  }
+
+  function handleCustomAction(actionKey, id) {
+    const actions = Array.isArray(CONFIG.actions) ? CONFIG.actions : [];
+    const action = actions.find((a) => String(a?.key) === String(actionKey));
+    if (!action) return;
+
+    const item = STATE.items.find((i, idx) => String(getEntityId(i, idx)) === String(id));
+    if (!item) return;
+
+    if (action.url) {
+      const targetUrl = action.url
+        .replace('{id}', encodeURIComponent(String(id)))
+        .replace('{name}', encodeURIComponent(String(item.name || '')));
+      window.location.href = targetUrl;
+      return;
+    }
+
+    toast(action.message || `${action.label || action.key} is not configured`, 'info');
   }
 
   // Add form toggle
   function toggleAddForm() {
     const form = $('add-form');
-    const results = $('results');
-    if (form) {
-      const isVisible = form.style.display !== 'none';
-      form.style.display = isVisible ? 'none' : 'block';
-      if (!isVisible) {
-        // Focus first input when opening
-        form.querySelector('input')?.focus();
-        // Hide empty state when form is open
-        const emptyState = results?.querySelector('.empty-state');
-        if (emptyState) emptyState.style.display = 'none';
-      } else {
-        // Show empty state again when form is closed (if no items)
-        const emptyState = results?.querySelector('.empty-state');
-        if (emptyState && STATE.items.length === 0) emptyState.style.display = 'flex';
-      }
+    if (!form) return;
+
+    const isVisible = form.style.display !== 'none';
+    setAddFormVisible(!isVisible);
+
+    if (isVisible) {
+      setViewOnlyMode(false);
+      setEditingMode(null);
+      const fields = CONFIG.fields?.add || [];
+      fields.forEach(f => {
+        const el = $(f);
+        if (el) el.value = '';
+      });
+    } else {
+      setViewOnlyMode(false);
+      setEditingMode(null);
     }
   }
 
@@ -448,16 +732,14 @@ const EntityManager = (function() {
     const sidebar = $('sidebar');
     const overlay = $('sidebar-overlay');
     if (sidebar) {
-      const isOpen = !sidebar.classList.contains('closed');
+      const isOpen = sidebar.classList.contains('open');
       if (isOpen) {
-        sidebar.classList.add('closed');
         sidebar.classList.remove('open');
       } else {
-        sidebar.classList.remove('closed');
         sidebar.classList.add('open');
       }
     }
-    if (overlay) overlay.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('active');
   }
 
   function closeSidebar() {
@@ -465,9 +747,8 @@ const EntityManager = (function() {
     const overlay = $('sidebar-overlay');
     if (sidebar) {
       sidebar.classList.remove('open');
-      sidebar.classList.add('closed');
     }
-    if (overlay) overlay.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
   }
 
   // Helpers
@@ -483,6 +764,12 @@ const EntityManager = (function() {
 
   // Initialize
   async function init() {
+    // Apply theme ASAP on page init
+    applyTheme(getTheme());
+
+    // Ensure every sidebar gets a moon toggle in the header
+    ensureSidebarThemeToggle();
+
     try {
       STATE.domain = await getDomain();
       STATE.user_id = await getUserId();
@@ -546,6 +833,12 @@ const EntityManager = (function() {
     // Add button
     $('add_btn')?.addEventListener('click', add);
 
+    // Preserve default add button label for edit mode toggle
+    const addBtn = $('add_btn');
+    if (addBtn) {
+      STATE.defaultAddButtonText = (addBtn.textContent || '').trim() || 'Add';
+    }
+
     // Sidebar
     $('menu-toggle')?.addEventListener('click', toggleSidebar);
     $('sidebar-overlay')?.addEventListener('click', closeSidebar);
@@ -560,6 +853,7 @@ const EntityManager = (function() {
         const id = btn.dataset.id;
         if (action === 'view') view(id);
         else if (action === 'edit') edit(id);
+        else handleCustomAction(action, id);
       });
     }
 
@@ -571,5 +865,5 @@ const EntityManager = (function() {
   document.addEventListener('DOMContentLoaded', init);
 
   // Public API
-  return { search, add, view, edit, loadAll, toggleAddForm, toggleSidebar, closeSidebar };
+  return { search, add, view, edit, loadAll, toggleAddForm, toggleSidebar, closeSidebar, getTheme, setTheme, toggleTheme };
 })();
