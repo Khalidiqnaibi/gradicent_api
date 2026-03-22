@@ -110,6 +110,8 @@ const DOMAIN_CONFIG = {
 let domain = 'medical';                    // set from API on page load
 const cfg = () => DOMAIN_CONFIG[domain];   // shorthand to get active config
 let plan = "free";                          // user subscription plan
+const pageSection = new URLSearchParams(window.location.search).get('section');
+const transactionMode = pageSection === 'transactions';
 
 /**
  * Tracks real active time on the page and sends ONLY one final value:
@@ -160,6 +162,27 @@ function startUsageTracker(endpoint) {
 
 
 function el(id) { return document.getElementById(id); }
+
+function applySectionContext() {
+  const topBarTitle = document.querySelector('.top-bar-title');
+  const pageTitle = document.querySelector('.page-title');
+  const pageSubtitle = document.querySelector('.page-subtitle');
+  const saveButton = $('#saveBtn');
+
+  if (saveButton) {
+    saveButton.textContent = 'Save Changes';
+  }
+
+  if (transactionMode) {
+    if (topBarTitle) topBarTitle.textContent = 'Client Payment Log';
+    if (pageTitle) pageTitle.textContent = 'Client Payment Log';
+    if (pageSubtitle) pageSubtitle.textContent = 'Record payments and payment history for this client';
+  } else {
+    if (topBarTitle) topBarTitle.textContent = 'Client Appointment Log';
+    if (pageTitle) pageTitle.textContent = 'Client Appointment Log';
+    if (pageSubtitle) pageSubtitle.textContent = 'Record appointments and interaction notes for this client';
+  }
+}
 
 function show_toast(message, type = 'info') {
   const container = el('toast');
@@ -231,6 +254,7 @@ function menu_init() {
 ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
   menu_init();
+  applySectionContext();
 
   const usage = startUsageTracker("/api/binder/track_time");
   domain = (await safe_fetch('/api/binder/get_domain')).data || 'medical';
@@ -241,8 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   fetchClientData();
 
   // If opened from client transactions action, guide attention to transaction fields.
-  const section = new URLSearchParams(window.location.search).get('section');
-  if (section === 'transactions') {
+  if (transactionMode) {
     setTimeout(() => {
       const target = $('#cost') || $('#paid') || $('#debt');
       if (target) {
@@ -255,7 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         node.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.28)';
         setTimeout(() => { node.style.boxShadow = ''; }, 1400);
       });
-      show_toast('Transaction section ready', 'info');
+      show_toast('Payment log opened on the same page. Use cost, paid, and outstanding fields.', 'info');
     }, 300);
   }
 });
@@ -428,7 +451,11 @@ function save() {
   })
   .then(() => {
     fetchClientData();
-    show_toast(isNew ? "Interaction added" : "Interaction saved", "success");
+    if (isNew) {
+      show_toast(transactionMode ? 'Payment log added' : 'Interaction added', 'success');
+    } else {
+      show_toast(transactionMode ? 'Changes saved in payment log' : 'Changes saved in interaction', 'success');
+    }
   })
   .catch(err => {
     show_toast("Error saving interaction", "error");

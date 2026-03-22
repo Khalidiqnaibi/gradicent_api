@@ -54,10 +54,29 @@ const EntityManager = (function() {
     try {
       const res = await fetch(url, {
         ...opts,
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json', ...opts.headers }
       });
-      const data = await res.json();
+
+      const contentType = (res.headers.get('content-type') || '').toLowerCase();
+      const isJson = contentType.includes('application/json');
+      let data = null;
+
+      if (isJson) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        const preview = (text || '').trim().slice(0, 160);
+        const isHtml = /^\s*</.test(preview);
+        data = {
+          message: isHtml
+            ? `API returned HTML instead of JSON (HTTP ${res.status}) for ${url}`
+            : (preview || `HTTP ${res.status}`)
+        };
+      }
+
       if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+      if (!isJson) throw new Error(data.message || 'API returned non-JSON response');
       return data;
     } catch (err) {
       console.error('API Error:', err);
