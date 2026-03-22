@@ -239,6 +239,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   bindControls();
   fetchClientData();
+
+  // If opened from client transactions action, guide attention to transaction fields.
+  const section = new URLSearchParams(window.location.search).get('section');
+  if (section === 'transactions') {
+    setTimeout(() => {
+      const target = $('#cost') || $('#paid') || $('#debt');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.focus();
+      }
+      ['#cost', '#paid', '#debt', '#service', '#outcome'].forEach((sel) => {
+        const node = $(sel);
+        if (!node) return;
+        node.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.28)';
+        setTimeout(() => { node.style.boxShadow = ''; }, 1400);
+      });
+      show_toast('Transaction section ready', 'info');
+    }, 300);
+  }
 });
 
 /* ============================================================

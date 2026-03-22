@@ -172,6 +172,20 @@
         add: ['name', 'email', 'phone', 'company', 'address', 'notes'],
         display: ['name', 'email', 'phone', 'company']
       },
+      actions: [
+        {
+          key: 'interactions',
+          label: 'Interactions',
+          variant: 'secondary',
+          url: '/data/{id}'
+        },
+        {
+          key: 'transactions',
+          label: 'Transactions',
+          variant: 'primary',
+          url: '/data/{id}?section=transactions'
+        }
+      ],
       labels: {
         singular: 'Client',
         plural: 'Clients'

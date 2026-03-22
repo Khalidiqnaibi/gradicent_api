@@ -190,6 +190,21 @@ const EntityManager = (function() {
     }
 
     const displayFields = CONFIG.fields?.display || ['name'];
+    const customActions = Array.isArray(CONFIG.actions) ? CONFIG.actions : [];
+
+    const renderCustomActions = (item, idx) => {
+      if (!customActions.length) return '';
+      return customActions.map((action) => {
+        const key = action?.key;
+        if (!key) return '';
+        const label = action?.label || key;
+        let cls = 'btn btn-sm btn-secondary';
+        if (action?.variant === 'primary') cls = 'btn btn-sm btn-primary';
+        else if (action?.variant === 'ghost') cls = 'btn btn-sm btn-ghost';
+
+        return `<button class="${cls}" data-action="${escapeHtml(String(key))}" data-id="${escapeHtml(String(getEntityId(item, idx)))}">${escapeHtml(String(label))}</button>`;
+      }).join('');
+    };
     
     container.innerHTML = `
       <div class="entity-grid">
@@ -214,6 +229,7 @@ const EntityManager = (function() {
             <div class="entity-actions">
               <button class="btn btn-sm btn-secondary" data-action="view" data-id="${escapeHtml(String(getEntityId(item, idx)))}">View</button>
               <button class="btn btn-sm btn-ghost" data-action="edit" data-id="${escapeHtml(String(getEntityId(item, idx)))}">Edit</button>
+              ${renderCustomActions(item, idx)}
             </div>
           </div>
         `).join('')}
@@ -670,6 +686,25 @@ const EntityManager = (function() {
     toast(`Editing ${item.name || id}`, 'info');
   }
 
+  function handleCustomAction(actionKey, id) {
+    const actions = Array.isArray(CONFIG.actions) ? CONFIG.actions : [];
+    const action = actions.find((a) => String(a?.key) === String(actionKey));
+    if (!action) return;
+
+    const item = STATE.items.find((i, idx) => String(getEntityId(i, idx)) === String(id));
+    if (!item) return;
+
+    if (action.url) {
+      const targetUrl = action.url
+        .replace('{id}', encodeURIComponent(String(id)))
+        .replace('{name}', encodeURIComponent(String(item.name || '')));
+      window.location.href = targetUrl;
+      return;
+    }
+
+    toast(action.message || `${action.label || action.key} is not configured`, 'info');
+  }
+
   // Add form toggle
   function toggleAddForm() {
     const form = $('add-form');
@@ -818,6 +853,7 @@ const EntityManager = (function() {
         const id = btn.dataset.id;
         if (action === 'view') view(id);
         else if (action === 'edit') edit(id);
+        else handleCustomAction(action, id);
       });
     }
 
