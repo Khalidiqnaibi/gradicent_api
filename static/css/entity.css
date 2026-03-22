@@ -28,6 +28,30 @@
   --radius-xs: 6px;
 }
 
+body.theme-dark {
+  --accent: #5aa8e6;
+  --accent-dark: #3d8fcd;
+  --accent-glow: rgba(90, 168, 230, 0.25);
+  --secondary: #f0b14a;
+  --secondary-dark: #cf983f;
+  --bg-gradient: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  --bg-card: #1f2937;
+  --bg-glass: rgba(17, 24, 39, 0.92);
+  --bg-sidebar: #0b1220;
+  --text: #e5e7eb;
+  --text-secondary: #cbd5e1;
+  --text-muted: #9ca3af;
+  --text-light: #94a3b8;
+  --border: #334155;
+  --border-hover: #475569;
+  --success: #34d399;
+  --error: #f87171;
+  --warning: #f59e0b;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 18px 36px rgba(0, 0, 0, 0.45);
+}
+
 /* ====== Base ====== */
 * {
   margin: 0;
@@ -72,6 +96,28 @@ html, body {
   z-index: 50;
   border-bottom: 1px solid var(--border);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.top-bar-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.top-bar-centered {
+  display: grid;
+  grid-template-columns: 52px 1fr 52px;
+  align-items: center;
+}
+
+.top-bar-centered .top-bar-title {
+  text-align: center;
+}
+
+.top-bar-balancer {
+  width: 52px;
+  height: 52px;
 }
 
 .top-bar.hidden {
@@ -288,6 +334,30 @@ html, body {
   transition: background 0.2s ease;
 }
 
+.sidebar-theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.sidebar-theme-toggle svg {
+  width: 19px;
+  height: 19px;
+}
+
 .sidebar-close:hover {
   background: rgba(255, 255, 255, 0.2);
 }
@@ -320,8 +390,11 @@ html, body {
 .sidebar-link {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 12px;
   padding: 12px;
+  min-height: 44px;
+  line-height: 1.2;
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
@@ -797,6 +870,15 @@ html, body {
   }
 
   .menu-toggle {
+    width: 42px;
+    height: 42px;
+  }
+
+  .top-bar-centered {
+    grid-template-columns: 42px 1fr 42px;
+  }
+
+  .top-bar-balancer {
     width: 42px;
     height: 42px;
   }

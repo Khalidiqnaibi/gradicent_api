@@ -46,10 +46,6 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Analytics
         </a>
-        <a href="/plan" class="sidebar-link">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 10h20"/></svg>
-          Plans
-        </a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Account</div>
@@ -129,6 +125,14 @@
               <input type="checkbox" id="cbx-3">
               <span class="toggle-slider"></span>
             </label>
+          </div>
+
+          <!-- Dark Theme Toggle -->
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <label class="form-label" style="margin: 0;">Dark Theme</label>
+            <button id="theme-toggle-settings" type="button" class="btn btn-secondary" data-theme-toggle="settings" style="min-width: 170px;">
+              <span data-theme-label>Dark mode: Off</span>
+            </button>
           </div>
 
           <!-- Save Button -->

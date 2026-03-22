@@ -270,6 +270,24 @@
         }
       });
 
+      // settings dark mode toggle (syncs with sidebar moon button)
+      const settingsThemeBtn = document.getElementById('theme-toggle-settings');
+      if (settingsThemeBtn) {
+        settingsThemeBtn.addEventListener('click', () => {
+          if (window.EntityManager && typeof window.EntityManager.toggleTheme === 'function') {
+            window.EntityManager.toggleTheme();
+            return;
+          }
+
+          // Fallback if shared manager is unavailable
+          const isDark = document.body.classList.contains('theme-dark');
+          document.body.classList.toggle('theme-dark', !isDark);
+          localStorage.setItem('gradicent_theme', isDark ? 'light' : 'dark');
+          const label = settingsThemeBtn.querySelector('[data-theme-label]');
+          if (label) label.textContent = isDark ? 'Dark mode: Off' : 'Dark mode: On';
+        });
+      }
+
       // "lab" domain variant: override icons, titles, and links
       if(domain==='lab'){
         const appa=document.getElementById('appa');

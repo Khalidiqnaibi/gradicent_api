@@ -46,10 +46,6 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Analytics
         </a>
-        <a href="/plan" class="sidebar-link">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 10h20"/></svg>
-          Plans
-        </a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Account</div>
@@ -71,13 +67,14 @@
   <!-- Main Content -->
   <div class="app-container">
     <!-- Top Bar -->
-    <header class="top-bar">
+    <header class="top-bar top-bar-centered">
       <button id="menu-toggle" class="menu-toggle">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
       </button>
       <div class="top-bar-title">Account</div>
+      <div class="top-bar-balancer" aria-hidden="true"></div>
     </header>
 
     <main class="main-content">
@@ -88,7 +85,7 @@
       </div>
 
       <!-- Account Card -->
-      <section class="card" style="max-width: 600px;">
+      <section class="card" style="max-width: 600px; width: 100%; margin: 0 auto;">
         <div class="card-body">
           <!-- User Info -->
           <div id="user_info" style="text-align: center; padding: 12px 0; margin-bottom: 20px; border-bottom: 1px solid var(--border);">
@@ -113,7 +110,11 @@
 
           <!-- Actions -->
           <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-            <button id="btn1" type="button" class="btn btn-primary" style="width: 100%;">Upgrade Plan</button>
+            <button id="btn1" type="button" class="btn btn-upgrade-glow" style="width: 100%; position: relative; overflow: hidden;">
+              <span class="upgrade-stars" aria-hidden="true">*</span>
+              <span>Upgrade Your Plan</span>
+              <span class="upgrade-stars upgrade-stars-right" aria-hidden="true">*</span>
+            </button>
             <button id="btn2" type="button" class="btn btn-secondary" style="width: 100%;">Switch Workspace</button>
             <a href="/logout" class="btn btn-secondary" style="width: 100%; text-align: center; color: #991b1b; border-color: #fca5a5; background: #fee2e2;">Log Out</a>
           </div>

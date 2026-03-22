@@ -43,6 +43,7 @@ const EntityManager = (function() {
   };
 
   const ID_FIELDS = ['id', '_id', 'client_id', 'employee_id', 'product_id', 'service_id'];
+  const THEME_KEY = 'gradicent_theme';
 
   // DOM helpers
   const $ = (id) => document.getElementById(id);
@@ -76,6 +77,77 @@ const EntityManager = (function() {
       const res = await safeFetch('/api/auth/me');
       return res.data?.id;
     } catch { return null; }
+  }
+
+  // Theme helpers
+  function getTheme() {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === 'dark' || stored === 'light') return stored;
+    return 'light';
+  }
+
+  function applyTheme(theme) {
+    const resolved = theme === 'dark' ? 'dark' : 'light';
+    document.body.classList.toggle('theme-dark', resolved === 'dark');
+    document.documentElement.setAttribute('data-theme', resolved);
+
+    const iconPath = resolved === 'dark'
+      ? 'M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364l-1.414-1.414M7.05 7.05 5.636 5.636m12.728 0-1.414 1.414M7.05 16.95l-1.414 1.414M12 8a4 4 0 100 8 4 4 0 000-8z'
+      : 'M21 12.79A9 9 0 1111.21 3c-.07.32-.11.65-.11 1a9 9 0 009.9 8.79z';
+
+    const toggles = document.querySelectorAll('[data-theme-toggle]');
+    toggles.forEach((btn) => {
+      btn.setAttribute('aria-pressed', String(resolved === 'dark'));
+      btn.setAttribute('title', resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+
+      const icon = btn.querySelector('svg path');
+      if (icon) {
+        icon.setAttribute('d', iconPath);
+      }
+
+      const label = btn.querySelector('[data-theme-label]');
+      if (label) {
+        label.textContent = resolved === 'dark' ? 'Dark mode: On' : 'Dark mode: Off';
+      }
+    });
+  }
+
+  function setTheme(theme) {
+    const resolved = theme === 'dark' ? 'dark' : 'light';
+    localStorage.setItem(THEME_KEY, resolved);
+    applyTheme(resolved);
+    return resolved;
+  }
+
+  function toggleTheme() {
+    const next = getTheme() === 'dark' ? 'light' : 'dark';
+    return setTheme(next);
+  }
+
+  function ensureSidebarThemeToggle() {
+    const header = document.querySelector('.sidebar-header');
+    if (!header) return;
+    if (document.getElementById('sidebar-theme-toggle')) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'sidebar-theme-toggle';
+    btn.className = 'sidebar-theme-toggle';
+    btn.setAttribute('data-theme-toggle', 'sidebar');
+    btn.setAttribute('aria-label', 'Toggle dark mode');
+    btn.innerHTML = `
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3c-.07.32-.11.65-.11 1a9 9 0 009.9 8.79z"/>
+      </svg>
+    `;
+    btn.addEventListener('click', () => toggleTheme());
+
+    const closeBtn = header.querySelector('.sidebar-close');
+    if (closeBtn) {
+      header.insertBefore(btn, closeBtn);
+    } else {
+      header.appendChild(btn);
+    }
   }
 
   // Toast notifications
@@ -389,6 +461,8 @@ const EntityManager = (function() {
       
       if (items.length > 0) {
         toast(`Found ${items.length} ${items.length === 1 ? CONFIG.labels?.singular : CONFIG.labels?.plural}`, 'success');
+      } else {
+        toast('Nothing found', 'info');
       }
     } catch (err) {
       toast(err.message || 'Search failed', 'error');
@@ -623,16 +697,14 @@ const EntityManager = (function() {
     const sidebar = $('sidebar');
     const overlay = $('sidebar-overlay');
     if (sidebar) {
-      const isOpen = !sidebar.classList.contains('closed');
+      const isOpen = sidebar.classList.contains('open');
       if (isOpen) {
-        sidebar.classList.add('closed');
         sidebar.classList.remove('open');
       } else {
-        sidebar.classList.remove('closed');
         sidebar.classList.add('open');
       }
     }
-    if (overlay) overlay.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('active');
   }
 
   function closeSidebar() {
@@ -640,9 +712,8 @@ const EntityManager = (function() {
     const overlay = $('sidebar-overlay');
     if (sidebar) {
       sidebar.classList.remove('open');
-      sidebar.classList.add('closed');
     }
-    if (overlay) overlay.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
   }
 
   // Helpers
@@ -658,6 +729,12 @@ const EntityManager = (function() {
 
   // Initialize
   async function init() {
+    // Apply theme ASAP on page init
+    applyTheme(getTheme());
+
+    // Ensure every sidebar gets a moon toggle in the header
+    ensureSidebarThemeToggle();
+
     try {
       STATE.domain = await getDomain();
       STATE.user_id = await getUserId();
@@ -752,5 +829,5 @@ const EntityManager = (function() {
   document.addEventListener('DOMContentLoaded', init);
 
   // Public API
-  return { search, add, view, edit, loadAll, toggleAddForm, toggleSidebar, closeSidebar };
+  return { search, add, view, edit, loadAll, toggleAddForm, toggleSidebar, closeSidebar, getTheme, setTheme, toggleTheme };
 })();
