@@ -11,6 +11,8 @@
  * Yearly price = monthly price * 10 (2 months free).
  */
 const PlanPage = (function () {
+  const THEME_KEY = 'gradicent_theme';
+
   const state = {
     plans: [],
     billing: 'monthly'
@@ -20,32 +22,94 @@ const PlanPage = (function () {
     starter: {
       key: 'starter',
       name: 'Starter',
-      badge: 'Great for solo',
-      description: 'Core client management and light reporting for new teams.',
+      badge: 'Best to begin',
+      description: 'Start organizing clients, appointments, and daily operations in one simple workflow that saves you hours every week.',
+      pitch: 'Perfect for small teams that want to look professional, stay organized, and grow without complexity.',
       price: 12,
       featured: false,
       features: [
-        'Client and contact tracking',
-        'Basic analytics dashboards',
-        'Email support'
+        'Client and contact tracking with clean history',
+        'Appointment workflow to reduce missed follow-ups',
+        'Core analytics dashboard for weekly decisions',
+        'Email support and fast onboarding help'
       ]
     },
     pro: {
       key: 'pro',
       name: 'Pro',
       badge: 'Most popular',
-      description: 'Automation-ready workflows with deeper reporting insights.',
+      description: 'Scale faster with automation, deeper insights, and premium workflows designed for teams that want measurable growth.',
+      pitch: 'Built for ambitious businesses ready to increase revenue, improve retention, and run smarter every day.',
       price: 29,
       featured: true,
       features: [
-        'Advanced analytics views',
-        'Team collaboration tools',
-        'Priority support'
+        'Advanced analytics with clearer revenue and retention insights',
+        'Team collaboration tools for smoother daily operations',
+        'Priority support for critical business moments',
+        'Automation-friendly setup to save recurring manual work'
+      ]
+    }
+  };
+
+  const MARKETING_COPY = {
+    starter: {
+      badge: 'Best to begin',
+      description: 'Start organizing clients, appointments, and daily operations in one simple workflow that saves you hours every week.',
+      pitch: 'Perfect for small teams that want to look professional, stay organized, and grow without complexity.',
+      features: [
+        'Client and contact tracking with clean history',
+        'Appointment workflow to reduce missed follow-ups',
+        'Core analytics dashboard for weekly decisions',
+        'Email support and fast onboarding help'
+      ]
+    },
+    pro: {
+      badge: 'Most popular',
+      description: 'Scale faster with automation, deeper insights, and premium workflows designed for teams that want measurable growth.',
+      pitch: 'Built for ambitious businesses ready to increase revenue, improve retention, and run smarter every day.',
+      features: [
+        'Advanced analytics with clearer revenue and retention insights',
+        'Team collaboration tools for smoother daily operations',
+        'Priority support for critical business moments',
+        'Automation-friendly setup to save recurring manual work'
       ]
     }
   };
 
   const elements = {};
+
+  function getTheme() {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === 'dark' || stored === 'light') return stored;
+    return 'light';
+  }
+
+  function applyTheme(theme) {
+    const resolved = theme === 'dark' ? 'dark' : 'light';
+    document.body.classList.toggle('theme-dark', resolved === 'dark');
+    document.documentElement.setAttribute('data-theme', resolved);
+
+    const btn = elements.themeToggle;
+    if (!btn) return;
+
+    btn.setAttribute('aria-pressed', String(resolved === 'dark'));
+    btn.setAttribute('title', resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    const path = btn.querySelector('svg path');
+    if (path) {
+      path.setAttribute(
+        'd',
+        resolved === 'dark'
+          ? 'M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364l-1.414-1.414M7.05 7.05 5.636 5.636m12.728 0-1.414 1.414M7.05 16.95l-1.414 1.414M12 8a4 4 0 100 8 4 4 0 000-8z'
+          : 'M21 12.79A9 9 0 1111.21 3c-.07.32-.11.65-.11 1a9 9 0 009.9 8.79z'
+      );
+    }
+  }
+
+  function toggleTheme() {
+    const next = getTheme() === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  }
 
   async function safeFetch(url, opts = {}) {
     const res = await fetch(url, {
@@ -79,6 +143,7 @@ const PlanPage = (function () {
       .filter(plan => plan.key === 'starter' || plan.key === 'pro')
       .map(plan => ({
         ...plan,
+        ...(MARKETING_COPY[plan.key] || {}),
         yearlyPrice: plan.price !== null && plan.price !== undefined
           ? Number(plan.price) * 10
           : null
@@ -118,6 +183,7 @@ const PlanPage = (function () {
             </div>
             <div class="plan-price">${priceLabel} <span>${priceSuffix}</span></div>
             <p class="plan-description">${escapeHtml(plan.description)}</p>
+            <p class="plan-pitch">${escapeHtml(plan.pitch || '')}</p>
             <div class="plan-features">
               ${plan.features
                 .map(
@@ -134,7 +200,7 @@ const PlanPage = (function () {
             </div>
             <div class="plan-actions">
               <button class="btn ${plan.featured ? 'btn-primary' : 'btn-secondary'}" type="button">
-                ${plan.featured ? 'Upgrade to ' + escapeHtml(plan.name) : 'Select ' + escapeHtml(plan.name)}
+                ${plan.featured ? 'Upgrade Your Plan' : 'Select ' + escapeHtml(plan.name)}
               </button>
             </div>
           </article>
@@ -176,25 +242,23 @@ const PlanPage = (function () {
     const isOpen = elements.sidebar.classList.contains('open');
     if (isOpen) {
       elements.sidebar.classList.remove('open');
-      elements.sidebar.classList.add('closed');
-      elements.overlay.classList.remove('open');
+      elements.overlay.classList.remove('active');
     } else {
       elements.sidebar.classList.add('open');
-      elements.sidebar.classList.remove('closed');
-      elements.overlay.classList.add('open');
+      elements.overlay.classList.add('active');
     }
   }
 
   function closeSidebar() {
     if (!elements.sidebar || !elements.overlay) return;
     elements.sidebar.classList.remove('open');
-    elements.sidebar.classList.add('closed');
-    elements.overlay.classList.remove('open');
+    elements.overlay.classList.remove('active');
   }
 
   function bindEvents() {
     elements.menuToggle?.addEventListener('click', toggleSidebar);
     elements.overlay?.addEventListener('click', closeSidebar);
+    elements.themeToggle?.addEventListener('click', toggleTheme);
 
     elements.billingMonthly?.addEventListener('click', () => setBilling('monthly'));
     elements.billingYearly?.addEventListener('click', () => setBilling('yearly'));
@@ -211,6 +275,9 @@ const PlanPage = (function () {
     elements.menuToggle = document.getElementById('menu-toggle');
     elements.sidebar = document.getElementById('sidebar');
     elements.overlay = document.getElementById('sidebar-overlay');
+    elements.themeToggle = document.getElementById('plan-theme-toggle');
+
+    applyTheme(getTheme());
 
     bindEvents();
     setBilling('monthly');

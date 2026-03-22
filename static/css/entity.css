@@ -571,6 +571,72 @@ html, body {
   background: #f8fafc;
 }
 
+.btn-upgrade-glow {
+  position: relative;
+  background: linear-gradient(135deg, #ff9f1c 0%, #ff7a18 100%);
+  color: #fffaf3;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(255, 159, 28, 0.25) inset,
+    0 6px 18px rgba(255, 122, 24, 0.42),
+    0 0 26px rgba(255, 159, 28, 0.35);
+  text-shadow: 0 1px 2px rgba(110, 38, 0, 0.45);
+  letter-spacing: 0.01em;
+}
+
+.btn-upgrade-glow:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 0 0 1px rgba(255, 208, 140, 0.45) inset,
+    0 10px 24px rgba(255, 122, 24, 0.52),
+    0 0 38px rgba(255, 159, 28, 0.48);
+}
+
+.btn-upgrade-glow:active {
+  transform: translateY(0) scale(0.995);
+}
+
+.btn-upgrade-glow::before {
+  content: '';
+  position: absolute;
+  inset: -24% -8%;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 243, 214, 0.45), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.upgrade-stars {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  color: #fff3d6;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.95), 0 0 16px rgba(255, 210, 120, 0.75);
+  animation: sparklePulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.upgrade-stars-right {
+  left: auto;
+  right: 16px;
+  animation-delay: 0.55s;
+}
+
+@keyframes sparklePulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: translateY(-50%) scale(0.9) rotate(0deg);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.15) rotate(10deg);
+  }
+  70% {
+    opacity: 0.8;
+    transform: translateY(-50%) scale(0.98) rotate(-8deg);
+  }
+}
+
 .btn-close {
   width: 36px;
   height: 36px;
