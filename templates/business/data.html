@@ -73,6 +73,11 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
       </button>
+      <button id="backBtn" class="btn btn-secondary" type="button" aria-label="Back" title="Back">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px; height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
       <div class="top-bar-title">Client Interaction</div>
     </header>
 
@@ -83,8 +88,16 @@
         <p class="page-subtitle">Manage meetings, notes, files, and payments</p>
       </div>
 
+      <section id="logSection" class="card" style="display:none;">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h2 id="logTitle" class="card-title" style="margin-bottom:0;">Activity Log</h2>
+          <button id="addNewEntryBtn" type="button" class="btn btn-primary">Add New</button>
+        </div>
+        <div id="logList" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </section>
+
       <!-- Interaction Card -->
-      <section class="card">
+      <section id="interactionCard" class="card">
         <!-- Interaction Form -->
         <form id="interactionForm" class="card-body">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
@@ -226,6 +239,7 @@
 
   <script>
     window.__client__ = "{{client}}";
+    window.__transactionMode__ = "{{ transaction_mode|default(false) }}" === "True";
   </script>
   <script src="/static/js/entity.js"></script>
   <script src="/static/js/data.js"></script>

@@ -111,7 +111,7 @@ let domain = 'medical';                    // set from API on page load
 const cfg = () => DOMAIN_CONFIG[domain];   // shorthand to get active config
 let plan = "free";                          // user subscription plan
 const pageSection = new URLSearchParams(window.location.search).get('section');
-const transactionMode = pageSection === 'transactions';
+const transactionMode = Boolean(window.__transactionMode__) || pageSection === 'transactions';
 
 /**
  * Tracks real active time on the page and sends ONLY one final value:
@@ -185,7 +185,8 @@ function applySectionContext() {
 }
 
 function show_toast(message, type = 'info') {
-  const container = el('toast');
+  const container = el('toast_container') || el('toast');
+  if (!container) return;
   const t = document.createElement('div');
   t.className = 'toast';
   t.style.padding = '10px 12px';
@@ -206,6 +207,7 @@ let user_id = '';
 let visits = [];               // array of interaction objects for this client
 let currentVisitIndex = 0;     // index into visits[] currently shown in form
 let patientNumber = window.__client__ ?? 0;  // client number from URL (-1 = new)
+let forceNewEntry = new URLSearchParams(window.location.search).get('action') === 'new';
 
 /* ============================================================
    Fetch helpers
@@ -296,6 +298,38 @@ function bindControls() {
   $('#printBtn')?.addEventListener('click', printInteraction);
   $('#openFolderBtn')?.addEventListener('click', openFolder);
   $('#closeModal')?.addEventListener('click',closeFileModal)
+  $$('.folder-btn').forEach((btn) => {
+    btn.addEventListener('click', () => selectFolder(btn.dataset.folder));
+  });
+  $('#chooseFile')?.addEventListener('click', () => $('#fileInput')?.click());
+  $('#fileInput')?.addEventListener('change', onFilesSelected);
+  $('#uploadFiles')?.addEventListener('click', uploadFile);
+  const dropZone = $('#dropZone');
+  if (dropZone) {
+    dropZone.addEventListener('click', () => $('#fileInput')?.click());
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const fileInput = $('#fileInput');
+      if (!fileInput || !e.dataTransfer?.files?.length) return;
+      try {
+        fileInput.files = e.dataTransfer.files;
+      } catch (_) {
+        // Some browsers block programmatic assignment to FileList.
+      }
+      onFilesSelected();
+    });
+  }
+  $('#addNewEntryBtn')?.addEventListener('click', openNewEntry);
+  $('#backBtn')?.addEventListener('click', () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/client';
+    }
+  });
 }
 
 /* ============================================================
@@ -363,8 +397,23 @@ function fetchClientData() {
     .then(r => {
       visits = r.data.interactions || [];
       if (!Array.isArray(visits)) visits = [visits];
-      currentVisitIndex = visits.length ? visits.length - 1 : 0;
-      populate(visits[currentVisitIndex] || {});
+      const hasEntries = visits.some((v) => Object.keys(v || {}).length > 0);
+      const openInNewMode = forceNewEntry;
+
+      if (openInNewMode) {
+        visits.push({});
+        currentVisitIndex = visits.length - 1;
+        forceNewEntry = false;
+      } else {
+        currentVisitIndex = visits.length ? visits.length - 1 : 0;
+      }
+
+      renderLogPanel();
+
+      if (openInNewMode || !hasEntries) {
+        showInteractionForm();
+        populate(visits[currentVisitIndex] || {});
+      }
       show_toast("Fetched client interaction" , "success");
     }).catch( err =>{
       show_toast(`Error Fetching interaction`,"error");
@@ -377,17 +426,22 @@ function fetchClientData() {
    Walk through the visits[] array. "next" past the last visit
    creates a blank entry so the user can add a new interaction.
 ============================================================ */
-function first(){ if(visits.length){ currentVisitIndex=0; populate(visits[0]); } }
-function last(){ if(visits.length){ currentVisitIndex=visits.length-1; populate(visits[currentVisitIndex]); } }
-function prev(){ if(currentVisitIndex>0){ currentVisitIndex--; populate(visits[currentVisitIndex]); } }
+function first(){ if(visits.length){ currentVisitIndex=0; showInteractionForm(); populate(visits[0]); selectLogItem(currentVisitIndex); } }
+function last(){ if(visits.length){ currentVisitIndex=visits.length-1; showInteractionForm(); populate(visits[currentVisitIndex]); selectLogItem(currentVisitIndex); } }
+function prev(){ if(currentVisitIndex>0){ currentVisitIndex--; showInteractionForm(); populate(visits[currentVisitIndex]); selectLogItem(currentVisitIndex); } }
 function next(){
   if(visits[currentVisitIndex+1]){
     currentVisitIndex++;
+    showInteractionForm();
     populate(visits[currentVisitIndex]);
+    selectLogItem(currentVisitIndex);
   } else {
     visits.push({});
     currentVisitIndex = visits.length - 1;
+    showInteractionForm();
     populate({});
+    renderLogPanel();
+    selectLogItem(currentVisitIndex);
   }
 }
 
@@ -400,7 +454,9 @@ function search() {
   const found = visits.find(v => v[f] === d);
   if (!found) return show_toast('Not found', 'info');
   currentVisitIndex = visits.indexOf(found);
+  showInteractionForm();
   populate(found);
+  selectLogItem(currentVisitIndex);
 }
 
 /* ============================================================
@@ -461,6 +517,109 @@ function save() {
     show_toast("Error saving interaction", "error");
     console.error("Error saving interaction", err);
   });
+}
+
+function showInteractionForm() {
+  const card = $('#interactionCard');
+  if (card) card.style.display = 'block';
+}
+
+function hideInteractionForm() {
+  const card = $('#interactionCard');
+  if (card) card.style.display = 'none';
+}
+
+function getEntryDate(entry) {
+  return entry?.[cfg().fields.date] || 'No date';
+}
+
+function getEntryLabel(entry, index) {
+  const number = entry?.vno || index + 1;
+  const owner = entry?.[cfg().fields.owner] || 'Unassigned';
+  const title = entry?.[cfg().fields.title] || (transactionMode ? 'Payment entry' : 'Appointment entry');
+  return `#${number} - ${title} (${owner})`;
+}
+
+function selectLogItem(index) {
+  const list = $('#logList');
+  if (!list) return;
+  list.querySelectorAll('[data-log-index]').forEach((item) => {
+    item.style.borderColor = 'var(--border)';
+    item.style.background = 'var(--bg-card)';
+  });
+
+  const active = list.querySelector(`[data-log-index="${index}"]`);
+  if (active) {
+    active.style.borderColor = 'var(--accent)';
+    active.style.background = 'rgba(17, 113, 187, 0.08)';
+  }
+}
+
+function openExistingEntry(index) {
+  currentVisitIndex = index;
+  showInteractionForm();
+  populate(visits[currentVisitIndex] || {});
+  selectLogItem(currentVisitIndex);
+}
+
+function openNewEntry() {
+  visits.push({});
+  currentVisitIndex = visits.length - 1;
+  showInteractionForm();
+  populate({});
+  renderLogPanel();
+  selectLogItem(currentVisitIndex);
+  show_toast(transactionMode ? 'Adding new transaction' : 'Adding new interaction', 'info');
+}
+
+function renderLogPanel() {
+  const logSection = $('#logSection');
+  const logList = $('#logList');
+  const logTitle = $('#logTitle');
+  const addNewBtn = $('#addNewEntryBtn');
+  if (!logSection || !logList || !logTitle || !addNewBtn) return;
+
+  const hasEntries = visits.some((v) => Object.keys(v || {}).length > 0);
+  logTitle.textContent = transactionMode ? 'Transaction Log' : 'Interaction Log';
+  addNewBtn.textContent = transactionMode ? 'Add New Transaction' : 'Add New Interaction';
+
+  if (!hasEntries) {
+    logSection.style.display = 'none';
+    showInteractionForm();
+    return;
+  }
+
+  logSection.style.display = 'block';
+  hideInteractionForm();
+
+  const entries = visits
+    .map((entry, index) => ({ entry, index }))
+    .filter(({ entry }) => Object.keys(entry || {}).length > 0)
+    .reverse();
+
+  logList.innerHTML = entries.map(({ entry, index }) => `
+    <button
+      type="button"
+      data-log-index="${index}"
+      style="text-align:left; border:1px solid var(--border); background:var(--bg-card); border-radius:10px; padding:10px 12px; cursor:pointer; display:flex; justify-content:space-between; gap:8px; color:var(--text);"
+    >
+      <span style="font-weight:600;">${getEntryLabel(entry, index)}</span>
+      <span style="color:var(--text-muted);">${getEntryDate(entry)}</span>
+    </button>
+  `).join('');
+
+  logList.querySelectorAll('[data-log-index]').forEach((item) => {
+    item.addEventListener('click', () => {
+      const idx = Number(item.getAttribute('data-log-index'));
+      if (Number.isNaN(idx)) return;
+      openExistingEntry(idx);
+    });
+  });
+
+  const firstIndex = Number(logList.querySelector('[data-log-index]')?.getAttribute('data-log-index'));
+  if (!Number.isNaN(firstIndex)) {
+    selectLogItem(firstIndex);
+  }
 }
 
 
@@ -542,9 +701,24 @@ function selectFolder(folder) {
       show_toast("Not implemented", "error");
     }
   }
+
+  updateActiveFolderButton();
     
-  $('#uploadControls').style.display = selectedFolder === 'drs' ? 'flex' : 'none';
+  const uploadControls = $('#uploadControls');
+  if (uploadControls) {
+    const canUpload = domain === 'business' || selectedFolder === 'drs';
+    uploadControls.style.display = canUpload ? 'flex' : 'none';
+  }
   fetchFiles();
+}
+
+function updateActiveFolderButton() {
+  $$('.folder-btn').forEach((btn) => {
+    const isActive = btn.dataset.folder === selectedFolder;
+    btn.classList.toggle('btn-primary', isActive);
+    btn.classList.toggle('btn-secondary', !isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
 }
 
 /* ---------- Fetch Files (plan-gated) ---------- */

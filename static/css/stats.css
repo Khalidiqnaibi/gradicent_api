@@ -103,3 +103,62 @@
     
     main { padding:2rem; max-width:1250px; margin:auto; }
     canvas { max-height:320px; }
+
+    .stats-theme-toggle {
+      margin-left: auto;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: var(--bg-card);
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    .stats-theme-toggle:hover {
+      transform: translateY(-1px);
+      background: rgba(17, 113, 187, 0.1);
+    }
+
+    body.theme-dark .tab-btn {
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    body.theme-dark .active-tab {
+      border-color: #3d8fcd;
+      background: #1d4f77;
+      color: #f8fafc;
+    }
+
+    body.theme-dark .stat-card,
+    body.theme-dark .card,
+    body.theme-dark .pro-overlay {
+      background: linear-gradient(180deg, #1e293b 0%, #172233 100%);
+      border: 1px solid #334155;
+      box-shadow: 0 12px 26px rgba(2, 6, 23, 0.45);
+    }
+
+    body.theme-dark .stat-label,
+    body.theme-dark .stat-desc,
+    body.theme-dark .pro-desc {
+      color: #94a3b8;
+    }
+
+    body.theme-dark .stat-value,
+    body.theme-dark .card-title,
+    body.theme-dark .pro-title {
+      color: #f8fafc;
+    }
+
+    body.theme-dark .stats-theme-toggle {
+      background: #0f172a;
+      border-color: #334155;
+      color: #e2e8f0;
+    }
+
+    body.theme-dark .stats-theme-toggle:hover {
+      background: #1e293b;
+    }

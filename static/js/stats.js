@@ -26,23 +26,71 @@
         domain: null, // e.g., 'medical' | 'lab'
         user_id: null
       };
+    const THEME_KEY = 'gradicent_theme';
     var client_list = []
+
+    function getTheme() {
+      const stored = localStorage.getItem(THEME_KEY);
+      if (stored === 'dark' || stored === 'light') return stored;
+      return 'dark';
+    }
+
+    function applyTheme(theme) {
+      const resolved = theme === 'light' ? 'light' : 'dark';
+      document.body.classList.toggle('theme-dark', resolved === 'dark');
+      document.documentElement.setAttribute('data-theme', resolved);
+
+      const toggleBtn = document.getElementById('sidebar-theme-toggle');
+      if (toggleBtn) {
+        toggleBtn.setAttribute('title', resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+        toggleBtn.setAttribute('aria-pressed', String(resolved === 'dark'));
+        const icon = toggleBtn.querySelector('svg path');
+        if (icon) {
+          const iconPath = resolved === 'dark'
+            ? 'M12 3v2m0 14v2m9-9h-2M5 12H3m15.364 6.364l-1.414-1.414M7.05 7.05 5.636 5.636m12.728 0-1.414 1.414M7.05 16.95l-1.414 1.414M12 8a4 4 0 100 8 4 4 0 000-8z'
+            : 'M21 12.79A9 9 0 1111.21 3c-.07.32-.11.65-.11 1a9 9 0 009.9 8.79z';
+          icon.setAttribute('d', iconPath);
+        }
+      }
+    }
+
+    function setTheme(theme) {
+      const resolved = theme === 'light' ? 'light' : 'dark';
+      localStorage.setItem(THEME_KEY, resolved);
+      applyTheme(resolved);
+      return resolved;
+    }
+
+    function toggleTheme() {
+      const next = getTheme() === 'dark' ? 'light' : 'dark';
+      setTheme(next);
+      reloadCurrentTab();
+    }
+
+    function setClientsButtonVisible(show) {
+      const clientsEl = document.getElementById("clients");
+      if (clientsEl) clientsEl.style.display = show ? "block" : "none";
+    }
       
     document.addEventListener("DOMContentLoaded", async function() {
+      applyTheme(getTheme());
+
       // Sidebar controls (must be attached before any async operations)
       const menuToggle = document.getElementById('menu-toggle');
       const overlay = document.getElementById('sidebar-overlay');
+      const themeToggle = document.getElementById('sidebar-theme-toggle');
       if (menuToggle) menuToggle.addEventListener('click', StatsPage.toggleSidebar);
       if (overlay) overlay.addEventListener('click', StatsPage.closeSidebar);
+      if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
 
       const clientsEl = document.getElementById("clients");
-      if (clientsEl) clientsEl.style.display = "none";
+      setClientsButtonVisible(false);
 
       const usage = startUsageTracker("/api/binder/track_time");
       APP_STATE.user_id = await api.get_user_id();
       APP_STATE.domain = await api.get_domain();
       let res = await api.get_plan_status();
-      APP_STATE.plan = res.plan;
+      APP_STATE.plan = res?.plan || "free";
 
       if (["starter","free"].includes(APP_STATE.plan)){
         const financeTab = document.querySelector('.tab-btn[data-tab="finance"]');
@@ -265,6 +313,21 @@
       return params.toString();
     }
 
+    async function fetchMetric(metric, extra = {}) {
+      const qs = await buildQsFromFilters();
+      const params = new URLSearchParams(qs);
+      params.set('metric', metric);
+      Object.entries(extra).forEach(([k, v]) => {
+        if (v != null && v !== '') params.set(k, String(v));
+      });
+
+      const payload = await u.safe_fetch(`/api/gaia/compute?${params.toString()}`, { method: 'GET' });
+      if (!payload || payload.status === 'error') {
+        throw new Error(payload?.message || `Failed to fetch ${metric} metric`);
+      }
+      return payload.data || {};
+    }
+
     // ===== Pro upgrade overlay =====
     function showProOverlay(panelId, title, description) {
       const panel = document.getElementById(panelId);
@@ -318,22 +381,14 @@
       let pln = ["pro" , "ultra"];           // plans that unlock everything
       
       if(tbs.includes(tab) || pln.includes(APP_STATE.plan) || tab === 'finance' || tab === 'clients'){
-        const qs = await buildQsFromFilters();
-        let url = `/api/gaia/`;
+          let data = {};
 
         try {
             if (tab === 'roi') {
-              document.getElementById("clients").style.display = "none";
-              url = `/api/gaia/compute?metric=roi&${qs}&plan=${APP_STATE.plan}`;
-              const res = await fetch(url);
-              if (!res.ok) {
-              console.error('API error', res.status, await res.text());
-              return;
-              }
-              let data = await res.json();
-              data = data.data;
+            setClientsButtonVisible(false);
+            data = await fetchMetric('roi', { plan: APP_STATE.plan });
               document.getElementById('roi-hours').innerText = (data.hours_saved || 0).toFixed(2) + ' hrs';
-              document.getElementById('roi-dollar').innerText = fmtMoney(data.binder_roi || 0);
+            document.getElementById('roi-dollar').innerText = fmtMoney(data.roi || 0);
               document.getElementById('roi-payback').innerText = data.payback_period_hours ? data.payback_period_hours + ' hrs' : '—';
               const tasksEl = document.getElementById('roi-tasks'); tasksEl.innerHTML = '';
               
@@ -365,15 +420,8 @@
             }
 
             if (tab === 'productivity') {
-              document.getElementById("clients").style.display = "none";
-              url = `/api/gaia/compute?metric=productivity&${qs}`;
-              const res = await fetch(url);
-              if (!res.ok) {
-                console.error('API error', res.status, await res.text());
-                return;
-              }
-              let data = await res.json();
-              data = data.data;
+              setClientsButtonVisible(false);
+              data = await fetchMetric('productivity');
               document.getElementById('prod-total-time').innerText = (data.total_time_minutes || 0) + ' mins';
               document.getElementById('prod-avg-session').innerText = (data.avg_time_per_session_minutes || 0) + ' mins';
               document.getElementById('prod-productive').innerText = (data.percent_productive || 0) + '%';
@@ -402,18 +450,12 @@
             }
 
             if (tab === 'finance' && !["pro" , "ultra"].includes(APP_STATE.plan )){
+              setClientsButtonVisible(false);
               showProOverlay('tab-finance', 'Finance Analytics', 'Finance metrics like revenue, outstanding balances, and trends are available on the Pro and Ultra plans.');
             }
             else if (tab === 'finance') {
-              url = `/api/gaia/compute?metric=finance&${qs}`;
-              const res = await fetch(url);
-              if (!res.ok) {
-                console.error('API error', res.status, await res.text());
-                return;
-              }
-              let data = await res.json();
-              document.getElementById("clients").style.display = "block";
-              data = data.data;
+              data = await fetchMetric('finance');
+              setClientsButtonVisible(true);
               client_list = data.clients;
               document.getElementById('fin-total-rev').innerText = fmtMoney(data.total_revenue || 0);
               document.getElementById('fin-unpaid').innerText = fmtMoney(data.total_unpaid || 0);
@@ -440,19 +482,12 @@
               }
             }
             if (tab === 'clients' && !["pro" , "ultra"].includes(APP_STATE.plan )){
+              setClientsButtonVisible(false);
               showProOverlay('tab-clients', 'Customer Analytics', 'Customer insights like retention, top services, and weekly trends are available on the Pro and Ultra plans.');
             }
             else if (tab === 'clients') {
-              url = `/api/gaia/compute?metric=total_customers&${qs}`;
-              const res = await fetch(url);
-              if (!res.ok) {
-                console.error('API error', res.status, await res.text());
-                return;
-              }
-              let data = await res.json();
-
-              document.getElementById("clients").style.display = "block";
-              data = data.data;
+              data = await fetchMetric('total_customers');
+              setClientsButtonVisible(true);
               client_list = data.clients;
               document.getElementById('pat-total').innerText = data.total_customers || 0;
               document.getElementById('pat-returning').innerText = data.returning_customers || 0;
@@ -469,7 +504,7 @@
 
                 // returning clients per week: prefer an array from the API, else fallback to a same-length array of the scalar returning_clients
                 const returningWeekly = data.weekly?.returning_counts ||
-                  (Array.isArray(data.weekly?.counts) ? new Array(data.weekly.counts.length).fill(data.returning_clients || 0) : []);
+                  (Array.isArray(data.weekly?.counts) ? new Array(data.weekly.counts.length).fill(data.returning_customers || 0) : []);
 
                 ch.data.datasets = [
                   { label: 'New clients', data: data.weekly?.counts || [], borderWidth: 1 , fill: true,
