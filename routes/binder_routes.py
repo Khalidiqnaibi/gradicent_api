@@ -661,9 +661,6 @@ def add_employee():
     '''
     payload = request.get_json(force=True)
 
-    if "user_id" in payload:
-        service.set_current_user(payload["user_id"])
-
     if not payload.get('domain'):
        return make_response(message="Domain can not be None",status="error"),400
     
@@ -671,6 +668,10 @@ def add_employee():
         return make_response(message="New employee data can not be None"),400
     
     service = _get_domain_and_service(payload)
+
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+        
     employee = service.create_employee(data=payload["employee"])
     log_with_service(service,206)
 
