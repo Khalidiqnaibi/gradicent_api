@@ -111,7 +111,7 @@ let domain = 'medical';                    // set from API on page load
 const cfg = () => DOMAIN_CONFIG[domain];   // shorthand to get active config
 let plan = "free";                          // user subscription plan
 const pageSection = new URLSearchParams(window.location.search).get('section');
-const transactionMode = pageSection === 'transactions';
+const transactionMode = Boolean(window.__transactionMode__) || pageSection === 'transactions';
 
 /**
  * Tracks real active time on the page and sends ONLY one final value:
@@ -185,7 +185,8 @@ function applySectionContext() {
 }
 
 function show_toast(message, type = 'info') {
-  const container = el('toast');
+  const container = el('toast_container') || el('toast');
+  if (!container) return;
   const t = document.createElement('div');
   t.className = 'toast';
   t.style.padding = '10px 12px';
@@ -297,6 +298,30 @@ function bindControls() {
   $('#printBtn')?.addEventListener('click', printInteraction);
   $('#openFolderBtn')?.addEventListener('click', openFolder);
   $('#closeModal')?.addEventListener('click',closeFileModal)
+  $$('.folder-btn').forEach((btn) => {
+    btn.addEventListener('click', () => selectFolder(btn.dataset.folder));
+  });
+  $('#chooseFile')?.addEventListener('click', () => $('#fileInput')?.click());
+  $('#fileInput')?.addEventListener('change', onFilesSelected);
+  $('#uploadFiles')?.addEventListener('click', uploadFile);
+  const dropZone = $('#dropZone');
+  if (dropZone) {
+    dropZone.addEventListener('click', () => $('#fileInput')?.click());
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const fileInput = $('#fileInput');
+      if (!fileInput || !e.dataTransfer?.files?.length) return;
+      try {
+        fileInput.files = e.dataTransfer.files;
+      } catch (_) {
+        // Some browsers block programmatic assignment to FileList.
+      }
+      onFilesSelected();
+    });
+  }
   $('#addNewEntryBtn')?.addEventListener('click', openNewEntry);
   $('#backBtn')?.addEventListener('click', () => {
     if (window.history.length > 1) {
@@ -676,9 +701,24 @@ function selectFolder(folder) {
       show_toast("Not implemented", "error");
     }
   }
+
+  updateActiveFolderButton();
     
-  $('#uploadControls').style.display = selectedFolder === 'drs' ? 'flex' : 'none';
+  const uploadControls = $('#uploadControls');
+  if (uploadControls) {
+    const canUpload = domain === 'business' || selectedFolder === 'drs';
+    uploadControls.style.display = canUpload ? 'flex' : 'none';
+  }
   fetchFiles();
+}
+
+function updateActiveFolderButton() {
+  $$('.folder-btn').forEach((btn) => {
+    const isActive = btn.dataset.folder === selectedFolder;
+    btn.classList.toggle('btn-primary', isActive);
+    btn.classList.toggle('btn-secondary', !isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
 }
 
 /* ---------- Fetch Files (plan-gated) ---------- */

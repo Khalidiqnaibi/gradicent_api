@@ -31,6 +31,7 @@ const EntityManager = (function() {
     items: [],
     loading: false,
     editingId: null,
+    selectedClientId: null,
     defaultAddButtonText: null,
     viewingOnly: false
   };
@@ -386,7 +387,7 @@ const EntityManager = (function() {
     const container = $('add-menu-actions');
     if (!container) return;
 
-    const hasClientId = TYPE === 'client' && STATE.editingId != null;
+    const hasClientId = TYPE === 'client' && (STATE.editingId != null || STATE.selectedClientId != null);
     container.style.display = hasClientId ? 'flex' : 'none';
   }
 
@@ -440,6 +441,8 @@ const EntityManager = (function() {
     if (addBtn) {
       addBtn.style.display = enabled ? 'none' : '';
     }
+
+    renderAddMenuActions();
   }
 
   function setAddFormVisible(visible) {
@@ -693,10 +696,18 @@ const EntityManager = (function() {
   }
 
   function view(id) {
-    const item = STATE.items.find((i, idx) => String(getEntityId(i, idx)) === String(id));
+    const itemIndex = STATE.items.findIndex((i, idx) => String(getEntityId(i, idx)) === String(id));
+    const item = itemIndex >= 0 ? STATE.items[itemIndex] : null;
     if (!item) return;
 
+    const resolvedId = getEntityId(item, itemIndex);
+    if (resolvedId == null || String(resolvedId).trim() === '') {
+      toast('Cannot view this item because it has no id', 'error');
+      return;
+    }
+
     // Open form in view-only mode and populate fields.
+    STATE.selectedClientId = TYPE === 'client' ? resolvedId : null;
     setAddFormVisible(true);
     setEditingMode(null);
     setViewOnlyMode(true);
@@ -725,6 +736,7 @@ const EntityManager = (function() {
     }
     
     // Open add form and populate fields for update flow
+    STATE.selectedClientId = TYPE === 'client' ? resolvedId : null;
     setAddFormVisible(true);
     setViewOnlyMode(false);
     
@@ -764,18 +776,20 @@ const EntityManager = (function() {
   function handleAddMenuAction(actionKey) {
     if (TYPE !== 'client') return;
 
-    if (STATE.editingId == null) {
+    const activeClientId = STATE.editingId ?? STATE.selectedClientId;
+
+    if (activeClientId == null) {
       toast('Select a client first to open logs', 'info');
       return;
     }
 
     if (String(actionKey) === 'interactions') {
-      window.location.href = `/data/${encodeURIComponent(String(STATE.editingId))}?action=new`;
+      window.location.href = `/data/${encodeURIComponent(String(activeClientId))}?action=new`;
       return;
     }
 
     if (String(actionKey) === 'transactions') {
-      window.location.href = `/data/${encodeURIComponent(String(STATE.editingId))}?section=transactions&action=new`;
+      window.location.href = `/transactions/${encodeURIComponent(String(activeClientId))}?action=new`;
       return;
     }
   }
@@ -790,6 +804,7 @@ const EntityManager = (function() {
 
     if (isVisible) {
       setViewOnlyMode(false);
+      STATE.selectedClientId = null;
       setEditingMode(null);
       const fields = CONFIG.fields?.add || [];
       fields.forEach(f => {
