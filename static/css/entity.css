@@ -531,6 +531,22 @@ html, body {
   border-top: 1px solid var(--border);
 }
 
+.add-form-section.view-only .form-input,
+.add-form-section.view-only textarea,
+.add-form-section.view-only select {
+  cursor: default !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  caret-color: transparent;
+}
+
+.add-form-section.view-only .form-input::selection,
+.add-form-section.view-only textarea::selection {
+  background: transparent;
+}
+
 /* ====== Buttons ====== */
 .btn {
   display: inline-flex;

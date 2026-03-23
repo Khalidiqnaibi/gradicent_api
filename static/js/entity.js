@@ -379,6 +379,15 @@ const EntityManager = (function() {
     }
 
     addBtn.textContent = id == null ? STATE.defaultAddButtonText : `Save ${CONFIG.labels?.singular || 'Item'}`;
+    renderAddMenuActions();
+  }
+
+  function renderAddMenuActions() {
+    const container = $('add-menu-actions');
+    if (!container) return;
+
+    const hasClientId = TYPE === 'client' && STATE.editingId != null;
+    container.style.display = hasClientId ? 'flex' : 'none';
   }
 
   function setViewOnlyMode(enabled) {
@@ -393,11 +402,34 @@ const EntityManager = (function() {
       if (!el) return;
 
       if (enabled) {
+        if (el.dataset.prevTabindex == null) {
+          el.dataset.prevTabindex = el.getAttribute('tabindex') ?? '';
+        }
+        el.setAttribute('tabindex', '-1');
         if (el.tagName === 'SELECT') el.disabled = true;
         else el.readOnly = true;
+        el.style.cursor = 'default';
+        el.style.userSelect = 'none';
+        el.style.webkitUserSelect = 'none';
+        el.style.MozUserSelect = 'none';
+        el.style.msUserSelect = 'none';
+        el.style.caretColor = 'transparent';
+        el.style.pointerEvents = 'none';
+        el.setAttribute('draggable', 'false');
       } else {
         if (el.tagName === 'SELECT') el.disabled = false;
         else el.readOnly = false;
+        if ((el.dataset.prevTabindex ?? '') === '') el.removeAttribute('tabindex');
+        else el.setAttribute('tabindex', el.dataset.prevTabindex);
+        delete el.dataset.prevTabindex;
+        el.style.cursor = '';
+        el.style.userSelect = '';
+        el.style.webkitUserSelect = '';
+        el.style.MozUserSelect = '';
+        el.style.msUserSelect = '';
+        el.style.caretColor = '';
+        el.style.pointerEvents = '';
+        el.removeAttribute('draggable');
       }
     });
 
@@ -435,6 +467,11 @@ const EntityManager = (function() {
   async function search() {
     const query = ($('query_input')?.value || '').trim();
     const searchFields = ['id', ...(CONFIG.fields?.search || [])];
+
+    // If add panel is open, close it when a search starts.
+    setAddFormVisible(false);
+    setViewOnlyMode(false);
+    setEditingMode(null);
     
     setLoading(true);
     try {
@@ -724,6 +761,25 @@ const EntityManager = (function() {
     toast(action.message || `${action.label || action.key} is not configured`, 'info');
   }
 
+  function handleAddMenuAction(actionKey) {
+    if (TYPE !== 'client') return;
+
+    if (STATE.editingId == null) {
+      toast('Select a client first to open logs', 'info');
+      return;
+    }
+
+    if (String(actionKey) === 'interactions') {
+      window.location.href = `/data/${encodeURIComponent(String(STATE.editingId))}?action=new`;
+      return;
+    }
+
+    if (String(actionKey) === 'transactions') {
+      window.location.href = `/data/${encodeURIComponent(String(STATE.editingId))}?section=transactions&action=new`;
+      return;
+    }
+  }
+
   // Add form toggle
   function toggleAddForm() {
     const form = $('add-form');
@@ -852,11 +908,22 @@ const EntityManager = (function() {
     // Add button
     $('add_btn')?.addEventListener('click', add);
 
+    const addMenuActions = $('add-menu-actions');
+    if (addMenuActions) {
+      addMenuActions.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-add-menu-action]');
+        if (!btn) return;
+        handleAddMenuAction(btn.dataset.addMenuAction);
+      });
+    }
+
     // Preserve default add button label for edit mode toggle
     const addBtn = $('add_btn');
     if (addBtn) {
       STATE.defaultAddButtonText = (addBtn.textContent || '').trim() || 'Add';
     }
+
+    renderAddMenuActions();
 
     // Sidebar
     $('menu-toggle')?.addEventListener('click', toggleSidebar);
