@@ -317,7 +317,6 @@ def client_search():
     log_with_service(service,300)
     return resp
 
-# Example nested resource: create interaction / visit
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["POST"])
 def add_interaction(client_id: str):
     """
@@ -366,7 +365,7 @@ def list_interaction(client_id: str):
         service.set_current_user(user_id)
 
     interactions = service.list_interactions(client_id=client_id)
-    return make_response(data=interactions, message="Got Interactions."), 201
+    return make_response(data=interactions, message="Got Interactions."), 200
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["PATCH"])
 def update_interaction(client_id: str):
@@ -1005,34 +1004,6 @@ def service_search():
     log_with_service(service,300)
     return resp
 
-@binder_blueprint.route("/clients/<client_id>/transactions", methods=["POST"])
-def create_transaction(client_id: str):
-    """
-    Create a transaction for a client.
-
-    Input JSON:
-        {
-            "domain": str,
-            "user_id": str,
-            "transaction": dict
-        }
-
-    Returns:
-        JSON envelope containing created transaction.
-    """
-    payload = request.get_json(force=True)
-    if "transaction" not in payload:
-        raise BadRequest("Missing 'transaction' payload")
-
-    service = _get_domain_and_service(payload)
-    if payload.get("user_id"):
-        service.set_current_user(payload["user_id"])
-
-    transaction = service.create_transaction(client_id, payload["transaction"])
-    log_with_service(service, 207, metadata={"client_id": client_id})
-
-    return make_response(data=transaction, message="Transaction created successfully."), 201
-
 @binder_blueprint.route("/clients/<client_id>/transactions", methods=["GET"])
 def list_transactions(client_id: str):
     """
@@ -1046,7 +1017,7 @@ def list_transactions(client_id: str):
         JSON envelope containing list of transactions.
     """
     payload = {
-        "domain": request.args.get("domain"),
+        "domain": request.args.get("domain", DEFAULT_DOMAIN),
         "user_id": request.args.get("user_id"),
     }
 
@@ -1057,3 +1028,97 @@ def list_transactions(client_id: str):
     transactions = service.list_transactions(client_id)
 
     return make_response(data=transactions), 200
+
+@binder_blueprint.route("/clients/<client_id>/transactions", methods=["POST"])
+def add_transactions(client_id: str):
+    """
+    Add an transaction for a client.
+
+    Expected JSON:
+    {
+       "domain":"medical" | "business",
+       "user_id":"...",
+       "transaction": { ... }
+    }
+    """
+    payload = request.get_json(force=True)
+    if "transaction" not in payload:
+        raise BadRequest("Missing 'transaction' payload")
+
+    service = _get_domain_and_service(payload)
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+
+    if int(client_id) < 0:
+        client_id = session["client_id"]
+
+    transaction = service.create_transaction(client_id, payload["transaction"])
+
+    transaction_no = payload["transaction"].get("vno",payload["transaction"].get("transaction_no")) 
+
+    transaction_no = transaction_no-1 or 0
+
+    log_with_service(service,202,metadata={"id" : client_id , "transaction_no":transaction_no})
+    return make_response(data=transaction, message="Transaction created."), 201
+
+@binder_blueprint.route("/clients/<client_id>/transactions", methods=["PATCH"])
+def update_transactions(client_id: str):
+    """
+    Update transaction for a client.
+
+    Expected JSON:
+    {
+       "domain" (str): "...",
+       "user_id" (str): "...",
+       "transaction_no (int):"...",
+       "patch" (list[Any]): { ... }
+    }
+    """
+    payload = request.get_json(force=True)
+    if "patch" not in payload:
+        raise BadRequest("Missing 'patch' payload")
+    
+    if "transaction_no" not in payload:
+        raise BadRequest("Missing 'transaction_no' payload")
+
+    service = _get_domain_and_service(payload)
+    service.set_current_user(session["user_id"])
+    if "user_id" in payload:
+        service.set_current_user(payload["user_id"])
+    
+    if  int(client_id) < 0:
+        client_id = session["client_id"]
+
+    transaction_no = int(payload["transaction_no"])- 1
+    if not transaction_no > 0 :
+        transaction_no = 0
+
+    service.update_transaction(client_id=client_id,transaction_no=transaction_no,patch = payload["patch"])
+
+    log_with_service(service,402,metadata={"id" : client_id , "transaction_no":transaction_no})
+    return make_response(data=payload, message="Updated Transactions."), 201
+
+@binder_blueprint.route("/clients/<client_id>/transactions", methods=["DELETE"])
+def delete_transaction(client_id: str):
+    """
+    Delete transaction for a client.
+
+    Expected JSON:
+    {
+       "domain" (str): "...",
+       "transaction_no (int):"...",
+       "user_id" (str): "..."
+    }
+    """
+    payload = request.get_json(silent=True) or {}
+    service = _get_domain_and_service(payload)
+    transaction_no = payload.get("transaction_no")
+    user_id = payload.get("user_id")
+    if user_id:
+        service.set_current_user(user_id)
+    
+    if not transaction_no:
+        raise BadRequest("'transaction_no' not found in payload")
+
+    service.delete_transaction(client_id=client_id , transaction_no = transaction_no)
+    return make_response(data=payload, message="Deleted Transactions."), 201
