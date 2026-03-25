@@ -211,6 +211,7 @@ const EntityManager = (function() {
 
     const displayFields = CONFIG.fields?.display || ['name'];
     const customActions = Array.isArray(CONFIG.actions) ? CONFIG.actions : [];
+    const showDelete = Boolean(CONFIG.enableDelete);
 
     const renderCustomActions = (item, idx) => {
       if (!customActions.length) return '';
@@ -249,6 +250,7 @@ const EntityManager = (function() {
             <div class="entity-actions">
               <button class="btn btn-sm btn-secondary" data-action="view" data-id="${escapeHtml(String(getEntityId(item, idx)))}">View</button>
               <button class="btn btn-sm btn-ghost" data-action="edit" data-id="${escapeHtml(String(getEntityId(item, idx)))}">Edit</button>
+              ${showDelete ? `<button class="btn btn-sm btn-ghost" data-action="delete" data-id="${escapeHtml(String(getEntityId(item, idx)))}">Delete</button>` : ''}
               ${renderCustomActions(item, idx)}
             </div>
           </div>
@@ -754,6 +756,63 @@ const EntityManager = (function() {
     toast(`Editing ${item.name || id}`, 'info');
   }
 
+  async function remove(id) {
+    const itemIndex = STATE.items.findIndex((i, idx) => String(getEntityId(i, idx)) === String(id));
+    const item = itemIndex >= 0 ? STATE.items[itemIndex] : null;
+    if (!item) return;
+
+    const resolvedId = getEntityId(item, itemIndex);
+    if (resolvedId == null || String(resolvedId).trim() === '') {
+      toast('Cannot delete this item because it has no id', 'error');
+      return;
+    }
+
+    const entityLabel = CONFIG.labels?.singular || 'item';
+    const displayName = item.name || `${entityLabel} ${resolvedId}`;
+    const confirmed = window.confirm(`Delete ${displayName}? This cannot be undone.`);
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      let success = false;
+      let lastErr = null;
+      const endpoints = getUpdateEndpointCandidates(resolvedId);
+      const payload = {
+        domain: STATE.domain,
+        user_id: STATE.user_id
+      };
+
+      for (const endpoint of endpoints) {
+        try {
+          await safeFetch(endpoint, {
+            method: 'DELETE',
+            body: JSON.stringify(payload)
+          });
+          success = true;
+          break;
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+
+      if (!success) {
+        throw lastErr || new Error('Delete failed');
+      }
+
+      STATE.items = STATE.items.filter((entry, idx) => String(getEntityId(entry, idx)) !== String(resolvedId));
+      if (STATE.editingId != null && String(STATE.editingId) === String(resolvedId)) {
+        setEditingMode(null);
+        setAddFormVisible(false);
+      }
+      renderItems(STATE.items);
+      toast(`${entityLabel} deleted successfully`, 'success');
+    } catch (err) {
+      toast(err.message || 'Failed to delete item', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function handleCustomAction(actionKey, id) {
     const actions = Array.isArray(CONFIG.actions) ? CONFIG.actions : [];
     const action = actions.find((a) => String(a?.key) === String(actionKey));
@@ -789,7 +848,7 @@ const EntityManager = (function() {
     }
 
     if (String(actionKey) === 'transactions') {
-      window.location.href = `/transactions/${encodeURIComponent(String(activeClientId))}?action=new`;
+      window.location.href = `/data/${encodeURIComponent(String(activeClientId))}?section=transactions&action=new`;
       return;
     }
   }
@@ -954,6 +1013,7 @@ const EntityManager = (function() {
         const id = btn.dataset.id;
         if (action === 'view') view(id);
         else if (action === 'edit') edit(id);
+        else if (action === 'delete') remove(id);
         else handleCustomAction(action, id);
       });
     }
@@ -966,5 +1026,5 @@ const EntityManager = (function() {
   document.addEventListener('DOMContentLoaded', init);
 
   // Public API
-  return { search, add, view, edit, loadAll, toggleAddForm, toggleSidebar, closeSidebar, getTheme, setTheme, toggleTheme };
+  return { search, add, view, edit, remove, loadAll, toggleAddForm, toggleSidebar, closeSidebar, getTheme, setTheme, toggleTheme };
 })();

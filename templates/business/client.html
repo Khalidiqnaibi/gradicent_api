@@ -140,7 +140,7 @@
             </div>
             <div id="add-menu-actions" class="entity-add-menu-actions" style="display:none; margin-top: 12px;">
               <button type="button" class="btn btn-secondary" data-add-menu-action="interactions">Appointment Log</button>
-              <button type="button" class="btn btn-primary" data-add-menu-action="transactions">Payment Log</button>
+              <button type="button" class="btn btn-secondary" data-add-menu-action="transactions">Payment Log</button>
             </div>
           </div>
         </div>
@@ -171,6 +171,7 @@
       apiBase: '/api/binder/clients',
       listEndpoint: '/api/binder/clients',
       searchEndpoint: '/api/binder/client/search',
+      enableDelete: true,
       fields: {
         search: ['name', 'email', 'phone', 'company'],
         add: ['name', 'email', 'phone', 'company', 'address', 'notes'],
@@ -186,8 +187,8 @@
         {
           key: 'transactions',
           label: 'Payment Log',
-          variant: 'primary',
-          url: '/transactions/{id}'
+          variant: 'secondary',
+          url: '/data/{id}?section=transactions'
         }
       ],
       labels: {

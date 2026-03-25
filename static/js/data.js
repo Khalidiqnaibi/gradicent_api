@@ -438,9 +438,9 @@ function next(){
   } else {
     visits.push({});
     currentVisitIndex = visits.length - 1;
+    renderLogPanel();
     showInteractionForm();
     populate({});
-    renderLogPanel();
     selectLogItem(currentVisitIndex);
   }
 }
@@ -563,11 +563,17 @@ function openExistingEntry(index) {
 }
 
 function openNewEntry() {
-  visits.push({});
-  currentVisitIndex = visits.length - 1;
+  const currentEntry = visits[currentVisitIndex] || {};
+  const currentIsBlank = Object.keys(currentEntry).length === 0;
+
+  if (!currentIsBlank) {
+    visits.push({});
+    currentVisitIndex = visits.length - 1;
+  }
+
+  renderLogPanel();
   showInteractionForm();
   populate({});
-  renderLogPanel();
   selectLogItem(currentVisitIndex);
   show_toast(transactionMode ? 'Adding new transaction' : 'Adding new interaction', 'info');
 }
