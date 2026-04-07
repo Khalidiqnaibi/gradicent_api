@@ -240,10 +240,12 @@ function show_toast(message, type = 'info') {
 let user_id = '';
 let visibleCount = 20;
 const PAGE_SIZE = 20;              // array of interaction objects for this client
+let visits = [];
 let currentVisitIndex = 0;     // index into visits[] currently shown in form
 let patientNumber = window.__client__ ?? 0;  // client number from URL (-1 = new)
 let forceNewEntry = new URLSearchParams(window.location.search).get('action') === 'new';
 let pendingDroppedFiles = [];
+let lastFormSnapshot = '';
 
 /* ============================================================
    Fetch helpers
@@ -360,6 +362,9 @@ function bindControls() {
     });
   }
   $('#addNewEntryBtn')?.addEventListener('click', openNewEntry);
+  $('#closeInteractionBtn')?.addEventListener('click', () => {
+    closeInteractionForm();
+  });
   $('#backBtn')?.addEventListener('click', () => {
     const lastPagePath = resolveLastPagePath();
     if (lastPagePath) {
@@ -428,6 +433,8 @@ function populate(raw) {
   const locked = v.printed && cfg().lockOnPrint;
   $(`${cfg().formId}`)?.querySelectorAll('input, textarea')
     .forEach(e => e.disabled = locked);
+
+  resetDirtyState();
 }
 
 /* ============================================================
@@ -471,10 +478,39 @@ function fetchClientData() {
    Walk through the visits[] array. "next" past the last visit
    creates a blank entry so the user can add a new interaction.
 ============================================================ */
-function first(){ if(visits.length){ currentVisitIndex=0; showInteractionForm(); populate(visits[0]); selectLogItem(currentVisitIndex); } }
-function last(){ if(visits.length){ currentVisitIndex=visits.length-1; showInteractionForm(); populate(visits[currentVisitIndex]); selectLogItem(currentVisitIndex); } }
-function prev(){ if(currentVisitIndex>0){ currentVisitIndex--; showInteractionForm(); populate(visits[currentVisitIndex]); selectLogItem(currentVisitIndex); } }
-function next(){
+async function first(){
+  if (!visits.length) return;
+  const { proceed } = await confirmSaveBeforeClose();
+  if (!proceed) return;
+  currentVisitIndex = 0;
+  showInteractionForm();
+  populate(visits[0]);
+  selectLogItem(currentVisitIndex);
+}
+
+async function last(){
+  if (!visits.length) return;
+  const { proceed } = await confirmSaveBeforeClose();
+  if (!proceed) return;
+  currentVisitIndex = visits.length - 1;
+  showInteractionForm();
+  populate(visits[currentVisitIndex]);
+  selectLogItem(currentVisitIndex);
+}
+
+async function prev(){
+  if (currentVisitIndex <= 0) return;
+  const { proceed } = await confirmSaveBeforeClose();
+  if (!proceed) return;
+  currentVisitIndex--;
+  showInteractionForm();
+  populate(visits[currentVisitIndex]);
+  selectLogItem(currentVisitIndex);
+}
+
+async function next(){
+  const { proceed } = await confirmSaveBeforeClose();
+  if (!proceed) return;
   if(visits[currentVisitIndex+1]){
     currentVisitIndex++;
     showInteractionForm();
@@ -493,11 +529,13 @@ function next(){
 /* ============================================================
    Search
 ============================================================ */
-function search() {
+async function search() {
   const d = $('#search').value;
   const f = cfg().fields.date;
   const found = visits.find(v => v[f] === d);
   if (!found) return show_toast('Not found', 'info');
+  const { proceed } = await confirmSaveBeforeClose();
+  if (!proceed) return;
   currentVisitIndex = visits.indexOf(found);
   showInteractionForm();
   populate(found);
@@ -535,7 +573,48 @@ function buildPayload() {
   return data;
 }
 
-function save() {
+function getCurrentFormSnapshot() {
+  const d = cfg().dom;
+  return JSON.stringify({
+    date: $(d.date)?.value || '',
+    owner: $(d.owner)?.value || '',
+    title: $(d.title)?.value || '',
+    service: $(d.service)?.value || '',
+    notes: $(d.notes)?.value || '',
+    cost: String($(d.cost)?.value || ''),
+    paid: String($(d.paid)?.value || ''),
+    debt: String($(d.debt)?.value || ''),
+    detail1: $(d.detail1)?.value || '',
+    detail2: $(d.detail2)?.value || '',
+    detail3: d.detail3 ? ($(d.detail3)?.value || '') : ''
+  });
+}
+
+function resetDirtyState() {
+  lastFormSnapshot = getCurrentFormSnapshot();
+}
+
+function hasUnsavedChanges() {
+  if (!$('#interactionModal')) return false;
+  return getCurrentFormSnapshot() !== lastFormSnapshot;
+}
+
+async function confirmSaveBeforeClose() {
+  if (!hasUnsavedChanges()) return { proceed: true, saved: false };
+
+  const shouldSave = confirm('You have unsaved changes. Press OK to save before closing, or Cancel to review discard options.');
+  if (shouldSave) {
+    const ok = await save({ silent: true });
+    return { proceed: ok, saved: ok };
+  }
+
+  const shouldDiscard = confirm('Discard unsaved changes and close? Press OK to discard, or Cancel to keep editing.');
+  if (!shouldDiscard) return { proceed: false, saved: false };
+
+  return { proceed: true, saved: false };
+}
+
+function save({ silent = false } = {}) {
   const payload = buildPayload();
   // vno is 1-based; treat empty objects (from next()) as new
   const isNew = visits.length === 0 || Object.keys(visits[currentVisitIndex] || {}).length === 0;
@@ -545,33 +624,43 @@ function save() {
     ? { domain, user_id, interaction: payload, interaction_no: payload.vno }
     : { domain, user_id, patch: payload, interaction_no: payload.vno };
 
-  fetch(`/api/binder/clients/${patientNumber}/interactions`, {
+  return fetch(`/api/binder/clients/${patientNumber}/interactions`, {
     method,
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify(body)
   })
   .then(() => {
+    resetDirtyState();
     fetchClientData();
-    if (isNew) {
+    if (!silent && isNew) {
       show_toast(transactionMode ? 'Payment log added' : 'Interaction added', 'success');
-    } else {
+    } else if (!silent) {
       show_toast(transactionMode ? 'Changes saved in payment log' : 'Changes saved in interaction', 'success');
     }
+    return true;
   })
   .catch(err => {
-    show_toast("Error saving interaction", "error");
+    if (!silent) show_toast("Error saving interaction", "error");
     console.error("Error saving interaction", err);
+    return false;
   });
 }
 
 function showInteractionForm() {
-  const card = $('#interactionCard');
-  if (card) card.style.display = 'block';
+  const modal = $('#interactionModal');
+  if (modal) modal.style.display = 'flex';
 }
 
 function hideInteractionForm() {
-  const card = $('#interactionCard');
-  if (card) card.style.display = 'none';
+  const modal = $('#interactionModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function closeInteractionForm() {
+  const { proceed } = await confirmSaveBeforeClose();
+  if (!proceed) return;
+  hideInteractionForm();
+  renderLogPanel();
 }
 
 function getEntryDate(entry) {
@@ -600,14 +689,28 @@ function selectLogItem(index) {
   }
 }
 
-function openExistingEntry(index) {
+async function openExistingEntry(index) {
+  const modal = $('#interactionModal');
+  const isOpen = modal && modal.style.display !== 'none';
+  if (isOpen) {
+    const { proceed } = await confirmSaveBeforeClose();
+    if (!proceed) return;
+  }
+
   currentVisitIndex = index;
   showInteractionForm();
   populate(visits[currentVisitIndex] || {});
   selectLogItem(currentVisitIndex);
 }
 
-function openNewEntry() {
+async function openNewEntry() {
+  const modal = $('#interactionModal');
+  const isOpen = modal && modal.style.display !== 'none';
+  if (isOpen) {
+    const { proceed } = await confirmSaveBeforeClose();
+    if (!proceed) return;
+  }
+
   const currentEntry = visits[currentVisitIndex] || {};
   const currentIsBlank = Object.keys(currentEntry).length === 0;
 
@@ -661,10 +764,10 @@ function renderLogPanel() {
   `).join('');
 
   logList.querySelectorAll('[data-log-index]').forEach((item) => {
-    item.addEventListener('click', () => {
+    item.addEventListener('click', async () => {
       const idx = Number(item.getAttribute('data-log-index'));
       if (Number.isNaN(idx)) return;
-      openExistingEntry(idx);
+      await openExistingEntry(idx);
     });
   });
 

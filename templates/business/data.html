@@ -7,6 +7,44 @@
   <link rel="icon" href="/static/images/w3.jpg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="/static/css/entity.css" rel="stylesheet">
+  <style>
+    .interaction-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 950;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(2px);
+    }
+
+    .interaction-modal-content {
+      width: min(1200px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      margin: 0;
+    }
+
+    .interaction-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .interaction-modal {
+        padding: 12px;
+      }
+
+      .interaction-modal-content {
+        max-height: calc(100vh - 24px);
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- Sidebar -->
@@ -96,9 +134,13 @@
         <div id="logList" style="display:flex; flex-direction:column; gap:8px;"></div>
       </section>
 
-      <!-- Interaction Card -->
-      <section id="interactionCard" class="card">
-        <!-- Interaction Form -->
+      <!-- Interaction Card Modal -->
+      <div id="interactionModal" class="interaction-modal" role="dialog" aria-modal="true" aria-labelledby="interactionModalTitle">
+      <section id="interactionCard" class="card interaction-modal-content">
+        <div class="card-header interaction-card-header">
+          <h2 id="interactionModalTitle" class="card-title" style="margin-bottom:0;">Interaction Details</h2>
+          <button id="closeInteractionBtn" type="button" class="btn btn-secondary">Close</button>
+        </div>
         <form id="interactionForm" class="card-body">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
             <!-- Left Column -->
@@ -180,6 +222,7 @@
           </div>
         </form>
       </section>
+      </div>
 
       <!-- File Modal -->
       <div id="fileModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
