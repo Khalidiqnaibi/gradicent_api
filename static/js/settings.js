@@ -271,20 +271,36 @@
       });
 
       // settings dark mode toggle (syncs with sidebar moon button)
-      const settingsThemeBtn = document.getElementById('theme-toggle-settings');
-      if (settingsThemeBtn) {
-        settingsThemeBtn.addEventListener('click', () => {
+      const settingsThemeToggle = document.getElementById('theme-toggle-settings');
+      if (settingsThemeToggle) {
+        const syncSettingsThemeToggle = () => {
+          const isDark = document.body.classList.contains('theme-dark');
+          settingsThemeToggle.checked = isDark;
+          settingsThemeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+        };
+
+        syncSettingsThemeToggle();
+
+        settingsThemeToggle.addEventListener('change', (e) => {
+          const wantsDark = !!e.currentTarget.checked;
+
+          if (window.EntityManager && typeof window.EntityManager.setTheme === 'function') {
+            window.EntityManager.setTheme(wantsDark ? 'dark' : 'light');
+            syncSettingsThemeToggle();
+            return;
+          }
+
           if (window.EntityManager && typeof window.EntityManager.toggleTheme === 'function') {
-            window.EntityManager.toggleTheme();
+            const isDark = document.body.classList.contains('theme-dark');
+            if (isDark !== wantsDark) window.EntityManager.toggleTheme();
+            syncSettingsThemeToggle();
             return;
           }
 
           // Fallback if shared manager is unavailable
-          const isDark = document.body.classList.contains('theme-dark');
-          document.body.classList.toggle('theme-dark', !isDark);
-          localStorage.setItem('gradicent_theme', isDark ? 'light' : 'dark');
-          const label = settingsThemeBtn.querySelector('[data-theme-label]');
-          if (label) label.textContent = isDark ? 'Dark mode: Off' : 'Dark mode: On';
+          document.body.classList.toggle('theme-dark', wantsDark);
+          localStorage.setItem('gradicent_theme', wantsDark ? 'dark' : 'light');
+          syncSettingsThemeToggle();
         });
       }
 

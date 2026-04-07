@@ -132,6 +132,18 @@
   text-decoration: underline;
 }
 
+body.theme-dark .support-container {
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(24, 34, 48, 0.96) 100%);
+  border-color: var(--border);
+  box-shadow: 0 12px 32px rgba(2, 6, 23, 0.4);
+}
+
+body.theme-dark .support-item {
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-xs);
+}
+
 /* ====== Responsive ====== */
 @media (max-width: 768px) {
   .support-container {

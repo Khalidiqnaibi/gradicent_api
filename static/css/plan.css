@@ -253,8 +253,8 @@ body.plan-page {
 }
 
 body.plan-page .site-footer {
-  background: var(--bg-glass);
-  backdrop-filter: blur(6px);
+  background: transparent;
+  backdrop-filter: none;
 }
 
 body.plan-page .top-bar {

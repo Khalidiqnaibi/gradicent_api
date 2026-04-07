@@ -45,10 +45,20 @@ const EntityManager = (function() {
 
   const ID_FIELDS = ['id', '_id', 'client_id', 'employee_id', 'product_id', 'service_id'];
   const THEME_KEY = 'gradicent_theme';
+  const LAST_PAGE_KEY = 'gradicent_last_page';
 
   // DOM helpers
   const $ = (id) => document.getElementById(id);
   const $$ = (sel) => document.querySelectorAll(sel);
+
+  function rememberCurrentPageForBackNav() {
+    try {
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+      sessionStorage.setItem(LAST_PAGE_KEY, currentPath);
+    } catch (_) {
+      // Ignore storage errors and proceed with navigation.
+    }
+  }
 
   // API helpers
   async function safeFetch(url, opts = {}) {
@@ -287,6 +297,11 @@ const EntityManager = (function() {
     return /^\d+$/.test(query);
   }
 
+  function toZeroBasedNumericQuery(query) {
+    if (!isNumericQuery(query)) return query;
+    return String(Number(query) - 1);
+  }
+
   function getFieldValue(item, field) {
     if (!item || !field) return undefined;
 
@@ -484,20 +499,35 @@ const EntityManager = (function() {
       
       if (CONFIG.searchEndpoint && query) {
         // Use search endpoint
-        const res = await safeFetch(CONFIG.searchEndpoint, {
+        const normalizedQuery = isNumericQuery(query) ? toZeroBasedNumericQuery(query) : query;
+        let res = await safeFetch(CONFIG.searchEndpoint, {
           method: 'POST',
           body: JSON.stringify({
-            query,
+            query: normalizedQuery,
             domain: STATE.domain,
             user_id: STATE.user_id
           })
         });
         items = normalizeItems(res.data);
+
+        // If shifted numeric lookup returned nothing, retry with the raw value.
+        if (items.length === 0 && isNumericQuery(query) && normalizedQuery !== query) {
+          res = await safeFetch(CONFIG.searchEndpoint, {
+            method: 'POST',
+            body: JSON.stringify({
+              query,
+              domain: STATE.domain,
+              user_id: STATE.user_id
+            })
+          });
+          items = normalizeItems(res.data);
+        }
       } else if (CONFIG.listEndpoint) {
         if (query && isNumericQuery(query)) {
           // Fast path: support direct lookup by numeric id
+          const shiftedQuery = toZeroBasedNumericQuery(query);
           try {
-            const one = await safeFetch(`${CONFIG.listEndpoint}/${encodeURIComponent(query)}${buildContextQuery()}`);
+            const one = await safeFetch(`${CONFIG.listEndpoint}/${encodeURIComponent(shiftedQuery)}${buildContextQuery()}`);
             items = one?.data ? [one.data] : [];
             STATE.items = items;
             renderItems(items);
@@ -507,7 +537,22 @@ const EntityManager = (function() {
             }
             return;
           } catch {
-            // If direct id lookup fails, continue to list + filter fallback.
+            // If shifted id lookup fails, retry raw value then continue to list + filter fallback.
+            if (shiftedQuery !== query) {
+              try {
+                const one = await safeFetch(`${CONFIG.listEndpoint}/${encodeURIComponent(query)}${buildContextQuery()}`);
+                items = one?.data ? [one.data] : [];
+                STATE.items = items;
+                renderItems(items);
+
+                if (items.length > 0) {
+                  toast(`Found 1 ${CONFIG.labels?.singular || 'item'}`, 'success');
+                }
+                return;
+              } catch {
+                // fall through to list + filter fallback.
+              }
+            }
           }
         }
 
@@ -825,6 +870,7 @@ const EntityManager = (function() {
       const targetUrl = action.url
         .replace('{id}', encodeURIComponent(String(id)))
         .replace('{name}', encodeURIComponent(String(item.name || '')));
+      rememberCurrentPageForBackNav();
       window.location.href = targetUrl;
       return;
     }
@@ -843,12 +889,14 @@ const EntityManager = (function() {
     }
 
     if (String(actionKey) === 'interactions') {
-      window.location.href = `/data/${encodeURIComponent(String(activeClientId))}?action=new`;
+      rememberCurrentPageForBackNav();
+      window.location.href = `/data/${encodeURIComponent(String(activeClientId))}?source=entity&action=new`;
       return;
     }
 
     if (String(actionKey) === 'transactions') {
-      window.location.href = `/data/${encodeURIComponent(String(activeClientId))}?section=transactions&action=new`;
+      rememberCurrentPageForBackNav();
+      window.location.href = `/data/${encodeURIComponent(String(activeClientId))}?source=entity&section=transactions&action=new`;
       return;
     }
   }

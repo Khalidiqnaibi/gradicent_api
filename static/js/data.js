@@ -27,6 +27,40 @@
 ============================================================ */
 const $  = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
+const LAST_PAGE_KEY = 'gradicent_last_page';
+
+function getCurrentPagePath() {
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+function isSafeInternalPath(path) {
+  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//');
+}
+
+function resolveLastPagePath() {
+  const currentPath = getCurrentPagePath();
+
+  try {
+    const stored = sessionStorage.getItem(LAST_PAGE_KEY);
+    if (isSafeInternalPath(stored) && stored !== currentPath) return stored;
+  } catch (_) {
+    // Storage can fail in restricted browser contexts.
+  }
+
+  try {
+    if (document.referrer) {
+      const ref = new URL(document.referrer);
+      if (ref.origin === window.location.origin) {
+        const refPath = `${ref.pathname}${ref.search}`;
+        if (isSafeInternalPath(refPath) && refPath !== currentPath) return refPath;
+      }
+    }
+  } catch (_) {
+    // Ignore malformed referrer.
+  }
+
+  return null;
+}
 
 /* ============================================================
    Domain Configuration
@@ -204,10 +238,12 @@ function show_toast(message, type = 'info') {
    Global State
 ============================================================ */
 let user_id = '';
-let visits = [];               // array of interaction objects for this client
+let visibleCount = 20;
+const PAGE_SIZE = 20;              // array of interaction objects for this client
 let currentVisitIndex = 0;     // index into visits[] currently shown in form
 let patientNumber = window.__client__ ?? 0;  // client number from URL (-1 = new)
 let forceNewEntry = new URLSearchParams(window.location.search).get('action') === 'new';
+let pendingDroppedFiles = [];
 
 /* ============================================================
    Fetch helpers
@@ -314,6 +350,7 @@ function bindControls() {
       e.preventDefault();
       const fileInput = $('#fileInput');
       if (!fileInput || !e.dataTransfer?.files?.length) return;
+      pendingDroppedFiles = Array.from(e.dataTransfer.files || []);
       try {
         fileInput.files = e.dataTransfer.files;
       } catch (_) {
@@ -324,11 +361,18 @@ function bindControls() {
   }
   $('#addNewEntryBtn')?.addEventListener('click', openNewEntry);
   $('#backBtn')?.addEventListener('click', () => {
+    const lastPagePath = resolveLastPagePath();
+    if (lastPagePath) {
+      window.location.href = lastPagePath;
+      return;
+    }
+
     if (window.history.length > 1) {
       window.history.back();
-    } else {
-      window.location.href = '/client';
+      return;
     }
+
+    window.location.href = '/client';
   });
 }
 
@@ -396,6 +440,7 @@ function fetchClientData() {
     .then(r => r.json())
     .then(r => {
       visits = r.data.interactions || [];
+      visibleCount = PAGE_SIZE;
       if (!Array.isArray(visits)) visits = [visits];
       const hasEntries = visits.some((v) => Object.keys(v || {}).length > 0);
       const openInNewMode = forceNewEntry;
@@ -599,9 +644,10 @@ function renderLogPanel() {
   hideInteractionForm();
 
   const entries = visits
-    .map((entry, index) => ({ entry, index }))
-    .filter(({ entry }) => Object.keys(entry || {}).length > 0)
-    .reverse();
+  .map((entry, index) => ({ entry, index }))
+  .filter(({ entry }) => Object.keys(entry || {}).length > 0)
+  .reverse()
+  .slice(0, visibleCount);
 
   logList.innerHTML = entries.map(({ entry, index }) => `
     <button
@@ -626,6 +672,27 @@ function renderLogPanel() {
   if (!Number.isNaN(firstIndex)) {
     selectLogItem(firstIndex);
   }
+  const totalEntries = visits.filter(v => Object.keys(v || {}).length > 0).length;
+
+if (visibleCount < totalEntries) {
+  const loadMoreBtn = document.createElement('button');
+  loadMoreBtn.textContent = 'Load More';
+
+  loadMoreBtn.style.marginTop = '10px';
+  loadMoreBtn.style.padding = '8px 12px';
+  loadMoreBtn.style.cursor = 'pointer';
+  loadMoreBtn.style.borderRadius = '8px';
+  loadMoreBtn.style.border = '1px solid var(--border)';
+  loadMoreBtn.style.background = 'var(--bg-card)';
+  loadMoreBtn.style.color = 'var(--text)';
+
+  loadMoreBtn.onclick = () => {
+    visibleCount += PAGE_SIZE;
+    renderLogPanel();
+  };
+
+  logList.appendChild(loadMoreBtn);
+}
 }
 
 
@@ -671,13 +738,15 @@ const FILE_API_BASE = '/api/binder/files';
 
 let selectedFolder = '';
 
+function getDefaultFolderForDomain() {
+  if (domain === 'medical') return 'drs';
+  if (domain === 'business') return 'contracts';
+  return 'docs';
+}
+
 // Default folder per domain
 function initSelectedFolder() {
-  if (["medical"].includes(domain)){
-    selectedFolder = 'drs';          // doctor-uploaded files
-  }else if (["business"].includes(domain)){
-    selectedFolder = 'contracts';    // business contracts
-  }
+  selectedFolder = getDefaultFolderForDomain();
 }
 
 /* ---------- Open / Close (plan-gated) ---------- */
@@ -685,7 +754,7 @@ function openFolder() {
   if (!selectedFolder) initSelectedFolder();
   if (["pro","ultra"].includes(plan)){
     $('#fileModal').style.display = 'flex';
-    selectFolder();
+    selectFolder(selectedFolder);
   }else{
     show_toast("This feature is for the Pro and Ultra plans only");
   }
@@ -697,23 +766,14 @@ function closeFileModal() {
 
 /* ---------- Folder Handling (falls back to domain default) ---------- */
 function selectFolder(folder) {
-  selectedFolder = folder ;
-  if (!folder){
-    if (["medical"].includes(domain)){
-      selectFolder('drs');
-    }else if (["business"].includes(domain)){
-      selectFolder('contracts');
-    }else{
-      show_toast("Not implemented", "error");
-    }
-  }
+  selectedFolder = folder || getDefaultFolderForDomain();
 
   updateActiveFolderButton();
     
   const uploadControls = $('#uploadControls');
   if (uploadControls) {
     const canUpload = domain === 'business' || selectedFolder === 'drs';
-    uploadControls.style.display = canUpload ? 'flex' : 'none';
+    uploadControls.style.display = canUpload ? 'block' : 'none';
   }
   fetchFiles();
 }
@@ -732,10 +792,15 @@ async function fetchFiles() {
   
   if (["pro","ultra"].includes(plan)){
     try {
-      const res = await safe_fetch(`${FILE_API_BASE}/get_files?folder=${encodeURIComponent(selectedFolder)}&client_no=${patientNumber}`, {
+      const res = await safe_fetch(`${FILE_API_BASE}/get_files?folder=${encodeURIComponent(selectedFolder)}&client_no=${encodeURIComponent(String(patientNumber))}`, {
         method: 'GET'
       });
-      renderFiles(res.data || []);
+      const files = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.files)
+          ? res.data.files
+          : [];
+      renderFiles(files);
     } catch (err) {
       console.error(err);
       show_toast('Failed to fetch files', 'error');
@@ -747,22 +812,35 @@ async function fetchFiles() {
 
 /* ---------- Upload Files (sequential, with progress bar) ---------- */
 function onFilesSelected(e){
-  if($('#fileInput').files.length) show_toast(`${$('#fileInput').files.length} files selected`,'info');
+  const inputFiles = Array.from($('#fileInput')?.files || []);
+  if (inputFiles.length > 0) {
+    pendingDroppedFiles = [];
+  }
+  const totalFiles = inputFiles.length || pendingDroppedFiles.length;
+  if (totalFiles > 0) {
+    show_toast(`${totalFiles} files selected`,'info');
+  }
 }
 
 function uploadFile() {
   if (["pro","ultra"].includes(plan)){
-    const files = $('#fileInput').files;
+    const inputFiles = Array.from($('#fileInput')?.files || []);
+    const files = inputFiles.length ? inputFiles : pendingDroppedFiles;
     if (!files.length) return show_toast('No files selected', 'error');
     if (["medical"].includes(domain) && selectedFolder !== 'drs') return show_toast('Uploads only allowed in Doctor folder', 'error');
     const total = files.length;
     let index = 0;
+    const progressEl = $('#fileUploadProgress');
+    const progressTextEl = $('#progressText');
     $('#uploadProgressContainer').style.display = 'block';
+    if (progressEl) progressEl.value = 0;
+    if (progressTextEl) progressTextEl.textContent = `0 / ${total}`;
 
     const uploadNext = () => {
       if (index >= total) {
         $('#uploadProgressContainer').style.display = 'none';
         $('#fileInput').value = '';
+        pendingDroppedFiles = [];
         show_toast('All files uploaded', 'success');
         fetchFiles();
         return;
@@ -779,16 +857,20 @@ function uploadFile() {
         .then(res => {
           if (res.status === 'success') {
             index++;
+            if (progressEl) progressEl.value = Math.round((index / total) * 100);
+            if (progressTextEl) progressTextEl.textContent = `${index} / ${total}`;
             uploadNext();
           } else {
             show_toast('Upload failed', 'error');
             $('#uploadProgressContainer').style.display = 'none';
+            pendingDroppedFiles = [];
           }
         })
         .catch(err => {
           console.error(err);
           show_toast('Upload error', 'error');
           $('#uploadProgressContainer').style.display = 'none';
+          pendingDroppedFiles = [];
         });
     };
 
@@ -805,30 +887,63 @@ function renderFiles(files) {
     container.innerHTML = '';
     if (!files.length) return container.innerHTML = '<div class="text-gray-500">No files</div>';
 
+    const formatUploadDate = (value) => {
+      if (!value) return 'Unknown date';
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) return String(value);
+      return parsed.toLocaleString();
+    };
+
     files.forEach(file => {
+      const fileUrl = file?.data || file?.url || file?.file_url || '';
+      const fileType = String(file?.file_type || file?.content_type || '').toLowerCase();
+      const fileName = file?.name || file?.filename || 'file';
+      const fileDate = formatUploadDate(file?.upload_date || file?.created_at || file?.date);
+      if (!fileUrl) return;
+
       const wrapper = document.createElement('div');
       wrapper.className = 'file-preview';
 
       const link = document.createElement('a');
-      link.href = file.data;
+      link.href = fileUrl;
       link.target = '_blank';
+      link.rel = 'noopener noreferrer';
 
-      if (file.file_type.includes('image')) {
-        const img = document.createElement('img'); img.src = file.data; link.appendChild(img);
-      } else if (file.file_type.includes('video')) {
-        const video = document.createElement('video'); video.src = file.data; video.controls = true; video.className = 'rounded'; link.appendChild(video);
+      if (fileType.includes('image')) {
+        const img = document.createElement('img');
+        img.src = fileUrl;
+        img.alt = fileName;
+        link.appendChild(img);
+      } else if (fileType.includes('video')) {
+        const video = document.createElement('video');
+        video.src = fileUrl;
+        video.controls = true;
+        video.className = 'rounded';
+        link.appendChild(video);
       } else {
-        const txt = document.createElement('div'); txt.className = 'p-3 border rounded txtPrev'; txt.textContent = file.name || 'file'; link.appendChild(txt);
+        const txt = document.createElement('div');
+        txt.className = 'p-3 border rounded txtPrev';
+        txt.textContent = fileName;
+        link.appendChild(txt);
       }
 
       if (["docs","invoices","contracts",'drs'].includes(selectedFolder)) {
         const remove = document.createElement('div');
         remove.className = 'file-remove'; remove.innerHTML = '&times;';
-        remove.onclick = (e) => { e.preventDefault(); if(confirm('Delete this file?')) deleteFile(file.data); };
+        remove.onclick = (e) => { e.preventDefault(); if(confirm('Delete this file?')) deleteFile(fileUrl); };
         wrapper.appendChild(remove);
       }
 
+      const meta = document.createElement('div');
+      meta.className = 'file-meta';
+      const typeLabel = fileType || 'unknown';
+      meta.innerHTML = `
+        <div class="file-name" title="${fileName}">${fileName}</div>
+        <div class="file-sub">${typeLabel} • ${fileDate}</div>
+      `;
+
       wrapper.appendChild(link);
+      wrapper.appendChild(meta);
       container.appendChild(wrapper);
     });
   }

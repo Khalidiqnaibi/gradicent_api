@@ -101,7 +101,8 @@
       
 
       if (clientsEl) {
-        clientsEl.addEventListener("click", function () {
+        clientsEl.addEventListener("click", function (event) {
+          event.preventDefault();
           show_clients();
         });
       }
@@ -183,7 +184,8 @@
     })(u);  
     
     function show_clients() {
-      window.location.href = `/search_stats?clients=${encodeURIComponent(JSON.stringify(client_list))}`;
+      const safeClients = Array.isArray(client_list) ? client_list : [];
+      window.location.href = `/search_stats?clients=${encodeURIComponent(JSON.stringify(safeClients))}`;
     }
 
     /**
@@ -456,7 +458,7 @@
             else if (tab === 'finance') {
               data = await fetchMetric('finance');
               setClientsButtonVisible(true);
-              client_list = data.clients;
+              client_list = Array.isArray(data.clients) ? data.clients : [];
               document.getElementById('fin-total-rev').innerText = fmtMoney(data.total_revenue || 0);
               document.getElementById('fin-unpaid').innerText = fmtMoney(data.total_unpaid || 0);
               document.getElementById('fin-avg-per-client').innerText = fmtMoney(data.avg_revenue_per_client || 0);
@@ -488,7 +490,7 @@
             else if (tab === 'clients') {
               data = await fetchMetric('total_customers');
               setClientsButtonVisible(true);
-              client_list = data.clients;
+              client_list = Array.isArray(data.clients) ? data.clients : [];
               document.getElementById('pat-total').innerText = data.total_customers || 0;
               document.getElementById('pat-returning').innerText = data.returning_customers || 0;
               document.getElementById('pat-avg-visits').innerText = (data.avg_visits_per_customer || 0).toFixed(2);
