@@ -352,20 +352,62 @@ def add_interaction(client_id: str):
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["GET"])
 def list_interaction(client_id: str):
     """
-    List interactions (or visits) for a client.
+    List interactions (or visits) for a client with pagination.
 
-    Query param:
-        domain (optional)
-        user_id (optional)
+    Expects:
+        client_id (str): The target client/patient ID.
+        domain (str, optional): Passed via query params.
+        user_id (str, optional): Passed via query params.
+        start_at (int, optional): The starting index for pagination (default 0).
+        limit (int, optional): The number of records to return (default 10).
+
+    Returns:
+        JSON: {status: "success", data: list[Dict], message: "Got Interactions."}
     """
-    domain = request.args.get("domain", DEFAULT_DOMAIN)
-    user_id = request.args.get("user_id")
+    domain = request.args.get("domain", session.get("domain", DEFAULT_DOMAIN))
+    user_id = request.args.get("user_id", session.get("user_id"))
+    
+    # Pagination params
+    start_at = int(request.args.get("start_at", 0))
+    limit = int(request.args.get("limit", 30))
+    
     service = _get_domain_and_service({"domain": domain})
     if user_id:
         service.set_current_user(user_id)
 
-    interactions = service.list_interactions(client_id=client_id)
+    interactions = service.list_interactions(
+        client_id=client_id, 
+        start_at=start_at, 
+        limit=limit
+    )
+    
     return make_response(data=interactions, message="Got Interactions."), 200
+
+@binder_blueprint.route("/clients/<client_id>/interactions/<int:interaction_no>", methods=["GET"])
+def get_interaction(client_id: str, interaction_no: int):
+    """
+    Retrieve a specific interaction by its index/number.
+
+    Expects:
+        client_id (str): The target client/patient ID.
+        interaction_no (int): The specific interaction index.
+        domain (str, optional): Query param.
+
+    Returns:
+        JSON: {status: "success", data: Dict, message: "Interaction retrieved."}
+    """
+    domain = request.args.get("domain", session.get("domain", DEFAULT_DOMAIN))
+    service = _get_domain_and_service({"domain": domain})
+    service.set_current_user(session.get("user_id"))
+
+    # Service logic typically uses 0-based indexing
+    idx = interaction_no - 1 if interaction_no > 0 else 0
+    
+    interaction = service.read_interaction(client_id=client_id, interaction_no=idx)
+    if not interaction:
+        raise NotFound(f"Interaction {interaction_no} not found for client {client_id}")
+
+    return make_response(data=interaction, message="Interaction retrieved."), 200
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["PATCH"])
 def update_interaction(client_id: str):
@@ -1007,27 +1049,60 @@ def service_search():
 @binder_blueprint.route("/clients/<client_id>/transactions", methods=["GET"])
 def list_transactions(client_id: str):
     """
-    List all transactions for a client.
+    List all transactions for a specific client with pagination.
 
-    Query Params:
-        domain (str)
-        user_id (str)
+    Expects:
+        client_id (str): The target client ID.
+        domain (str, optional): Query param.
+        user_id (str, optional): Query param.
+        start_at (int, optional): The starting index for pagination (default 0).
+        limit (int, optional): The number of records to return (default 10).
 
     Returns:
-        JSON envelope containing list of transactions.
+        JSON: {status: "success", data: list[Dict], message: "Transactions retrieved."}
     """
-    payload = {
-        "domain": request.args.get("domain", DEFAULT_DOMAIN),
-        "user_id": request.args.get("user_id"),
-    }
+    domain = request.args.get("domain", session.get("domain", DEFAULT_DOMAIN))
+    user_id = request.args.get("user_id", session.get("user_id"))
+    
+    # Pagination params
+    start_at = int(request.args.get("start_at", 0))
+    limit = int(request.args.get("limit", 10))
 
-    service = _get_domain_and_service(payload)
-    if payload.get("user_id"):
-        service.set_current_user(payload["user_id"])
+    service = _get_domain_and_service({"domain": domain})
+    if user_id:
+        service.set_current_user(user_id)
 
-    transactions = service.list_transactions(client_id)
+    transactions = service.list_transactions(
+        client_id=client_id, 
+        start_at=start_at, 
+        limit=limit
+    )
+    
+    return make_response(data=transactions, message="Transactions retrieved."), 200
 
-    return make_response(data=transactions), 200
+@binder_blueprint.route("/clients/<client_id>/transactions/<int:transaction_no>", methods=["GET"])
+def get_transaction(client_id: str, transaction_no: int):
+    """
+    Retrieve a specific transaction by its index/number.
+
+    Expects:
+        client_id (str): The target client ID.
+        transaction_no (int): The specific transaction index.
+
+    Returns:
+        JSON: {status: "success", data: Dict, message: "Transaction retrieved."}
+    """
+    domain = request.args.get("domain", session.get("domain", DEFAULT_DOMAIN))
+    service = _get_domain_and_service({"domain": domain})
+    service.set_current_user(session.get("user_id"))
+
+    idx = transaction_no - 1 if transaction_no > 0 else 0
+    
+    transaction = service.read_transaction(client_id=client_id, transaction_no=idx)
+    if not transaction:
+        raise NotFound(f"Transaction {transaction_no} not found for client {client_id}")
+
+    return make_response(data=transaction, message="Transaction retrieved."), 200
 
 @binder_blueprint.route("/clients/<client_id>/transactions", methods=["POST"])
 def add_transactions(client_id: str):
