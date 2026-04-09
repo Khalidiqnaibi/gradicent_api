@@ -291,7 +291,7 @@ function setTransactionMode(nextMode, { refresh = true } = {}) {
   if (refresh) {
     visits = [];
     currentVisitIndex = 0;
-    visibleCount = PAGE_SIZE;
+    visibleCount = pageSize;
     fetchClientData();
   }
 }
@@ -323,6 +323,8 @@ function applySectionContext() {
   const pageTitle = document.querySelector('.page-title');
   const pageSubtitle = document.querySelector('.page-subtitle');
   const saveButton = $('#saveBtn');
+  const modalTitle = $('#interactionModalTitle');
+  const closeInteractionBtn = $('#closeInteractionBtn');
 
   if (saveButton) {
     saveButton.textContent = 'Save Changes';
@@ -332,10 +334,24 @@ function applySectionContext() {
     if (topBarTitle) topBarTitle.textContent = 'Client Payment Log';
     if (pageTitle) pageTitle.textContent = 'Client Payment Log';
     if (pageSubtitle) pageSubtitle.textContent = 'Record payments and payment history for this client';
+    if (modalTitle) modalTitle.textContent = 'Transaction Details';
+    if (closeInteractionBtn) {
+      closeInteractionBtn.textContent = 'Close Transaction';
+      closeInteractionBtn.style.background = '#f59e0b';
+      closeInteractionBtn.style.borderColor = '#f59e0b';
+      closeInteractionBtn.style.color = '#ffffff';
+    }
   } else {
     if (topBarTitle) topBarTitle.textContent = 'Client Appointment Log';
     if (pageTitle) pageTitle.textContent = 'Client Appointment Log';
     if (pageSubtitle) pageSubtitle.textContent = 'Record appointments and interaction notes for this client';
+    if (modalTitle) modalTitle.textContent = 'Interaction Details';
+    if (closeInteractionBtn) {
+      closeInteractionBtn.textContent = 'Close Interaction';
+      closeInteractionBtn.style.background = 'transparent';
+      closeInteractionBtn.style.borderColor = 'var(--border)';
+      closeInteractionBtn.style.color = 'var(--text)';
+    }
   }
 
   setModeTabState();
@@ -361,14 +377,84 @@ function show_toast(message, type = 'info') {
    Global State
 ============================================================ */
 let user_id = '';
-let visibleCount = 20;
-const PAGE_SIZE = 20;              // array of interaction objects for this client
+let visibleCount = 10;
+let pageSize = 10;
+const PAGE_SIZE_OPTIONS = [10, 20, 30];
+let filterFromDate = '';
+let filterToDate = '';
 let visits = [];
 let currentVisitIndex = 0;     // index into visits[] currently shown in form
 let patientNumber = window.__client__ ?? 0;  // client number from URL (-1 = new)
 let forceNewEntry = new URLSearchParams(window.location.search).get('action') === 'new';
 let pendingDroppedFiles = [];
 let lastFormSnapshot = '';
+
+function normalizeDateInput(value) {
+  if (!value) return null;
+  const d = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
+function getEntryDateValue(entry) {
+  const raw = entry?.[cfg().fields.date];
+  if (!raw) return null;
+  return normalizeDateInput(String(raw).slice(0, 10));
+}
+
+function isEntryWithinRange(entry) {
+  if (!filterFromDate && !filterToDate) return true;
+
+  const entryDate = getEntryDateValue(entry);
+  if (!entryDate) return false;
+
+  const from = normalizeDateInput(filterFromDate);
+  const to = normalizeDateInput(filterToDate);
+
+  if (from && entryDate < from) return false;
+  if (to && entryDate > to) return false;
+  return true;
+}
+
+function ensureRangeControls() {
+  const searchInput = $('#search');
+  if (!searchInput) return;
+  if ($('#fromDateFilter') && $('#toDateFilter') && $('#pageSizeSelect')) return;
+
+  const container = searchInput.parentElement?.parentElement;
+  if (!container) return;
+
+  const rangeWrap = document.createElement('div');
+  rangeWrap.id = 'dateRangeControls';
+  rangeWrap.style.display = 'flex';
+  rangeWrap.style.gap = '8px';
+  rangeWrap.style.flexWrap = 'wrap';
+  rangeWrap.style.alignItems = 'flex-end';
+  rangeWrap.style.width = '100%';
+  rangeWrap.style.marginBottom = '8px';
+
+  rangeWrap.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:4px; min-width:170px;">
+      <label class="form-label" for="fromDateFilter">From Date</label>
+      <input id="fromDateFilter" type="date" class="form-input" />
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px; min-width:170px;">
+      <label class="form-label" for="toDateFilter">To Date</label>
+      <input id="toDateFilter" type="date" class="form-input" />
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
+      <label class="form-label" for="pageSizeSelect">Show First</label>
+      <select id="pageSizeSelect" class="form-input">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+      </select>
+    </div>
+    <button id="clearDateFilterBtn" type="button" class="btn btn-secondary">Clear Filter</button>
+  `;
+
+  container.insertBefore(rangeWrap, container.firstChild);
+}
 
 /* ============================================================
    Fetch helpers
@@ -417,6 +503,7 @@ function menu_init() {
 ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
   menu_init();
+  ensureRangeControls();
   initModeTabs();
   applySectionContext();
 
@@ -453,6 +540,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 ============================================================ */
 function bindControls() {
   $('#searchButton')?.addEventListener('click', search);
+  $('#fromDateFilter')?.addEventListener('change', () => {
+    filterFromDate = $('#fromDateFilter')?.value || '';
+    visibleCount = pageSize;
+    renderLogPanel();
+  });
+  $('#toDateFilter')?.addEventListener('change', () => {
+    filterToDate = $('#toDateFilter')?.value || '';
+    visibleCount = pageSize;
+    renderLogPanel();
+  });
+  $('#pageSizeSelect')?.addEventListener('change', () => {
+    const selected = Number($('#pageSizeSelect')?.value || pageSize);
+    if (PAGE_SIZE_OPTIONS.includes(selected)) {
+      pageSize = selected;
+      visibleCount = pageSize;
+      renderLogPanel();
+    }
+  });
+  $('#clearDateFilterBtn')?.addEventListener('click', () => {
+    filterFromDate = '';
+    filterToDate = '';
+    if ($('#fromDateFilter')) $('#fromDateFilter').value = '';
+    if ($('#toDateFilter')) $('#toDateFilter').value = '';
+    visibleCount = pageSize;
+    renderLogPanel();
+  });
   $('#prevButton')?.addEventListener('click', prev);
   $('#nextButton')?.addEventListener('click', next);
   $('#firstButton')?.addEventListener('click', first);
@@ -488,20 +601,22 @@ function bindControls() {
   }
   $('#addNewEntryBtn')?.addEventListener('click', openNewEntry);
   $('#closeInteractionBtn')?.addEventListener('click', () => {
-    closeInteractionForm();
+    closeInteractionForm({ force: true });
+  });
+  const interactionModal = $('#interactionModal');
+  if (interactionModal) {
+    interactionModal.addEventListener('click', (event) => {
+      if (event.target === interactionModal) {
+        closeInteractionForm({ force: true });
+      }
+    });
+  }
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && $('#interactionModal')?.style.display === 'flex') {
+      closeInteractionForm({ force: true });
+    }
   });
   $('#backBtn')?.addEventListener('click', () => {
-    const lastPagePath = resolveLastPagePath();
-    if (lastPagePath) {
-      window.location.href = lastPagePath;
-      return;
-    }
-
-    if (window.history.length > 1) {
-      window.history.back();
-      return;
-    }
-
     window.location.href = '/client';
   });
 }
@@ -573,7 +688,7 @@ function fetchClientData() {
     .then(r => {
       const collectionKey = getEntryCollectionKey();
       visits = r.data?.[collectionKey] || [];
-      visibleCount = PAGE_SIZE;
+      visibleCount = pageSize;
       if (!Array.isArray(visits)) visits = [visits];
       const hasEntries = visits.some((v) => Object.keys(v || {}).length > 0);
       const openInNewMode = forceNewEntry;
@@ -592,7 +707,7 @@ function fetchClientData() {
         showInteractionForm();
         populate(visits[currentVisitIndex] || {});
       }
-      show_toast("Fetched client interaction" , "success");
+      show_toast(transactionMode ? "Fetched client transactions" : "Fetched client interactions", "success");
     }).catch( err =>{
       show_toast(`Error Fetching interaction`,"error");
       console.error(`Error Fetching interaction`,err);
@@ -656,16 +771,20 @@ async function next(){
    Search
 ============================================================ */
 async function search() {
-  const d = $('#search').value;
-  const f = cfg().fields.date;
-  const found = visits.find(v => v[f] === d);
-  if (!found) return show_toast('Not found', 'info');
-  const { proceed } = await confirmSaveBeforeClose();
-  if (!proceed) return;
-  currentVisitIndex = visits.indexOf(found);
-  showInteractionForm();
-  populate(found);
-  selectLogItem(currentVisitIndex);
+  const fromInput = $('#fromDateFilter')?.value || $('#search')?.value || '';
+  const toInput = $('#toDateFilter')?.value || fromInput;
+
+  filterFromDate = fromInput;
+  filterToDate = toInput;
+  visibleCount = pageSize;
+
+  if ($('#fromDateFilter')) $('#fromDateFilter').value = filterFromDate;
+  if ($('#toDateFilter')) $('#toDateFilter').value = filterToDate;
+
+  renderLogPanel();
+  if (filterFromDate || filterToDate) {
+    show_toast('Date range filter applied', 'success');
+  }
 }
 
 /* ============================================================
@@ -785,9 +904,11 @@ function hideInteractionForm() {
   if (modal) modal.style.display = 'none';
 }
 
-async function closeInteractionForm() {
-  const { proceed } = await confirmSaveBeforeClose();
-  if (!proceed) return;
+async function closeInteractionForm({ force = false } = {}) {
+  if (!force) {
+    const { proceed } = await confirmSaveBeforeClose();
+    if (!proceed) return;
+  }
   hideInteractionForm();
   renderLogPanel();
 }
@@ -875,13 +996,19 @@ function renderLogPanel() {
   logSection.style.display = 'block';
   hideInteractionForm();
 
-  const entries = visits
+  const filteredEntries = visits
   .map((entry, index) => ({ entry, index }))
   .filter(({ entry }) => Object.keys(entry || {}).length > 0)
+  .filter(({ entry }) => isEntryWithinRange(entry));
+
+  const entries = filteredEntries
   .reverse()
   .slice(0, visibleCount);
 
-  logList.innerHTML = entries.map(({ entry, index }) => `
+  if (!entries.length) {
+    logList.innerHTML = `<div style="padding:12px; border:1px dashed var(--border); border-radius:10px; color:var(--text-muted);">No records found for this date range.</div>`;
+  } else {
+    logList.innerHTML = entries.map(({ entry, index }) => `
     <button
       type="button"
       data-log-index="${index}"
@@ -891,6 +1018,7 @@ function renderLogPanel() {
       <span style="color:var(--text-muted);">${getEntryDate(entry)}</span>
     </button>
   `).join('');
+  }
 
   logList.querySelectorAll('[data-log-index]').forEach((item) => {
     item.addEventListener('click', async () => {
@@ -904,7 +1032,7 @@ function renderLogPanel() {
   if (!Number.isNaN(firstIndex)) {
     selectLogItem(firstIndex);
   }
-  const totalEntries = visits.filter(v => Object.keys(v || {}).length > 0).length;
+  const totalEntries = filteredEntries.length;
 
 if (visibleCount < totalEntries) {
   const loadMoreBtn = document.createElement('button');
@@ -919,7 +1047,7 @@ if (visibleCount < totalEntries) {
   loadMoreBtn.style.color = 'var(--text)';
 
   loadMoreBtn.onclick = () => {
-    visibleCount += PAGE_SIZE;
+    visibleCount += pageSize;
     renderLogPanel();
   };
 
