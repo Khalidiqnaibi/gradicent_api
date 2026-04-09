@@ -436,19 +436,49 @@ class BinderService:
             raise BinderServiceError("interaction payload cannot be empty")
         return self._wrap_and_log("create_interaction", self._binder.create_interaction, client_id, interaction)
 
-    def list_interactions(self, client_id: str) -> List[Dict[str, Any]]:
+    def list_interactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        List interactions for a client.
+        List interactions for a client with pagination.
 
         Args:
             client_id (str): client id.
+            limit (int): max items to return (default 30).
+            start_at (str): the ID/index to start the page from.
 
         Returns:
-            List[Dict[str, Any]]: list of interactions (empty list if none).
+            List[Dict[str, Any]]: paginated list of interactions.
         """
         if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
-        return self._wrap_and_log("list_interactions", self._binder.list_interactions, client_id)
+        
+        return self._wrap_and_log(
+            "list_interactions", 
+            self._binder.list_interactions, 
+            client_id, 
+            limit=limit, 
+            start_at=start_at
+        )
+    
+    def read_interaction(self, client_id: str, interaction_no: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch a specific interaction by its index/ID.
+
+        Args:
+            client_id (str): client id.
+            interaction_no (str): specific interaction identifier.
+
+        Returns:
+            Optional[Dict[str, Any]]: interaction record or None.
+        """
+        if client_id is None or interaction_no is None:
+            raise BinderServiceError("client_id and interaction_no are required")
+            
+        return self._wrap_and_log(
+            "read_interaction", 
+            self._binder.read_interaction, 
+            client_id, 
+            interaction_no
+        )
 
     # --------------------
     # Employees CRUD
@@ -815,19 +845,49 @@ class BinderService:
         )
         return self._wrap_and_log("create_transaction", self._binder.create_transaction, client_id, tran.to_dict())
 
-    def list_transactions(self, client_id: str) -> List[Dict[str, Any]]:
+    def list_transactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        List transactions for a client.
+        List transactions for a client with pagination.
 
         Args:
             client_id (str): client id.
+            limit (int): max items to return (default 30).
+            start_at (str): the ID/index to start the page from.
 
         Returns:
-            List[Dict[str, Any]]: transaction list.
+            List[Dict[str, Any]]: paginated list of transactions.
         """
         if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
-        return self._wrap_and_log("list_transactions", self._binder.list_transactions, client_id)
+
+        return self._wrap_and_log(
+            "list_transactions", 
+            self._binder.list_transactions, 
+            client_id, 
+            limit=limit, 
+            start_at=start_at
+        )
+    
+    def read_transaction(self, client_id: str, transaction_no: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch a specific transaction by its index/ID.
+
+        Args:
+            client_id (str): client id.
+            transaction_no (str): specific transaction identifier.
+
+        Returns:
+            Optional[Dict[str, Any]]: transaction record or None.
+        """
+        if client_id is None or transaction_no is None:
+            raise BinderServiceError("client_id and transaction_no are required")
+            
+        return self._wrap_and_log(
+            "read_transaction", 
+            self._binder.read_transaction, 
+            client_id, 
+            transaction_no
+        )
 
     def update_transaction(self, client_id: str, txn_no: int, patch: List[Any]) -> Dict[str, Any]:
         """

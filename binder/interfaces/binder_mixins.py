@@ -40,25 +40,19 @@ class UserMixin:
 # CLIENTS / PATIENTS
 class ClientMixin:
     def create_client(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        clients = self.adapter.list_children(self.domain, self.current_user, "clients") or []
-        client_id = str(len(clients))
-        data["id"] = client_id
-        self.adapter.update_child(
+        self.adapter.add_child(
             self.domain,
             self.current_user,
             "clients",
             data,
-            client_id,
         )
         return data
 
     def read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
-        clients = self.adapter.list_children(self.domain, self.current_user, "clients")
-        try:
-            return clients[int(client_id)]
-        except Exception:
-            return None
-
+        return self.adapter.get_child(
+            self.domain, self.current_user, "clients", client_id
+        )
+    
     def update_client(self, client_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(
             self.domain,
@@ -135,24 +129,18 @@ class ClientMixin:
 # EMPLOYEES
 class EmployeeMixin:
     def create_employee(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        employees = self.adapter.list_children(self.domain, self.current_user, "employees") or []
-        employee_id = str(len(employees))
-        data["id"] = employee_id
-        self.adapter.update_child(
+        self.adapter.add_child(
             self.domain,
             self.current_user,
             "employees",
             data,
-            employee_id,
         )
         return data
 
     def read_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:
-        employees = self.adapter.list_children(self.domain, self.current_user, "employees")
-        try:
-            return employees[int(employee_id)]
-        except Exception:
-            return None
+        return self.adapter.get_child(
+            self.domain, self.current_user, "employees", employee_id
+        )
         
     def update_employee(self, emp_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(
@@ -209,24 +197,18 @@ class EmployeeMixin:
 # PRODUCTS
 class ProductMixin:
     def create_products(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        products = self.adapter.list_children(self.domain, self.current_user, "products") or []
-        product_id = str(len(products))
-        data["id"] = product_id
-        self.adapter.update_child(
+        self.adapter.add_child(
             self.domain,
             self.current_user,
             "products",
             data,
-            product_id,
         )
         return data
 
     def read_product(self, product_id: str) -> Optional[Dict[str, Any]]:
-        products = self.adapter.list_children(self.domain, self.current_user, "products")
-        try:
-            return products[int(product_id)]
-        except Exception:
-            return None
+        return self.adapter.get_child(
+            self.domain, self.current_user, "products", product_id
+        )
 
     def update_product(self, prod_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(
@@ -283,24 +265,18 @@ class ProductMixin:
 # SERVICES
 class ServiceMixin:
     def create_service(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        services = self.adapter.list_children(self.domain, self.current_user, "services") or []
-        service_id = str(len(services))
-        data["id"] = service_id
-        self.adapter.update_child(
+        self.adapter.add_child(
             self.domain,
             self.current_user,
             "services",
             data,
-            service_id,
         )
         return data
 
     def read_service(self, service_id: str) -> Optional[Dict[str, Any]]:
-        services = self.adapter.list_children(self.domain, self.current_user, "services")
-        try:
-            return services[int(service_id)]
-        except Exception:
-            return None
+        return self.adapter.get_child(
+            self.domain, self.current_user, "service", service_id
+        )
 
     def update_service(self, svc_id: str, patch: Dict[str, Any]) -> None:
         self.adapter.update_child(
@@ -357,13 +333,14 @@ class InteractionMixin:
         )
         return data
 
-    def list_interactions(self, client_id: str) -> List[Dict[str, Any]]:
+    def list_interactions(self, client_id: str, start_at:str) -> List[Dict[str, Any]]:
         return self.adapter.list_nested(
             self.domain,
             self.current_user,
             "clients",
             client_id,
-            "interactions",
+            "interactions", 
+            start_at
         )
 
     def update_interaction(
@@ -392,6 +369,11 @@ class InteractionMixin:
             interaction_no,
         )
 
+    def read_interaction(self, client_id: str, interaction_no: str) -> Optional[Dict[str, Any]]:
+        return self.adapter.get_child(
+            self.domain, self.current_user, f"clients/{client_id}/interactions", interaction_no
+        )
+
 
 # TRANSACTIONS
 class TransactionMixin:
@@ -406,11 +388,44 @@ class TransactionMixin:
         )
         return data
 
-    def list_transactions(self, client_id: str) -> List[Dict[str, Any]]:
+    def list_transactions(self, client_id: str,start_at:str) -> List[Dict[str, Any]]:
         return self.adapter.list_nested(
             self.domain,
             self.current_user,
             "clients",
             client_id,
             "transactions",
+            start_at
         )
+
+    def update_transaction(
+        self,
+        client_id: str,
+        transaction_no: int,
+        patch: List[Any],
+    ) -> List[Any]:
+        return self.adapter.update_nested(
+            self.domain,
+            self.current_user,
+            "clients",
+            client_id,
+            "transactions",
+            transaction_no,
+            patch,
+        )
+
+    def delete_transaction(self, client_id: str, transaction_no: int) -> None:
+        self.adapter.delete_nested(
+            self.domain,
+            self.current_user,
+            "clients",
+            client_id,
+            "transactions",
+            transaction_no,
+        )
+
+    def read_transaction(self, client_id: str, transaction_no: str) -> Optional[Dict[str, Any]]:
+        return self.adapter.get_child(
+            self.domain, self.current_user, f"clients/{client_id}/transactions", transaction_no
+        )
+

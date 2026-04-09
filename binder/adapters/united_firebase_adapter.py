@@ -69,15 +69,30 @@ class UnitedFirebaseAdapter(StorageAdapter):
     # --------------------
     # Child CRUD
     # --------------------
-    def list_children(self, domain :str, user_id: str, collection: str) -> List[Dict]:
-        ref = self._child_ref(domain,user_id, collection)
-        children = ref.get() or {}
+    def list_children(
+        self, 
+        domain: str, 
+        user_id: str, 
+        collection: str, 
+        limit: int = 30, 
+        start_at: Optional[str] = None
+    ) -> List[Dict]:
+        ref = self._child_ref(domain, user_id, collection)
+        
+        # Build query: Order by key is the most efficient for ID-based pagination
+        query = ref.order_by_key()
+        
+        if start_at:
+            query = query.start_at(start_at)
+        
+        # We take limit + 1 to see if there is a next page, or just limit
+        data = query.limit_to_first(limit).get() or {}
 
-        if isinstance(children, list):
-            children = {str(i): v for i, v in enumerate(children)}
+        if isinstance(data, list):
+            data = {str(i): v for i, v in enumerate(data)}
 
         result = []
-        for k, v in children.items():
+        for k, v in data.items():
             if isinstance(v, dict):
                 result.append({"id": k, **v})
             else:
@@ -112,15 +127,29 @@ class UnitedFirebaseAdapter(StorageAdapter):
     # --------------------
     # Nested CRUD
     # --------------------
-    def list_nested(self, domain :str, user_id: str, collection: str, child_id: str, nested: str) -> List[Dict]:
-        ref = self._nested_ref(domain,user_id, collection, child_id, nested)
-        nested_objs = ref.get() or {}
-
-        if isinstance(nested_objs, list):
-            nested_objs = {str(i): v for i, v in enumerate(nested_objs)}
+    def list_nested(
+        self, 
+        domain: str, 
+        user_id: str, 
+        collection: str, 
+        child_id: str, 
+        nested: str, 
+        limit: int = 30, 
+        start_at: Optional[str] = None
+    ) -> List[Dict]:
+        ref = self._nested_ref(domain, user_id, collection, child_id, nested)
+        
+        query = ref.order_by_key()
+        if start_at:
+            query = query.start_at(start_at)
+            
+        data = query.limit_to_first(limit).get() or {}
+        
+        if isinstance(data, list):
+            data = {str(i): v for i, v in enumerate(data)}
 
         result = []
-        for k, v in nested_objs.items():
+        for k, v in data.items():
             if isinstance(v, dict):
                 result.append({"id": k, **v})
             else:
