@@ -867,6 +867,20 @@ const EntityManager = (function() {
     if (!item) return;
 
     if (action.url) {
+      if (String(actionKey) === 'transactions') {
+        try {
+          sessionStorage.setItem('gradicent_data_section', 'transactions');
+        } catch (_) {
+          // Ignore storage failures in restricted contexts.
+        }
+      } else if (String(actionKey) === 'interactions') {
+        try {
+          sessionStorage.setItem('gradicent_data_section', 'interactions');
+        } catch (_) {
+          // Ignore storage failures in restricted contexts.
+        }
+      }
+
       const targetUrl = action.url
         .replace('{id}', encodeURIComponent(String(id)))
         .replace('{name}', encodeURIComponent(String(item.name || '')));
@@ -889,12 +903,22 @@ const EntityManager = (function() {
     }
 
     if (String(actionKey) === 'interactions') {
+      try {
+        sessionStorage.setItem('gradicent_data_section', 'interactions');
+      } catch (_) {
+        // Ignore storage failures in restricted contexts.
+      }
       rememberCurrentPageForBackNav();
       window.location.href = `/data/${encodeURIComponent(String(activeClientId))}?source=entity&action=new`;
       return;
     }
 
     if (String(actionKey) === 'transactions') {
+      try {
+        sessionStorage.setItem('gradicent_data_section', 'transactions');
+      } catch (_) {
+        // Ignore storage failures in restricted contexts.
+      }
       rememberCurrentPageForBackNav();
       window.location.href = `/data/${encodeURIComponent(String(activeClientId))}?source=entity&section=transactions&action=new`;
       return;

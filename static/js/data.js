@@ -145,7 +145,38 @@ let domain = 'medical';                    // set from API on page load
 const cfg = () => DOMAIN_CONFIG[domain];   // shorthand to get active config
 let plan = "free";                          // user subscription plan
 const pageSection = new URLSearchParams(window.location.search).get('section');
-const transactionMode = Boolean(window.__transactionMode__) || pageSection === 'transactions';
+const SECTION_STORAGE_KEY = 'gradicent_data_section';
+let transactionMode = false;
+
+function getInitialTransactionMode() {
+  if (pageSection === 'transactions') return true;
+  if (pageSection === 'interactions') return false;
+  if (Boolean(window.__transactionMode__)) return true;
+
+  try {
+    const stored = (sessionStorage.getItem(SECTION_STORAGE_KEY) || '').toLowerCase();
+    if (stored === 'transactions') return true;
+    if (stored === 'interactions') return false;
+  } catch (_) {
+    // Ignore storage failures in restricted contexts.
+  }
+
+  return false;
+}
+
+transactionMode = getInitialTransactionMode();
+
+function getEntryCollectionKey() {
+  return transactionMode ? 'transactions' : 'interactions';
+}
+
+function getEntryPayloadKey() {
+  return transactionMode ? 'transaction' : 'interaction';
+}
+
+function getEntryNumberKey() {
+  return transactionMode ? 'transaction_no' : 'interaction_no';
+}
 
 /**
  * Tracks real active time on the page and sends ONLY one final value:
@@ -197,6 +228,96 @@ function startUsageTracker(endpoint) {
 
 function el(id) { return document.getElementById(id); }
 
+function updateSectionUrl() {
+  try {
+    const url = new URL(window.location.href);
+    if (transactionMode) {
+      url.searchParams.set('section', 'transactions');
+    } else {
+      url.searchParams.delete('section');
+    }
+    window.history.replaceState({}, '', `${url.pathname}${url.search}`);
+  } catch (_) {
+    // Ignore URL API failures.
+  }
+}
+
+function setModeTabState() {
+  const interactionTabBtn = $('#interactionTabBtn');
+  const transactionTabBtn = $('#transactionTabBtn');
+  if (!interactionTabBtn || !transactionTabBtn) return;
+
+  const activeStyle = {
+    background: 'var(--accent)',
+    color: '#fff',
+    borderColor: 'var(--accent)'
+  };
+  const inactiveStyle = {
+    background: 'transparent',
+    color: 'var(--text)',
+    borderColor: 'var(--border)'
+  };
+
+  const applyStyle = (node, style) => {
+    node.style.background = style.background;
+    node.style.color = style.color;
+    node.style.borderColor = style.borderColor;
+  };
+
+  interactionTabBtn.setAttribute('aria-pressed', String(!transactionMode));
+  transactionTabBtn.setAttribute('aria-pressed', String(transactionMode));
+  applyStyle(interactionTabBtn, transactionMode ? inactiveStyle : activeStyle);
+  applyStyle(transactionTabBtn, transactionMode ? activeStyle : inactiveStyle);
+}
+
+function setTransactionMode(nextMode, { refresh = true } = {}) {
+  const normalized = Boolean(nextMode);
+  if (transactionMode === normalized && refresh) {
+    setModeTabState();
+    return;
+  }
+
+  transactionMode = normalized;
+  try {
+    sessionStorage.setItem(SECTION_STORAGE_KEY, transactionMode ? 'transactions' : 'interactions');
+  } catch (_) {
+    // Ignore storage failures in restricted contexts.
+  }
+
+  updateSectionUrl();
+  setModeTabState();
+  applySectionContext();
+
+  if (refresh) {
+    visits = [];
+    currentVisitIndex = 0;
+    visibleCount = PAGE_SIZE;
+    fetchClientData();
+  }
+}
+
+function initModeTabs() {
+  const interactionTabBtn = $('#interactionTabBtn');
+  const transactionTabBtn = $('#transactionTabBtn');
+  if (!interactionTabBtn || !transactionTabBtn) return;
+
+  interactionTabBtn.addEventListener('click', async () => {
+    const { proceed } = await confirmSaveBeforeClose();
+    if (!proceed) return;
+    setTransactionMode(false);
+    show_toast('Interaction tab opened', 'info');
+  });
+
+  transactionTabBtn.addEventListener('click', async () => {
+    const { proceed } = await confirmSaveBeforeClose();
+    if (!proceed) return;
+    setTransactionMode(true);
+    show_toast('Transaction tab opened', 'info');
+  });
+
+  setModeTabState();
+}
+
 function applySectionContext() {
   const topBarTitle = document.querySelector('.top-bar-title');
   const pageTitle = document.querySelector('.page-title');
@@ -216,6 +337,8 @@ function applySectionContext() {
     if (pageTitle) pageTitle.textContent = 'Client Appointment Log';
     if (pageSubtitle) pageSubtitle.textContent = 'Record appointments and interaction notes for this client';
   }
+
+  setModeTabState();
 }
 
 function show_toast(message, type = 'info') {
@@ -294,6 +417,7 @@ function menu_init() {
 ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
   menu_init();
+  initModeTabs();
   applySectionContext();
 
   const usage = startUsageTracker("/api/binder/track_time");
@@ -302,6 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   plan = (await get_plan_status()).plan;
 
   bindControls();
+  setTransactionMode(transactionMode, { refresh: false });
   fetchClientData();
 
   // If opened from client transactions action, guide attention to transaction fields.
@@ -446,7 +571,8 @@ function fetchClientData() {
   fetch(`/api/binder/clients/${patientNumber}?domain=${domain}&user_id=${user_id}`)
     .then(r => r.json())
     .then(r => {
-      visits = r.data.interactions || [];
+      const collectionKey = getEntryCollectionKey();
+      visits = r.data?.[collectionKey] || [];
       visibleCount = PAGE_SIZE;
       if (!Array.isArray(visits)) visits = [visits];
       const hasEntries = visits.some((v) => Object.keys(v || {}).length > 0);
@@ -620,11 +746,14 @@ function save({ silent = false } = {}) {
   const isNew = visits.length === 0 || Object.keys(visits[currentVisitIndex] || {}).length === 0;
 
   const method = isNew ? 'POST' : 'PATCH';
+  const payloadKey = getEntryPayloadKey();
+  const numberKey = getEntryNumberKey();
+  const endpoint = `/api/binder/clients/${patientNumber}/${getEntryCollectionKey()}`;
   const body = isNew
-    ? { domain, user_id, interaction: payload, interaction_no: payload.vno }
-    : { domain, user_id, patch: payload, interaction_no: payload.vno };
+    ? { domain, user_id, [payloadKey]: payload, [numberKey]: payload.vno }
+    : { domain, user_id, patch: payload, [numberKey]: payload.vno };
 
-  return fetch(`/api/binder/clients/${patientNumber}/interactions`, {
+  return fetch(endpoint, {
     method,
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify(body)
@@ -640,8 +769,8 @@ function save({ silent = false } = {}) {
     return true;
   })
   .catch(err => {
-    if (!silent) show_toast("Error saving interaction", "error");
-    console.error("Error saving interaction", err);
+    if (!silent) show_toast(transactionMode ? "Error saving payment log" : "Error saving interaction", "error");
+    console.error(transactionMode ? "Error saving payment log" : "Error saving interaction", err);
     return false;
   });
 }
