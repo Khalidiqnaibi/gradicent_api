@@ -374,15 +374,15 @@
 
     // ===== Data loader for each tab =====
     // Plan gating logic:
-    //   tbs = tabs available to ALL plans (roi, productivity)
-    //   pln = plans that unlock ALL tabs (pro, ultra)
-    //   If the tab is in tbs OR the user's plan is in pln, show data.
+    //   free_tabs = tabs available to ALL plans (roi, productivity)
+    //   pro_plans = plans that unlock ALL tabs (pro, ultra)
+    //   If the tab is in free_tabs OR the user's plan is in pro_plans, show data.
     //   Otherwise show the pro upgrade overlay.
     async function loadTab(tab) {
-      let tbs = ["productivity" , "roi"];    // free-tier tabs
-      let pln = ["pro" , "ultra"];           // plans that unlock everything
+      let free_tabs = ["productivity", "roi"];    // free-tier tabs
+      let pro_plans = ["pro", "ultra"];           // plans that unlock everything
       
-      if(tbs.includes(tab) || pln.includes(APP_STATE.plan) || tab === 'finance' || tab === 'clients'){
+      if(free_tabs.includes(tab) || pro_plans.includes(APP_STATE.plan)){
           let data = {};
 
         try {
@@ -451,11 +451,7 @@
               }
             }
 
-            if (tab === 'finance' && !["pro" , "ultra"].includes(APP_STATE.plan )){
-              setClientsButtonVisible(false);
-              showProOverlay('tab-finance', 'Finance Analytics', 'Finance metrics like revenue, outstanding balances, and trends are available on the Pro and Ultra plans.');
-            }
-            else if (tab === 'finance') {
+            if (tab === 'finance') {
               data = await fetchMetric('finance');
               setClientsButtonVisible(true);
               client_list = Array.isArray(data.clients) ? data.clients : [];
@@ -483,11 +479,8 @@
                 ch.update();
               }
             }
-            if (tab === 'clients' && !["pro" , "ultra"].includes(APP_STATE.plan )){
-              setClientsButtonVisible(false);
-              showProOverlay('tab-clients', 'Customer Analytics', 'Customer insights like retention, top services, and weekly trends are available on the Pro and Ultra plans.');
-            }
-            else if (tab === 'clients') {
+
+            if (tab === 'clients') {
               data = await fetchMetric('total_customers');
               setClientsButtonVisible(true);
               client_list = Array.isArray(data.clients) ? data.clients : [];

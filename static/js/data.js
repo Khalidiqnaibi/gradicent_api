@@ -684,7 +684,12 @@ function populate(raw) {
 ============================================================ */
 function fetchClientData() {
   fetch(`/api/binder/clients/${patientNumber}?domain=${domain}&user_id=${user_id}`)
-    .then(r => r.json())
+    .then(r => {
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}: Failed to fetch client data`);
+      }
+      return r.json();
+    })
     .then(r => {
       const collectionKey = getEntryCollectionKey();
       visits = r.data?.[collectionKey] || [];
@@ -709,8 +714,9 @@ function fetchClientData() {
       }
       show_toast(transactionMode ? "Fetched client transactions" : "Fetched client interactions", "success");
     }).catch( err =>{
-      show_toast(`Error Fetching interaction`,"error");
-      console.error(`Error Fetching interaction`,err);
+      const errorMsg = transactionMode ? "Error fetching transactions" : "Error fetching interactions";
+      show_toast(errorMsg, "error");
+      console.error(errorMsg, err);
     });
 }
 

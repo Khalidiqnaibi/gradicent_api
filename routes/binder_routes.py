@@ -703,10 +703,10 @@ def add_employee():
     payload = request.get_json(force=True)
 
     if not payload.get('domain'):
-       return make_response(message="Domain can not be None",status="error"),400
+       return make_response(message="Domain cannot be empty", status="error"), 400
     
     if not payload.get("employee"):
-        return make_response(message="New employee data can not be None"),400
+        return make_response(message="Employee data cannot be empty", status="error"), 400
     
     service = _get_domain_and_service(payload)
 
@@ -716,7 +716,7 @@ def add_employee():
     employee = service.create_employee(data=payload["employee"])
     log_with_service(service,206)
 
-    return make_response(data=employee, message="Created new employee"),200
+    return make_response(data=employee, message="Created new employee", status="success"), 201
 
 @binder_blueprint.route("/employee/<eid>", methods=["PATCH"])
 def update_employee(eid):
