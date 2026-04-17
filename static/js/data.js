@@ -510,7 +510,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const usage = startUsageTracker("/api/binder/track_time");
   domain = (await safe_fetch('/api/binder/get_domain')).data || 'medical';
   user_id = (await safe_fetch('/api/auth/me')).data.id;
-  plan = (await get_plan_status()).plan;
+
+  // FIX 1: get_plan_status() can return null if the API call fails.
+  // Previously: plan = (await get_plan_status()).plan  → TypeError if null.
+  // Now: guard against null so plan safely stays "free" on failure.
+  const planStatus = await get_plan_status();
+  plan = planStatus?.plan ?? 'free';
 
   bindControls();
   setTransactionMode(transactionMode, { refresh: false });
@@ -601,19 +606,24 @@ function bindControls() {
   }
   $('#addNewEntryBtn')?.addEventListener('click', openNewEntry);
   $('#closeInteractionBtn')?.addEventListener('click', () => {
-    closeInteractionForm({ force: true });
+    // FIX 2: Removed force:true so the close button respects unsaved changes,
+    // matching the behavior of the Escape key path below which also used force:true.
+    // Users pressing Close will now get the same save-prompt as other navigation.
+    closeInteractionForm();
   });
   const interactionModal = $('#interactionModal');
   if (interactionModal) {
     interactionModal.addEventListener('click', (event) => {
       if (event.target === interactionModal) {
-        closeInteractionForm({ force: true });
+        // FIX 2 (continued): Backdrop click also no longer force-closes.
+        closeInteractionForm();
       }
     });
   }
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && $('#interactionModal')?.style.display === 'flex') {
-      closeInteractionForm({ force: true });
+      // FIX 2 (continued): Escape key also no longer force-closes.
+      closeInteractionForm();
     }
   });
   $('#backBtn')?.addEventListener('click', () => {
@@ -656,17 +666,21 @@ function populate(raw) {
   const v = normalize(raw);
   const d = cfg().dom;
 
-  $(d.date).value = v.date;
-  $(d.owner).value = v.owner;
-  $(d.title).value = v.title;
-  $(d.service).value = v.service;
-  $(d.notes).value = v.notes;
-  $(d.cost).value = v.cost;
-  $(d.paid).value = v.paid;
-  $(d.debt).value = v.debt;
-  $(d.detail1).value = v.detail1;
-  $(d.detail2).value = v.detail2;
-  if (Boolean(d.detail3)){
+  // FIX 3: All DOM assignments are now null-guarded.
+  // Previously, any missing element (e.g. wrong domain, partial HTML) would
+  // throw "Cannot set properties of null" and silently abort the entire populate().
+  // Now each field is set only if the element exists.
+  if ($(d.date))    $(d.date).value    = v.date;
+  if ($(d.owner))   $(d.owner).value   = v.owner;
+  if ($(d.title))   $(d.title).value   = v.title;
+  if ($(d.service)) $(d.service).value = v.service;
+  if ($(d.notes))   $(d.notes).value   = v.notes;
+  if ($(d.cost))    $(d.cost).value    = v.cost;
+  if ($(d.paid))    $(d.paid).value    = v.paid;
+  if ($(d.debt))    $(d.debt).value    = v.debt;
+  if ($(d.detail1)) $(d.detail1).value = v.detail1;
+  if ($(d.detail2)) $(d.detail2).value = v.detail2;
+  if (d.detail3 && $(d.detail3)) {
     $(d.detail3).value = v.detail3;
   }
 
@@ -696,12 +710,16 @@ function fetchClientData() {
       visibleCount = pageSize;
       if (!Array.isArray(visits)) visits = [visits];
       const hasEntries = visits.some((v) => Object.keys(v || {}).length > 0);
+
+      // FIX 4: Capture forceNewEntry before resetting it, so a concurrent
+      // second call to fetchClientData() can't consume the flag and leave
+      // this call's .then() unaware that a new entry was requested.
       const openInNewMode = forceNewEntry;
+      forceNewEntry = false;
 
       if (openInNewMode) {
         visits.push({});
         currentVisitIndex = visits.length - 1;
-        forceNewEntry = false;
       } else {
         currentVisitIndex = visits.length ? visits.length - 1 : 0;
       }
@@ -777,8 +795,13 @@ async function next(){
    Search
 ============================================================ */
 async function search() {
-  const fromInput = $('#fromDateFilter')?.value || $('#search')?.value || '';
-  const toInput = $('#toDateFilter')?.value || fromInput;
+  // FIX 5: Previously the search function fell back to #search text input
+  // as a date value: `$('#fromDateFilter')?.value || $('#search')?.value`
+  // This caused normalizeDateInput() to receive non-date text and silently
+  // return no results. Date filters now only read from the date inputs.
+  // The #search input is preserved for future text-search use if needed.
+  const fromInput = $('#fromDateFilter')?.value || '';
+  const toInput = $('#toDateFilter')?.value || '';
 
   filterFromDate = fromInput;
   filterToDate = toInput;
@@ -804,22 +827,22 @@ function buildPayload() {
   const d = cfg().dom;
 
   const data = {
-    [f.date]: $(d.date).value,
-    [f.owner]: $(d.owner).value,
-    [f.title]: $(d.title).value,
-    [f.service]: $(d.service).value,
-    [f.notes]: $(d.notes).value,
-    [f.cost]: Number($(d.cost).value || 0),
-    [f.paid]: Number($(d.paid).value || 0),
-    [f.detail1]: $(d.detail1).value,
-    [f.detail2]: $(d.detail2).value,
+    [f.date]:    $(d.date)?.value    || '',
+    [f.owner]:   $(d.owner)?.value   || '',
+    [f.title]:   $(d.title)?.value   || '',
+    [f.service]: $(d.service)?.value || '',
+    [f.notes]:   $(d.notes)?.value   || '',
+    [f.cost]:    Number($(d.cost)?.value  || 0),
+    [f.paid]:    Number($(d.paid)?.value  || 0),
+    [f.detail1]: $(d.detail1)?.value || '',
+    [f.detail2]: $(d.detail2)?.value || '',
     vno: visits[currentVisitIndex]?.vno || currentVisitIndex + 1
   };
-  if (Boolean(d.detail3)){
-    data[f.detail3]= $(d.detail3).value;
+  if (d.detail3) {
+    data[f.detail3] = $(d.detail3)?.value || '';
   }
   data[f.debt] = data[f.cost] - data[f.paid];
-  $(d.debt).value = data[f.debt];
+  if ($(d.debt)) $(d.debt).value = data[f.debt];
 
   return data;
 }
@@ -827,14 +850,14 @@ function buildPayload() {
 function getCurrentFormSnapshot() {
   const d = cfg().dom;
   return JSON.stringify({
-    date: $(d.date)?.value || '',
-    owner: $(d.owner)?.value || '',
-    title: $(d.title)?.value || '',
+    date:    $(d.date)?.value    || '',
+    owner:   $(d.owner)?.value   || '',
+    title:   $(d.title)?.value   || '',
     service: $(d.service)?.value || '',
-    notes: $(d.notes)?.value || '',
-    cost: String($(d.cost)?.value || ''),
-    paid: String($(d.paid)?.value || ''),
-    debt: String($(d.debt)?.value || ''),
+    notes:   $(d.notes)?.value   || '',
+    cost:    String($(d.cost)?.value  || ''),
+    paid:    String($(d.paid)?.value  || ''),
+    debt:    String($(d.debt)?.value  || ''),
     detail1: $(d.detail1)?.value || '',
     detail2: $(d.detail2)?.value || '',
     detail3: d.detail3 ? ($(d.detail3)?.value || '') : ''
@@ -1071,10 +1094,16 @@ if (visibleCount < totalEntries) {
 function printInteraction() {
   let lock  = ["medical"].includes(domain);  // only medical locks on print
   if (lock && !confirm(`Lock this ${cfg().label}?`)) return;
+
+  // FIX 6: Previously sent { vno: currentVisitIndex } which is the zero-based
+  // array index, not the actual visit number the backend expects.
+  // Now sends the real vno from the visit record, falling back to index+1.
+  const vno = visits[currentVisitIndex]?.vno ?? currentVisitIndex + 1;
+
   fetch('/kkprint',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ vno: currentVisitIndex })
+    body:JSON.stringify({ vno })
   })
   .then(r=>r.blob())
   .then(b=>{
