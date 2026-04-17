@@ -1358,11 +1358,9 @@
     getTheme,
     setTheme,
     toggleTheme,
-    cleanup,     
-    clearAllToasts, 
+    cleanup,
+    clearAllToasts,
   };
 
-})();
-
-
+  
 window.EntityManager = EntityManager;
