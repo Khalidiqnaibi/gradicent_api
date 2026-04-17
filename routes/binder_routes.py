@@ -674,7 +674,12 @@ def get_employee(eid):
     
     domain = request.args.get("domain", DEFAULT_DOMAIN)
     user_id = request.args.get("user_id")
+    
+    if not user_id == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+    
     service = _get_domain_and_service({"domain": domain})
+
     if user_id:
         service.set_current_user(user_id)
 
@@ -712,6 +717,10 @@ def add_employee():
 
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
+
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
         
     employee = service.create_employee(data=payload["employee"])
     log_with_service(service,206)
@@ -739,6 +748,10 @@ def update_employee(eid):
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
 
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+
     employee = service.update_employee(eid, payload["patch"])
     log_with_service(service,406)
     return make_response(data=employee,message="Employee updated successfully."), 200
@@ -756,6 +769,10 @@ def delete_employee(eid):
     user_id = payload.get("user_id")
     if user_id:
         service.set_current_user(user_id)
+
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     service.delete_employee(eid)
     return make_response(message="Client deleted."), 200
@@ -777,6 +794,10 @@ def employee_search():
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
+
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     results = service.search_employee(query)
     resp = make_response(data=results, message="Search completed.")
@@ -807,6 +828,10 @@ def create_product():
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
 
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+
     product = service.create_product(payload["product"])
     log_with_service(service, 204)
 
@@ -832,6 +857,9 @@ def read_product(product_id: str):
     service = _get_domain_and_service(payload)
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     product = service.read_product(product_id)
     if not product:
@@ -862,6 +890,9 @@ def update_product(product_id: str):
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
 
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+
     service.update_product(product_id, payload["patch"])
     log_with_service(service, 404)
 
@@ -886,6 +917,9 @@ def delete_product(product_id: str):
 
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     service.delete_product(product_id)
 
@@ -908,6 +942,9 @@ def product_search():
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
+        
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     results = service.search_product(query)
     resp = make_response(data=results, message="Search completed.")
@@ -937,6 +974,9 @@ def create_service():
     service = _get_domain_and_service(payload)
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
+        
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     svc = service.create_service(payload["service"])
     log_with_service(service, 205)
@@ -963,6 +1003,9 @@ def read_service(service_id: str):
     service = _get_domain_and_service(payload)
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
+        
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     svc = service.read_service(service_id)
     if not svc:
@@ -992,6 +1035,9 @@ def update_service(service_id: str):
     service = _get_domain_and_service(payload)
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     service.update_service(service_id, payload["patch"])
     log_with_service(service, 405)
@@ -1017,6 +1063,9 @@ def delete_service(service_id: str):
 
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
+        
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     service.delete_service(service_id)
 
@@ -1039,6 +1088,10 @@ def service_search():
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
+
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     results = service.search_service(query)
     resp = make_response(data=results, message="Search completed.")
@@ -1071,6 +1124,9 @@ def list_transactions(client_id: str):
     service = _get_domain_and_service({"domain": domain})
     if user_id:
         service.set_current_user(user_id)
+
+    if not user_id == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     transactions = service.list_transactions(
         client_id=client_id, 
@@ -1124,6 +1180,10 @@ def add_transactions(client_id: str):
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
 
+    
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+
     if int(client_id) < 0:
         client_id = session["client_id"]
 
@@ -1160,6 +1220,9 @@ def update_transactions(client_id: str):
     service.set_current_user(session["user_id"])
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
+
+    if not payload['user_id'] == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
     
     if  int(client_id) < 0:
         client_id = session["client_id"]
@@ -1191,6 +1254,9 @@ def delete_transaction(client_id: str):
     user_id = payload.get("user_id")
     if user_id:
         service.set_current_user(user_id)
+    
+    if not user_id == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
     
     if not transaction_no:
         raise BadRequest("'transaction_no' not found in payload")

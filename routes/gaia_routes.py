@@ -5,7 +5,7 @@ Dynamic endpoints for analytics and productivity metrics.
 Uses the modular GaiaEngine to compute any registered metric.
 """
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app ,session
 from gaia import GaiaEngine
 from utils.log_events import log_with_binder
 
@@ -60,6 +60,9 @@ def compute_metric():
     user_id = request.args.get("user_id")
     if not user_id:
         return make_response({}, "Missing 'user_id' parameter.", "error")
+    
+    if not user_id == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
 
     # Retrieve binder (Medical or Business)
     binder = current_app.config["BINDERS"].get(domain)
