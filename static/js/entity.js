@@ -21,6 +21,9 @@
  * searching/filtering the local STATE.items array. This makes
  * the page usable even when the backend doesn't support list-all.
  *
+ */
+
+const EntityManager = (() => {
 
 
   // ─── Configuration ────────────────────────────────────────────────────────
@@ -1361,6 +1364,8 @@
     cleanup,
     clearAllToasts,
   };
+
+})();
 
   
 window.EntityManager = EntityManager;
