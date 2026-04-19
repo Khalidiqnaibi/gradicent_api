@@ -85,12 +85,12 @@ const DOMAIN_CONFIG = {
       title:   '#diagnosis',
       service: '#treatment',
       notes:   '#details',
-      cost:    '#coast',         // HTML id (matches backend "coast")
-      paid:    '#payed',         // HTML id (matches backend "payed")
+      cost:    '#coast',
+      paid:    '#payed',
       debt:    '#debt',
-      detail1: '#weight',        // medical → patient weight
-      detail2: '#height',        // medical → patient height
-      detail3: '#lab'            // medical → lab results
+      detail1: '#weight',
+      detail2: '#height',
+      detail3: '#lab'
     },
     fields: {
       date:    'visit_date',
@@ -98,9 +98,9 @@ const DOMAIN_CONFIG = {
       title:   'diagnosis',
       service: 'treatment',
       notes:   'details',
-      cost:    'coast',          // backend field name (not a typo)
-      paid:    'payed',          // backend field name (not a typo)
-      debt:    'debit',          // backend field name (not a typo)
+      cost:    'coast',
+      paid:    'payed',
+      debt:    'debit',
       detail1: 'weight',
       detail2: 'height',
       detail3: 'lab'
@@ -135,7 +135,6 @@ const DOMAIN_CONFIG = {
       debt:    'balance',
       detail1: 'description',
       detail2: 'next'
-      // no detail3 for business
     },
     lockOnPrint: true
   }
@@ -508,8 +507,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   applySectionContext();
 
   const usage = startUsageTracker("/api/binder/track_time");
-  domain = (await safe_fetch('/api/binder/get_domain')).data || 'medical';
-  user_id = (await safe_fetch('/api/auth/me')).data.id;
+  try {
+    domain = (await safe_fetch('/api/binder/get_domain')).data || 'medical';
+  } catch (err) {
+    console.warn('Failed to load domain, using medical default:', err);
+    domain = 'medical';
+  }
+
+  try {
+    user_id = (await safe_fetch('/api/auth/me')).data?.id || '';
+  } catch (err) {
+    console.warn('Failed to load authenticated user:', err);
+    user_id = '';
+    show_toast('Could not verify your session. Some actions may not work until you sign in again.', 'error');
+  }
 
   // FIX 1: get_plan_status() can return null if the API call fails.
   // Previously: plan = (await get_plan_status()).plan  → TypeError if null.

@@ -122,6 +122,10 @@ function startUsageTracker(endpoint) {
 // ---------------------------------------------
 function showToast(text, ms = 1800) {
   const toast = document.getElementById('toast');
+  if (!toast) {
+    console.warn('showToast called but #toast element is missing:', text);
+    return;
+  }
   toast.textContent = text;
   toast.classList.add('show');
   clearTimeout(toast._t);
