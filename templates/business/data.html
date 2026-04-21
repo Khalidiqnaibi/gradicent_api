@@ -291,7 +291,7 @@
     window.__client__ = "{{client}}";
     window.__transactionMode__ = "{{ transaction_mode|default(false) }}" === "True";
   </script>
-  <script src="/static/js/entity.js"></script>
-  <script src="/static/js/data.js"></script>
+  <script type="module" src="/static/js/entity.js"></script>
+  <script defer src="/static/js/data.js"></script>
 </body>
 </html>
