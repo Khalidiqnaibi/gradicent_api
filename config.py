@@ -134,7 +134,7 @@ USE_HTTPS = os.getenv("USE_HTTPS","False").lower() in ("true", "1", "t")
 # OAuth settings
 OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE",os.path.join(BASE_DIR, "client_secret1.json"))
 OAUTH_GOOGLE_CLIENT_ID = os.getenv("OAUTH_GOOGLE_CLIENT_ID","107932074863-nlil9n5j9lmahqfb15cmn52u59evpse9.apps.googleusercontent.com")
-OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI","http://gradicent.pythonanywhere.com/api/auth/callback")
+OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI","https://gradicent.pythonanywhere.com/api/auth/callback")
 OAUTH_SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
