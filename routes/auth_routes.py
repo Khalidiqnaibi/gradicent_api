@@ -58,7 +58,7 @@ def start_oauth():
     auth_service = _get_auth_service(domain)
 
     # Authlib needs the full callback URL to generate the state correctly
-    redirect_uri = url_for("auth.oauth_callback", provider=provider, _external=True)
+    redirect_uri = url_for("auth.oauth_callback", _external=True)
     
     try:
         return auth_service.get_authorization_redirect(redirect_uri)
