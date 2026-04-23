@@ -14,6 +14,7 @@ import time
 import jwt
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import asdict
+from flask import session
 
 from auth.providers.google_provider import GoogleAuthProvider
 from binder import User,LegacyUser  # adjust path to your actual model
@@ -48,6 +49,7 @@ class AuthService:
     def get_authorization_url(self, provider: str, state: Optional[str]) -> str:
         # Returns only the URL string to keep route logic identical
         rv = self.google_client.create_authorization_url(self.redirect_uri, state=state)
+        session[f'_{provider}_authlib_state_'] = rv['state']
         return rv['url']
 
 
