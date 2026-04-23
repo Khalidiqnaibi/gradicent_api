@@ -14,7 +14,6 @@ import time
 import jwt
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import asdict
-from flask import session
 
 from auth.providers.google_provider import GoogleAuthProvider
 from binder import User,LegacyUser  # adjust path to your actual model
@@ -47,9 +46,12 @@ class AuthService:
         self.refresh_token_ttl = refresh_token_ttl
 
     def get_authorization_url(self, provider: str, state: Optional[str]) -> str:
-        # Returns only the URL string to keep route logic identical
+        # Generate the URL and security state
         rv = self.google_client.create_authorization_url(self.redirect_uri, state=state)
-        session[f'_{provider}_authlib_state_'] = rv['state']
+        
+        # Save state/nonce/PKCE data to session automatically
+        self.google_client.save_authorize_data(redirect_uri=self.redirect_uri, **rv)
+        
         return rv['url']
 
 
@@ -59,7 +61,7 @@ class AuthService:
         provider: str,
         code: str,
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        # Exchanges code for token using the request context
+        # This pulls code/state from the request and compares them to the session
         token = self.google_client.authorize_access_token()
         user_info = token.get('userinfo')
 
@@ -71,7 +73,6 @@ class AuthService:
         }
         
         user = _provision_user(self.adapter, self.legacy_adapter, self.file_adapter, domain, provider, provider_user)
-
         tokens = self._create_tokens_for_user(user.id)
         self._save_refresh_token(domain, user.id, tokens["refresh_token"])
 
