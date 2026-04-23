@@ -45,15 +45,6 @@ class AuthService:
         self.access_token_ttl = access_token_ttl
         self.refresh_token_ttl = refresh_token_ttl
 
-        # OAuth provider
-        self.providers = {
-            "google": GoogleAuthProvider(
-                client_secrets_path=self.google_client["client_secrets_path"],
-                redirect_uri=self.google_client["redirect_uri"],
-                scopes=self.google_client["scopes"],
-            )
-        }
-
     def get_authorization_url(self, provider: str, state: Optional[str]) -> str:
         # Returns only the URL string to keep route logic identical
         rv = self.google_client.create_authorization_url(self.redirect_uri, state=state)
