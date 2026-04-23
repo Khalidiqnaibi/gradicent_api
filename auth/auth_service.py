@@ -57,9 +57,9 @@ class AuthService:
         provider: str,
         code: str,
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        # Exchanges the code manually using the Authlib client
-        token = self.google_client.fetch_token(self.redirect_uri, code=code)
-        user_info = self.google_client.userinfo(token=token)
+        # Exchanges code for token using the request context
+        token = self.google_client.authorize_access_token()
+        user_info = token.get('userinfo')
 
         provider_user = {
             "id": user_info.get("sub"),
