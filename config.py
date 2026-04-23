@@ -145,7 +145,7 @@ ACCESS_TOKEN_TTL_SECONDS = int(os.getenv("ACCESS_TOKEN_TTL_SECONDS", "3600"))
 REFRESH_TOKEN_TTL_SECONDS = int(os.getenv("REFRESH_TOKEN_TTL_SECONDS", str(60*60*24*30)))
 
 # Firebase settings
-FIREBASE_CREDENTIALS_PATH = os.getenv("FIREBASE_CREDENTIALS_PATH",os.path.join(BASE_DIR, "key2.json"))
+FIREBASE_CREDENTIALS_PATH = os.getenv("FIREBASE_CREDENTIALS_PATH",os.path.join(BASE_DIR, "firebase.json"))
 FIREBASE_DATABASE_URL = os.getenv("FIREBASE_DATABASE_URL",'https://monydb-f2cdb-default-rtdb.europe-west1.firebasedatabase.app/')
 FIREBASE_STORAGE_BUCKET = os.getenv("FIREBASE_STORAGE_BUCKET",'monydb-f2cdb.appspot.com')
 

@@ -12,3 +12,4 @@ gaia/__pycache__/__init__.cpython-39.pyc
 *.pyc
 *.pyc
 .env
+firebase.json

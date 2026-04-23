@@ -9,6 +9,8 @@ import os
 from flask import Flask, jsonify
 import firebase_admin
 from firebase_admin import credentials, initialize_app
+from authlib.integrations.flask_client import OAuth
+import json
 
 from services.subscription_service import SubscriptionService
 from services.file_service import FileService
@@ -65,6 +67,7 @@ def _resolve_file_path(path_from_config: str) -> str:
 def create_app(config_name: str = 'default') -> Flask:
     app = Flask(__name__, template_folder='templates', static_folder='static')
     app.config.from_object(DefaultConfig())
+    oauth = OAuth(app)
 
     # Ensure there's a JWT secret available for AuthService
     jwt_secret = app.config.get("JWT_SECRET") or app.config.get("SECRET_KEY")
@@ -84,6 +87,7 @@ def create_app(config_name: str = 'default') -> Flask:
             'databaseURL': app.config["FIREBASE"]["databaseURL"],
             'storageBucket': app.config["FIREBASE"]["storageBucket"]
         })
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
     # Adapter + domain binders
     united_firebase_adapter = UnitedFirebaseAdapter(root_path="Gradicent")
@@ -97,11 +101,18 @@ def create_app(config_name: str = 'default') -> Flask:
     app.config.setdefault("BINDERS", binders)
 
     # Auth
-    google_config = {
-        "client_secrets_path": oauth_secrets_path,
-        "redirect_uri": app.config["OAUTH_REDIRECT_URI"],
-        "scopes": app.config.get("OAUTH_SCOPES", ["openid", "email", "profile"]),
-    }
+    with open(oauth_secrets_path, "r") as f:
+        secrets = json.load(f)
+        client_id = secrets["web"]["client_id"]
+        client_secret = secrets["web"]["client_secret"]
+
+    google_client = oauth.register(
+        name='google',
+        client_id=client_id,
+        client_secret=client_secret,
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'}
+    )
 
     file_adapter = FirebaseFileStorageAdapter()
     file_service = FileService(file_adapter)
@@ -109,10 +120,10 @@ def create_app(config_name: str = 'default') -> Flask:
     auth = AuthService(
         adapter=united_firebase_adapter,
         legacy_adapter=legacy_firebase_adapter_medical,
-        google_config=google_config,
-        jwt_secret=jwt_secret,
         file_adapter=file_adapter,
-        # optional: access_token_ttl=3600, refresh_token_ttl=2592000
+        google_client=google_client,
+        jwt_secret=jwt_secret,
+        redirect_uri=app.config["OAUTH_REDIRECT_URI"]
     )
 
     auth_services = {
