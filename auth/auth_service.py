@@ -45,25 +45,19 @@ class AuthService:
         self.access_token_ttl = access_token_ttl
         self.refresh_token_ttl = refresh_token_ttl
 
-    def get_authorization_url(self, provider: str, state: Optional[str]) -> str:
-        # Generate the URL and security state
-        rv = self.google_client.create_authorization_url(self.redirect_uri, state=state)
-        
-        # Save state/nonce/PKCE data to session automatically
-        self.google_client.save_authorize_data(redirect_uri=self.redirect_uri, **rv)
-        
-        return rv['url']
+    def get_authorization_redirect(self, redirect_uri: str):
+        """Returns a Flask Response object that handles state/session automatically."""
+        return self.google_client.authorize_redirect(redirect_uri)
 
 
-    def handle_provider_callback(
-        self,
-        domain: str,
-        provider: str,
-        code: str,
-    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        # This pulls code/state from the request and compares them to the session
+    def handle_provider_callback(self, domain: str, provider: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """Automatically verifies state against session and exchanges code for tokens."""
+        # This pulls the 'code' and 'state' from the current request context automatically
         token = self.google_client.authorize_access_token()
         user_info = token.get('userinfo')
+
+        if not user_info:
+            raise ValueError("Failed to retrieve user info from Google.")
 
         provider_user = {
             "id": user_info.get("sub"),

@@ -4,21 +4,19 @@ auth_routes.py
 Auth routes for OAuth flows and token endpoints.
 
 Endpoints:
-  GET  /start?provider=google     -> redirect to provider auth URL
+  GET  /start?provider=google    -> redirect to provider auth URL
   GET  /callback?provider=google  -> OAuth callback
   POST /signout                   -> sign out (session + revoke refresh token)
   GET  /me                        -> current user (session or Bearer token)
   POST /refresh                   -> exchange refresh token for new access token
 """
 
-from typing import Optional
+from typing import Optional, Any, Dict
 from flask import Blueprint, request, redirect, session, jsonify, current_app, url_for
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
+
 from binder import normalize_user
 from utils.log_events import log_with_service
-from werkzeug.exceptions import BadRequest, NotFound
-from typing import Any,Dict
-
 from services.binder_service import BinderService
 
 auth_blueprint = Blueprint("auth", __name__)
@@ -26,12 +24,7 @@ auth_blueprint = Blueprint("auth", __name__)
 DEFAULT_DOMAIN = "business"
 
 def _get_domain_and_service(payload: Dict[str, Any]) -> BinderService:
-    """
-    Resolve domain from payload and return a BinderService that wraps the configured binder.
-
-    Raises:
-        BadRequest: if domain is missing or binder not configured.
-    """
+    """Resolve domain and return a BinderService instance."""
     services = current_app.extensions.get("services", {})
     binder_services = services.get("binder_services")
 
@@ -43,165 +36,123 @@ def _get_domain_and_service(payload: Dict[str, Any]) -> BinderService:
     return binder_service
 
 def _get_auth_service(domain: str):
+    """Retrieve the Authservice registered for the specific domain."""
     services = current_app.extensions.get("services", {})
     auth_services = services.get("auth_services")
     if not auth_services:
-        raise RuntimeError("auth_services not registered in app.extensions['services']")
+        raise RuntimeError("auth_services not registered in app.extensions")
     
-    if domain in ["medical"]:
-        auth_service = auth_services.get("medical")
-        return auth_service
-    elif domain in ["business"]:
-        auth_service = auth_services.get("business")
-        return auth_service
-    else:
-        raise RuntimeError("auth_service not registered in app.extensions['services']['auth_services']")
+    auth_service = auth_services.get(domain)
+    if not auth_service:
+         raise RuntimeError(f"auth_service not registered for domain: {domain}")
+    return auth_service
 
 
 @auth_blueprint.route("/start", methods=["GET"])
 def start_oauth():
-    """
-    Start an OAuth/OpenID authorization flow for a provider.
-    Query params:
-      - provider (default: "google")
-      - state (optional)
-    Returns a redirect to the provider authorization URL.
-    """
+    """Start OAuth flow by redirecting to provider with managed state."""
     provider = request.args.get("provider", "google")
-    state = request.args.get("state")
-    domain = request.args.get("domain",session.get("binder", "business"))
+    domain = request.args.get("domain", session.get("binder", "business"))
+    
     session["domain"] = domain
     auth_service = _get_auth_service(domain)
+
+    # Authlib needs the full callback URL to generate the state correctly
+    redirect_uri = url_for("auth.oauth_callback", provider=provider, _external=True)
+    
     try:
-        auth_url = auth_service.get_authorization_url(provider, state)
-    except KeyError:
-        return jsonify({"status": "error","data":None, "message": f"unknown provider '{provider}'"}), 400
-    return redirect(auth_url)
+        return auth_service.get_authorization_redirect(redirect_uri)
+    except Exception as exc:
+        return jsonify({"status": "error", "data": None, "message": str(exc)}), 400
 
 
 @auth_blueprint.route("/callback", methods=["GET"])
 def oauth_callback():
-    """
-    OAuth callback endpoint. Provider will redirect here with `code` (and optionally `state`).
-    On success:
-      - create/provision user locally
-      - issue JWT tokens
-      - set a session cookie for browser flows
-      - return user and token info as JSON
-    """
+    """Handle provider callback and provision user."""
     provider = request.args.get("provider", "google")
-    code = request.args.get("code")
     error = request.args.get("error")
+    
     if error:
-        return jsonify({"status": "error","data":None, "message": error}), 400
-    if not code:
-        raise BadRequest("missing 'code' in callback request")
+        return jsonify({"status": "error", "data": None, "message": error}), 400
 
-    domain = request.args.get("domain",session.get("domain", session.get("binder", DEFAULT_DOMAIN)))
+    domain = session.get("domain", DEFAULT_DOMAIN)
     auth_service = _get_auth_service(domain)
+    
     try:
-        user, tokens = auth_service.handle_provider_callback(domain,provider, code)
+        # State and code are handled internally via request context
+        user, tokens = auth_service.handle_provider_callback(domain, provider)
     except Exception as exc:
-        # return a safe error message
-        return jsonify({"status": "error","data":None, "message": str(exc)}), 500
+        return jsonify({"status": "error", "data": None, "message": str(exc)}), 500
 
-    # Browser flow: store session and minimal jwt
+    # Store authentication in session
     session.permanent = True
     session["user_id"] = user.get("id")
     session["jwt"] = tokens.get("access_token")
 
-    binder_service = _get_domain_and_service({"domain":domain})
+    # Log login event
+    binder_service = _get_domain_and_service({"domain": domain})
     binder_service.set_current_user(session.get("user_id"))
-    log_with_service(binder_service,100)
+    log_with_service(binder_service, 100)
+
     if domain:
         return redirect(f"/binder/{domain}")
 
-    return jsonify({"status": "success", "data": {"user": user, "tokens": tokens},"message":"got token"})
+    return jsonify({"status": "success", "data": {"user": user, "tokens": tokens}, "message": "Authenticated"})
+
 
 @auth_blueprint.route("/signout", methods=["POST"])
 def sign_out():
-    """
-    Sign out the current session / revoke refresh token.
-    Accepts optional JSON body: { "user_id": "..." } to sign out specific user.
-    """
-    domain = request.json.get.get("domain", session.get("domain",session.get("binder", "business")))
+    """Revoke tokens and clear local session."""
+    domain = request.json.get("domain", session.get("domain", DEFAULT_DOMAIN)) if request.is_json else session.get("domain", DEFAULT_DOMAIN)
     auth_service = _get_auth_service(domain)
     user_id = request.json.get("user_id") if request.is_json else session.get("user_id")
-    # revoke server-side refresh token
+
     try:
-        auth_service.sign_out(domain,user_id)
-        session.clear()
-        session["domain"] = domain
+        auth_service.sign_out(domain, user_id)
     except Exception:
-        # non-fatal: continue to clear session
         pass
+    
     session.clear()
-    return jsonify({"status": "success","data":None, "message": "signed out"})
+    session["domain"] = domain
+    return jsonify({"status": "success", "data": None, "message": "signed out"})
 
 
 @auth_blueprint.route("/me", methods=["GET"])
 def current_user():
-    """
-    Return the current authenticated user.
-    Tries Bearer token first, then session cookie.
-    """
-    if session.get("plan") == "sec":
-        user_id = session.get("user_id")
-        if not user_id:
-            return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
-
-        domain = session.get("domain", session.get("binder", "business"))
-        auth_service = _get_auth_service(domain)
-
-        user = auth_service.adapter.get_user(domain, user_id)
-        if not user:
-            return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
-
-        normalized = normalize_user(user)
-        res = normalized.to_dict()
-        _ = res.pop("metadata", None) 
-        if not normalized:
-            return jsonify({"status": "error","data":None, "message": "unrecognized user structure"}), 401
-
-        return jsonify({"status": "success", "data": res,"message":"got user"})
-    domain = request.args.get("domain", session.get("domain",session.get("binder", "business")))
+    """Return the currently authenticated user structure."""
+    domain = request.args.get("domain", session.get("domain", DEFAULT_DOMAIN))
     auth_service = _get_auth_service(domain)
-    auth_header: Optional[str] = request.headers.get("Authorization")
-    token = None
-    if auth_header and auth_header.lower().startswith("bearer "):
-        token = auth_header.split(" ", 1)[1].strip()
-    token = token or session.get("jwt")
-
     
-    user = auth_service.verify_token_and_get_user(domain,token)
+    # Check Bearer token or session JWT
+    auth_header: Optional[str] = request.headers.get("Authorization")
+    token = auth_header.split(" ", 1)[1].strip() if auth_header and auth_header.lower().startswith("bearer ") else session.get("jwt")
+    
+    user = auth_service.verify_token_and_get_user(domain, token)
     if not user:
-        return jsonify({"status": "error","data":None, "message": "unauthenticated"}), 401
+        return jsonify({"status": "error", "data": None, "message": "unauthenticated"}), 401
     
     normalized = normalize_user(user)
-    res = normalized.to_dict()
-    _ = res.pop("metadata", None)  # remove sensitive metadata
     if not normalized:
-        return jsonify({"status": "error","data":None, "message": "unrecognized user structure"}), 401
+        return jsonify({"status": "error", "data": None, "message": "unrecognized user structure"}), 401
 
-    return jsonify({"status": "success", "data": res,"message":"got user"})
+    res = normalized.to_dict()
+    res.pop("metadata", None) 
+    return jsonify({"status": "success", "data": res, "message": "got user"})
 
 
 @auth_blueprint.route("/refresh", methods=["POST"])
 def refresh_tokens():
-    """
-    Exchange a refresh token for a new access token pair.
-    Body: { "refresh_token": "..." }
-    Returns new tokens or 401 on failure.
-    """
+    """Exchange refresh token for new access/refresh pair."""
     payload = request.get_json(silent=True) or {}
-    domain = payload.get("domain", session.get("domain", session.get("binder", "business")))
+    domain = payload.get("domain", session.get("domain", DEFAULT_DOMAIN))
     auth_service = _get_auth_service(domain)
+    
     refresh_token = payload.get("refresh_token") or request.headers.get("X-Refresh-Token")
     if not refresh_token:
         return jsonify({"status": "error", "message": "missing refresh_token"}), 400
 
-    new_tokens = auth_service.refresh_tokens(refresh_token)
+    new_tokens = auth_service.refresh_tokens(domain, refresh_token)
     if not new_tokens:
-        return jsonify({"status": "error","data":None, "message": "invalid or expired refresh token"}), 401
+        return jsonify({"status": "error", "data": None, "message": "invalid or expired refresh token"}), 401
 
-    return jsonify({"status": "success", "data": new_tokens,"message":"refreshed"})
+    return jsonify({"status": "success", "data": new_tokens, "message": "refreshed"})
