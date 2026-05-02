@@ -299,8 +299,5 @@ Gradicent LLC helps organizations **be data-driven, not data-distracted**, empow
 
 ---
 
-## 12. License
-
-© 2025 Gradicent LLC — All rights reserved.
-Internal company software. Not for public distribution.
+## 2025-2026 Gradicent LLC
 
