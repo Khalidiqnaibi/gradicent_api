@@ -1,17 +1,3 @@
-gaia/__pycache__/__init__.cpython-39.pyc
-gaia/__pycache__/__init__.cpython-39.pyc
-gaia/__pycache__/__init__.cpython-39.pyc
-/gaia/__pycache__
-/routes/__pycache__
-/gaia/metrics/__pycache__
-*.pyc
-*.pyc
-*.pyc
-*.pyc
-*.pyc
-*.pyc
 *.pyc
 .env
 firebase.json
-binder/adapters/supabase_adapter.py
-binder/adapters/supabase_file_adapter.py

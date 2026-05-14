@@ -73,12 +73,10 @@ def create_app(config_name: str = 'default') -> Flask:
         raise RuntimeError("Missing JWT_SECRET or SECRET_KEY in app config for AuthService")
 
     # Resolve credential and oauth secret file paths robustly
-    firebase_cred_path = _resolve_file_path(app.config["FIREBASE"]["credentials_path"])
     oauth_secrets_path = _resolve_file_path(app.config.get("OAUTH_CLIENT_SECRETS_FILE", ""))
 
-    if not os.path.exists(firebase_cred_path):
-        raise RuntimeError(f"Firebase credentials file not found: {firebase_cred_path}")
-    
+    if not os.path.exists(oauth_secrets_path):
+        raise FileNotFoundError(f"OAuth client secrets file not found at resolved path: {oauth_secrets_path}")
     
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 

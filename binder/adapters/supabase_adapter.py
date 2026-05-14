@@ -14,15 +14,14 @@ def normalize_gov_id(s: str) -> str:
 class SupabaseAdapter(StorageAdapter):
     def __init__(self,url: str = "", key: str = ""):
         self.supabase: Client = create_client(url, key)
-
         self.table_map = {
-            "users": os.getenv("DB_TABLE_USERS", "accounts_v1"),
-            "clients": os.getenv("DB_TABLE_CLIENTS", "entities_v1"),
-            "employees": os.getenv("DB_TABLE_EMPLOYEES", "hr_v1"),
-            "products": os.getenv("DB_TABLE_PRODUCTS", "items_v1"),
-            "services": os.getenv("DB_TABLE_SERVICES", "svc_v1"),
-            "interactions": os.getenv("DB_TABLE_INTERACTIONS", "log_v1"),
-            "transactions": os.getenv("DB_TABLE_TRANSACTIONS", "ledger_v1"),
+            "users": os.getenv("DB_TABLE_USERS", "user_accounts_v1"),
+            "clients": os.getenv("DB_TABLE_CLIENTS", "CRM_entities_v1"),
+            "employees": os.getenv("DB_TABLE_EMPLOYEES", "EMPLOYEE_entities_v1"),
+            "products": os.getenv("DB_TABLE_PRODUCTS", "prod_v1"),
+            "services": os.getenv("DB_TABLE_SERVICES", "service_catalog_v1"),
+            "interactions": os.getenv("DB_TABLE_INTERACTIONS", "CRM_log_v1"),
+            "transactions": os.getenv("DB_TABLE_TRANSACTIONS", "CRM_ledger_v1"),
         }
 
     def _get_table(self, collection: str) -> str:

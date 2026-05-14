@@ -23,8 +23,8 @@ class SupabaseFileStorageAdapter:
         self.supabase: Client = create_client(url, key)
         
         # Obfuscated table and bucket names
-        self.file_table = os.getenv("DB_TABLE_FILES", "metadata_v1")
-        self.bucket_name = os.getenv("STORAGE_BUCKET_FILES", "assets_v1")
+        self.file_table = os.getenv("DB_TABLE_FILES", "file_metadata_v1")
+        self.bucket_name = os.getenv("STORAGE_BUCKET_FILES", "user_assets_v1")
 
     def upload_file(self, *, file_body: bytes, filename: str, content_type: str, metadata: Dict) -> Dict:
         client_no = metadata.get("client_no", "unknown")
