@@ -73,7 +73,7 @@ def create_app(config_name: str = 'default') -> Flask:
         raise RuntimeError("Missing JWT_SECRET or SECRET_KEY in app config for AuthService")
 
     # Resolve credential and oauth secret file paths robustly
-    oauth_secrets = app.config.get("OAUTH_CLIENT_SECRET_JSON")
+    oauth_secrets = app.config.get("OAUTH_CLIENT_SECRETS_FILE")
 
     if not oauth_secrets:
         raise FileNotFoundError(f"OAuth client secrets not found at : {oauth_secrets}")
