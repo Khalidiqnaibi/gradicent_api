@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ADMIN_SECRET = os.getenv("ADMIN_SECRET","bindersoftware.com")
+ADMIN_SECRET = os.getenv("ADMIN_SECRET")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,10 +51,10 @@ EVENTS={
 }
 
 # prices
-STARTER_PRICE = os.getenv("STARTER_PRICE","5")
-PRO_PRICE = os.getenv("PRO_PRICE","25")
-ULTRA_PRICE = os.getenv("ULTRA_PRICE","125")
-PACKAGE_PRICE = os.getenv("PACKAGE_PRICE","1000")
+STARTER_PRICE = os.getenv("STARTER_PRICE",5)
+PRO_PRICE = os.getenv("PRO_PRICE",25)
+ULTRA_PRICE = os.getenv("ULTRA_PRICE",125)
+PACKAGE_PRICE = os.getenv("PACKAGE_PRICE",1000)
 PLANS = {
     "starter": {
         "key": "starter",
@@ -119,22 +119,22 @@ STRIPE_API_KEY = os.getenv("STRIPE_API_KEY","")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET","")
 
 # other settings
-BACKEND_URL= os.getenv("BACKEND_URL","gradicent.pythonanywhere.com")
-FRONTEND_URL = os.getenv("FRONTEND_URL","http://localhost:3000")
+BACKEND_URL= os.getenv("BACKEND_URL")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 DATABASE_URL = os.getenv("DATABASE_URL","sqlite:///./test.db")
 LOG_LEVEL = os.getenv("LOG_LEVEL","DEBUG")
 DEBUG = os.getenv("DEBUG","True").lower() in ("true", "1", "t")
 PORT = int(os.getenv("PORT","5000"))
 HOST = os.getenv("HOST","localhost")
-SECRET_KEY = os.getenv("SECRET_KEY","supersecretkey")
-SESSION_COOKIE_NAME = os.getenv("SESSION_COOKIE_NAME","binder_session")
+SECRET_KEY = os.getenv("SECRET_KEY")
+SESSION_COOKIE_NAME = os.getenv("SESSION_COOKIE_NAME")
 SESSION_LIFETIME_DAYS = int(os.getenv("SESSION_LIFETIME_DAYS","7"))
 USE_HTTPS = os.getenv("USE_HTTPS","False").lower() in ("true", "1", "t")
 
 # OAuth settings
-OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE",os.path.join(BASE_DIR, "client_secret1.json"))
-OAUTH_GOOGLE_CLIENT_ID = os.getenv("OAUTH_GOOGLE_CLIENT_ID","107932074863-nlil9n5j9lmahqfb15cmn52u59evpse9.apps.googleusercontent.com")
-OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI","https://gradicent.pythonanywhere.com/api/auth/callback")
+OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE",os.path.join(BASE_DIR, "client_secret.json"))
+OAUTH_GOOGLE_CLIENT_ID = os.getenv("OAUTH_GOOGLE_CLIENT_ID")
+OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI")
 OAUTH_SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
