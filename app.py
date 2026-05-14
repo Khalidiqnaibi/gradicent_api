@@ -108,7 +108,6 @@ def create_app(config_name: str = 'default') -> Flask:
     
     auth = AuthService(
         adapter=supabase_adapter,
-        file_adapter=supabase_file_adapter,
         google_client=google_client,
         jwt_secret=jwt_secret,
         redirect_uri=app.config["OAUTH_REDIRECT_URI"]
