@@ -16,7 +16,7 @@ from flask import Blueprint, request, redirect, session, jsonify, current_app, u
 from werkzeug.exceptions import BadRequest, NotFound
 
 from binder import normalize_user
-from utils.log_events import log_with_service
+from utils.log_events import log_event
 from services.binder_service import BinderService
 
 auth_blueprint = Blueprint("auth", __name__)
@@ -92,7 +92,7 @@ def oauth_callback():
     # Log login event
     binder_service = _get_domain_and_service({"domain": domain})
     binder_service.set_current_user(session.get("user_id"))
-    log_with_service(binder_service, 100)
+    log_event(binder_service._binder, 100)
 
     if domain:
         return redirect(f"/binder/{domain}")

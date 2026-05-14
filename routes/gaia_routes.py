@@ -7,7 +7,7 @@ Uses the modular GaiaEngine to compute any registered metric.
 
 from flask import Blueprint, request, jsonify, current_app ,session
 from gaia import GaiaEngine
-from utils.log_events import log_with_binder
+from utils.log_events import log_event as log_with_binder
 
 gaia_blueprint = Blueprint("gaia", __name__)
 gaia_engine = GaiaEngine()

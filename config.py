@@ -47,7 +47,9 @@ EVENTS={
     601:"payment done",
     602:"product purchased",
     603:"service purchased",
-    604:"employee paid"
+    604:"employee paid",
+
+    700: "usage logging"
 }
 
 # prices

@@ -1,41 +1,25 @@
-from datetime import datetime
+from typing import Optional, Dict
+from config import EVENTS
 
+def log_event(binder, event_code: int, entity_id: Optional[str] = None, metadata: Optional[Dict] = None):
+    """
+    The primary logging function. 
+    Usage: log_event(binder_service, 201, entity_id="client_abc", metadata={"source": "mobile"})
+    """
+    event_name = EVENTS.get(event_code, "unknown event")
+    
+    try:
+        binder.adapter.log_event(
+            domain=binder.domain,
+            user_id=binder.current_user,
+            event_code=event_code,
+            event_name=event_name,
+            entity_id=entity_id,
+            metadata=metadata
+        )
+    except Exception as e:
+        print(f"Logging failed: {e}")
 
-def log_with_service(service, event_type, metadata=None):
-    """Save user activity for analytics"""
-    log_with_binder(service._binder,event_type,metadata)
-    
-def log_time(service, seconds):
-    """Save user time spend using binder for analytics"""
-    now = datetime.now()
-    meta = service._binder.adapter.get_child(service._binder.domain,service._binder.current_user,"metadata")
-    meta["analytics"] = meta.get("analytics" , {})
-    meta["analytics"][now.date().isoformat()] = meta["analytics"].get(now.date().isoformat(),{})
-    meta["analytics"][now.date().isoformat()]["time_tracking"] = meta["analytics"][now.date().isoformat()].get("time_tracking",[])
-    meta["analytics"][now.date().isoformat()]["time_tracking"].append({
-        "seconds": seconds,
-        "timestamp": now.isoformat()
-    })
-    service._binder.adapter.update_child(service._binder.domain,service._binder.current_user,"metadata",meta)
-
-
-def log_with_binder(binder, event_type, metadata=None):
-    """Save user activity for analytics"""
-    now = datetime.now()
-    meta = binder.adapter.get_child(binder.domain,binder.current_user,"metadata")
-    if not meta.get("analytics"):
-        meta["analytics"] = meta.get("analytics" , {})
-    
-    if not meta.get(now.date().isoformat()) :
-        meta["analytics"][now.date().isoformat()] = meta["analytics"].get(now.date().isoformat(),{})
-    
-    if not meta["analytics"][now.date().isoformat()].get("events") :
-        meta["analytics"][now.date().isoformat()]["events"] = meta["analytics"][now.date().isoformat()].get("events",[])
-    
-    meta["analytics"][now.date().isoformat()]["events"].append({
-        "user": binder.current_user,
-        "type": event_type,
-        "meta": metadata or {},
-        "timestamp":now.isoformat()
-    })
-    binder.adapter.update_child(binder.domain,binder.current_user,"metadata",meta)
+def log_time_spent(binder, seconds: int, activity_type: str = "usage"):
+    """Specific helper for time tracking using the events table."""
+    log_event(binder, 700, metadata={"seconds": seconds, "type": activity_type})

@@ -22,6 +22,7 @@ class SupabaseAdapter(StorageAdapter):
             "services": os.getenv("DB_TABLE_SERVICES", "service_catalog_v1"),
             "interactions": os.getenv("DB_TABLE_INTERACTIONS", "CRM_log_v1"),
             "transactions": os.getenv("DB_TABLE_TRANSACTIONS", "CRM_ledger_v1"),
+            "events": os.getenv("DB_TABLE_EVENTS", "analytics_events_v1"),
         }
 
     def _get_table(self, collection: str) -> str:
@@ -131,6 +132,18 @@ class SupabaseAdapter(StorageAdapter):
         query = self.supabase.table(table).select("*").eq("domain", domain).eq("owner_id", user_id).eq("parent_id", child_id).limit(limit)
         response = query.execute()
         return self._format_result(response.data)
+
+    def log_event(self, domain: str, user_id: str, event_code: int, event_name: str, entity_id: str = None, metadata: dict = None):
+        table = self._get_table("events")
+        data = {
+            "domain": domain,
+            "user_id": user_id,
+            "event_code": event_code,
+            "event_name": event_name,
+            "entity_id": entity_id,
+            "metadata": metadata or {}
+        }
+        return self.supabase.table(table).insert(data).execute()
 
     def add_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
         table = self._get_table(nested)

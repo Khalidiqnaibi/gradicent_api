@@ -20,7 +20,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 from services.binder_service import BinderService, BinderServiceError
 from utils.get_plan_status import compute_plan_status, get_plan_data
 from config import BACKEND_URL , MIN_SEC_REC
-from utils.log_events import log_with_service,log_time
+from utils.log_events import log_event , log_time_spent
 
 binder_blueprint = Blueprint("binder", __name__)
 
@@ -157,7 +157,7 @@ def update_user(user_id):
     service = _get_domain_and_service(payload=payload)
 
     service.update_user(payload["domain"] , payload["user_id"] , payload["user"])
-    log_with_service(service,400)
+    log_event(service._binder,400)
     return make_response(data=payload , message="updated successfully")
 
 @binder_blueprint.route("/user", methods=["POST"])
@@ -180,7 +180,7 @@ def create_user():
 
     service = _get_domain_and_service(payload)
     user = service.create_user(payload["user"])
-    log_with_service(service,200)
+    log_event(service._binder,200)
     return make_response(data=user, message="User created successfully."), 201
 
 @binder_blueprint.route("/set_current_user", methods=["POST"])
@@ -227,7 +227,7 @@ def add_client():
     client = service.create_client(payload["client"])
     client_id = client.get("id")
 
-    log_with_service(service,201 , metadata={"id" : client_id})
+    log_event(service._binder,201 , metadata={"id" : client_id})
     return make_response(data=client, message="Client added successfully."), 201
 
 @binder_blueprint.route("/clients/<client_id>", methods=["GET"])
@@ -273,7 +273,7 @@ def patch_client(client_id: str):
         service.set_current_user(payload["user_id"])
 
     service.update_client(client_id, payload["patch"])
-    log_with_service(service,401)
+    log_event(service._binder,401)
     return make_response(message="Client updated successfully."), 200
 
 @binder_blueprint.route("/clients/<client_id>", methods=["DELETE"])
@@ -311,7 +311,7 @@ def client_search():
     results = service.search_client(query)
     resp = make_response(data=results, message="Search completed.")
     resp.status_code = 200
-    log_with_service(service,300)
+    log_event(service._binder,300)
     return resp
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["POST"])
@@ -343,7 +343,7 @@ def add_interaction(client_id: str):
 
     interaction_no = interaction_no-1 or 0
 
-    log_with_service(service,202,metadata={"id" : client_id , "interaction_no":interaction_no})
+    log_event(service._binder,202,metadata={"id" : client_id , "interaction_no":interaction_no})
     return make_response(data=interaction, message="Interaction created."), 201
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["GET"])
@@ -440,7 +440,7 @@ def update_interaction(client_id: str):
 
     service.update_interactions(client_id=client_id,interaction_no=interaction_no,patch = payload["patch"])
 
-    log_with_service(service,402,metadata={"id" : client_id , "interaction_no":interaction_no})
+    log_event(service._binder,402,metadata={"id" : client_id , "interaction_no":interaction_no})
     return make_response(data=payload, message="Updated Interactions."), 201
 
 @binder_blueprint.route("/clients/<client_id>/interactions", methods=["DELETE"])
@@ -559,7 +559,7 @@ def log_time_tracking():
     
     seconds_spent = payload.get("seconds", 0)
     service.set_current_user(session["user_id"])
-    log_time(service , seconds_spent)
+    log_time_spent(service._binder , seconds_spent)
 
     return make_response(data=time_entry, message="Time entry logged."), 201
 
@@ -720,7 +720,7 @@ def add_employee():
         return make_response(status="error" , message="Unauthorized action") , 401
         
     employee = service.create_employee(data=payload["employee"])
-    log_with_service(service,206)
+    log_event(service._binder,206)
 
     return make_response(data=employee, message="Created new employee", status="success"), 201
 
@@ -750,7 +750,7 @@ def update_employee(eid):
         return make_response(status="error" , message="Unauthorized action") , 401
 
     employee = service.update_employee(eid, payload["patch"])
-    log_with_service(service,406)
+    log_event(service._binder,406)
     return make_response(data=employee,message="Employee updated successfully."), 200
 
 @binder_blueprint.route("/employee/<eid>", methods=["DELETE"])
@@ -799,7 +799,7 @@ def employee_search():
     results = service.search_employee(query)
     resp = make_response(data=results, message="Search completed.")
     resp.status_code = 200
-    log_with_service(service,300)
+    log_event(service._binder,300)
     return resp
 
 @binder_blueprint.route("/products", methods=["POST"])
@@ -830,7 +830,7 @@ def create_product():
         return make_response(status="error" , message="Unauthorized action") , 401
 
     product = service.create_product(payload["product"])
-    log_with_service(service, 204)
+    log_event(service._binder, 204)
 
     return make_response(data=product, message="Product created successfully."), 201
 
@@ -891,7 +891,7 @@ def update_product(product_id: str):
         return make_response(status="error" , message="Unauthorized action") , 401
 
     service.update_product(product_id, payload["patch"])
-    log_with_service(service, 404)
+    log_event(service._binder, 404)
 
     return make_response(message="Product updated successfully."), 200
 
@@ -946,7 +946,7 @@ def product_search():
     results = service.search_product(query)
     resp = make_response(data=results, message="Search completed.")
     resp.status_code = 200
-    log_with_service(service,300)
+    log_event(service._binder, 300)
     return resp
 
 @binder_blueprint.route("/services", methods=["POST"])
@@ -976,7 +976,7 @@ def create_service():
         return make_response(status="error" , message="Unauthorized action") , 401
 
     svc = service.create_service(payload["service"])
-    log_with_service(service, 205)
+    log_event(service._binder, 205)
 
     return make_response(data=svc, message="Service created successfully."), 201
 
@@ -1037,7 +1037,7 @@ def update_service(service_id: str):
         return make_response(status="error" , message="Unauthorized action") , 401
 
     service.update_service(service_id, payload["patch"])
-    log_with_service(service, 405)
+    log_event(service._binder, 405)
 
     return make_response(message="Service updated successfully."), 200
 
@@ -1093,7 +1093,7 @@ def service_search():
     results = service.search_service(query)
     resp = make_response(data=results, message="Search completed.")
     resp.status_code = 200
-    log_with_service(service,300)
+    log_event(service._binder, 300)
     return resp
 
 @binder_blueprint.route("/clients/<client_id>/transactions", methods=["GET"])
@@ -1190,7 +1190,7 @@ def add_transactions(client_id: str):
 
     transaction_no = transaction_no-1 or 0
 
-    log_with_service(service,202,metadata={"id" : client_id , "transaction_no":transaction_no})
+    log_event(service._binder, 202, metadata={"id" : client_id , "transaction_no":transaction_no})
     return make_response(data=transaction, message="Transaction created."), 201
 
 @binder_blueprint.route("/clients/<client_id>/transactions", methods=["PATCH"])
@@ -1230,7 +1230,7 @@ def update_transactions(client_id: str):
 
     service.update_transaction(client_id=client_id,transaction_no=transaction_no,patch = payload["patch"])
 
-    log_with_service(service,402,metadata={"id" : client_id , "transaction_no":transaction_no})
+    log_event(service._binder, 402, metadata={"id" : client_id , "transaction_no":transaction_no})
     return make_response(data=payload, message="Updated Transactions."), 201
 
 @binder_blueprint.route("/clients/<client_id>/transactions", methods=["DELETE"])

@@ -61,6 +61,10 @@ class StorageAdapter(ABC):
         ...
 
     @abstractmethod
+    def log_event(self, domain: str, user_id: str, event_code: int, event_name: str, entity_id: str = None, metadata: dict = None):
+        ...
+
+    @abstractmethod
     def find_children_by_field(self, domain: str, user_id: str, collection: str, field: str, value: Any) -> List[Dict]:
         """
         Return list of child documents under user_id/collection where child's field == value.
