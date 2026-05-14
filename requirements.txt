@@ -7,6 +7,7 @@ cryptography
 python-dotenv
 
 firebase-admin
+supabase
 
 stripe
 
