@@ -73,10 +73,10 @@ def create_app(config_name: str = 'default') -> Flask:
         raise RuntimeError("Missing JWT_SECRET or SECRET_KEY in app config for AuthService")
 
     # Resolve credential and oauth secret file paths robustly
-    oauth_secrets_path = _resolve_file_path(app.config.get("OAUTH_CLIENT_SECRETS_FILE", ""))
+    oauth_secrets = app.config.get("OAUTH_CLIENT_SECRET_JSON")
 
-    if not os.path.exists(oauth_secrets_path):
-        raise FileNotFoundError(f"OAuth client secrets file not found at resolved path: {oauth_secrets_path}")
+    if not oauth_secrets:
+        raise FileNotFoundError(f"OAuth client secrets not found at : {oauth_secrets}")
     
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -92,10 +92,9 @@ def create_app(config_name: str = 'default') -> Flask:
     app.config.setdefault("BINDERS", binders)
 
     # Auth
-    with open(oauth_secrets_path, "r") as f:
-        secrets = json.load(f)
-        client_id = secrets["web"]["client_id"]
-        client_secret = secrets["web"]["client_secret"]
+    secrets = json.loads(oauth_secrets)
+    client_id = secrets["web"]["client_id"]
+    client_secret = secrets["web"]["client_secret"]
 
     google_client = oauth.register(
         name='google',

@@ -132,7 +132,7 @@ SESSION_LIFETIME_DAYS = int(os.getenv("SESSION_LIFETIME_DAYS","7"))
 USE_HTTPS = os.getenv("USE_HTTPS","False").lower() in ("true", "1", "t")
 
 # OAuth settings
-OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRETS_FILE",os.path.join(BASE_DIR, "client_secret.json"))
+OAUTH_CLIENT_SECRETS_FILE = os.getenv("OAUTH_CLIENT_SECRET_JSON")
 OAUTH_GOOGLE_CLIENT_ID = os.getenv("OAUTH_GOOGLE_CLIENT_ID")
 OAUTH_REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI")
 OAUTH_SCOPES = [
