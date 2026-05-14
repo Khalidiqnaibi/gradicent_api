@@ -44,6 +44,28 @@ class SupabaseAdapter(StorageAdapter):
             payload["metadata"]["sku"] = (payload["metadata"]["sku"] or "").lower()
         return payload
 
+    def add_user(self, domain: str, user_id: str, user: Dict) -> None:
+        table = self._get_table("users")
+        self.supabase.table(table).upsert({
+            "id": user_id,
+            "domain": domain,
+            "record_data": user
+        }).execute()
+
+    def get_user(self, domain: str, user_id: str) -> Optional[Dict]:
+        table = self._get_table("users")
+        response = self.supabase.table(table).select("*").eq("id", user_id).eq("domain", domain).execute()
+        if response.data:
+            return self._format_result(response.data)[0]
+        return None
+
+    def update_user(self, domain: str, user_id: str, user: Dict) -> None:
+        self.add_user(domain, user_id, user) 
+
+    def delete_user(self, domain: str, user_id: str) -> None:
+        table = self._get_table("users")
+        self.supabase.table(table).delete().eq("id", user_id).eq("domain", domain).execute()
+
     def add_child(self, domain: str, user_id: str, collection: str, obj: Dict) -> str:
         table = self._get_table(collection)
         child_id = obj.get("id", str(uuid.uuid4())) 
@@ -67,6 +89,58 @@ class SupabaseAdapter(StorageAdapter):
             updated_data = self._normalize_payload(updated_data)
             updated_data.pop("id", None) 
             self.supabase.table(table).update({"record_data": updated_data}).eq("id", child_id).execute()
+
+    def list_children(
+        self, domain: str, user_id: str, collection: str, limit: int = 30, start_at: Optional[str] = None
+    ) -> List[Dict]:
+        table = self._get_table(collection)
+        query = self.supabase.table(table).select("*").eq("domain", domain).eq("owner_id", user_id).limit(limit)
+        
+        # Pagination using Postgres offset or ID bounds (simplified for adapter)
+        if start_at:
+            query = query.gte("id", start_at) 
+            
+        response = query.execute()
+        return self._format_result(response.data)
+
+    def get_child(self, domain: str, user_id: str, collection: str, child_id: str = None) -> Any:
+        table = self._get_table(collection)
+        response = self.supabase.table(table).select("*").eq("id", child_id).eq("domain", domain).eq("owner_id", user_id).execute()
+        if response.data:
+            return self._format_result(response.data)[0]
+        return {}
+
+    def delete_child(self, domain: str, user_id: str, collection: str, child_id: str = None) -> None:
+        table = self._get_table(collection)
+        self.supabase.table(table).delete().eq("id", child_id).eq("domain", domain).eq("owner_id", user_id).execute()
+
+    def list_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict]:
+        table = self._get_table(nested)
+        query = self.supabase.table(table).select("*").eq("domain", domain).eq("owner_id", user_id).eq("parent_id", child_id).limit(limit)
+        response = query.execute()
+        return self._format_result(response.data)
+
+    def add_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
+        table = self._get_table(nested)
+        nested_id = str(uuid.uuid4())
+        
+        payload = {
+            "id": nested_id,
+            "domain": domain,
+            "owner_id": user_id,
+            "parent_id": child_id,
+            "record_data": obj
+        }
+        self.supabase.table(table).insert(payload).execute()
+        return nested_id
+
+    def update_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
+        table = self._get_table(nested)
+        self.supabase.table(table).update({"record_data": patch}).eq("id", nested_id).eq("parent_id", child_id).execute()
+
+    def delete_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str) -> None:
+        table = self._get_table(nested)
+        self.supabase.table(table).delete().eq("id", nested_id).eq("parent_id", child_id).execute()
 
     def find_children_by_field(self, domain: str, user_id: str, collection: str, field: str, value: Any) -> List[Dict]:
         table = self._get_table(collection)
