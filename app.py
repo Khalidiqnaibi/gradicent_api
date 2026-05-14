@@ -35,6 +35,8 @@ def create_app(config_name: str = 'default') -> Flask:
     app.config.from_object(DefaultConfig())
     oauth = OAuth(app)
 
+    app.secret_key = app.config.get("SECRET_KEY","supersecretkey")
+
     # Ensure there's a JWT secret available for AuthService
     jwt_secret = app.config.get("JWT_SECRET") or app.config.get("SECRET_KEY")
     if not jwt_secret:
