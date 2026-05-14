@@ -13,3 +13,5 @@ gaia/__pycache__/__init__.cpython-39.pyc
 *.pyc
 .env
 firebase.json
+binder/adapters/supabase_adapter.py
+binder/adapters/supabase_file_adapter.py
