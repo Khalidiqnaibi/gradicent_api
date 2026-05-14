@@ -1,15 +1,15 @@
-Flask==2.3
-Werkzeug==2.3
-requests==2.31
+Flask
+Werkzeug
+requests
 
-PyJWT==2.8
-cryptography==42.0
-python-dotenv==1.0
+PyJWT
+cryptography
+python-dotenv
 
-firebase-admin==6.4
+firebase-admin
 
-stripe==8.0
+stripe
 
-python-docx==1.1
+python-docx
 
 Authlib
