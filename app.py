@@ -6,9 +6,7 @@ Initializes Flask, Firebase, and registers domain routes.
 """
 
 import os
-from flask import Flask, jsonify
-import firebase_admin
-from firebase_admin import credentials, initialize_app
+from flask import Flask
 from authlib.integrations.flask_client import OAuth
 import json
 
@@ -31,36 +29,6 @@ from routes.frontend_routes import frontend_blueprint
 from routes.file_routes import file_routes
 from config import DefaultConfig
 from services.binder_service import BinderService, BinderServiceError
-
-
-def _resolve_file_path(path_from_config: str) -> str:
-    """
-    Try to make config paths robust:
-    - If path exists as given, return it.
-    - Otherwise, try to resolve it relative to project base dir.
-    - Otherwise return the original (so caller can fail with a clear error).
-    """
-    if not path_from_config:
-        return path_from_config
-
-    # if already absolute and exists, use it
-    if os.path.isabs(path_from_config) and os.path.exists(path_from_config):
-        return path_from_config
-
-    # attempt to resolve relative to project base dir
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    candidate = os.path.join(base_dir, os.path.basename(path_from_config))
-    if os.path.exists(candidate):
-        return candidate
-
-    # last attempt: join full relative path from base_dir
-    candidate2 = os.path.join(base_dir, path_from_config)
-    if os.path.exists(candidate2):
-        return candidate2
-
-    # give back original — caller will likely raise useful error if it's wrong
-    return path_from_config
-
 
 def create_app(config_name: str = 'default') -> Flask:
     app = Flask(__name__, template_folder='templates', static_folder='static')
