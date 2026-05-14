@@ -7,21 +7,17 @@ Flask blueprint for handling payments and subscriptions API routes.
 - Delegates all business logic to services.
 """
 
-from flask import Blueprint, request,session
+from flask import Blueprint, request,session , current_app
 from services.subscription_service import SubscriptionService
 from services.payment_service import PaymentService
 from payments.stripe_provider import StripePaymentProvider
-from services.user_service import UserService
-from binder import FirebaseCrudAdapter
 from config import STRIPE_API_KEY,PLANS
 from utils.make_res import make_response
 
 payments_blueprint = Blueprint("payments", __name__)
-adapter = FirebaseCrudAdapter()
 stripe_provider = StripePaymentProvider(api_key=STRIPE_API_KEY)
 payment_service = PaymentService(stripe_provider)
-subscription_service = SubscriptionService(adapter, payment_service)
-user_service = UserService(adapter)
+subscription_service = current_app.extensions["subscription_services"]["business"]
 
 
 @payments_blueprint.route("/subscribe", methods=["POST"])

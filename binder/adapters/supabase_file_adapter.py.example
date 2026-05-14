@@ -1,0 +1,103 @@
+"""
+supabase_file_adapter.py
+------------------------
+>## This is a new adapter that implements file storage using Supabase Storage and Postgres for metadata.
+It provides methods to upload files, list files for a client/user, soft delete files, and
+migrate legacy file records from Firebase. 
+The metadata is stored in a SQL table which allows for more efficient querying and management 
+compared to the old Firebase Realtime Database structure.
+
+Note: This adapter assumes that the Supabase client is properly initialized with the correct URL and key,
+and that the necessary storage bucket and metadata table are set up in your Supabase project.
+
+"""
+
+
+import os
+from datetime import datetime
+from typing import Dict, List, Optional, Any
+from supabase import create_client, Client
+
+class SupabaseFileStorageAdapter:
+    def __init__(self, url: str = "", key: str = ""):
+        self.supabase: Client = create_client(url, key)
+        
+        # Obfuscated table and bucket names
+        self.file_table = os.getenv("DB_TABLE_FILES", "metadata_v1")
+        self.bucket_name = os.getenv("STORAGE_BUCKET_FILES", "assets_v1")
+
+    def upload_file(self, *, file_body: bytes, filename: str, content_type: str, metadata: Dict) -> Dict:
+        client_no = metadata.get("client_no", "unknown")
+        folder = metadata.get("folder", "misc")
+        user_id = metadata.get("user_id")
+
+        # Generate unique path
+        timestamp = int(datetime.now().timestamp())
+        storage_path = f"{user_id}/{client_no}/{folder}/{timestamp}_{filename}"
+
+        # 1. Upload binary to Supabase Storage
+        self.supabase.storage.from_(self.bucket_name).upload(
+            path=storage_path,
+            file=file_body,
+            file_options={"content-type": content_type}
+        )
+
+        # 2. Get Public URL
+        public_url = self.supabase.storage.from_(self.bucket_name).get_public_url(storage_path)
+
+        # 3. Save Metadata to Postgres
+        file_record = {
+            "name": filename,
+            "url_path": public_url,
+            "content_type": content_type,
+            "user_id": user_id,
+            "client_no": client_no,
+            "folder": folder,
+            "is_deleted": False,
+            "created_at": datetime.now().isoformat(),
+            "metadata_payload": metadata # Extra info in JSONB
+        }
+
+        self.supabase.table(self.file_table).insert(file_record).execute()
+        return file_record
+
+    def list_files(self, *, client_no: str, user_id: str, folder: Optional[str] = None) -> List[Dict]:
+        # Pushes all filtering to the database
+        query = self.supabase.table(self.file_table).select("*") \
+            .eq("client_no", client_no) \
+            .eq("user_id", user_id) \
+            .eq("is_deleted", False)
+
+        if folder:
+            query = query.eq("folder", folder)
+
+        response = query.execute()
+        return response.data
+
+    def soft_delete(self, *, file_url: str) -> bool:
+        # Fast SQL update based on URL
+        response = self.supabase.table(self.file_table).update({
+            "is_deleted": True,
+            "deleted_at": datetime.now().isoformat()
+        }).eq("url_path", file_url).execute()
+        
+        return len(response.data) > 0
+
+    def migrate_legacy_file(self, legacy_file: Dict) -> Dict:
+        """
+        Takes a dict from your old Firebase 'files' collection 
+        and inserts it into the new SQL metadata table.
+        """
+        new_record = {
+            "name": legacy_file.get("name"),
+            "url_path": legacy_file.get("data"), # The old public URL
+            "content_type": legacy_file.get("file_type"),
+            "user_id": legacy_file.get("user_id") or legacy_file.get("gid"),
+            "client_no": legacy_file.get("client_no") or legacy_file.get("patient_no"),
+            "folder": legacy_file.get("folder", "migrated"),
+            "is_deleted": False,
+            "created_at": legacy_file.get("upload_date", datetime.now().isoformat())
+        }
+        
+        self.supabase.table(self.file_table).insert(new_record).execute()
+        return new_record

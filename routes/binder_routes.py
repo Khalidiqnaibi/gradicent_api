@@ -13,9 +13,6 @@ Design notes:
 - All handlers are <= ~30 lines.
 - Uses explicit return values and typed signatures.
 """
-
-from datetime import datetime
-import requests
 from typing import Any, Dict, Optional
 from flask import Blueprint, request, jsonify, current_app , session , redirect
 from werkzeug.exceptions import BadRequest, NotFound

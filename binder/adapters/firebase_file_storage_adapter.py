@@ -1,3 +1,22 @@
+'''
+firebase_file_storage_adapter.py
+------------------------
+
+>## This is a legacy adapter for file storage using Firebase Storage and Firestore for metadata.
+
+For the new implementation using Supabase Storage and Postgres, see `supabase_file_adapter.py.example`.
+
+Adapter for file storage using Firebase Storage and Firestore for metadata.
+- upload_file: Uploads a file to Firebase Storage and saves metadata in Firestore.
+- list_files: Lists files for a client/user, with optional folder filtering.
+- soft_delete: Marks a file as deleted in Firestore without removing it from Storage.
+- list_legacy_files: Fetches files from the old "files" collection for migration.
+- migrate_legacy_file: Takes a legacy file document and saves it in the new "gradicent files" collection.
+
+Note: This adapter assumes that Firebase Admin SDK is initialized elsewhere in the app with the appropriate credentials and configuration.
+
+'''
+
 from datetime import datetime
 from typing import Dict, List, Optional ,Any
 from firebase_admin import firestore, storage, get_app

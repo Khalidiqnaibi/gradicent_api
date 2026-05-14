@@ -16,7 +16,7 @@ from typing import Dict, Any, Optional, Tuple
 from dataclasses import asdict
 
 from auth.providers.google_provider import GoogleAuthProvider
-from binder import User,LegacyUser  # adjust path to your actual model
+from binder import User 
 from utils.provision_user import _provision_user
 
 class AuthService:
@@ -28,8 +28,6 @@ class AuthService:
     def __init__(
         self,
         adapter,
-        legacy_adapter,
-        file_adapter,
         google_client,
         jwt_secret: str,
         redirect_uri: str,
@@ -37,8 +35,6 @@ class AuthService:
         refresh_token_ttl: int = 60 * 60 * 24 * 30,
     ):
         self.adapter = adapter
-        self.legacy_adapter = legacy_adapter
-        self.file_adapter = file_adapter
         self.google_client = google_client
         self.jwt_secret = jwt_secret
         self.redirect_uri = redirect_uri
@@ -66,7 +62,7 @@ class AuthService:
             "picture": user_info.get("picture"),
         }
         
-        user = _provision_user(self.adapter, self.legacy_adapter, self.file_adapter, domain, provider, provider_user)
+        user = _provision_user(self.adapter, domain, provider, provider_user)
         tokens = self._create_tokens_for_user(user.id)
         self._save_refresh_token(domain, user.id, tokens["refresh_token"])
 

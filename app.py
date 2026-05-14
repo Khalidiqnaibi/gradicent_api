@@ -15,15 +15,13 @@ import json
 from services.subscription_service import SubscriptionService
 from services.file_service import FileService
 from binder import (
-    FirebaseCrudAdapter,
+    SupabaseAdapter,
+    SupabaseFileStorageAdapter,
     BinderMedical, 
     BinderBusiness, 
-    UnitedFirebaseAdapter,
-    FirebaseFileStorageAdapter
 )
 
-from auth.auth_service import AuthService  # using the new AuthService
-from services.user_service import UserService
+from auth.auth_service import AuthService
 from payments.stripe_provider import StripePaymentProvider
 from routes.gaia_routes import gaia_blueprint
 from routes.binder_routes import binder_blueprint
@@ -80,22 +78,17 @@ def create_app(config_name: str = 'default') -> Flask:
 
     if not os.path.exists(firebase_cred_path):
         raise RuntimeError(f"Firebase credentials file not found: {firebase_cred_path}")
-    # Initialize Firebase only once (safe for reloading)
-    cred = credentials.Certificate(firebase_cred_path)
-    if not firebase_admin._apps:
-        initialize_app(cred, {
-            'databaseURL': app.config["FIREBASE"]["databaseURL"],
-            'storageBucket': app.config["FIREBASE"]["storageBucket"]
-        })
+    
+    
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
     # Adapter + domain binders
-    united_firebase_adapter = UnitedFirebaseAdapter(root_path="Gradicent")
-    legacy_firebase_adapter_medical = FirebaseCrudAdapter(root_path="drs")
+    supabase_adapter = SupabaseAdapter(url=app.config["SUPABASE_URL"], key=app.config["SUPABASE_KEY"])
+    supabase_file_adapter = SupabaseFileStorageAdapter(url=app.config["SUPABASE_URL"], key=app.config["SUPABASE_KEY"])
 
     binders = {
-        "medical": BinderMedical(united_firebase_adapter),
-        "business": BinderBusiness(united_firebase_adapter),
+        "medical": BinderMedical(supabase_adapter),
+        "business": BinderBusiness(supabase_adapter),
     }
 
     app.config.setdefault("BINDERS", binders)
@@ -114,13 +107,11 @@ def create_app(config_name: str = 'default') -> Flask:
         client_kwargs={'scope': 'openid email profile'}
     )
 
-    file_adapter = FirebaseFileStorageAdapter()
-    file_service = FileService(file_adapter)
+    file_service = FileService(supabase_file_adapter)
     
     auth = AuthService(
-        adapter=united_firebase_adapter,
-        legacy_adapter=legacy_firebase_adapter_medical,
-        file_adapter=file_adapter,
+        adapter=supabase_adapter,
+        file_adapter=supabase_file_adapter,
         google_client=google_client,
         jwt_secret=jwt_secret,
         redirect_uri=app.config["OAUTH_REDIRECT_URI"]
@@ -134,7 +125,7 @@ def create_app(config_name: str = 'default') -> Flask:
 
     # services/adapters
     payment_provider = StripePaymentProvider(app.config["STRIPE_API_KEY"])
-    sub = SubscriptionService(united_firebase_adapter, payment_provider)
+    sub = SubscriptionService(supabase_adapter, payment_provider)
     subscription_services = {
         "medical": sub,
         "business": sub,
@@ -160,6 +151,12 @@ def create_app(config_name: str = 'default') -> Flask:
         "payment_provider": payment_provider,
         "binder_services": binder_services,
         "file_service" : file_service
+    })
+
+    app.extensions.setdefault("adapters", {})
+    app.extensions["adapters"].update({
+        "supabase_adapter": supabase_adapter,   
+        "supabase_file_adapter": supabase_file_adapter,
     })
 
     return app

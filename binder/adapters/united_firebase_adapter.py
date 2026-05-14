@@ -1,6 +1,14 @@
 """
 united_firebase_adapter.py
 ------------------------
+
+>## This is a legacy adapter that was used during the early stages of development before we switched to Supabase. 
+It uses Firebase Realtime Database and has a more nested data structure. 
+It also includes some basic search support, but it's not as efficient as the Supabase implementation 
+due to Firebase's querying limitations.
+
+See `supabase_adapter.py.example` for the more robust and efficient implementation.
+
 Firebase implementation of the StorageAdapter with full search support:
 - gov_id exact (normalized)
 - phone exact (digits)

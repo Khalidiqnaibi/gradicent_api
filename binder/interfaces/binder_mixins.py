@@ -70,61 +70,31 @@ class ClientMixin:
             client_id,
         )
 
+    # NEW: Optimized for Supabase SQL
     def search_clients(self, query: str) -> List[Dict[str, Any]]:
         q = (query or "").strip()
         if not q:
             return []
 
-        def _norm_gov(x: str) -> str:
-            import re
-            return re.sub(r"[\s\-]", "", (x or "")).upper()
+        # 1. Search by Gov ID
+        found = self.adapter.find_by_gov_id(self.domain, self.current_user, "clients", q)
+        if found:
+            return found
 
-        def _digits(x: str) -> str:
-            import re
-            return re.sub(r"\D", "", (x or ""))
-
-        gov_norm = _norm_gov(q)
-        if gov_norm:
-            found = self.adapter.find_children_by_predicate(
-                self.domain,
-                self.current_user,
-                "clients",
-                lambda c: _norm_gov(c.get("gov_id", "")) == gov_norm,
-            )
-            if found:
-                return found
-
+        # 2. Search by Numeric ID
         if q.isdigit():
-            if int(q) > 0:
-                q = str(int(q) - 1)
-                
-            found = self.adapter.find_children_by_field(
-                self.domain,
-                self.current_user,
-                "clients",
-                "id",
-                q,
-            )
+            target_id = str(int(q) - 1) if int(q) > 0 else q
+            found = self.adapter.find_children_by_field(self.domain, self.current_user, "clients", "id", target_id)
             if found:
                 return found
 
-        digits = _digits(q)
-        if digits:
-            found = self.adapter.find_by_phone(
-                self.domain,
-                self.current_user,
-                "clients",
-                digits,
-            )
-            if found:
-                return found
+        # 3. Search by Phone
+        found = self.adapter.find_by_phone(self.domain, self.current_user, "clients", q)
+        if found:
+            return found
 
-        return self.adapter.find_by_name_substring(
-            self.domain,
-            self.current_user,
-            "clients",
-            q,
-        )
+        # 4. Search by Name Substring 
+        return self.adapter.find_by_name_substring(self.domain, self.current_user, "clients", q)
 
 # EMPLOYEES
 class EmployeeMixin:
@@ -177,11 +147,12 @@ class EmployeeMixin:
                 return found
 
         # search by exact role
-        found = self.adapter.find_children_by_predicate(
-            self.domain,
-            self.current_user,
-            "employees",
-            lambda e: (e.get("role") or "").lower() == q.lower(),
+        found = self.adapter.find_children_by_field(
+            self.domain, 
+            self.current_user, 
+            "employees", 
+            "role", 
+            q.lower()
         )
         if found:
             return found
@@ -245,11 +216,13 @@ class ProductMixin:
                 return found
 
         # search by sku in metadata
-        found = self.adapter.find_children_by_predicate(
-            self.domain,
-            self.current_user,
-            "products",
-            lambda p: (p.get("metadata", {}).get("sku", "")).lower() == q.lower(),
+        found = self.adapter.find_children_by_nested_field(
+            self.domain, 
+            self.current_user, 
+            "products", 
+            "metadata", 
+            "sku", 
+            q.lower()
         )
         if found:
             return found
@@ -275,7 +248,7 @@ class ServiceMixin:
 
     def read_service(self, service_id: str) -> Optional[Dict[str, Any]]:
         return self.adapter.get_child(
-            self.domain, self.current_user, "service", service_id
+            self.domain, self.current_user, "services", service_id
         )
 
     def update_service(self, svc_id: str, patch: Dict[str, Any]) -> None:
