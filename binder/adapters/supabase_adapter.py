@@ -43,6 +43,18 @@ class SupabaseAdapter(StorageAdapter):
         if "metadata" in payload and "sku" in payload["metadata"]:
             payload["metadata"]["sku"] = (payload["metadata"]["sku"] or "").lower()
         return payload
+    
+    def update_user(self, domain: str, user_id: str, user_data: Dict[str, Any]) -> None:
+        table = self._get_table("users")
+        self.supabase.table(table).upsert({
+            "id": user_id,
+            "domain": domain,
+            "record_data": user_data
+        }).execute()
+
+    def delete_user(self, domain: str, user_id: str) -> None:
+        table = self._get_table("users")
+        self.supabase.table(table).delete().eq("id", user_id).eq("domain", domain).execute()
 
     def add_user(self, domain: str, user_id: str, user: Dict) -> None:
         table = self._get_table("users")
