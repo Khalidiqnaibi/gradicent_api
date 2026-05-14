@@ -17,7 +17,6 @@ from utils.make_res import make_response
 payments_blueprint = Blueprint("payments", __name__)
 stripe_provider = StripePaymentProvider(api_key=STRIPE_API_KEY)
 payment_service = PaymentService(stripe_provider)
-subscription_service = current_app.extensions["subscription_services"]["business"]
 
 
 @payments_blueprint.route("/subscribe", methods=["POST"])
@@ -34,6 +33,7 @@ def subscribe():
 
     if not all([user_id, plan, payment_data]):
         return make_response(None, "Missing parameters.", "error")
+    subscription_service = current_app.extensions["subscription_services"]["business"]
 
     result = subscription_service.subscribe_user(domain,user_id, plan, payment_data)
     return make_response({"result":result}, "Subscription processed.")
@@ -50,7 +50,7 @@ def cancel_subscription():
     user_id = payload.get("user_id")
     if not user_id:
         return make_response(None, "Missing user_id.", "error")
-
+    subscription_service = current_app.extensions["subscription_services"]["business"]
     subscription_service.cancel_subscription(domain,user_id)
     return make_response(None, "Subscription canceled.")
 
