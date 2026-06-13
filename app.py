@@ -25,7 +25,6 @@ from routes.gaia_routes import gaia_blueprint
 from routes.binder_routes import binder_blueprint
 from routes.payments_routes import payments_blueprint
 from routes.auth_routes import auth_blueprint
-from routes.frontend_routes import frontend_blueprint
 from routes.file_routes import file_routes
 from config import DefaultConfig
 from services.binder_service import BinderService, BinderServiceError
@@ -107,7 +106,6 @@ def create_app(config_name: str = 'default') -> Flask:
     app.register_blueprint(payments_blueprint, url_prefix=app.config["PAYMENT_ROUTE_PREFIX"])
     app.register_blueprint(auth_blueprint, url_prefix=app.config["AUTH_ROUTE_PREFIX"])
     app.register_blueprint(file_routes, url_prefix=app.config["FILE_ROUTE_PREFIX"])
-    app.register_blueprint(frontend_blueprint, url_prefix=app.config["FRONT_ROUTE_PREFIX"])
 
     # Attach services for controllers to pull from app context
     app.extensions.setdefault("services", {})
