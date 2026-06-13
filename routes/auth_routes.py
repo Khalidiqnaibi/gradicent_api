@@ -100,7 +100,8 @@ def oauth_callback():
 
     target_frontend = session.pop("frontend_redirect_uri", None)
     if target_frontend:
-        return redirect(target_frontend)
+        access_token = tokens.get("access_token", "")
+        return redirect(f"{target_frontend}?domain={domain}&token={access_token}")
 
     return jsonify({"status": "success", "data": {"user": user, "tokens": tokens}, "message": "Authenticated"})
 
