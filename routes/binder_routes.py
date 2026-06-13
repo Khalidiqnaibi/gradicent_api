@@ -14,7 +14,7 @@ Design notes:
 - Uses explicit return values and typed signatures.
 """
 from typing import Any, Dict, Optional
-from flask import Blueprint, request, jsonify, current_app , session , redirect
+from flask import Blueprint, request, jsonify, current_app , session
 from werkzeug.exceptions import BadRequest, NotFound
 
 from services.binder_service import BinderService, BinderServiceError
@@ -628,7 +628,6 @@ def check_activation_code():
     - Validate via BinderService
     - Increment usage count
     - Bind session to code owner
-    - Redirect to appropriate area
     """
     
     payload = request.get_json(silent=True) or request.form.to_dict()
@@ -655,7 +654,7 @@ def check_activation_code():
     session["plan"] = res["plan"]
     session["user_id"] = res["owner_user_id"]
 
-    return redirect("/home_page")
+    return make_response(data=payload["code"], message="Code accepted, plan activated.") , 200
 
 @binder_blueprint.route("/employees/<eid>", methods=["GET"])
 def get_employee(eid):

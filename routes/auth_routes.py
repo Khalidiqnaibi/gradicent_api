@@ -12,7 +12,7 @@ Endpoints:
 """
 
 from typing import Optional, Any, Dict
-from flask import Blueprint, request, redirect, session, jsonify, current_app, url_for
+from flask import Blueprint, request, session, jsonify, current_app, url_for
 from werkzeug.exceptions import BadRequest, NotFound
 
 from binder import normalize_user
@@ -93,9 +93,6 @@ def oauth_callback():
     binder_service = _get_domain_and_service({"domain": domain})
     binder_service.set_current_user(session.get("user_id"))
     log_event(binder_service._binder, 100)
-
-    if domain:
-        return redirect(f"/binder/{domain}")
 
     return jsonify({"status": "success", "data": {"user": user, "tokens": tokens}, "message": "Authenticated"})
 
