@@ -12,7 +12,7 @@ Endpoints:
 """
 
 from typing import Optional, Any, Dict
-from flask import Blueprint, request, session, jsonify, current_app, url_for
+from flask import Blueprint, request, session, jsonify, current_app, url_for ,redirect
 from werkzeug.exceptions import BadRequest, NotFound
 
 from binder import normalize_user
@@ -54,6 +54,10 @@ def start_oauth():
     provider = request.args.get("provider", "google")
     domain = request.args.get("domain", session.get("binder", "business"))
     
+    frontend_redirect = request.args.get("redirect_uri") or request.referrer
+    if frontend_redirect:
+        session["frontend_redirect_uri"] = frontend_redirect
+
     session["domain"] = domain
     auth_service = _get_auth_service(domain)
 
@@ -93,6 +97,10 @@ def oauth_callback():
     binder_service = _get_domain_and_service({"domain": domain})
     binder_service.set_current_user(session.get("user_id"))
     log_event(binder_service._binder, 100)
+
+    target_frontend = session.pop("frontend_redirect_uri", None)
+    if target_frontend:
+        return redirect(target_frontend)
 
     return jsonify({"status": "success", "data": {"user": user, "tokens": tokens}, "message": "Authenticated"})
 
