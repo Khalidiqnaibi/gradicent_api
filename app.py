@@ -39,7 +39,7 @@ def create_app(config_name: str = 'default') -> Flask:
 
     BACKEND_URL = app.config.get("BACKEND_URL", "https://api.bindersoftware.com").split(".")[-2]
 
-    subdomain_pattern = re.compile(r"^https://([a-zA-Z0-9-]+\.)*" + BACKEND_URL + r"\.com(:[0-9]+)?$")
+    subdomain_pattern = r"^https://([a-zA-Z0-9-]+\.)*" + BACKEND_URL + r"\.com(:[0-9]+)?$"
 
     CORS(
         app, 
