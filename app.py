@@ -6,7 +6,7 @@ Initializes Flask, Firebase, and registers domain routes.
 """
 
 import os
-from flask import Flask
+from flask import Flask ,request
 from authlib.integrations.flask_client import OAuth
 import json
 import re
@@ -39,15 +39,33 @@ def create_app(config_name: str = 'default') -> Flask:
 
     BACKEND_URL = app.config.get("BACKEND_URL", "https://api.bindersoftware.com").split(".")[-2]
 
-    subdomain_pattern = r"^https://([a-zA-Z0-9-]+\.)*" + BACKEND_URL + r"\.com(:[0-9]+)?$"
+    @app.before_request
+    def handle_options_preflight():
+        """Instantly intercept and approve browser OPTIONS preflight requests."""
+        if request.method == 'OPTIONS':
+            response = app.make_response('')
+            origin = request.headers.get('Origin')
+            
+            # Check if the requesting origin belongs to your domain context
+            if origin and ('bindersoftware.com' in origin or 'localhost' in origin):
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Refresh-Token'
+                response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+                response.headers['Access-Control-Max-Age'] = '86400'  # Cache preflight for 24 hours
+            return response
 
-    CORS(
-        app, 
-        origins=subdomain_pattern,  
-        supports_credentials=True,
-        allow_headers=["Content-Type", "Authorization", "X-Refresh-Token"],
-        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-    )
+    @app.after_request
+    def append_cors_to_responses(response):
+        """Append credentials and origin headers to standard responses automatically."""
+        origin = request.headers.get('Origin')
+        if origin and ('bindersoftware.com' in origin or 'localhost' in origin):
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            # Prevent duplication issues if headers were already set
+            if 'Access-Control-Allow-Headers' not in response.headers:
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Refresh-Token'
+        return response
 
     app.config.update(
         SESSION_COOKIE_DOMAIN='.bindersoftware.com', 
