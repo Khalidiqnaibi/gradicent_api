@@ -9,6 +9,9 @@ import os
 from flask import Flask
 from authlib.integrations.flask_client import OAuth
 import json
+import re
+
+from flask_cors import CORS
 
 from services.subscription_service import SubscriptionService
 from services.file_service import FileService
@@ -33,6 +36,25 @@ def create_app(config_name: str = 'default') -> Flask:
     app = Flask(__name__, template_folder='templates', static_folder='static')
     app.config.from_object(DefaultConfig())
     oauth = OAuth(app)
+
+    BACKEND_URL = app.config.get("BACKEND_URL", "https://api.bindersoftware.com").split(".")[-2]
+
+    subdomain_pattern = re.compile(r"^https://([a-zA-Z0-9-]+\.)*" + BACKEND_URL + r"\.com(:[0-9]+)?$")
+
+    CORS(
+        app, 
+        origins=[subdomain_pattern],  # Pass the compiled regex here
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization", "X-Refresh-Token"],
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    )
+
+    app.config.update(
+        SESSION_COOKIE_DOMAIN='.bindersoftware.com', 
+        SESSION_COOKIE_SAMESITE='Lax', 
+        SESSION_COOKIE_SECURE=True,      # Forces HTTPS transmission
+        SESSION_COOKIE_HTTPONLY=True     # Safeguards cookie against XSS
+    )
 
     app.secret_key = app.config.get("SECRET_KEY","supersecretkey")
 
