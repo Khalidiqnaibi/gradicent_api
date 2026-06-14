@@ -43,7 +43,7 @@ def create_app(config_name: str = 'default') -> Flask:
 
     CORS(
         app, 
-        origins=[subdomain_pattern],  # Pass the compiled regex here
+        origins=subdomain_pattern,  
         supports_credentials=True,
         allow_headers=["Content-Type", "Authorization", "X-Refresh-Token"],
         methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
@@ -55,7 +55,6 @@ def create_app(config_name: str = 'default') -> Flask:
         SESSION_COOKIE_SECURE=True,      # Forces HTTPS transmission
         SESSION_COOKIE_HTTPONLY=True     # Safeguards cookie against XSS
     )
-
     app.secret_key = app.config.get("SECRET_KEY","supersecretkey")
 
     # Ensure there's a JWT secret available for AuthService
