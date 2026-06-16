@@ -171,3 +171,37 @@ def service_search():
     resp.status_code = 200
     log_event(service._binder, 300)
     return resp
+
+@service_blueprint.route("/services", methods=["GET"])
+def list_services():
+    """ 
+    List services for current user.
+    
+    args:
+        domain (str): Domain name (query param)
+        user_id (str): User identifier (query param)
+        start_at (int): Index to start the page from (query param)
+        limit (int): max items to return (query param)
+
+    returns:
+        { status, data: { services: [...] }, message }
+
+    """
+
+    domain = request.args.get("domain")
+    user_id = request.args.get("user_id")
+    try:
+        start_at = int(request.args.get("start_at", 0))
+        limit = int(request.args.get("limit", 30))
+    except ValueError:
+        raise BadRequest("start_at and limit must be integers")
+
+    service = _get_domain_and_service({"domain": domain, "user_id": user_id})
+    if user_id:
+        service.set_current_user(user_id)
+
+    if not user_id == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+
+    services = service.list_services(start_at, limit)
+    return make_response(data={"services": services}, message="Services retrieved successfully."), 200

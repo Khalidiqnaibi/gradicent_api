@@ -149,3 +149,30 @@ def client_search():
     resp.status_code = 200
     log_event(service._binder,300)
     return resp
+
+@client_blueprint.route("/clients", methods=["GET"])
+def list_clients():
+    """
+    List all clients for the current user.
+
+    expected query params:
+    domain (optional)
+    user_id (optional)
+
+    returns: list of client dicts
+    """
+    domain = request.args.get("domain", DEFAULT_DOMAIN)
+    user_id = request.args.get("user_id")
+    service = _get_domain_and_service({"domain": domain})
+
+    if not user_id == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+
+    if user_id:
+        service.set_current_user(user_id)
+
+    clients = service.list_clients(
+        start_at=int(request.args.get("start_at", 0)),
+        limit=int(request.args.get("limit", 30))
+    )
+    return make_response(data={"clients": clients}, message="Clients retrieved successfully."), 200

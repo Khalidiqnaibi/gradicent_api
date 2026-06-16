@@ -165,3 +165,40 @@ def employee_search():
     resp.status_code = 200
     log_event(service._binder,300)
     return resp
+
+@employee_blueprint.route("/employee", methods=["GET"])
+def list_employees():
+    """
+    List employees for the current user.
+
+    Query param:
+        domain (optional)
+        user_id (optional)
+        limit (optional)
+        start_at (optional)
+
+    Response: 
+        { status, data: { employees: [...] }, message }
+    """
+    domain = request.args.get("domain", DEFAULT_DOMAIN)
+    user_id = request.args.get("user_id")
+    start_at = request.args.get("start_at", type=int, default=0)
+    limit = request.args.get("limit", type=int, default=100)
+
+    if user_id and not user_id == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+
+    user_id = user_id or session["user_id"]
+
+    service = _get_domain_and_service({
+        "domain": domain,
+        "user_id": user_id
+    })
+
+    service.set_current_user(user_id)
+    employees = service.list_employees(
+        start_at=start_at,
+        limit=limit
+    )
+
+    return make_response(data={"employees": employees}, message="Employee list retrieved successfully."), 200

@@ -174,3 +174,36 @@ def product_search():
     log_event(service._binder, 300)
     return resp
     
+@product_blueprint.route("/products", methods=["GET"])
+def list_products():
+    """
+    List products for current user.
+
+    Query Params:
+        domain (str)
+        user_id (str)
+        start_at (int)
+        limit (int)
+    
+    returns:
+        {data: {products: [...]}, message, status}
+    """
+
+    domain = request.args.get("domain", session.get("domain", session.get("binder", "default")))
+    user_id = request.args.get("user_id", session.get("user_id"))
+    start_at = int(request.args.get("start_at", 0))
+    limit = int(request.args.get("limit", 30))
+
+    payload = {
+        "domain": domain,
+        "user_id": user_id
+    }
+    service = _get_domain_and_service(payload)
+
+    if not user_id == session["user_id"]:
+        return make_response(status="error" , message="Unauthorized action") , 401
+
+    service.set_current_user(user_id)
+
+    products = service.list_products(limit=limit, start_at=start_at)
+    return make_response(data={"products": products}, message="Products retrieved successfully."), 200

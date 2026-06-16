@@ -262,6 +262,18 @@ class BinderService:
             return []
         return self._wrap_and_log("search_client", self._binder.search_clients, query)
 
+    def list_clients(self, start_at: int, limit: int) -> List[Dict[str, Any]]:
+        """
+        List clients for current user with pagination.
+
+        Args:
+            start_at (int): Index to start the page from.
+            limit (int): max items to return (default 30).
+
+        Returns:
+            List[Dict[str, Any]]: paginated list of clients.
+        """
+        return self._wrap_and_log("list_clients", self._binder.list_clients, limit, start_at)
     # --- appointments ---
 
     def get_appointments(self, date: str) -> List[Dict[str, Any]]:
@@ -559,17 +571,15 @@ class BinderService:
             raise BinderServiceError("emp_id cannot be empty")
         self._wrap_and_log("delete_employee", self._binder.delete_employee, emp_id)
 
-    def list_employees(self) -> List[Dict[str, Any]]:
+    def list_employees(self, start_at: int, limit: int) -> List[Dict[str, Any]]:
         """
         List employees for current user.
 
         Returns:
             List[Dict[str, Any]]: employee list.
         """
-        # Prefer binder-provided list_employees if available, else fall back to adapter.
         if hasattr(self._binder, "list_employees"):
-            return self._wrap_and_log("list_employees", self._binder.list_employees)
-        # fallback: use adapter.list_children (binder must expose domain/current_user)
+            return self._wrap_and_log("list_employees", self._binder.list_employees, limit , start_at)
         return self._wrap_and_log(
             "list_employees_fallback",
             self._binder.adapter.list_children,
@@ -672,7 +682,7 @@ class BinderService:
             raise BinderServiceError("prod_id cannot be empty")
         self._wrap_and_log("delete_product", self._binder.delete_product, prod_id)
 
-    def list_products(self) -> List[Dict[str, Any]]:
+    def list_products(self, limit: int, start_at: int) -> List[Dict[str, Any]]:
         """
         List products for current user.
 
@@ -680,7 +690,7 @@ class BinderService:
             List[Dict[str, Any]]: product list.
         """
         if hasattr(self._binder, "list_products"):
-            return self._wrap_and_log("list_products", self._binder.list_products)
+            return self._wrap_and_log("list_products", self._binder.list_products, limit, start_at)
         return self._wrap_and_log(
             "list_products_fallback",
             self._binder.adapter.list_children,
@@ -781,15 +791,19 @@ class BinderService:
             raise BinderServiceError("svc_id cannot be empty")
         self._wrap_and_log("delete_service", self._binder.delete_service, svc_id)
 
-    def list_services(self) -> List[Dict[str, Any]]:
+    def list_services(self, start_at: int, limit: int) -> List[Dict[str, Any]]:
         """
         List services for current user.
+
+        Args:
+            start_at (int): Index to start the page from.
+            limit (int): max items to return (default 30).
 
         Returns:
             List[Dict[str, Any]]: services list.
         """
         if hasattr(self._binder, "list_services"):
-            return self._wrap_and_log("list_services", self._binder.list_services)
+            return self._wrap_and_log("list_services", self._binder.list_services, limit, start_at)
         return self._wrap_and_log(
             "list_services_fallback",
             self._binder.adapter.list_children,
@@ -845,7 +859,7 @@ class BinderService:
         )
         return self._wrap_and_log("create_transaction", self._binder.create_transaction, client_id, tran.to_dict())
 
-    def list_transactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_transactions(self, domain: str, user_id: str, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         List transactions for a client with pagination.
 
