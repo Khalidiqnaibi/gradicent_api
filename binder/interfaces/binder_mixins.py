@@ -70,6 +70,15 @@ class ClientMixin:
             client_id,
         )
 
+    def list_clients(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
+        return self.adapter.list_nested(
+            self.domain,
+            self.current_user,
+            "clients",
+            limit,
+            start_at,
+        )
+
     # NEW: Optimized for Supabase SQL
     def search_clients(self, query: str) -> List[Dict[str, Any]]:
         q = (query or "").strip()
@@ -119,6 +128,15 @@ class EmployeeMixin:
             "employees",
             patch,
             emp_id,
+        )
+
+    def list_employees(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
+        return self.adapter.list_nested(
+            self.domain,
+            self.current_user,
+            "employees",
+            limit,
+            start_at,
         )
 
     def delete_employee(self, emp_id: str) -> None:
@@ -198,6 +216,15 @@ class ProductMixin:
             prod_id,
         )
 
+    def list_products(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
+        return self.adapter.list_nested(
+            self.domain,
+            self.current_user,
+            "products",
+            limit,
+            start_at,
+        )
+
     def search_products(self, query: str) -> List[Dict[str, Any]]:
         q = (query or "").strip()
         if not q:
@@ -268,6 +295,15 @@ class ServiceMixin:
             svc_id,
         )
 
+    def list_services(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
+        return self.adapter.list_nested(
+            self.domain,
+            self.current_user,
+            "services",
+            limit,
+            start_at,
+        )
+
     def search_services(self, query: str) -> List[Dict[str, Any]]:
         q = (query or "").strip()
         if not q:
@@ -306,13 +342,14 @@ class InteractionMixin:
         )
         return data
 
-    def list_interactions(self, client_id: str, start_at:str) -> List[Dict[str, Any]]:
+    def list_interactions(self, client_id: str, limit: int = 30, start_at: str = None) -> List[Dict[str, Any]]:
         return self.adapter.list_nested(
             self.domain,
             self.current_user,
             "clients",
             client_id,
             "interactions", 
+            limit,
             start_at
         )
 
@@ -361,13 +398,14 @@ class TransactionMixin:
         )
         return data
 
-    def list_transactions(self, client_id: str,start_at:str) -> List[Dict[str, Any]]:
+    def list_transactions(self, client_id: str, limit: int = 30, start_at: str = None) -> List[Dict[str, Any]]:
         return self.adapter.list_nested(
             self.domain,
             self.current_user,
             "clients",
             client_id,
             "transactions",
+            limit,
             start_at
         )
 

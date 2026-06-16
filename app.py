@@ -29,6 +29,16 @@ from routes.binder_routes import binder_blueprint
 from routes.payments_routes import payments_blueprint
 from routes.auth_routes import auth_blueprint
 from routes.file_routes import file_routes
+
+from routes.binder_crud.client_routes import client_blueprint
+from routes.binder_crud.service_routes import service_blueprint
+from routes.binder_crud.interaction_routes import interaction_blueprint
+from routes.binder_crud.product_routes import product_blueprint
+from routes.binder_crud.transaction_routes import transaction_blueprint
+from routes.binder_crud.appointment_routes import appointment_blueprint
+from routes.binder_crud.employee_routes import employee_blueprint
+from routes.binder_crud.user_routes import user_blueprint
+
 from config import DefaultConfig
 from services.binder_service import BinderService, BinderServiceError
 
@@ -145,6 +155,15 @@ def create_app(config_name: str = 'default') -> Flask:
     app.register_blueprint(payments_blueprint, url_prefix=app.config["PAYMENT_ROUTE_PREFIX"])
     app.register_blueprint(auth_blueprint, url_prefix=app.config["AUTH_ROUTE_PREFIX"])
     app.register_blueprint(file_routes, url_prefix=app.config["FILE_ROUTE_PREFIX"])
+
+    app.register_blueprint(client_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
+    app.register_blueprint(service_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
+    app.register_blueprint(interaction_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
+    app.register_blueprint(product_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
+    app.register_blueprint(transaction_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
+    app.register_blueprint(appointment_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
+    app.register_blueprint(employee_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
+    app.register_blueprint(user_blueprint, url_prefix=app.config["BINDER_ROUTE_PREFIX"])
 
     # Attach services for controllers to pull from app context
     app.extensions.setdefault("services", {})

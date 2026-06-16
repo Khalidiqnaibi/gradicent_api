@@ -81,10 +81,11 @@ class SupabaseAdapter(StorageAdapter):
 
     def add_child(self, domain: str, user_id: str, collection: str, obj: Dict) -> str:
         table = self._get_table(collection)
-        child_id = obj.get("id", str(uuid.uuid4())) 
+        response = self.supabase.table(table).select("id", count="exact").eq("domain", domain).eq("owner_id", user_id).execute()
+        count = response.count if response.count is not None else 0
+        child_id = str(count + 1)
         
         clean_obj = self._normalize_payload(obj)
-        
         payload = {
             "id": child_id,
             "domain": domain,
@@ -127,9 +128,21 @@ class SupabaseAdapter(StorageAdapter):
         table = self._get_table(collection)
         self.supabase.table(table).delete().eq("id", child_id).eq("domain", domain).eq("owner_id", user_id).execute()
 
+    def list_child(self, domain: str, user_id: str, collection: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict]:
+        table = self._get_table(collection)
+        query = self.supabase.table(table).select("*").eq("domain", domain).eq("owner_id", user_id).order("id")
+        if start_at:
+            query = query.gte("id", start_at)
+        query = query.limit(limit)
+        response = query.execute()
+        return self._format_result(response.data)
+
     def list_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict]:
         table = self._get_table(nested)
-        query = self.supabase.table(table).select("*").eq("domain", domain).eq("owner_id", user_id).eq("parent_id", child_id).limit(limit)
+        query = self.supabase.table(table).select("*").eq("domain", domain).eq("owner_id", user_id).eq("parent_id", child_id).order("id")
+        if start_at:
+            query = query.gte("id", start_at)
+        query = query.limit(limit)
         response = query.execute()
         return self._format_result(response.data)
 
@@ -147,7 +160,9 @@ class SupabaseAdapter(StorageAdapter):
 
     def add_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
         table = self._get_table(nested)
-        nested_id = str(uuid.uuid4())
+        response = self.supabase.table(table).select("id", count="exact").eq("domain", domain).eq("owner_id", user_id).execute()
+        count = response.count if response.count is not None else 0
+        nested_id = str(count + 1)
         
         payload = {
             "id": nested_id,
