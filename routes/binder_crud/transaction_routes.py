@@ -13,16 +13,16 @@ transaction_blueprint = Blueprint("transaction_blueprint", __name__)
 @transaction_blueprint.errorhandler(BinderServiceError)
 def handle_service_error(err: BinderServiceError):
     current_app.logger.exception("Binder service error: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @transaction_blueprint.errorhandler(BadRequest)
 def handle_bad_request(err: BadRequest):
     current_app.logger.warning("Bad request: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @transaction_blueprint.errorhandler(NotFound)
 def handle_not_found(err: NotFound):
-    return make_response(message=str(err), status="error"), 404
+    return make_response(message=str(err), status="error", code=404)
 
 
 @transaction_blueprint.route("/clients/<client_id>/transactions", methods=["GET"])
@@ -51,7 +51,7 @@ def list_transactions(client_id: str):
         service.set_current_user(user_id)
 
     if not user_id == session.get("user_id"):
-        return make_response(status="error", message="Unauthorized action"), 401
+        return make_response(status="error", message="Unauthorized action", code=401)
 
     transactions = service.list_transactions(
         client_id=client_id, 
@@ -59,7 +59,7 @@ def list_transactions(client_id: str):
         limit=limit
     )
     
-    return make_response(data=transactions, message="Transactions retrieved."), 200
+    return make_response(data=transactions, message="Transactions retrieved.", code=200)
 
 @transaction_blueprint.route("/clients/<client_id>/transactions/<int:transaction_no>", methods=["GET"])
 def get_transaction(client_id: str, transaction_no: int):
@@ -83,7 +83,7 @@ def get_transaction(client_id: str, transaction_no: int):
     if not transaction:
         raise NotFound(f"Transaction {transaction_no} not found for client {client_id}")
 
-    return make_response(data=transaction, message="Transaction retrieved."), 200
+    return make_response(data=transaction, message="Transaction retrieved.", code=200)
 
 @transaction_blueprint.route("/clients/<client_id>/transactions", methods=["POST"])
 def add_transactions(client_id: str):
@@ -107,7 +107,7 @@ def add_transactions(client_id: str):
 
     
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     if int(client_id) < 0:
         client_id = session["client_id"]
@@ -119,7 +119,7 @@ def add_transactions(client_id: str):
     transaction_no = transaction_no-1 or 0
 
     log_event(service._binder, 202, metadata={"id" : client_id , "transaction_no":transaction_no})
-    return make_response(data=transaction, message="Transaction created."), 201
+    return make_response(data=transaction, message="Transaction created.", code=201)
 
 @transaction_blueprint.route("/clients/<client_id>/transactions", methods=["PATCH"])
 def update_transactions(client_id: str):
@@ -147,7 +147,7 @@ def update_transactions(client_id: str):
         service.set_current_user(payload["user_id"])
 
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
     
     if  int(client_id) < 0:
         client_id = session["client_id"]
@@ -159,7 +159,7 @@ def update_transactions(client_id: str):
     service.update_transaction(client_id=client_id,transaction_no=transaction_no,patch = payload["patch"])
 
     log_event(service._binder, 402, metadata={"id" : client_id , "transaction_no":transaction_no})
-    return make_response(data=payload, message="Updated Transactions."), 201
+    return make_response(data=payload, message="Updated Transactions.", code=201)
 
 @transaction_blueprint.route("/clients/<client_id>/transactions", methods=["DELETE"])
 def delete_transaction(client_id: str):
@@ -169,7 +169,7 @@ def delete_transaction(client_id: str):
     Expected JSON:
     {
        "domain" (str): "...",
-       "transaction_no (int):"...",
+       "transaction_no" (int): "...",
        "user_id" (str): "..."
     }
     """
@@ -181,10 +181,10 @@ def delete_transaction(client_id: str):
         service.set_current_user(user_id)
     
     if not user_id == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
     
     if not transaction_no:
         raise BadRequest("'transaction_no' not found in payload")
 
     service.delete_transaction(client_id=client_id , transaction_no = transaction_no)
-    return make_response(data=payload, message="Deleted Transactions."), 201
+    return make_response(data=payload, message="Deleted Transactions.", code=201)

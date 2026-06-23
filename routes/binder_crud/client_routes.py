@@ -13,16 +13,16 @@ client_blueprint = Blueprint("client", __name__)
 @client_blueprint.errorhandler(BinderServiceError)
 def handle_service_error(err: BinderServiceError):
     current_app.logger.exception("Binder service error: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @client_blueprint.errorhandler(BadRequest)
 def handle_bad_request(err: BadRequest):
     current_app.logger.warning("Bad request: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @client_blueprint.errorhandler(NotFound)
 def handle_not_found(err: NotFound):
-    return make_response(message=str(err), status="error"), 404
+    return make_response(message=str(err), status="error", code=404)
 
 
 @client_blueprint.route("/clients", methods=["POST"])
@@ -46,7 +46,7 @@ def add_client():
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
         if not payload['user_id'] == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+            return make_response(status="error" , message="Unauthorized action", code=401)
         
         service.set_current_user(payload["user_id"])
 
@@ -54,7 +54,7 @@ def add_client():
     client_id = client.get("id")
 
     log_event(service._binder,201 , metadata={"id" : client_id})
-    return make_response(data=client, message="Client added successfully."), 201
+    return make_response(data=client, message="Client added successfully.", code=201)
 
 @client_blueprint.route("/clients/<client_id>", methods=["GET"])
 def get_client(client_id: str):
@@ -70,7 +70,7 @@ def get_client(client_id: str):
     service = _get_domain_and_service({"domain": domain})
 
     if not user_id == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     if user_id:
         service.set_current_user(user_id)
@@ -80,7 +80,7 @@ def get_client(client_id: str):
     if not client:
         raise NotFound(f"Client {client_id} not found")
     session["client"]=client["id"]
-    return make_response(data=client), 200
+    return make_response(data=client, code=200)
 
 @client_blueprint.route("/clients/<client_id>", methods=["PATCH"])
 def patch_client(client_id: str):
@@ -101,12 +101,12 @@ def patch_client(client_id: str):
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
         if not payload['user_id'] == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+            return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
     service.update_client(client_id, payload["patch"])
     log_event(service._binder,401)
-    return make_response(message="Client updated successfully."), 200
+    return make_response(message="Client updated successfully.", code=200)
 
 @client_blueprint.route("/clients/<client_id>", methods=["DELETE"])
 def remove_client(client_id: str):
@@ -119,11 +119,11 @@ def remove_client(client_id: str):
     
     if user_id:
         if not user_id == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+            return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(user_id)
 
     service.delete_client(client_id)
-    return make_response(message="Client deleted."), 200
+    return make_response(message="Client deleted.", code=200)
 
 @client_blueprint.route("/client/search", methods=["POST"])
 def client_search():
@@ -142,12 +142,11 @@ def client_search():
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
         if not payload['user_id'] == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+            return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
     results = service.search_client(query)
-    resp = make_response(data=results, message="Search completed.")
-    resp.status_code = 200
+    resp = make_response(data=results, message="Search completed.", code=200)
     log_event(service._binder,300)
     return resp
 
@@ -167,7 +166,7 @@ def list_clients():
     service = _get_domain_and_service({"domain": domain})
 
     if not user_id == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     if user_id:
         service.set_current_user(user_id)
@@ -176,4 +175,4 @@ def list_clients():
         start_at=int(request.args.get("start_at", 0)),
         limit=int(request.args.get("limit", 30))
     )
-    return make_response(data={"clients": clients}, message="Clients retrieved successfully."), 200
+    return make_response(data={"clients": clients}, message="Clients retrieved successfully.", code=200)

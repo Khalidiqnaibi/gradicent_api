@@ -15,16 +15,16 @@ product_blueprint = Blueprint("product", __name__)
 @product_blueprint.errorhandler(BinderServiceError)
 def handle_service_error(err: BinderServiceError):
     current_app.logger.exception("Binder service error: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @product_blueprint.errorhandler(BadRequest)
 def handle_bad_request(err: BadRequest):
     current_app.logger.warning("Bad request: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @product_blueprint.errorhandler(NotFound)
 def handle_not_found(err: NotFound):
-    return make_response(message=str(err), status="error"), 404
+    return make_response(message=str(err), status="error", code=404)
 
 
 @product_blueprint.route("/products", methods=["POST"])
@@ -52,12 +52,12 @@ def create_product():
 
     
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     product = service.create_product(payload["product"])
     log_event(service._binder, 204)
 
-    return make_response(data=product, message="Product created successfully."), 201
+    return make_response(data=product, message="Product created successfully.", code=201)
 
 @product_blueprint.route("/products/<product_id>", methods=["GET"])
 def read_product(product_id: str):
@@ -81,13 +81,13 @@ def read_product(product_id: str):
         service.set_current_user(payload["user_id"])
     
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     product = service.read_product(product_id)
     if not product:
         raise NotFound(f"Product {product_id} not found")
 
-    return make_response(data=product), 200
+    return make_response(data=product, code=200)
 
 @product_blueprint.route("/products/<product_id>", methods=["PATCH"])
 def update_product(product_id: str):
@@ -113,12 +113,12 @@ def update_product(product_id: str):
         service.set_current_user(payload["user_id"])
 
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.update_product(product_id, payload["patch"])
     log_event(service._binder, 404)
 
-    return make_response(message="Product updated successfully."), 200
+    return make_response(message="Product updated successfully.", code=200)
 
 @product_blueprint.route("/products/<product_id>", methods=["DELETE"])
 def delete_product(product_id: str):
@@ -141,11 +141,11 @@ def delete_product(product_id: str):
         service.set_current_user(payload["user_id"])
     
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.delete_product(product_id)
 
-    return make_response(message="Product deleted successfully."), 200
+    return make_response(message="Product deleted successfully.", code=200)
 
 @product_blueprint.route("/products/search", methods=["POST"])
 def product_search():
@@ -166,11 +166,10 @@ def product_search():
         service.set_current_user(payload["user_id"])
         
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     results = service.search_product(query)
-    resp = make_response(data=results, message="Search completed.")
-    resp.status_code = 200
+    resp = make_response(data=results, message="Search completed.", code=200)
     log_event(service._binder, 300)
     return resp
     
@@ -201,9 +200,9 @@ def list_products():
     service = _get_domain_and_service(payload)
 
     if not user_id == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.set_current_user(user_id)
 
     products = service.list_products(limit=limit, start_at=start_at)
-    return make_response(data={"products": products}, message="Products retrieved successfully."), 200
+    return make_response(data={"products": products}, message="Products retrieved successfully.", code=200)

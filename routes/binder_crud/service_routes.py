@@ -14,16 +14,16 @@ service_blueprint = Blueprint("service_routes", __name__)
 @service_blueprint.errorhandler(BinderServiceError)
 def handle_service_error(err: BinderServiceError):
     current_app.logger.exception("Binder service error: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @service_blueprint.errorhandler(BadRequest)
 def handle_bad_request(err: BadRequest):
     current_app.logger.warning("Bad request: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @service_blueprint.errorhandler(NotFound)
 def handle_not_found(err: NotFound):
-    return make_response(message=str(err), status="error"), 404
+    return make_response(message=str(err), status="error", code=404)
 
 
 @service_blueprint.route("/services", methods=["POST"])
@@ -50,12 +50,12 @@ def create_service():
         service.set_current_user(payload["user_id"])
         
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     svc = service.create_service(payload["service"])
     log_event(service._binder, 205)
 
-    return make_response(data=svc, message="Service created successfully."), 201
+    return make_response(data=svc, message="Service created successfully.", code=201)
 
 @service_blueprint.route("/services/<service_id>", methods=["GET"])
 def read_service(service_id: str):
@@ -79,13 +79,13 @@ def read_service(service_id: str):
         service.set_current_user(payload["user_id"])
         
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     svc = service.read_service(service_id)
     if not svc:
         raise NotFound(f"Service {service_id} not found")
 
-    return make_response(data=svc), 200
+    return make_response(data=svc, code=200)
 
 @service_blueprint.route("/services/<service_id>", methods=["PATCH"])
 def update_service(service_id: str):
@@ -111,12 +111,12 @@ def update_service(service_id: str):
         service.set_current_user(payload["user_id"])
     
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.update_service(service_id, payload["patch"])
     log_event(service._binder, 405)
 
-    return make_response(message="Service updated successfully."), 200
+    return make_response(message="Service updated successfully.", code=200)
 
 @service_blueprint.route("/services/<service_id>", methods=["DELETE"])
 def delete_service(service_id: str):
@@ -139,11 +139,11 @@ def delete_service(service_id: str):
         service.set_current_user(payload["user_id"])
         
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.delete_service(service_id)
 
-    return make_response(message="Service deleted successfully."), 200
+    return make_response(message="Service deleted successfully.", code=200)
 
 @service_blueprint.route("/services/search", methods=["POST"])
 def service_search():
@@ -164,11 +164,10 @@ def service_search():
         service.set_current_user(payload["user_id"])
 
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     results = service.search_service(query)
-    resp = make_response(data=results, message="Search completed.")
-    resp.status_code = 200
+    resp = make_response(data=results, message="Search completed.", code=200)
     log_event(service._binder, 300)
     return resp
 
@@ -201,7 +200,7 @@ def list_services():
         service.set_current_user(user_id)
 
     if not user_id == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     services = service.list_services(start_at, limit)
-    return make_response(data={"services": services}, message="Services retrieved successfully."), 200
+    return make_response(data={"services": services}, message="Services retrieved successfully.", code=200)

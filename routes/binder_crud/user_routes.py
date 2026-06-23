@@ -13,16 +13,16 @@ user_blueprint = Blueprint("user_blueprint", __name__)
 @user_blueprint.errorhandler(BinderServiceError)
 def handle_service_error(err: BinderServiceError):
     current_app.logger.exception("Binder service error: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @user_blueprint.errorhandler(BadRequest)
 def handle_bad_request(err: BadRequest):
     current_app.logger.warning("Bad request: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @user_blueprint.errorhandler(NotFound)
 def handle_not_found(err: NotFound):
-    return make_response(message=str(err), status="error"), 404
+    return make_response(message=str(err), status="error", code=404)
 
 
 @user_blueprint.route("/user/<user_id>",methods=["GET"])
@@ -44,7 +44,7 @@ def get_user(user_id):
     }
 
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
     
     service = _get_domain_and_service(payload=payload)
 
@@ -52,7 +52,7 @@ def get_user(user_id):
     if not user:
         raise NotFound(f"User {payload['user_id']} not found")
 
-    return make_response(data=user,message="User retrieved successfully") , 200
+    return make_response(data=user,message="User retrieved successfully", code=200)
 
 @user_blueprint.route("/user/<user_id>",methods=["PATCH"])
 def update_user(user_id):
@@ -67,10 +67,10 @@ def update_user(user_id):
     payload = request.get_json(force=True)
 
     if user_id is None:
-        return make_response(message="user_id cann not be null", status="error") , 400
+        return make_response(message="user_id cann not be null", status="error", code=400)
 
     if not user_id == session.get("user_id"):
-        return make_response(None, message="Unauthorized action", status="error") , 401
+        return make_response(None, message="Unauthorized action", status="error", code=401)
     
     if payload.get("domain"):
         session["domain"] = payload["domain"]
@@ -78,7 +78,7 @@ def update_user(user_id):
     payload["domain"] = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
 
     if not payload.get("user"):
-        return make_response(message="New user data can not be Null", status="error") , 400
+        return make_response(message="New user data can not be Null", status="error", code=400)
     
     service = _get_domain_and_service(payload=payload)
 
@@ -125,8 +125,8 @@ def set_current_user():
         raise BadRequest("Missing 'user_id'")
     
     if not payload['user_id'] == session["user_id"]:
-        return make_response(status="error" , message="Unauthorized action") , 401
+        return make_response(status="error" , message="Unauthorized action", code=401)
 
     service = _get_domain_and_service(payload)
     service.set_current_user(payload["user_id"])
-    return make_response(message="Current user set."), 200
+    return make_response(message="Current user set.", code=200)

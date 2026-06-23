@@ -14,16 +14,16 @@ interaction_blueprint = Blueprint("interaction", __name__)
 @interaction_blueprint.errorhandler(BinderServiceError)
 def handle_service_error(err: BinderServiceError):
     current_app.logger.exception("Binder service error: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @interaction_blueprint.errorhandler(BadRequest)
 def handle_bad_request(err: BadRequest):
     current_app.logger.warning("Bad request: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @interaction_blueprint.errorhandler(NotFound)
 def handle_not_found(err: NotFound):
-    return make_response(message=str(err), status="error"), 404
+    return make_response(message=str(err), status="error", code=404)
 
 
 @interaction_blueprint.route("/clients/<client_id>/interactions", methods=["POST"])
@@ -45,7 +45,7 @@ def add_interaction(client_id: str):
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
         if not payload['user_id'] == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+            return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
     if int(client_id) < 0:
@@ -58,7 +58,7 @@ def add_interaction(client_id: str):
     interaction_no = interaction_no-1 or 0
 
     log_event(service._binder,202,metadata={"id" : client_id , "interaction_no":interaction_no})
-    return make_response(data=interaction, message="Interaction created."), 201
+    return make_response(data=interaction, message="Interaction created.", code=201)
 
 @interaction_blueprint.route("/clients/<client_id>/interactions", methods=["GET"])
 def list_interactions(client_id: str):
@@ -84,7 +84,7 @@ def list_interactions(client_id: str):
     service = _get_domain_and_service({"domain": domain})
     if user_id:
         if not user_id == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+            return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(user_id)
 
     interactions = service.list_interactions(
@@ -93,7 +93,7 @@ def list_interactions(client_id: str):
         limit=limit
     )
     
-    return make_response(data=interactions, message=f"{limit} Interactions retrieved."), 200
+    return make_response(data=interactions, message=f"{limit} Interactions retrieved.", code=200)
 
 @interaction_blueprint.route("/clients/<client_id>/interactions/<int:interaction_no>", methods=["GET"])
 def get_interaction(client_id: str, interaction_no: int):
@@ -119,7 +119,7 @@ def get_interaction(client_id: str, interaction_no: int):
     if not interaction:
         raise NotFound(f"Interaction {interaction_no} not found for client {client_id}")
 
-    return make_response(data=interaction, message="Interaction retrieved."), 200
+    return make_response(data=interaction, message="Interaction retrieved.", code=200)
 
 @interaction_blueprint.route("/clients/<client_id>/interactions", methods=["PATCH"])
 def update_interaction(client_id: str):
@@ -145,7 +145,7 @@ def update_interaction(client_id: str):
     service.set_current_user(session["user_id"])
     if "user_id" in payload:
         if not payload['user_id'] == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+            return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
     
     if  int(client_id) < 0:
@@ -158,7 +158,7 @@ def update_interaction(client_id: str):
     service.update_interactions(client_id=client_id,interaction_no=interaction_no,patch = payload["patch"])
 
     log_event(service._binder,402,metadata={"id" : client_id , "interaction_no":interaction_no})
-    return make_response(data=payload, message="Updated Interactions."), 201
+    return make_response(data=payload, message="Updated Interactions.", code=201)
 
 @interaction_blueprint.route("/clients/<client_id>/interactions", methods=["DELETE"])
 def delete_interaction(client_id: str):
@@ -178,12 +178,12 @@ def delete_interaction(client_id: str):
     user_id = payload.get("user_id")
     if user_id:
         if not user_id == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+            return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(user_id)
     
     if not interaction_no:
         raise BadRequest("'interaction_no' not found in payload")
 
     service.delete_interactions(client_id=client_id , interaction_no = interaction_no)
-    return make_response(data=payload, message="Deleted Interactions."), 201
+    return make_response(data=payload, message="Deleted Interactions.", code=201)
     
