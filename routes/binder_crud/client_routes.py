@@ -1,9 +1,10 @@
-from flask import Blueprint, current_app, make_response, request, session
+from flask import Blueprint, current_app, request, session
 from werkzeug.exceptions import BadRequest, NotFound
 
 from routes.binder_routes import DEFAULT_DOMAIN, _get_domain_and_service, _get_domain_and_service
 from services.binder_service import BinderServiceError
 from utils.log_events import log_event
+from utils.make_res import make_response
 
 client_blueprint = Blueprint("client", __name__)
 
