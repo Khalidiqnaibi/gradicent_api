@@ -71,7 +71,7 @@ class ClientMixin:
         )
 
     def list_clients(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
-        return self.adapter.list_nested(
+        return self.adapter.list_child(
             self.domain,
             self.current_user,
             "clients",
@@ -131,7 +131,7 @@ class EmployeeMixin:
         )
 
     def list_employees(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
-        return self.adapter.list_nested(
+        return self.adapter.list_child(
             self.domain,
             self.current_user,
             "employees",
@@ -217,7 +217,7 @@ class ProductMixin:
         )
 
     def list_products(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
-        return self.adapter.list_nested(
+        return self.adapter.list_child(
             self.domain,
             self.current_user,
             "products",
@@ -296,7 +296,7 @@ class ServiceMixin:
         )
 
     def list_services(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
-        return self.adapter.list_nested(
+        return self.adapter.list_child(
             self.domain,
             self.current_user,
             "services",
