@@ -150,11 +150,17 @@ def rotate_security_code():
         { "data": "<new_code>" , message : "" , status : "success" }
     """
     
-    payload = request.get_json(force=True)
+    payload = request.get_json(force=True, silent=True) or {}
     if  not "domain" in payload :
         payload["domain"] = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
 
-    if "user_id" not in payload  or session.get("page") != "settings":
+    # Only the signed-in user may rotate their own access code
+    if (
+        "user_id" not in payload
+        or session.get("page") != "settings"
+        or not session.get("user_id")
+        or str(payload["user_id"]) != str(session.get("user_id"))
+    ):
         return make_response(status="error",message= "Unauthorized", code=401)
 
     provided_code = request.json.get("code")
@@ -199,7 +205,7 @@ def check_activation_code():
     payload = request.get_json(silent=True) or request.form.to_dict()
     payload["domain"] = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
     
-    if not payload["code"]:
+    if not payload.get("code"):
         return make_response(message="code can not be null" , status="error", code=400)
 
     service = _get_domain_and_service(payload=payload)
