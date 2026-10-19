@@ -39,7 +39,7 @@ def get_employee(eid):
     domain = request.args.get("domain", DEFAULT_DOMAIN)
     user_id = request.args.get("user_id")
     
-    if not user_id == session["user_id"]:
+    if not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
     
     service = _get_domain_and_service({"domain": domain})
@@ -80,7 +80,7 @@ def add_employee():
     service = _get_domain_and_service(payload)
 
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
+        if not payload['user_id'] == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
@@ -109,7 +109,7 @@ def update_employee(eid):
 
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
+        if not payload['user_id'] == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
@@ -132,7 +132,7 @@ def delete_employee(eid):
     service = _get_domain_and_service(payload)
     user_id = payload.get("user_id")
     if user_id:
-        if not user_id == session["user_id"]:
+        if not user_id == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(user_id)
 
@@ -156,7 +156,7 @@ def employee_search():
 
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
+        if not payload['user_id'] == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
@@ -184,10 +184,10 @@ def list_employees():
     start_at = request.args.get("start_at", type=int, default=0)
     limit = request.args.get("limit", type=int, default=100)
 
-    if user_id and not user_id == session["user_id"]:
+    if user_id and not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
-    user_id = user_id or session["user_id"]
+    user_id = user_id or session.get("user_id")
 
     service = _get_domain_and_service({
         "domain": domain,

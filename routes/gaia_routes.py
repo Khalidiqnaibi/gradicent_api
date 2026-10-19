@@ -61,7 +61,7 @@ def compute_metric():
     if not user_id:
         return make_response({}, "Missing 'user_id' parameter.", "error")
     
-    if not user_id == session["user_id"]:
+    if not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action") , 401
 
     # Retrieve binder (Medical or Business)

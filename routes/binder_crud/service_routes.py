@@ -49,7 +49,7 @@ def create_service():
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
         
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     svc = service.create_service(payload["service"])
@@ -78,7 +78,7 @@ def read_service(service_id: str):
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
         
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     svc = service.read_service(service_id)
@@ -110,7 +110,7 @@ def update_service(service_id: str):
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
     
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.update_service(service_id, payload["patch"])
@@ -138,7 +138,7 @@ def delete_service(service_id: str):
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
         
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.delete_service(service_id)
@@ -163,7 +163,7 @@ def service_search():
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
 
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     results = service.search_service(query)
@@ -199,7 +199,7 @@ def list_services():
     if user_id:
         service.set_current_user(user_id)
 
-    if not user_id == session["user_id"]:
+    if not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     services = service.list_services(start_at, limit)

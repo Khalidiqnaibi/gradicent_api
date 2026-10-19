@@ -43,7 +43,7 @@ def get_user(user_id):
         "domain" : request.args.get("domain",session.get("domain", session.get("binder", DEFAULT_DOMAIN)))
     }
 
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
     
     service = _get_domain_and_service(payload=payload)
@@ -107,7 +107,7 @@ def create_user():
     service = _get_domain_and_service(payload)
     user = service.create_user(payload["user"])
     log_event(service._binder,200)
-    return make_response(data=user, message="User created successfully."), 201
+    return make_response(data=user, message="User created successfully.", code=201)
 
 @user_blueprint.route("/set_current_user", methods=["POST"])
 def set_current_user():
@@ -124,7 +124,7 @@ def set_current_user():
     if "user_id" not in payload:
         raise BadRequest("Missing 'user_id'")
     
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     service = _get_domain_and_service(payload)

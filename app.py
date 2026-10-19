@@ -7,6 +7,7 @@ Initializes Flask, Firebase, and registers domain routes.
 
 import os
 from flask import Flask ,request
+from werkzeug.exceptions import HTTPException
 from authlib.integrations.flask_client import OAuth
 import json
 import re
@@ -40,6 +41,7 @@ from routes.binder_crud.employee_routes import employee_blueprint
 from routes.binder_crud.user_routes import user_blueprint
 
 from config import DefaultConfig
+from utils.make_res import make_response
 from services.binder_service import BinderService, BinderServiceError
 
 def create_app(config_name: str = 'default') -> Flask:
@@ -76,6 +78,21 @@ def create_app(config_name: str = 'default') -> Flask:
             if 'Access-Control-Allow-Headers' not in response.headers:
                 response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Refresh-Token'
         return response
+
+    @app.errorhandler(HTTPException)
+    def handle_http_error(err: HTTPException):
+        """Return JSON (not HTML) for 4xx/5xx raised by Flask/werkzeug, e.g. unknown routes."""
+        return make_response(message=err.description or err.name, status="error", code=err.code or 500)
+
+    @app.errorhandler(Exception)
+    def handle_unexpected_error(err: Exception):
+        """
+        Last-resort handler: without it an unhandled exception escapes the serverless function
+        (FUNCTION_INVOCATION_FAILED), which also drops the CORS headers so browsers report a
+        CORS error instead of the real failure.
+        """
+        app.logger.exception("Unhandled error on %s %s", request.method, request.path)
+        return make_response(message="Internal server error", status="error", code=500)
 
     app.config.update(
         SESSION_COOKIE_DOMAIN='.bindersoftware.com', 

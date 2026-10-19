@@ -45,7 +45,7 @@ def add_client():
 
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
+        if not payload['user_id'] == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         
         service.set_current_user(payload["user_id"])
@@ -69,7 +69,7 @@ def get_client(client_id: str):
     user_id = request.args.get("user_id")
     service = _get_domain_and_service({"domain": domain})
 
-    if not user_id == session["user_id"]:
+    if not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     if user_id:
@@ -100,7 +100,7 @@ def patch_client(client_id: str):
 
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
+        if not payload['user_id'] == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
@@ -118,7 +118,7 @@ def remove_client(client_id: str):
     user_id = payload.get("user_id")
     
     if user_id:
-        if not user_id == session["user_id"]:
+        if not user_id == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(user_id)
 
@@ -141,7 +141,7 @@ def client_search():
 
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
+        if not payload['user_id'] == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
@@ -165,7 +165,7 @@ def list_clients():
     user_id = request.args.get("user_id")
     service = _get_domain_and_service({"domain": domain})
 
-    if not user_id == session["user_id"]:
+    if not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     if user_id:

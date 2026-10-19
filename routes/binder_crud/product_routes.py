@@ -51,7 +51,7 @@ def create_product():
         service.set_current_user(payload["user_id"])
 
     
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     product = service.create_product(payload["product"])
@@ -80,7 +80,7 @@ def read_product(product_id: str):
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
     
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     product = service.read_product(product_id)
@@ -112,7 +112,7 @@ def update_product(product_id: str):
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
 
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.update_product(product_id, payload["patch"])
@@ -140,7 +140,7 @@ def delete_product(product_id: str):
     if payload.get("user_id"):
         service.set_current_user(payload["user_id"])
     
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.delete_product(product_id)
@@ -165,7 +165,7 @@ def product_search():
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
         
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     results = service.search_product(query)
@@ -199,7 +199,7 @@ def list_products():
     }
     service = _get_domain_and_service(payload)
 
-    if not user_id == session["user_id"]:
+    if not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     service.set_current_user(user_id)

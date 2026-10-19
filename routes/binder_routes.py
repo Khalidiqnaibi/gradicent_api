@@ -49,16 +49,16 @@ def _get_domain_and_service(payload: Dict[str, Any]) -> BinderService:
 @binder_blueprint.errorhandler(BinderServiceError)
 def handle_service_error(err: BinderServiceError):
     current_app.logger.exception("Binder service error: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @binder_blueprint.errorhandler(BadRequest)
 def handle_bad_request(err: BadRequest):
     current_app.logger.warning("Bad request: %s", err)
-    return make_response(message=str(err), status="error"), 400
+    return make_response(message=str(err), status="error", code=400)
 
 @binder_blueprint.errorhandler(NotFound)
 def handle_not_found(err: NotFound):
-    return make_response(message=str(err), status="error"), 404
+    return make_response(message=str(err), status="error", code=404)
 
 @binder_blueprint.route("/get_plan_status",methods=["GET"])
 def get_plan_status():
@@ -67,7 +67,7 @@ def get_plan_status():
         "domain": domain
     }
     service = _get_domain_and_service(payload)
-    user_id = session["user_id"]
+    user_id = session.get("user_id")
     service.set_current_user(user_id)
     plan , first  = get_plan_data(service=service)
     
@@ -80,13 +80,13 @@ def get_plan_status():
     }
     if session.get("plan") == "sec":
         result["plan"] = session["plan"]
-        return make_response(data=result) , 200
-    return make_response(data=result) , 200
+        return make_response(data=result, code=200)
+    return make_response(data=result, code=200)
 
 @binder_blueprint.route("/get_domain",methods=["GET"])
 def get_domain():
     domain = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
-    return make_response(data=domain) , 200
+    return make_response(data=domain, code=200)
 
 @binder_blueprint.route("/track_time", methods=["POST"])
 def log_time_tracking():
@@ -107,19 +107,19 @@ def log_time_tracking():
     
     time_entry = payload["seconds"]
     if int(time_entry) < MIN_SEC_REC : 
-        return make_response(data=payload, message="Time entry below minimum."), 200
+        return make_response(data=payload, message="Time entry below minimum.", code=200)
     
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
-            return make_response(status="error" , message="Unauthorized action") , 401
+        if not payload['user_id'] == session.get("user_id"):
+            return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
     
     seconds_spent = payload.get("seconds", 0)
-    service.set_current_user(session["user_id"])
+    service.set_current_user(session.get("user_id"))
     log_time_spent(service._binder , seconds_spent)
 
-    return make_response(data=time_entry, message="Time entry logged."), 201
+    return make_response(data=time_entry, message="Time entry logged.", code=201)
 
 @binder_blueprint.route("/code", methods=["POST"])
 def rotate_security_code():
@@ -147,11 +147,11 @@ def rotate_security_code():
         payload["domain"] = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
 
     if "user_id" not in payload  or session.get("page") != "settings":
-        return make_response(status="error",message= "Unauthorized"), 401
+        return make_response(status="error",message= "Unauthorized", code=401)
 
     provided_code = request.json.get("code")
     if not provided_code:
-        return make_response(status="error", message="Code required"), 400
+        return make_response(status="error", message="Code required", code=400)
 
     service = _get_domain_and_service(payload=payload)
 
@@ -159,7 +159,7 @@ def rotate_security_code():
     ac = user.get("settings", {}).get("ac") if user else None
 
     if ac and ac.get("code") != provided_code:
-        return make_response(status="error", message="Invalid code"), 401
+        return make_response(status="error", message="Invalid code", code=401)
 
     new_code = service.rotate_permission_code(
         domain=payload["domain"],
@@ -167,7 +167,7 @@ def rotate_security_code():
         plan="sec",
     )
 
-    return make_response(data=new_code , message="Created code success") , 201
+    return make_response(data=new_code , message="Created code success", code=201)
 
 @binder_blueprint.route("/code/check", methods=["POST"])
 def check_activation_code():
@@ -192,7 +192,7 @@ def check_activation_code():
     payload["domain"] = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
     
     if not payload["code"]:
-        return make_response(message="code can not be null" , status="error"), 400
+        return make_response(message="code can not be null" , status="error", code=400)
 
     service = _get_domain_and_service(payload=payload)
 
@@ -202,7 +202,7 @@ def check_activation_code():
     )
 
     if not res:
-        return make_response(status="error" , message="code not valid") , 401
+        return make_response(status="error" , message="code not valid", code=401)
 
     service.consume_permission_code(
         domain=payload["domain"],
@@ -212,4 +212,4 @@ def check_activation_code():
     session["plan"] = res["plan"]
     session["user_id"] = res["owner_user_id"]
 
-    return make_response(data=payload["code"], message="Code accepted, plan activated.") , 200
+    return make_response(data=payload["code"], message="Code accepted, plan activated.", code=200)

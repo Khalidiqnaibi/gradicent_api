@@ -41,7 +41,7 @@ def get_appointments_for_date(date):
     if not payload["user_id"]:
         raise BadRequest("Missing user_id")
     
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     service = _get_domain_and_service(payload)
@@ -66,7 +66,7 @@ def save_appointments_for_date(date):
     if not user_id:
         raise BadRequest("Missing user_id")
 
-    if not user_id == session["user_id"]:
+    if not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     service = _get_domain_and_service({"domain": domain})
@@ -89,7 +89,7 @@ def lock_appointments():
 
     service = _get_domain_and_service(payload) 
     
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
     service.set_current_user(payload["user_id"])
 

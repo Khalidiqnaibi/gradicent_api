@@ -44,7 +44,7 @@ def add_interaction(client_id: str):
 
     service = _get_domain_and_service(payload)
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
+        if not payload['user_id'] == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
 
@@ -83,7 +83,7 @@ def list_interactions(client_id: str):
     
     service = _get_domain_and_service({"domain": domain})
     if user_id:
-        if not user_id == session["user_id"]:
+        if not user_id == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(user_id)
 
@@ -142,9 +142,9 @@ def update_interaction(client_id: str):
         raise BadRequest("Missing 'interaction_no' payload")
 
     service = _get_domain_and_service(payload)
-    service.set_current_user(session["user_id"])
+    service.set_current_user(session.get("user_id"))
     if "user_id" in payload:
-        if not payload['user_id'] == session["user_id"]:
+        if not payload['user_id'] == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(payload["user_id"])
     
@@ -177,7 +177,7 @@ def delete_interaction(client_id: str):
     interaction_no = payload.get("interaction_no")
     user_id = payload.get("user_id")
     if user_id:
-        if not user_id == session["user_id"]:
+        if not user_id == session.get("user_id"):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(user_id)
     

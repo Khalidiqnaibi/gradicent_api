@@ -106,7 +106,7 @@ def add_transactions(client_id: str):
         service.set_current_user(payload["user_id"])
 
     
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
     if int(client_id) < 0:
@@ -142,11 +142,11 @@ def update_transactions(client_id: str):
         raise BadRequest("Missing 'transaction_no' payload")
 
     service = _get_domain_and_service(payload)
-    service.set_current_user(session["user_id"])
+    service.set_current_user(session.get("user_id"))
     if "user_id" in payload:
         service.set_current_user(payload["user_id"])
 
-    if not payload['user_id'] == session["user_id"]:
+    if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
     
     if  int(client_id) < 0:
@@ -180,7 +180,7 @@ def delete_transaction(client_id: str):
     if user_id:
         service.set_current_user(user_id)
     
-    if not user_id == session["user_id"]:
+    if not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
     
     if not transaction_no:
