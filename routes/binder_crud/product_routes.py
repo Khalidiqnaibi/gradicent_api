@@ -190,8 +190,8 @@ def list_products():
 
     domain = request.args.get("domain", session.get("domain", session.get("binder", "default")))
     user_id = request.args.get("user_id", session.get("user_id"))
-    start_at = int(request.args.get("start_at", 0))
-    limit = int(request.args.get("limit", 30))
+    start_at = request.args.get("start_at", 0, type=int)
+    limit = request.args.get("limit", 30, type=int)
 
     payload = {
         "domain": domain,

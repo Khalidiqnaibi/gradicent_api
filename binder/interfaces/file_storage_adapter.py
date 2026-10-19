@@ -43,6 +43,6 @@ class FileStorageAdapter(ABC):
 
     # Soft delete
     @abstractmethod
-    def soft_delete(self, *, file_url: str) -> bool:
+    def soft_delete(self, *, file_url: str, user_id: str) -> bool:
         """Soft-delete a file."""
         raise NotImplementedError

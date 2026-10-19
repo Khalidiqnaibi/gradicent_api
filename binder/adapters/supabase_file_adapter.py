@@ -74,12 +74,12 @@ class SupabaseFileStorageAdapter:
         response = query.execute()
         return response.data
 
-    def soft_delete(self, *, file_url: str) -> bool:
-        # Fast SQL update based on URL
+    def soft_delete(self, *, file_url: str, user_id: str) -> bool:
+        # Fast SQL update based on URL, limited to the owner's own files
         response = self.supabase.table(self.file_table).update({
             "is_deleted": True,
             "deleted_at": datetime.now().isoformat()
-        }).eq("url_path", file_url).execute()
+        }).eq("url_path", file_url).eq("user_id", user_id).execute()
         
         return len(response.data) > 0
 

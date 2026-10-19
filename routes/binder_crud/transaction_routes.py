@@ -9,6 +9,14 @@ from utils.log_events import log_event
 transaction_blueprint = Blueprint("transaction_blueprint", __name__)
 
 
+def _parse_int(value, field: str) -> int:
+    """Parse a numeric payload field, turning bad input into a 400 instead of a 500."""
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        raise BadRequest(f"'{field}' must be a number")
+
+
 # Error handlers for the blueprint
 @transaction_blueprint.errorhandler(BinderServiceError)
 def handle_service_error(err: BinderServiceError):
@@ -43,8 +51,8 @@ def list_transactions(client_id: str):
     domain = request.args.get("domain", session.get("domain", DEFAULT_DOMAIN))
     user_id = request.args.get("user_id", session.get("user_id"))
     
-    start_at = int(request.args.get("start_at", 0))
-    limit = int(request.args.get("limit", 10))
+    start_at = request.args.get("start_at", 0, type=int)
+    limit = request.args.get("limit", 10, type=int)
 
     service = _get_domain_and_service({"domain": domain})
     if user_id:
@@ -109,8 +117,10 @@ def add_transactions(client_id: str):
     if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
 
-    if int(client_id) < 0:
-        client_id = session["client_id"]
+    if str(client_id).startswith("-"):
+        client_id = session.get("client_id")
+        if not client_id:
+            raise BadRequest("Missing client id")
 
     transaction = service.create_transaction(client_id, payload["transaction"])
 
@@ -149,10 +159,12 @@ def update_transactions(client_id: str):
     if not payload['user_id'] == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)
     
-    if  int(client_id) < 0:
-        client_id = session["client_id"]
+    if str(client_id).startswith("-"):
+        client_id = session.get("client_id")
+        if not client_id:
+            raise BadRequest("Missing client id")
 
-    transaction_no = int(payload["transaction_no"])- 1
+    transaction_no = _parse_int(payload.get("transaction_no"), "transaction_no") - 1
     if not transaction_no > 0 :
         transaction_no = 0
 

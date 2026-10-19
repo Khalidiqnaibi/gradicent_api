@@ -83,10 +83,11 @@ class FirebaseFileStorageAdapter(FileStorageAdapter):
 
         return results
 
-    def soft_delete(self, *, file_url: str) -> bool:
+    def soft_delete(self, *, file_url: str, user_id: str) -> bool:
         query = (
             self.db.collection("gradicent files")
             .where("data", "==", file_url)
+            .where("gid", "==", user_id)
             .limit(1)
             .stream()
         )

@@ -6,7 +6,7 @@ Initializes Flask, Firebase, and registers domain routes.
 """
 
 import os
-from flask import Flask ,request
+from flask import Flask ,request, session
 from werkzeug.exceptions import HTTPException
 from authlib.integrations.flask_client import OAuth
 import json
@@ -165,6 +165,23 @@ def create_app(config_name: str = 'default') -> Flask:
     binder_services = {}
     for i in binders.keys():
         binder_services[i] = BinderService(binders[i]) 
+
+    # Binder CRUD routes all act on a user's own records: require a signed-in session up front so
+    # signed-out calls get a clean 401 instead of running queries without an owner.
+    crud_blueprint_names = {
+        bp.name for bp in (
+            client_blueprint, service_blueprint, interaction_blueprint, product_blueprint,
+            transaction_blueprint, appointment_blueprint, employee_blueprint, user_blueprint,
+        )
+    }
+
+    @app.before_request
+    def require_signed_in_user():
+        if request.method == "OPTIONS" or request.blueprint not in crud_blueprint_names:
+            return None
+        if not session.get("user_id"):
+            return make_response(status="error", message="unauthenticated", code=401)
+        return None
 
     # register blueprints and pass factories via app extensions
     app.register_blueprint(gaia_blueprint, url_prefix=app.config["GAIA_ROUTE_PREFIX"])

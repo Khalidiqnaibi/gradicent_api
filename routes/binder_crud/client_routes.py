@@ -172,7 +172,7 @@ def list_clients():
         service.set_current_user(user_id)
 
     clients = service.list_clients(
-        start_at=int(request.args.get("start_at", 0)),
-        limit=int(request.args.get("limit", 30))
+        start_at=request.args.get("start_at", 0, type=int),
+        limit=request.args.get("limit", 30, type=int)
     )
     return make_response(data={"clients": clients}, message="Clients retrieved successfully.", code=200)

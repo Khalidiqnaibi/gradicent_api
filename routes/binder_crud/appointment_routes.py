@@ -93,6 +93,10 @@ def lock_appointments():
         return make_response(status="error" , message="Unauthorized action", code=401)
     service.set_current_user(payload["user_id"])
 
-    service.lock_appointment(payload["date"], int(no))
+    try:
+        slot_no = int(no)
+    except (TypeError, ValueError):
+        raise BadRequest("'no' must be a number")
+    service.lock_appointment(payload["date"], slot_no)
 
     return make_response(message="Appointment locked.", code=200)

@@ -66,8 +66,10 @@ def get_plan_status():
     payload ={
         "domain": domain
     }
-    service = _get_domain_and_service(payload)
     user_id = session.get("user_id")
+    if not user_id:
+        return make_response(status="error", message="unauthenticated", code=401)
+    service = _get_domain_and_service(payload)
     service.set_current_user(user_id)
     plan , first  = get_plan_data(service=service)
     
@@ -100,13 +102,19 @@ def log_time_tracking():
         "seconds": { ... }
     }
     """
-    payload = request.get_json(force=True)
+    if not session.get("user_id"):
+        return make_response(status="error", message="unauthenticated", code=401)
+    payload = request.get_json(force=True, silent=True) or {}
     payload["domain"] = payload.get("domain",session.get("domain", session.get("binder", DEFAULT_DOMAIN)))
     if "seconds" not in payload:
         raise BadRequest("Missing 'seconds' payload")
     
     time_entry = payload["seconds"]
-    if int(time_entry) < MIN_SEC_REC : 
+    try:
+        time_entry_seconds = int(time_entry)
+    except (TypeError, ValueError):
+        raise BadRequest("'seconds' must be a whole number")
+    if time_entry_seconds < MIN_SEC_REC : 
         return make_response(data=payload, message="Time entry below minimum.", code=200)
     
     service = _get_domain_and_service(payload)

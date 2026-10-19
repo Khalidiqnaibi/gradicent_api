@@ -5,6 +5,7 @@ Domain-level file operations.
 """
 
 from typing import Dict, List, Optional
+from werkzeug.utils import secure_filename
 from binder.interfaces.file_storage_adapter import FileStorageAdapter
 
 
@@ -38,7 +39,7 @@ class FileService:
         folder="lab_reports",
     )
     
-    deleted = file_service.delete(file_url="https://storage.googleapis.com/...")
+    deleted = file_service.delete(file_url="https://storage.googleapis.com/...", user_id="google-uid-67890")
     ```
     '''
     def __init__(self, storage_adapter: FileStorageAdapter):
@@ -52,9 +53,10 @@ class FileService:
         folder: str,
         user_id: str,
     ) -> Dict:
+        # The storage adapter takes raw bytes; a path-safe name keeps uploads inside the user's folder
         return self.storage.upload_file(
-            file=file,
-            filename=file.filename,
+            file_body=file.read(),
+            filename=secure_filename(file.filename or "") or "upload",
             content_type=file.content_type,
             metadata={
                 "client_no": client_no,
@@ -76,5 +78,5 @@ class FileService:
             folder=folder,
         )
 
-    def delete(self, *, file_url: str) -> bool:
-        return self.storage.soft_delete(file_url=file_url)
+    def delete(self, *, file_url: str, user_id: str) -> bool:
+        return self.storage.soft_delete(file_url=file_url, user_id=user_id)
