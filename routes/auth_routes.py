@@ -12,6 +12,7 @@ Endpoints:
 """
 
 from typing import Optional, Any, Dict
+from urllib.parse import quote, urlsplit
 from flask import Blueprint, request, session, jsonify, current_app, url_for ,redirect
 from werkzeug.exceptions import BadRequest, NotFound
 
@@ -22,6 +23,7 @@ from services.binder_service import BinderService
 auth_blueprint = Blueprint("auth", __name__)
 
 DEFAULT_DOMAIN = "business"
+DEFAULT_FRONTEND_URL = "https://tst.bindersoftware.com"
 
 def _get_domain_and_service(payload: Dict[str, Any]) -> BinderService:
     """Resolve domain and return a BinderService instance."""
@@ -34,6 +36,31 @@ def _get_domain_and_service(payload: Dict[str, Any]) -> BinderService:
         current_app.logger.error("Binder not configured for domain: %s", domain)
         raise BadRequest(f"Unknown domain: {domain}")
     return binder_service
+
+def _is_trusted_frontend(url: Optional[str]) -> bool:
+    """Only send users back to our own frontends (prevents an open redirect via redirect_uri)."""
+    if not url:
+        return False
+    parts = urlsplit(url)
+    host = (parts.hostname or "").lower()
+    if parts.scheme == "https" and (host == "bindersoftware.com" or host.endswith(".bindersoftware.com")):
+        return True
+    return parts.scheme in ("http", "https") and host in ("localhost", "127.0.0.1")
+
+
+def _login_failed(message: str, status: int = 400):
+    """Send the user back to the frontend login page with a readable error, or JSON if we can't."""
+    current_app.logger.warning("OAuth sign-in failed: %s", message)
+    target = (
+        session.pop("frontend_redirect_uri", None)
+        or current_app.config.get("FRONTEND_URL")
+        or DEFAULT_FRONTEND_URL
+    )
+    if _is_trusted_frontend(target):
+        parts = urlsplit(target)
+        return redirect(f"{parts.scheme}://{parts.netloc}/login?error={quote(message)}")
+    return jsonify({"status": "error", "data": None, "message": message}), status
+
 
 def _get_auth_service(domain: str):
     """Retrieve the Authservice registered for the specific domain."""
@@ -55,7 +82,7 @@ def start_oauth():
     domain = request.args.get("domain", session.get("binder", "business"))
     
     frontend_redirect = request.args.get("redirect_uri") or request.referrer
-    if frontend_redirect:
+    if _is_trusted_frontend(frontend_redirect):
         session["frontend_redirect_uri"] = frontend_redirect
 
     session["domain"] = domain
@@ -77,7 +104,7 @@ def oauth_callback():
     error = request.args.get("error")
     
     if error:
-        return jsonify({"status": "error", "data": None, "message": error}), 400
+        return _login_failed("Google sign-in was cancelled or denied.")
 
     domain = session.get("domain", DEFAULT_DOMAIN)
     auth_service = _get_auth_service(domain)
@@ -86,7 +113,11 @@ def oauth_callback():
         # State and code are handled internally via request context
         user, tokens = auth_service.handle_provider_callback(domain, provider)
     except Exception as exc:
-        return jsonify({"status": "error", "data": None, "message": str(exc)}), 500
+        if "mismatching_state" in str(exc):
+            # The sign-in was started in another tab/attempt or the session cookie expired
+            return _login_failed("Your sign-in session expired. Please try signing in again.")
+        current_app.logger.exception("OAuth callback failed")
+        return _login_failed("Sign-in failed. Please try again.", 500)
 
     # Store authentication in session
     session.permanent = True
@@ -99,8 +130,13 @@ def oauth_callback():
     log_event(binder_service._binder, 100)
 
     target_frontend = session.pop("frontend_redirect_uri", None)
-    if target_frontend:
+    if _is_trusted_frontend(target_frontend):
         return redirect(target_frontend)
+
+    # No (trusted) return address: go to the workspace home rather than printing tokens on screen
+    frontend = current_app.config.get("FRONTEND_URL") or DEFAULT_FRONTEND_URL
+    if _is_trusted_frontend(frontend):
+        return redirect(f"{frontend.rstrip('/')}/{domain}/home")
 
     return jsonify({"status": "success", "data": {"user": user, "tokens": tokens}, "message": "Authenticated"})
 
