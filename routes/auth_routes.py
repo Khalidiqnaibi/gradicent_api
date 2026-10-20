@@ -118,8 +118,6 @@ def oauth_callback():
             # The sign-in was started in another tab/attempt or the session cookie expired
             return _login_failed("Your sign-in session expired. Please try signing in again.")
         current_app.logger.exception("OAuth callback failed")
-        # TEMP-DIAG: keep the reason in this browser's own session only (see /last_error)
-        session["last_auth_error"] = f"{type(exc).__name__}: {str(exc)[:300]}"
         return _login_failed("Sign-in failed. Please try again.", 500)
 
     # Store authentication in session
@@ -145,12 +143,6 @@ def oauth_callback():
         return redirect(f"{frontend.rstrip('/')}/{domain}/home")
 
     return jsonify({"status": "success", "data": {"user": user, "tokens": tokens}, "message": "Authenticated"})
-
-
-@auth_blueprint.route("/last_error", methods=["GET"])
-def last_auth_error():
-    """TEMP-DIAG: return the failure reason stored in the caller's own session, then forget it."""
-    return jsonify({"status": "success", "data": session.pop("last_auth_error", None), "message": ""})
 
 
 @auth_blueprint.route("/signout", methods=["POST"])

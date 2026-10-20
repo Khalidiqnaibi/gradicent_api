@@ -51,7 +51,7 @@ class SupabaseAdapter(StorageAdapter):
             "id": user_id,
             "domain": domain,
             "record_data": user_data
-        }).execute()
+        }, on_conflict="id,domain").execute()
 
     def delete_user(self, domain: str, user_id: str) -> None:
         table = self._get_table("users")
@@ -63,7 +63,7 @@ class SupabaseAdapter(StorageAdapter):
             "id": user_id,
             "domain": domain,
             "record_data": user
-        }).execute()
+        }, on_conflict="id,domain").execute()
 
     def get_user(self, domain: str, user_id: str) -> Optional[Dict]:
         table = self._get_table("users")
