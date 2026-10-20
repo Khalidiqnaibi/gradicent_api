@@ -118,7 +118,8 @@ def oauth_callback():
             # The sign-in was started in another tab/attempt or the session cookie expired
             return _login_failed("Your sign-in session expired. Please try signing in again.")
         current_app.logger.exception("OAuth callback failed")
-        return _login_failed("Sign-in failed. Please try again.", 500)
+        # TEMP-DIAG: surface the failure reason while debugging sign-in; remove afterwards
+        return _login_failed(f"Sign-in failed. Please try again. [{type(exc).__name__}: {str(exc)[:160]}]", 500)
 
     # Store authentication in session
     session.permanent = True
