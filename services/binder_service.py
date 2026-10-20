@@ -273,7 +273,7 @@ class BinderService:
         Returns:
             List[Dict[str, Any]]: paginated list of clients.
         """
-        return self._wrap_and_log("list_clients", self._binder.list_clients, limit, start_at)
+        return self._wrap_and_log("list_clients", self._binder.list_clients, start_at=start_at, limit=limit)
     # --- appointments ---
 
     def get_appointments(self, date: str) -> List[Dict[str, Any]]:
@@ -579,7 +579,7 @@ class BinderService:
             List[Dict[str, Any]]: employee list.
         """
         if hasattr(self._binder, "list_employees"):
-            return self._wrap_and_log("list_employees", self._binder.list_employees, limit , start_at)
+            return self._wrap_and_log("list_employees", self._binder.list_employees, start_at=start_at, limit=limit)
         return self._wrap_and_log(
             "list_employees_fallback",
             self._binder.adapter.list_children,
@@ -690,7 +690,7 @@ class BinderService:
             List[Dict[str, Any]]: product list.
         """
         if hasattr(self._binder, "list_products"):
-            return self._wrap_and_log("list_products", self._binder.list_products, limit, start_at)
+            return self._wrap_and_log("list_products", self._binder.list_products, start_at=start_at, limit=limit)
         return self._wrap_and_log(
             "list_products_fallback",
             self._binder.adapter.list_children,
@@ -803,7 +803,7 @@ class BinderService:
             List[Dict[str, Any]]: services list.
         """
         if hasattr(self._binder, "list_services"):
-            return self._wrap_and_log("list_services", self._binder.list_services, limit, start_at)
+            return self._wrap_and_log("list_services", self._binder.list_services, start_at=start_at, limit=limit)
         return self._wrap_and_log(
             "list_services_fallback",
             self._binder.adapter.list_children,
