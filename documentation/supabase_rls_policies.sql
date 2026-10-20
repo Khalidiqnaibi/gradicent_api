@@ -1,6 +1,7 @@
 -- supabase_rls_policies.sql
 -- --------------------------------------------------------------------------------------------
 -- Row-level security policies for the Binder API (api.bindersoftware.com).
+-- Table names match the production database (the API reads them from DB_TABLE_* env vars).
 --
 -- The API talks to Supabase with the project's `anon` key and signs users in with its own JWTs
 -- (not Supabase Auth), so Postgres cannot tell which Binder user a request is for. These
@@ -40,28 +41,28 @@ create policy "binder_api_users_update" on public.user_accounts_v1
 
 -- ---------- Owned records: clients/patients, employees, products, services ----------
 -- Every row belongs to a user (owner_id) within a domain.
-alter table public."CRM_entities_v1" enable row level security;
-alter table public."EMPLOYEE_entities_v1" enable row level security;
-alter table public.prod_v1 enable row level security;
+alter table public.crm_entities_v1 enable row level security;
+alter table public.hr_entities_v1 enable row level security;
+alter table public.product_items_v1 enable row level security;
 alter table public.service_catalog_v1 enable row level security;
 grant select, insert, update, delete on
-  public."CRM_entities_v1", public."EMPLOYEE_entities_v1", public.prod_v1, public.service_catalog_v1
+  public.crm_entities_v1, public.hr_entities_v1, public.product_items_v1, public.service_catalog_v1
   to anon;
 
-drop policy if exists "binder_api_clients_all" on public."CRM_entities_v1";
-create policy "binder_api_clients_all" on public."CRM_entities_v1"
+drop policy if exists "binder_api_clients_all" on public.crm_entities_v1;
+create policy "binder_api_clients_all" on public.crm_entities_v1
   for all to anon
   using (owner_id is not null)
   with check (owner_id is not null and domain in ('medical', 'business'));
 
-drop policy if exists "binder_api_employees_all" on public."EMPLOYEE_entities_v1";
-create policy "binder_api_employees_all" on public."EMPLOYEE_entities_v1"
+drop policy if exists "binder_api_employees_all" on public.hr_entities_v1;
+create policy "binder_api_employees_all" on public.hr_entities_v1
   for all to anon
   using (owner_id is not null)
   with check (owner_id is not null and domain in ('medical', 'business'));
 
-drop policy if exists "binder_api_products_all" on public.prod_v1;
-create policy "binder_api_products_all" on public.prod_v1
+drop policy if exists "binder_api_products_all" on public.product_items_v1;
+create policy "binder_api_products_all" on public.product_items_v1
   for all to anon
   using (owner_id is not null)
   with check (owner_id is not null and domain in ('medical', 'business'));
@@ -73,30 +74,25 @@ create policy "binder_api_services_all" on public.service_catalog_v1
   with check (owner_id is not null and domain in ('medical', 'business'));
 
 -- ---------- Nested records: client interactions/visits and transactions ----------
-alter table public."CRM_log_v1" enable row level security;
-alter table public."CRM_ledger_v1" enable row level security;
-grant select, insert, update, delete on public."CRM_log_v1", public."CRM_ledger_v1" to anon;
+alter table public.logs_v1 enable row level security;
+alter table public.ledgers_v1 enable row level security;
+grant select, insert, update, delete on public.logs_v1, public.ledgers_v1 to anon;
 
-drop policy if exists "binder_api_interactions_all" on public."CRM_log_v1";
-create policy "binder_api_interactions_all" on public."CRM_log_v1"
+drop policy if exists "binder_api_interactions_all" on public.logs_v1;
+create policy "binder_api_interactions_all" on public.logs_v1
   for all to anon
   using (owner_id is not null)
   with check (owner_id is not null and parent_id is not null and domain in ('medical', 'business'));
 
-drop policy if exists "binder_api_transactions_all" on public."CRM_ledger_v1";
-create policy "binder_api_transactions_all" on public."CRM_ledger_v1"
+drop policy if exists "binder_api_transactions_all" on public.ledgers_v1;
+create policy "binder_api_transactions_all" on public.ledgers_v1
   for all to anon
   using (owner_id is not null)
   with check (owner_id is not null and parent_id is not null and domain in ('medical', 'business'));
 
--- ---------- Analytics events: write-only from the API ----------
-alter table public.analytics_events_v1 enable row level security;
-grant insert on public.analytics_events_v1 to anon;
-
-drop policy if exists "binder_api_events_insert" on public.analytics_events_v1;
-create policy "binder_api_events_insert" on public.analytics_events_v1
-  for insert to anon
-  with check (event_code is not null);
+-- ---------- Analytics events ----------
+-- This project has no events table (DB_TABLE_EVENTS); log_event() catches the failure, so
+-- nothing is needed here. If you add the table later, grant anon INSERT on it only.
 
 -- ---------- File metadata: upload, list, soft delete (no hard deletes) ----------
 alter table public.file_metadata_v1 enable row level security;
