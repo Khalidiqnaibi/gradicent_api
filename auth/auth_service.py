@@ -20,8 +20,6 @@ from auth.providers.google_provider import GoogleAuthProvider
 from binder import User 
 from utils.provision_user import _provision_user
 
-# One Google login gives access to every workspace, so accounts are provisioned in all of them
-WORKSPACE_DOMAINS = ("business", "medical")
 
 class AuthService:
     """
@@ -67,14 +65,6 @@ class AuthService:
         }
         
         user = _provision_user(self.adapter, domain, provider, provider_user)
-        for other_domain in WORKSPACE_DOMAINS:
-            if other_domain == domain:
-                continue
-            try:
-                _provision_user(self.adapter, other_domain, provider, provider_user)
-            except Exception:
-                # The workspace the user chose still works; the other one is retried on next login
-                logging.getLogger(__name__).exception("Could not provision %s workspace", other_domain)
         tokens = self._create_tokens_for_user(user.id)
         self._save_refresh_token(domain, user.id, tokens["refresh_token"])
 
