@@ -910,6 +910,26 @@ class BinderService:
         rows.sort(key=lambda t: str(t.get("date") or t.get("created_at") or ""), reverse=True)
         return rows
 
+    def list_all_appointments(self) -> List[Dict[str, Any]]:
+        """Every booked slot in the user's appointment book, newest date first."""
+        rows: List[Dict[str, Any]] = []
+        book = self._wrap_and_log("get_appointment_book", self._binder.get_appointment_book)
+        for day, slots in sorted(book.items(), reverse=True):
+            for slot in slots or []:
+                if not (slot.get("name") or slot.get("phone") or slot.get("msg")):
+                    continue  # empty slot in the day grid
+                rows.append({
+                    "id": f"{day}-{slot.get('no')}",
+                    "date": day,
+                    "time": slot.get("time") or slot.get("no"),
+                    "title": slot.get("msg") or "Appointment",
+                    "attendeeName": slot.get("name") or None,
+                    "phone": slot.get("phone") or None,
+                    "status": "Locked" if slot.get("locked") else "Open",
+                    "location": slot.get("location") or None,
+                })
+        return rows
+
     def list_client_appointments(self, client_id: str) -> List[Dict[str, Any]]:
         """
         Appointments booked for one client, found in the user's appointment book by matching

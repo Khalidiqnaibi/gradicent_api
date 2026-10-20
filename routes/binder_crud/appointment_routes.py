@@ -8,6 +8,19 @@ from utils.make_res import make_response
 appointment_blueprint = Blueprint("appointment", __name__)
 
 
+@appointment_blueprint.route("/appointments", methods=["GET"])
+def list_all_appointments():
+    """Every booked appointment for the signed-in user, newest first."""
+    domain = request.args.get("domain", session.get("domain", DEFAULT_DOMAIN))
+    user_id = request.args.get("user_id")
+    if user_id and user_id != session.get("user_id"):
+        return make_response(status="error", message="Unauthorized action", code=401)
+
+    service = _get_domain_and_service({"domain": domain})
+    service.set_current_user(session.get("user_id"))
+    return make_response(data={"appointments": service.list_all_appointments()}, message="Appointments retrieved.", code=200)
+
+
 @appointment_blueprint.route("/clients/<client_id>/appointments", methods=["GET"])
 def list_client_appointments(client_id: str):
     """Appointments booked for one client (matched in the user's appointment book)."""
