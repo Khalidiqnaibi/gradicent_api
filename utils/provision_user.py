@@ -29,7 +29,7 @@ def _provision_user(adapter,domain:str, provider: str, provider_user: Dict[str, 
             "provider": provider,
             "provider_id": provider_id,
             "raw": provider_user.get("raw", {}),
-            "appointments": []
+            "appointments": {}
         },
         clients=[],
         employees=[],

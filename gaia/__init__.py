@@ -11,6 +11,7 @@ from .metrics.total_customers_metric import TotalCustomersMetric
 from .metrics.unpaid_customers_metric import UnpaidCustomersMetric
 from .metrics.matched_entities_metric import MatchedEntitiesMetric
 from .metrics.productivity_metric import ProductivityMetric
+from .metrics.business_dashboard_metric import BusinessDashboardMetric
 
 __all__ = [
     "IMetric", "base_metric","GaiaEngine","RoiMetric",
