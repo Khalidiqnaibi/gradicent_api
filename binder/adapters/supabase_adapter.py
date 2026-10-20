@@ -79,11 +79,22 @@ class SupabaseAdapter(StorageAdapter):
         table = self._get_table("users")
         self.supabase.table(table).delete().eq("id", user_id).eq("domain", domain).execute()
 
+    def _next_id(self, table: str, domain: str, user_id: str) -> str:
+        """
+        Next record number for this owner in this workspace: one past the highest numeric id.
+        (Counting rows reused ids after a delete and collided with existing records.)
+        """
+        response = self.supabase.table(table).select("id").eq("domain", domain).eq("owner_id", user_id).execute()
+        existing = {str(row.get("id")) for row in (response.data or [])}
+        numeric = [int(i) for i in existing if i.isdigit()]
+        candidate = (max(numeric) if numeric else 0) + 1
+        while str(candidate) in existing:
+            candidate += 1
+        return str(candidate)
+
     def add_child(self, domain: str, user_id: str, collection: str, obj: Dict) -> str:
         table = self._get_table(collection)
-        response = self.supabase.table(table).select("id", count="exact").eq("domain", domain).eq("owner_id", user_id).execute()
-        count = response.count if response.count is not None else 0
-        child_id = str(count + 1)
+        child_id = self._next_id(table, domain, user_id)
         
         clean_obj = self._normalize_payload(obj)
         payload = {
@@ -102,7 +113,8 @@ class SupabaseAdapter(StorageAdapter):
             updated_data = {**existing, **patch}
             updated_data = self._normalize_payload(updated_data)
             updated_data.pop("id", None) 
-            self.supabase.table(table).update({"record_data": updated_data}).eq("id", child_id).execute()
+            self.supabase.table(table).update({"record_data": updated_data}) \
+                .eq("id", child_id).eq("domain", domain).eq("owner_id", user_id).execute()
 
     def list_children(
         self, domain: str, user_id: str, collection: str, limit: int = 30, start_at: Optional[str] = None
@@ -160,9 +172,7 @@ class SupabaseAdapter(StorageAdapter):
 
     def add_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, obj: Dict) -> str:
         table = self._get_table(nested)
-        response = self.supabase.table(table).select("id", count="exact").eq("domain", domain).eq("owner_id", user_id).execute()
-        count = response.count if response.count is not None else 0
-        nested_id = str(count + 1)
+        nested_id = self._next_id(table, domain, user_id)
         
         payload = {
             "id": nested_id,
@@ -176,11 +186,13 @@ class SupabaseAdapter(StorageAdapter):
 
     def update_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str, patch: Dict) -> None:
         table = self._get_table(nested)
-        self.supabase.table(table).update({"record_data": patch}).eq("id", nested_id).eq("parent_id", child_id).execute()
+        self.supabase.table(table).update({"record_data": patch}) \
+            .eq("id", nested_id).eq("parent_id", child_id).eq("domain", domain).eq("owner_id", user_id).execute()
 
     def delete_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str) -> None:
         table = self._get_table(nested)
-        self.supabase.table(table).delete().eq("id", nested_id).eq("parent_id", child_id).execute()
+        self.supabase.table(table).delete() \
+            .eq("id", nested_id).eq("parent_id", child_id).eq("domain", domain).eq("owner_id", user_id).execute()
 
     def find_children_by_field(self, domain: str, user_id: str, collection: str, field: str, value: Any) -> List[Dict]:
         table = self._get_table(collection)
