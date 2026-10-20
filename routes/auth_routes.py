@@ -51,12 +51,13 @@ def _is_trusted_frontend(url: Optional[str]) -> bool:
 def _login_failed(message: str, status: int = 400):
     """Send the user back to the frontend login page with a readable error, or JSON if we can't."""
     current_app.logger.warning("OAuth sign-in failed: %s", message)
-    target = (
-        session.pop("frontend_redirect_uri", None)
-        or current_app.config.get("FRONTEND_URL")
-        or DEFAULT_FRONTEND_URL
+    candidates = (
+        session.pop("frontend_redirect_uri", None),
+        current_app.config.get("FRONTEND_URL"),
+        DEFAULT_FRONTEND_URL,
     )
-    if _is_trusted_frontend(target):
+    target = next((url for url in candidates if _is_trusted_frontend(url)), None)
+    if target:
         parts = urlsplit(target)
         return redirect(f"{parts.scheme}://{parts.netloc}/login?error={quote(message)}")
     return jsonify({"status": "error", "data": None, "message": message}), status
@@ -134,8 +135,11 @@ def oauth_callback():
         return redirect(target_frontend)
 
     # No (trusted) return address: go to the workspace home rather than printing tokens on screen
-    frontend = current_app.config.get("FRONTEND_URL") or DEFAULT_FRONTEND_URL
-    if _is_trusted_frontend(frontend):
+    frontend = next(
+        (url for url in (current_app.config.get("FRONTEND_URL"), DEFAULT_FRONTEND_URL) if _is_trusted_frontend(url)),
+        None,
+    )
+    if frontend:
         return redirect(f"{frontend.rstrip('/')}/{domain}/home")
 
     return jsonify({"status": "success", "data": {"user": user, "tokens": tokens}, "message": "Authenticated"})
