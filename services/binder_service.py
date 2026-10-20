@@ -859,7 +859,7 @@ class BinderService:
         )
         return self._wrap_and_log("create_transaction", self._binder.create_transaction, client_id, tran.to_dict())
 
-    def list_transactions(self, domain: str, user_id: str, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_transactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         List transactions for a client with pagination.
 
@@ -882,6 +882,63 @@ class BinderService:
             start_at=start_at
         )
     
+    def list_all_transactions(self, max_clients: int = 500, per_client: int = 200) -> List[Dict[str, Any]]:
+        """
+        Every transaction across the current user's clients, newest first.
+
+        Each row is tagged with clientId/clientName; ids are made unique across clients
+        ("<client>-<no>") and the per-client number is kept as transactionNo.
+        """
+        rows: List[Dict[str, Any]] = []
+        for client in self.list_clients(start_at=0, limit=max_clients) or []:
+            client_id = client.get("id")
+            if client_id is None:
+                continue
+            try:
+                transactions = self._binder.list_transactions(str(client_id), limit=per_client) or []
+            except Exception:
+                self._logger.exception("binder_service: could not read transactions for client %s", client_id)
+                continue
+            for txn in transactions:
+                rows.append({
+                    **txn,
+                    "id": f"{client_id}-{txn.get('id')}",
+                    "transactionNo": txn.get("id"),
+                    "clientId": str(client_id),
+                    "clientName": txn.get("clientName") or client.get("name") or "",
+                })
+        rows.sort(key=lambda t: str(t.get("date") or t.get("created_at") or ""), reverse=True)
+        return rows
+
+    def list_client_appointments(self, client_id: str) -> List[Dict[str, Any]]:
+        """
+        Appointments booked for one client, found in the user's appointment book by matching
+        the client's phone number (or name when no phone is stored).
+        """
+        client = self.read_client(client_id)
+        if not client:
+            return []
+        digits = lambda value: "".join(ch for ch in str(value or "") if ch.isdigit())
+        phone = digits(client.get("phone"))
+        name = str(client.get("name") or "").strip().lower()
+
+        matches: List[Dict[str, Any]] = []
+        book = self._wrap_and_log("get_appointment_book", self._binder.get_appointment_book)
+        for day, slots in sorted(book.items(), reverse=True):
+            for slot in slots or []:
+                slot_phone = digits(slot.get("phone"))
+                slot_name = str(slot.get("name") or "").strip().lower()
+                if (phone and slot_phone and slot_phone.endswith(phone[-9:])) or (not phone and name and slot_name == name):
+                    matches.append({
+                        "id": f"{day}-{slot.get('no')}",
+                        "date": day,
+                        "time": slot.get("time") or slot.get("no"),
+                        "title": slot.get("msg") or slot.get("name") or "Appointment",
+                        "status": "Locked" if slot.get("locked") else "Open",
+                        "hostName": None,
+                    })
+        return matches
+
     def read_transaction(self, client_id: str, transaction_no: str) -> Optional[Dict[str, Any]]:
         """
         Fetch a specific transaction by its index/ID.

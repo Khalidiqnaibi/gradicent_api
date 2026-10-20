@@ -30,6 +30,13 @@ class AppointmentMixin:
     Uses StorageAdapter through self.adapter.
     """
     
+    def get_appointment_book(self) -> Dict[str, List[Dict]]:
+        """All of the current user's appointments, keyed by ISO date."""
+        user = self.adapter.get_user(self.domain, self.current_user)
+        user = normalize_user(user)
+        user = user.to_dict() or {}
+        return _appointment_book(user)
+
     def get_appointments(self, date: str) -> List[Dict]:
         user = self.adapter.get_user(self.domain,self.current_user)
         user = normalize_user(user)
