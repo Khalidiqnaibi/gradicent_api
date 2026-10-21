@@ -63,6 +63,11 @@ class ClientMixin:
         )
 
     def delete_client(self, client_id: str) -> None:
+        # Remove the client's visits/interactions and transactions first; record numbers are
+        # reused, so leftovers would otherwise attach to the next client given this id
+        if hasattr(self.adapter, "delete_all_nested"):
+            for nested in ("interactions", "transactions"):
+                self.adapter.delete_all_nested(self.domain, self.current_user, nested, client_id)
         self.adapter.delete_child(
             self.domain,
             self.current_user,

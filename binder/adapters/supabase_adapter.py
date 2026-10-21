@@ -189,6 +189,12 @@ class SupabaseAdapter(StorageAdapter):
         self.supabase.table(table).update({"record_data": patch}) \
             .eq("id", nested_id).eq("parent_id", child_id).eq("domain", domain).eq("owner_id", user_id).execute()
 
+    def delete_all_nested(self, domain: str, user_id: str, nested: str, child_id: str) -> None:
+        """Delete every nested row (e.g. interactions, transactions) belonging to one parent record."""
+        table = self._get_table(nested)
+        self.supabase.table(table).delete() \
+            .eq("parent_id", child_id).eq("domain", domain).eq("owner_id", user_id).execute()
+
     def delete_nested(self, domain: str, user_id: str, collection: str, child_id: str, nested: str, nested_id: str) -> None:
         table = self._get_table(nested)
         self.supabase.table(table).delete() \

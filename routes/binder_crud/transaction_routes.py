@@ -144,9 +144,11 @@ def add_transactions(client_id: str):
 
     transaction = service.create_transaction(client_id, payload["transaction"])
 
-    transaction_no = payload["transaction"].get("vno",payload["transaction"].get("transaction_no")) 
-
-    transaction_no = transaction_no-1 or 0
+    # Legacy clients send a 1-based row number; it's optional and only used for the event log
+    try:
+        transaction_no = max(int(payload["transaction"].get("vno", payload["transaction"].get("transaction_no"))) - 1, 0)
+    except (TypeError, ValueError):
+        transaction_no = 0
 
     log_event(service._binder, 202, metadata={"id" : client_id , "transaction_no":transaction_no})
     return make_response(data=transaction, message="Transaction created.", code=201)

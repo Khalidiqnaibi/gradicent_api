@@ -63,9 +63,11 @@ def add_interaction(client_id: str):
 
     interaction = service.create_interaction(client_id, payload["interaction"])
 
-    interaction_no = payload["interaction"].get("vno",payload["interaction"].get("interaction_no")) 
-
-    interaction_no = interaction_no-1 or 0
+    # Legacy clients send a 1-based row number; it's optional and only used for the event log
+    try:
+        interaction_no = max(int(payload["interaction"].get("vno", payload["interaction"].get("interaction_no"))) - 1, 0)
+    except (TypeError, ValueError):
+        interaction_no = 0
 
     log_event(service._binder,202,metadata={"id" : client_id , "interaction_no":interaction_no})
     return make_response(data=interaction, message="Interaction created.", code=201)

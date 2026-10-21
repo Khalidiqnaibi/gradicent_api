@@ -20,6 +20,7 @@ Standards applied:
 # TODO: add pytest tests under /tests/test_binder_service.py
 """
 
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 import logging
 
@@ -846,18 +847,22 @@ class BinderService:
         if data is None:
             raise BinderServiceError("transaction payload cannot be empty")
         
-        CORE_FIELDS = {"id", "amount", "method", "timestamp"}
+        if data.get("amount") in (None, ""):
+            raise BinderServiceError("transaction 'amount' is required")
+        try:
+            amount = float(data["amount"])
+        except (TypeError, ValueError):
+            raise BinderServiceError("transaction 'amount' must be a number")
 
-        metadata = {k: v for k, v in data.items() if k not in CORE_FIELDS}
-
-        tran =Transaction(
-            id=data["id"],
-            amount=data["amount"],
-            method=data["method"],
-            timestamp=data["timestamp"],
-            metadata=metadata
-        )
-        return self._wrap_and_log("create_transaction", self._binder.create_transaction, client_id, tran.to_dict())
+        # Stored flat (amount, date, status, ...) because that's what the client page, the
+        # transactions list and the dashboard metric read; the record id is assigned by the adapter.
+        now = datetime.now(timezone.utc)
+        record = {k: v for k, v in data.items() if k != "id"}
+        record["amount"] = amount
+        record.setdefault("method", "")
+        record.setdefault("timestamp", now.isoformat())
+        record.setdefault("date", now.date().isoformat())
+        return self._wrap_and_log("create_transaction", self._binder.create_transaction, client_id, record)
 
     def list_transactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
