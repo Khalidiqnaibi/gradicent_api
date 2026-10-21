@@ -64,6 +64,29 @@ class BinderService:
         if payload is None or field not in payload or payload[field] is None:
             raise BinderServiceError(f"Payload must include non-empty '{field}'")
 
+    @staticmethod
+    def _flat_record(kind: str, data: Dict[str, Any], numeric: Dict[str, Any], defaults: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Build the stored record for a top-level entity: fields stay flat (the pages read them
+        directly), the id is assigned by the adapter, `name` is required and numeric fields are
+        validated. Unknown extra fields are kept as-is.
+        """
+        if not str(data.get("name") or "").strip():
+            raise BinderServiceError(f"{kind} 'name' is required")
+        record = {k: v for k, v in data.items() if k != "id"}
+        for field_name, default in numeric.items():
+            value = record.get(field_name, default)
+            if value in (None, ""):
+                value = default
+            try:
+                record[field_name] = int(value) if isinstance(default, int) else float(value)
+            except (TypeError, ValueError):
+                raise BinderServiceError(f"{kind} '{field_name}' must be a number")
+        for field_name, default in (defaults or {}).items():
+            record.setdefault(field_name, default)
+        record.setdefault("created_at", datetime.now(timezone.utc).isoformat())
+        return record
+
     def _op(self, name: str) -> Callable[..., Any]:
         """
         Look up a binder operation. Workspaces support different features (the medical binder has
@@ -524,19 +547,8 @@ class BinderService:
         if data is None:
             raise BinderServiceError("employee payload cannot be empty")
         
-        CORE_FIELDS = {"id", "name", "role", "salary","created_at"}
-
-        metadata = {k: v for k, v in data.items() if k not in CORE_FIELDS}
-
-        emp =Employee(
-            id=data["id"],
-            name=data["name"],
-            role=data["role"],
-            salary=float(data.get("salary", 0)),
-            metadata=metadata
-        )
-
-        return self._wrap_and_log("create_employee", self._op("create_employee"), emp.to_dict())
+        record = self._flat_record("employee", data, numeric={"salary": 0.0}, defaults={"role": ""})
+        return self._wrap_and_log("create_employee", self._op("create_employee"), record)
 
     def read_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -633,21 +645,10 @@ class BinderService:
         if data is None:
             raise BinderServiceError("product payload cannot be empty")
 
-        CORE_FIELDS = {"id", "name", "price", "stock"}
-
-        metadata = {k: v for k, v in data.items() if k not in CORE_FIELDS}
-
-        prod =Product(
-            id=data["id"],
-            name=data["name"],
-            price=float(data["price"]),
-            stock=int(data.get("stock", 0)),
-            metadata=metadata
-        )
-
+        record = self._flat_record("product", data, numeric={"price": 0.0, "stock": 0})
         if hasattr(self._binder, "create_product"):
-            return self._wrap_and_log("create_product", self._op("create_product"), prod.to_dict())
-        return self._wrap_and_log("create_products", self._op("create_products"), prod.to_dict())
+            return self._wrap_and_log("create_product", self._op("create_product"), record)
+        return self._wrap_and_log("create_products", self._op("create_products"), record)
 
     def read_product(self, product_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -745,18 +746,8 @@ class BinderService:
             raise BinderServiceError("service payload cannot be empty")
         
            
-        CORE_FIELDS = {"id", "name", "hourly_rate"}
-
-        metadata = {k: v for k, v in data.items() if k not in CORE_FIELDS}
-
-        serv =Service(
-            id=data["id"],
-            name=data["name"],
-            hourly_rate=float(data["hourly_rate"]),
-            metadata=metadata
-        )
-
-        return self._wrap_and_log("create_service", self._op("create_service"), serv.to_dict())
+        record = self._flat_record("service", data, numeric={"hourly_rate": 0.0})
+        return self._wrap_and_log("create_service", self._op("create_service"), record)
 
     def read_service(self, service_id: str) -> Optional[Dict[str, Any]]:
         """
