@@ -64,6 +64,20 @@ class BinderService:
         if payload is None or field not in payload or payload[field] is None:
             raise BinderServiceError(f"Payload must include non-empty '{field}'")
 
+    def _op(self, name: str) -> Callable[..., Any]:
+        """
+        Look up a binder operation. Workspaces support different features (the medical binder has
+        no employees, products, services or transactions), so a missing one is a client error.
+        """
+        func = getattr(self._binder, name, None)
+        if func is None:
+            domain = getattr(self._binder, "domain", "this")
+            feature = name.split("_")[-1]  # e.g. create_transaction -> transaction
+            if not feature.endswith("s"):
+                feature += "s"
+            raise BinderServiceError(f"{feature.capitalize()} aren't available in the {domain} workspace.")
+        return func
+
     def _wrap_and_log(self, action_name: str, func: Callable[..., Any], *args, **kwargs) -> Any:
         """
         Execute func and map any exception to BinderServiceError with logging.
@@ -116,7 +130,7 @@ class BinderService:
         if user_id is None:
             raise BinderServiceError("user_id cannot be empty")
 
-        user = self._wrap_and_log("get_user", self._binder.read, user_id)
+        user = self._wrap_and_log("get_user", self._op("read"), user_id)
         self.set_current_user(user_id=user_id)
         return user
 
@@ -134,7 +148,7 @@ class BinderService:
             BinderServiceError: on validation or binder failure.
         """
         self._ensure_id(user, "id")
-        created = self._wrap_and_log("create_user", self._binder.create, user)
+        created = self._wrap_and_log("create_user", self._op("create"), user)
         self.set_current_user(user["id"])
         return created
 
@@ -157,8 +171,8 @@ class BinderService:
         if user is None:
             raise BinderServiceError("user payload cannot be empty")
 
-        self._wrap_and_log("update_user", self._binder.update, user_id, user)
-        updated = self._wrap_and_log("read_user_after_update", self._binder.read, user_id)
+        self._wrap_and_log("update_user", self._op("update"), user_id, user)
+        updated = self._wrap_and_log("read_user_after_update", self._op("read"), user_id)
         if updated is None:
             self._logger.warning("update_user: user %s updated but read returned None", user_id)
             return {}
@@ -199,7 +213,7 @@ class BinderService:
         """
         if client is None:
             raise BinderServiceError("client payload cannot be empty")
-        return self._wrap_and_log("create_client", self._binder.create_client, client)
+        return self._wrap_and_log("create_client", self._op("create_client"), client)
 
     def read_client(self, client_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -213,7 +227,7 @@ class BinderService:
         """
         if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
-        return self._wrap_and_log("read_client", self._binder.read_client, client_id)
+        return self._wrap_and_log("read_client", self._op("read_client"), client_id)
 
     def update_client(self, client_id: str, patch: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -231,8 +245,8 @@ class BinderService:
         if patch is None:
             raise BinderServiceError("patch cannot be empty")
 
-        self._wrap_and_log("update_client", self._binder.update_client, client_id, patch)
-        updated = self._wrap_and_log("read_client_after_update", self._binder.read_client, client_id)
+        self._wrap_and_log("update_client", self._op("update_client"), client_id, patch)
+        updated = self._wrap_and_log("read_client_after_update", self._op("read_client"), client_id)
         if updated is None:
             self._logger.warning("update_client: client %s updated but read returned None", client_id)
             return {}
@@ -247,7 +261,7 @@ class BinderService:
         """
         if client_id is None:
             raise BinderServiceError("client_id cannot be empty")
-        self._wrap_and_log("delete_client", self._binder.delete_client, client_id)
+        self._wrap_and_log("delete_client", self._op("delete_client"), client_id)
 
     def search_client(self, query: str) -> List[Dict[str, Any]]:
         """
@@ -261,7 +275,7 @@ class BinderService:
         """
         if query is None:
             return []
-        return self._wrap_and_log("search_client", self._binder.search_clients, query)
+        return self._wrap_and_log("search_client", self._op("search_clients"), query)
 
     def list_clients(self, start_at: int, limit: int) -> List[Dict[str, Any]]:
         """
@@ -274,7 +288,7 @@ class BinderService:
         Returns:
             List[Dict[str, Any]]: paginated list of clients.
         """
-        return self._wrap_and_log("list_clients", self._binder.list_clients, start_at=start_at, limit=limit)
+        return self._wrap_and_log("list_clients", self._op("list_clients"), start_at=start_at, limit=limit)
     # --- appointments ---
 
     def get_appointments(self, date: str) -> List[Dict[str, Any]]:
@@ -289,7 +303,7 @@ class BinderService:
         """
         if date is None:
             raise BinderServiceError("date cannot be empty")
-        return self._wrap_and_log("get_appointments", self._binder.get_appointments, date)
+        return self._wrap_and_log("get_appointments", self._op("get_appointments"), date)
 
     def save_appointments(self, date: str, appointments: List[Dict[str, Any]]) -> None:
         """
@@ -303,7 +317,7 @@ class BinderService:
             raise BinderServiceError("date cannot be empty")
         if appointments is None:
             raise BinderServiceError("appointments cannot be empty")
-        self._wrap_and_log("save_appointments", self._binder.save_appointments, date, appointments)
+        self._wrap_and_log("save_appointments", self._op("save_appointments"), date, appointments)
 
     def lock_appointment(self, date: str, no: str) -> bool:
         """
@@ -318,7 +332,7 @@ class BinderService:
         """
         if date is None or no is None:
             raise BinderServiceError("date and no are required")
-        return self._wrap_and_log("lock_appointment", self._binder.lock_appointment, date, no)
+        return self._wrap_and_log("lock_appointment", self._op("lock_appointment"), date, no)
 
     # --- permission codes ---
 
@@ -341,7 +355,7 @@ class BinderService:
 
         return self._wrap_and_log(
             "rotate_permission_code",
-            self._binder.rotate_permission_code,
+            self._op("rotate_permission_code"),
             domain,
             user_id,
             plan,
@@ -365,7 +379,7 @@ class BinderService:
 
         return self._wrap_and_log(
             "validate_permission_code",
-            self._binder.validate_permission_code,
+            self._op("validate_permission_code"),
             domain=domain,
             code=code,
         )
@@ -383,7 +397,7 @@ class BinderService:
 
         self._wrap_and_log(
             "consume_permission_code",
-            self._binder.consume_permission_code,
+            self._op("consume_permission_code"),
             domain,
             owner_user_id,
         )
@@ -409,8 +423,8 @@ class BinderService:
         if patch is None:
             raise BinderServiceError("patch cannot be empty")
 
-        self._wrap_and_log("update_interaction", self._binder.update_interaction, client_id, interaction_no, patch)
-        updated = self._wrap_and_log("read_client_after_interaction_update", self._binder.read_client, client_id)
+        self._wrap_and_log("update_interaction", self._op("update_interaction"), client_id, interaction_no, patch)
+        updated = self._wrap_and_log("read_client_after_interaction_update", self._op("read_client"), client_id)
         if updated is None:
             self._logger.warning(
                 "update_interaction: client %s updated but read returned None", client_id
@@ -430,7 +444,7 @@ class BinderService:
             raise BinderServiceError("client_id cannot be empty")
         if interaction_no is None:
             raise BinderServiceError("interaction_no cannot be empty")
-        self._wrap_and_log("delete_interaction", self._binder.delete_interaction, client_id, interaction_no)
+        self._wrap_and_log("delete_interaction", self._op("delete_interaction"), client_id, interaction_no)
 
     def create_interaction(self, client_id: str, interaction: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -447,7 +461,7 @@ class BinderService:
             raise BinderServiceError("client_id cannot be empty")
         if interaction is None:
             raise BinderServiceError("interaction payload cannot be empty")
-        return self._wrap_and_log("create_interaction", self._binder.create_interaction, client_id, interaction)
+        return self._wrap_and_log("create_interaction", self._op("create_interaction"), client_id, interaction)
 
     def list_interactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
@@ -466,7 +480,7 @@ class BinderService:
         
         return self._wrap_and_log(
             "list_interactions", 
-            self._binder.list_interactions, 
+            self._op("list_interactions"), 
             client_id, 
             limit=limit, 
             start_at=start_at
@@ -488,7 +502,7 @@ class BinderService:
             
         return self._wrap_and_log(
             "read_interaction", 
-            self._binder.read_interaction, 
+            self._op("read_interaction"), 
             client_id, 
             interaction_no
         )
@@ -522,7 +536,7 @@ class BinderService:
             metadata=metadata
         )
 
-        return self._wrap_and_log("create_employee", self._binder.create_employee, emp.to_dict())
+        return self._wrap_and_log("create_employee", self._op("create_employee"), emp.to_dict())
 
     def read_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -536,7 +550,7 @@ class BinderService:
         """
         if employee_id is None:
             raise BinderServiceError("employee_id cannot be empty")
-        return self._wrap_and_log("read_employee", self._binder.read_employee, employee_id)
+        return self._wrap_and_log("read_employee", self._op("read_employee"), employee_id)
 
     def update_employee(self, emp_id: str, patch: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -554,8 +568,8 @@ class BinderService:
         if patch is None:
             raise BinderServiceError("patch cannot be empty")
 
-        self._wrap_and_log("update_employee", self._binder.update_employee, emp_id, patch)
-        updated = self._wrap_and_log("read_employee_after_update", self._binder.read_employee, emp_id)
+        self._wrap_and_log("update_employee", self._op("update_employee"), emp_id, patch)
+        updated = self._wrap_and_log("read_employee_after_update", self._op("read_employee"), emp_id)
         if updated is None:
             self._logger.warning("update_employee: employee %s updated but read returned None", emp_id)
             return {}
@@ -570,7 +584,7 @@ class BinderService:
         """
         if emp_id is None:
             raise BinderServiceError("emp_id cannot be empty")
-        self._wrap_and_log("delete_employee", self._binder.delete_employee, emp_id)
+        self._wrap_and_log("delete_employee", self._op("delete_employee"), emp_id)
 
     def list_employees(self, start_at: int, limit: int) -> List[Dict[str, Any]]:
         """
@@ -580,10 +594,10 @@ class BinderService:
             List[Dict[str, Any]]: employee list.
         """
         if hasattr(self._binder, "list_employees"):
-            return self._wrap_and_log("list_employees", self._binder.list_employees, start_at=start_at, limit=limit)
+            return self._wrap_and_log("list_employees", self._op("list_employees"), start_at=start_at, limit=limit)
         return self._wrap_and_log(
             "list_employees_fallback",
-            self._binder.adapter.list_children,
+            self._op("adapter").list_children,
             getattr(self._binder, "domain", None),
             getattr(self._binder, "current_user", None),
             "employees",
@@ -601,7 +615,7 @@ class BinderService:
         """
         if query is None:
             return []
-        return self._wrap_and_log("search_employee", self._binder.search_employees, query)
+        return self._wrap_and_log("search_employee", self._op("search_employees"), query)
     # --------------------
     # Products CRUD
     # --------------------
@@ -632,8 +646,8 @@ class BinderService:
         )
 
         if hasattr(self._binder, "create_product"):
-            return self._wrap_and_log("create_product", self._binder.create_product, prod.to_dict())
-        return self._wrap_and_log("create_products", self._binder.create_products, prod.to_dict())
+            return self._wrap_and_log("create_product", self._op("create_product"), prod.to_dict())
+        return self._wrap_and_log("create_products", self._op("create_products"), prod.to_dict())
 
     def read_product(self, product_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -647,7 +661,7 @@ class BinderService:
         """
         if product_id is None:
             raise BinderServiceError("product_id cannot be empty")
-        return self._wrap_and_log("read_product", self._binder.read_product, product_id)
+        return self._wrap_and_log("read_product", self._op("read_product"), product_id)
 
     def update_product(self, prod_id: str, patch: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -665,8 +679,8 @@ class BinderService:
         if patch is None:
             raise BinderServiceError("patch cannot be empty")
 
-        self._wrap_and_log("update_product", self._binder.update_product, prod_id, patch)
-        updated = self._wrap_and_log("read_product_after_update", self._binder.read_product, prod_id)
+        self._wrap_and_log("update_product", self._op("update_product"), prod_id, patch)
+        updated = self._wrap_and_log("read_product_after_update", self._op("read_product"), prod_id)
         if updated is None:
             self._logger.warning("update_product: product %s updated but read returned None", prod_id)
             return {}
@@ -681,7 +695,7 @@ class BinderService:
         """
         if prod_id is None:
             raise BinderServiceError("prod_id cannot be empty")
-        self._wrap_and_log("delete_product", self._binder.delete_product, prod_id)
+        self._wrap_and_log("delete_product", self._op("delete_product"), prod_id)
 
     def list_products(self, limit: int, start_at: int) -> List[Dict[str, Any]]:
         """
@@ -691,10 +705,10 @@ class BinderService:
             List[Dict[str, Any]]: product list.
         """
         if hasattr(self._binder, "list_products"):
-            return self._wrap_and_log("list_products", self._binder.list_products, start_at=start_at, limit=limit)
+            return self._wrap_and_log("list_products", self._op("list_products"), start_at=start_at, limit=limit)
         return self._wrap_and_log(
             "list_products_fallback",
-            self._binder.adapter.list_children,
+            self._op("adapter").list_children,
             getattr(self._binder, "domain", None),
             getattr(self._binder, "current_user", None),
             "products",
@@ -712,7 +726,7 @@ class BinderService:
         """
         if query is None:
             return []
-        return self._wrap_and_log("search_product", self._binder.search_products, query)
+        return self._wrap_and_log("search_product", self._op("search_products"), query)
     # --------------------
     # Services CRUD
     # --------------------
@@ -742,7 +756,7 @@ class BinderService:
             metadata=metadata
         )
 
-        return self._wrap_and_log("create_service", self._binder.create_service, serv.to_dict())
+        return self._wrap_and_log("create_service", self._op("create_service"), serv.to_dict())
 
     def read_service(self, service_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -756,7 +770,7 @@ class BinderService:
         """
         if service_id is None:
             raise BinderServiceError("service_id cannot be empty")
-        return self._wrap_and_log("read_service", self._binder.read_service, service_id)
+        return self._wrap_and_log("read_service", self._op("read_service"), service_id)
 
     def update_service(self, svc_id: str, patch: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -774,8 +788,8 @@ class BinderService:
         if patch is None:
             raise BinderServiceError("patch cannot be empty")
 
-        self._wrap_and_log("update_service", self._binder.update_service, svc_id, patch)
-        updated = self._wrap_and_log("read_service_after_update", self._binder.read_service, svc_id)
+        self._wrap_and_log("update_service", self._op("update_service"), svc_id, patch)
+        updated = self._wrap_and_log("read_service_after_update", self._op("read_service"), svc_id)
         if updated is None:
             self._logger.warning("update_service: service %s updated but read returned None", svc_id)
             return {}
@@ -790,7 +804,7 @@ class BinderService:
         """
         if svc_id is None:
             raise BinderServiceError("svc_id cannot be empty")
-        self._wrap_and_log("delete_service", self._binder.delete_service, svc_id)
+        self._wrap_and_log("delete_service", self._op("delete_service"), svc_id)
 
     def list_services(self, start_at: int, limit: int) -> List[Dict[str, Any]]:
         """
@@ -804,10 +818,10 @@ class BinderService:
             List[Dict[str, Any]]: services list.
         """
         if hasattr(self._binder, "list_services"):
-            return self._wrap_and_log("list_services", self._binder.list_services, start_at=start_at, limit=limit)
+            return self._wrap_and_log("list_services", self._op("list_services"), start_at=start_at, limit=limit)
         return self._wrap_and_log(
             "list_services_fallback",
-            self._binder.adapter.list_children,
+            self._op("adapter").list_children,
             getattr(self._binder, "domain", None),
             getattr(self._binder, "current_user", None),
             "services",
@@ -825,7 +839,7 @@ class BinderService:
         """
         if query is None:
             return []
-        return self._wrap_and_log("search_service", self._binder.search_services, query)
+        return self._wrap_and_log("search_service", self._op("search_services"), query)
     
     # --------------------
     # Transactions (nested) CRUD
@@ -862,7 +876,7 @@ class BinderService:
         record.setdefault("method", "")
         record.setdefault("timestamp", now.isoformat())
         record.setdefault("date", now.date().isoformat())
-        return self._wrap_and_log("create_transaction", self._binder.create_transaction, client_id, record)
+        return self._wrap_and_log("create_transaction", self._op("create_transaction"), client_id, record)
 
     def list_transactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
@@ -881,7 +895,7 @@ class BinderService:
 
         return self._wrap_and_log(
             "list_transactions", 
-            self._binder.list_transactions, 
+            self._op("list_transactions"), 
             client_id, 
             limit=limit, 
             start_at=start_at
@@ -918,7 +932,7 @@ class BinderService:
     def list_all_appointments(self) -> List[Dict[str, Any]]:
         """Every booked slot in the user's appointment book, newest date first."""
         rows: List[Dict[str, Any]] = []
-        book = self._wrap_and_log("get_appointment_book", self._binder.get_appointment_book)
+        book = self._wrap_and_log("get_appointment_book", self._op("get_appointment_book"))
         for day, slots in sorted(book.items(), reverse=True):
             for slot in slots or []:
                 if not (slot.get("name") or slot.get("phone") or slot.get("msg")):
@@ -948,7 +962,7 @@ class BinderService:
         name = str(client.get("name") or "").strip().lower()
 
         matches: List[Dict[str, Any]] = []
-        book = self._wrap_and_log("get_appointment_book", self._binder.get_appointment_book)
+        book = self._wrap_and_log("get_appointment_book", self._op("get_appointment_book"))
         for day, slots in sorted(book.items(), reverse=True):
             for slot in slots or []:
                 slot_phone = digits(slot.get("phone"))
@@ -980,7 +994,7 @@ class BinderService:
             
         return self._wrap_and_log(
             "read_transaction", 
-            self._binder.read_transaction, 
+            self._op("read_transaction"), 
             client_id, 
             transaction_no
         )
@@ -1008,12 +1022,12 @@ class BinderService:
             raise BinderServiceError("patch cannot be empty")
 
         if hasattr(self._binder, "update_transaction"):
-            self._wrap_and_log("update_transaction", self._binder.update_transaction, client_id, txn_no, patch)
+            self._wrap_and_log("update_transaction", self._op("update_transaction"), client_id, txn_no, patch)
         else:
             # Fallback to adapter: update_nested(domain, user, "clients", client_id, "transactions", txn_no, patch)
             self._wrap_and_log(
                 "update_transaction_fallback",
-                self._binder.adapter.update_nested,
+                self._op("adapter").update_nested,
                 getattr(self._binder, "domain", None),
                 getattr(self._binder, "current_user", None),
                 "clients",
@@ -1023,7 +1037,7 @@ class BinderService:
                 patch,
             )
 
-        updated = self._wrap_and_log("read_client_after_txn_update", self._binder.read_client, client_id)
+        updated = self._wrap_and_log("read_client_after_txn_update", self._op("read_client"), client_id)
         if updated is None:
             self._logger.warning("update_transaction: client %s updated but read returned None", client_id)
             return {}
@@ -1046,11 +1060,11 @@ class BinderService:
             raise BinderServiceError("txn_no cannot be empty")
 
         if hasattr(self._binder, "delete_transaction"):
-            self._wrap_and_log("delete_transaction", self._binder.delete_transaction, client_id, txn_no)
+            self._wrap_and_log("delete_transaction", self._op("delete_transaction"), client_id, txn_no)
         else:
             self._wrap_and_log(
                 "delete_transaction_fallback",
-                self._binder.adapter.delete_nested,
+                self._op("adapter").delete_nested,
                 getattr(self._binder, "domain", None),
                 getattr(self._binder, "current_user", None),
                 "clients",
