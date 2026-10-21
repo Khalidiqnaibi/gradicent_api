@@ -173,6 +173,16 @@ def current_user():
     token = auth_header.split(" ", 1)[1].strip() if auth_header and auth_header.lower().startswith("bearer ") else session.get("jwt")
     
     user = auth_service.verify_token_and_get_user(domain, token)
+
+    # The access token lives for an hour but the session for weeks: when it has expired, renew it
+    # from the refresh token stored server-side for this session's user instead of signing them out.
+    if not user and not auth_header and session.get("user_id"):
+        login_domain = session.get("domain", DEFAULT_DOMAIN)
+        tokens = _get_auth_service(login_domain).refresh_session(login_domain, session["user_id"])
+        if tokens:
+            session["jwt"] = tokens["access_token"]
+            user = auth_service.verify_token_and_get_user(domain, tokens["access_token"])
+
     if not user:
         return jsonify({"status": "error", "data": None, "message": "unauthenticated"}), 401
     

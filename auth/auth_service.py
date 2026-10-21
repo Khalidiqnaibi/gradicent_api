@@ -11,6 +11,7 @@ Adapter-only authentication service built to work with the User dataclass.
 """
 
 import logging
+import secrets
 import time
 import jwt
 from typing import Dict, Any, Optional, Tuple
@@ -84,10 +85,12 @@ class AuthService:
     def _create_tokens_for_user(self, user_id: str) -> Dict[str, Any]:
         now = int(time.time())
 
+        # jti makes every token unique, so a rotated refresh token always differs from the old one
         access_payload = {
             "sub": user_id,
             "iat": now,
             "exp": now + self.access_token_ttl,
+            "jti": secrets.token_hex(8),
         }
 
         refresh_payload = {
@@ -95,6 +98,7 @@ class AuthService:
             "iat": now,
             "exp": now + self.refresh_token_ttl,
             "type": "refresh",
+            "jti": secrets.token_hex(8),
         }
 
         return {
@@ -109,10 +113,40 @@ class AuthService:
 
         try:
             payload = jwt.decode(token, self.jwt_secret, algorithms=["HS256"])
+            if payload.get("type") == "refresh":
+                return None  # refresh tokens can't be used as access tokens
             raw_user = self.adapter.get_user(domain,payload["sub"])
             return raw_user if raw_user else None
         except Exception:
             return None
+
+    def _rotate_if_valid(self, domain: str, user_id: str, refresh_token: Optional[str]) -> Optional[Dict[str, Any]]:
+        """Issue a new token pair when refresh_token is valid, belongs to user_id and is the one on file."""
+        if not refresh_token or not user_id:
+            return None
+        try:
+            payload = jwt.decode(refresh_token, self.jwt_secret, algorithms=["HS256"])
+        except Exception:
+            return None
+        if payload.get("type") != "refresh" or str(payload.get("sub")) != str(user_id):
+            return None
+        if self._get_stored_refresh_token(domain, user_id) != refresh_token:
+            return None  # revoked (signed out) or already rotated
+        tokens = self._create_tokens_for_user(user_id)
+        self._save_refresh_token(domain, user_id, tokens["refresh_token"])
+        return tokens
+
+    def refresh_session(self, domain: str, user_id: str) -> Optional[Dict[str, Any]]:
+        """New access token for a signed-in session, from the refresh token stored server-side."""
+        return self._rotate_if_valid(domain, user_id, self._get_stored_refresh_token(domain, user_id))
+
+    def refresh_tokens(self, domain: str, refresh_token: str) -> Optional[Dict[str, Any]]:
+        """Exchange a refresh token supplied by the client for a new token pair (POST /refresh)."""
+        try:
+            user_id = jwt.decode(refresh_token, self.jwt_secret, algorithms=["HS256"]).get("sub")
+        except Exception:
+            return None
+        return self._rotate_if_valid(domain, str(user_id), refresh_token)
 
 
     def sign_out(self,domain:str, user_id: str) -> None:
