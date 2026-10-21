@@ -122,6 +122,14 @@ def remove_client(client_id: str):
             return make_response(status="error" , message="Unauthorized action", code=401)
         service.set_current_user(user_id)
 
+    # Retire the client's documents first: ids are reused, and a later client with the same id
+    # must never see them. If this fails the client is left in place rather than half-deleted.
+    file_service = current_app.extensions.get("services", {}).get("file_service")
+    if file_service:
+        file_service.retire_client_files(
+            domain=payload.get("domain", DEFAULT_DOMAIN), user_id=session["user_id"], client_id=str(client_id),
+        )
+
     service.delete_client(client_id)
     return make_response(message="Client deleted.", code=200)
 

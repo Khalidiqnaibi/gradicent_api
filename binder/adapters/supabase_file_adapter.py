@@ -99,6 +99,13 @@ class SupabaseFileStorageAdapter:
 
         return len(response.data) > 0
 
+    def soft_delete_client_files(self, *, user_id: str, domain: str, client_no: str) -> int:
+        response = self.supabase.table(self.file_table).update({
+            "is_deleted": True,
+            "deleted_at": _now_iso(),
+        }).eq("user_id", user_id).eq("domain", domain).eq("client_no", client_no).eq("is_deleted", False).execute()
+        return len(response.data or [])
+
     def migrate_legacy_file(self, legacy_file: Dict) -> Dict:
         """
         Takes a dict from your old Firebase 'files' collection

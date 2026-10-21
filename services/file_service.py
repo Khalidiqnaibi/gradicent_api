@@ -207,6 +207,15 @@ class FileService:
         if not self.storage.soft_delete(file_id=file_id, user_id=user_id, domain=domain):
             raise FileServiceError("File not found.", 404)
 
+    def retire_client_files(self, *, domain: str, user_id: str, client_id: str) -> int:
+        """
+        Called when a client/patient is deleted. Record ids are reused (next id = highest + 1), so a
+        later record with the same id must never inherit these documents.
+        """
+        if domain not in CATEGORIES:
+            return 0
+        return self.storage.soft_delete_client_files(user_id=user_id, domain=domain, client_no=str(client_id))
+
     def _owned(self, domain: str, user_id: str, file_id: str) -> Dict[str, Any]:
         if domain not in CATEGORIES:
             raise FileServiceError("Unknown workspace.")
