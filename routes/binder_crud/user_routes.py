@@ -52,39 +52,56 @@ def get_user(user_id):
     if not user:
         raise NotFound(f"User {payload['user_id']} not found")
 
-    return make_response(data=user,message="User retrieved successfully", code=200)
+    return make_response(data=_public_user(user), message="User retrieved successfully", code=200)
+
+
+# Profile fields a signed-in user may change about themselves. Everything else on the record
+# (plan, access codes, appointments, tokens) is managed by the server and can't be patched here.
+EDITABLE_PROFILE_FIELDS = {
+    "name", "phone", "company", "job_title", "specialty", "license_number", "clinic", "preferences",
+}
+
+
+def _public_user(user):
+    """Copy of the user record without server-side secrets (the stored refresh token)."""
+    public = dict(user)
+    metadata = public.get("metadata")
+    if isinstance(metadata, dict) and "refresh_token" in metadata:
+        public["metadata"] = {k: v for k, v in metadata.items() if k != "refresh_token"}
+    return public
+
 
 @user_blueprint.route("/user/<user_id>",methods=["PATCH"])
 def update_user(user_id):
     '''
-    updatess user info ussing the current binder service
+    Update the signed-in user's own profile.
 
     expects:
-        domain (str)
-        user (dict[str:Any]) # new user data
-
+        domain (str, optional): workspace whose profile to update
+        user (dict[str:Any]): fields to change (see EDITABLE_PROFILE_FIELDS)
     '''
-    payload = request.get_json(force=True)
+    payload = request.get_json(force=True, silent=True) or {}
 
-    if user_id is None:
-        return make_response(message="user_id cann not be null", status="error", code=400)
-
-    if not user_id == session.get("user_id"):
+    if not user_id or user_id != session.get("user_id"):
         return make_response(None, message="Unauthorized action", status="error", code=401)
-    
-    if payload.get("domain"):
-        session["domain"] = payload["domain"]
-    
-    payload["domain"] = session.get("domain", session.get("binder", DEFAULT_DOMAIN))
 
-    if not payload.get("user"):
-        return make_response(message="New user data can not be Null", status="error", code=400)
-    
-    service = _get_domain_and_service(payload=payload)
+    changes = payload.get("user")
+    if not isinstance(changes, dict) or not changes:
+        return make_response(message="New user data can not be empty", status="error", code=400)
 
-    service.update_user(payload["domain"] , payload["user_id"] , payload["user"])
-    log_event(service._binder,400)
-    return make_response(data=payload , message="updated successfully")
+    patch = {k: v for k, v in changes.items() if k in EDITABLE_PROFILE_FIELDS}
+    if not patch:
+        return make_response(message="None of the provided fields can be changed", status="error", code=400)
+    if "name" in patch and not str(patch["name"] or "").strip():
+        return make_response(message="Name can not be empty", status="error", code=400)
+
+    domain = payload.get("domain") or session.get("domain", session.get("binder", DEFAULT_DOMAIN))
+    service = _get_domain_and_service({"domain": domain})
+    service.set_current_user(user_id)
+
+    updated = service.update_user(user_id, patch)
+    log_event(service._binder, 400)
+    return make_response(data=_public_user(updated or {}), message="Profile updated successfully.", code=200)
 
 @user_blueprint.route("/user", methods=["POST"])
 def create_user():
