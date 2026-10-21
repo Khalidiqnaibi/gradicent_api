@@ -1,91 +1,107 @@
 """
 supabase_file_adapter.py
 ------------------------
->## This is a new adapter that implements file storage using Supabase Storage and Postgres for metadata.
-It provides methods to upload files, list files for a client/user, soft delete files, and
-migrate legacy file records from Firebase. 
-The metadata is stored in a SQL table which allows for more efficient querying and management 
-compared to the old Firebase Realtime Database structure.
+File storage on Supabase: binaries in a PRIVATE Storage bucket, metadata in a Postgres table.
 
-Note: This adapter assumes that the Supabase client is properly initialized with the correct URL and key,
-and that the necessary storage bucket and metadata table are set up in your Supabase project.
+Nothing is ever exposed through a public URL. The browser uploads straight to the bucket with a
+one-time signed upload URL, and reads files through signed URLs that expire after a few minutes.
+Every metadata query is scoped to the owner (user_id) and workspace (domain).
 
+See documentation/migrations/2026-10-21_private_file_storage.sql for the bucket, columns and policies.
 """
 
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from supabase import create_client, Client
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
 
 class SupabaseFileStorageAdapter:
     def __init__(self, url: str = "", key: str = ""):
         self.supabase: Client = create_client(url, key)
-        
+
         # Obfuscated table and bucket names
         self.file_table = os.getenv("DB_TABLE_FILES", "file_metadata_v1")
         self.bucket_name = os.getenv("STORAGE_BUCKET_FILES", "user_assets_v1")
 
-    def upload_file(self, *, file_body: bytes, filename: str, content_type: str, metadata: Dict) -> Dict:
-        client_no = metadata.get("client_no", "unknown")
-        folder = metadata.get("folder", "misc")
-        user_id = metadata.get("user_id")
+    @property
+    def _bucket(self):
+        return self.supabase.storage.from_(self.bucket_name)
 
-        # Generate unique path
-        timestamp = int(datetime.now().timestamp())
-        storage_path = f"{user_id}/{client_no}/{folder}/{timestamp}_{filename}"
+    # ---------- Storage ----------
 
-        # 1. Upload binary to Supabase Storage
-        self.supabase.storage.from_(self.bucket_name).upload(
-            path=storage_path,
-            file=file_body,
-            file_options={"content-type": content_type}
-        )
+    def create_upload_url(self, storage_path: str) -> Dict[str, str]:
+        """One-time URL the browser PUTs the file to. Never overwrites an existing object."""
+        signed = self._bucket.create_signed_upload_url(storage_path)
+        return {"upload_url": signed["signed_url"], "token": signed["token"], "path": storage_path}
 
-        # 2. Get Public URL
-        public_url = self.supabase.storage.from_(self.bucket_name).get_public_url(storage_path)
+    def object_info(self, storage_path: str) -> Optional[Dict[str, Any]]:
+        """Size/type of an uploaded object, or None when nothing was uploaded at that path."""
+        try:
+            info = self._bucket.info(storage_path)
+        except Exception:
+            return None
+        return info if isinstance(info, dict) and (info.get("id") or info.get("name")) else None
 
-        # 3. Save Metadata to Postgres
-        file_record = {
-            "name": filename,
-            "url_path": public_url,
-            "content_type": content_type,
-            "user_id": user_id,
-            "client_no": client_no,
-            "folder": folder,
-            "is_deleted": False,
-            "created_at": datetime.now().isoformat(),
-            "metadata_payload": metadata # Extra info in JSONB
-        }
+    def signed_url(self, storage_path: str, expires_in: int, download_name: Optional[str] = None) -> str:
+        options = {"download": download_name} if download_name else None
+        res = self._bucket.create_signed_url(storage_path, expires_in, options)
+        url = res.get("signedURL") or res.get("signedUrl") or res.get("signed_url")
+        if not url:
+            raise RuntimeError("Storage did not return a signed URL")
+        return url
 
-        self.supabase.table(self.file_table).insert(file_record).execute()
-        return file_record
+    # ---------- Metadata ----------
 
-    def list_files(self, *, client_no: str, user_id: str, folder: Optional[str] = None) -> List[Dict]:
+    def record_file(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        row = {"is_deleted": False, "created_at": _now_iso(), **record}
+        res = self.supabase.table(self.file_table).insert(row).execute()
+        return res.data[0] if res.data else row
+
+    def find_by_path(self, storage_path: str) -> Optional[Dict[str, Any]]:
+        res = self.supabase.table(self.file_table).select("*").eq("url_path", storage_path).limit(1).execute()
+        return res.data[0] if res.data else None
+
+    def get_file(self, *, file_id: str, user_id: str, domain: str) -> Optional[Dict[str, Any]]:
+        res = self.supabase.table(self.file_table).select("*") \
+            .eq("id", file_id) \
+            .eq("user_id", user_id) \
+            .eq("domain", domain) \
+            .eq("is_deleted", False) \
+            .limit(1).execute()
+        return res.data[0] if res.data else None
+
+    def list_files(self, *, user_id: str, domain: str, client_no: str, folder: Optional[str] = None) -> List[Dict]:
         # Pushes all filtering to the database
         query = self.supabase.table(self.file_table).select("*") \
             .eq("client_no", client_no) \
             .eq("user_id", user_id) \
+            .eq("domain", domain) \
             .eq("is_deleted", False)
 
         if folder:
             query = query.eq("folder", folder)
 
-        response = query.execute()
+        response = query.order("created_at", desc=True).execute()
         return response.data
 
-    def soft_delete(self, *, file_url: str, user_id: str) -> bool:
-        # Fast SQL update based on URL, limited to the owner's own files
+    def soft_delete(self, *, file_id: str, user_id: str, domain: str) -> bool:
+        # The binary stays in the private bucket (records are kept), but no URL is ever issued for it again
         response = self.supabase.table(self.file_table).update({
             "is_deleted": True,
-            "deleted_at": datetime.now().isoformat()
-        }).eq("url_path", file_url).eq("user_id", user_id).execute()
-        
+            "deleted_at": _now_iso(),
+        }).eq("id", file_id).eq("user_id", user_id).eq("domain", domain).eq("is_deleted", False).execute()
+
         return len(response.data) > 0
 
     def migrate_legacy_file(self, legacy_file: Dict) -> Dict:
         """
-        Takes a dict from your old Firebase 'files' collection 
+        Takes a dict from your old Firebase 'files' collection
         and inserts it into the new SQL metadata table.
         """
         new_record = {
@@ -96,8 +112,8 @@ class SupabaseFileStorageAdapter:
             "client_no": legacy_file.get("client_no") or legacy_file.get("patient_no"),
             "folder": legacy_file.get("folder", "migrated"),
             "is_deleted": False,
-            "created_at": legacy_file.get("upload_date", datetime.now().isoformat())
+            "created_at": legacy_file.get("upload_date", _now_iso())
         }
-        
+
         self.supabase.table(self.file_table).insert(new_record).execute()
         return new_record

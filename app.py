@@ -11,6 +11,8 @@ from werkzeug.exceptions import HTTPException
 from authlib.integrations.flask_client import OAuth
 import json
 import re
+from datetime import timedelta
+from urllib.parse import urlsplit
 
 from flask_cors import CORS
 
@@ -49,7 +51,15 @@ def create_app(config_name: str = 'default') -> Flask:
     app.config.from_object(DefaultConfig())
     oauth = OAuth(app)
 
-    BACKEND_URL = app.config.get("BACKEND_URL", "https://api.bindersoftware.com").split(".")[-2]
+    def _allowed_origin(origin):
+        """Our own frontends only: https://bindersoftware.com and its subdomains, or local development."""
+        if not origin:
+            return False
+        parts = urlsplit(origin)
+        host = (parts.hostname or "").lower()
+        if parts.scheme == "https" and (host == "bindersoftware.com" or host.endswith(".bindersoftware.com")):
+            return True
+        return parts.scheme in ("http", "https") and host in ("localhost", "127.0.0.1")
 
     @app.before_request
     def handle_options_preflight():
@@ -59,7 +69,7 @@ def create_app(config_name: str = 'default') -> Flask:
             origin = request.headers.get('Origin')
             
             # Check if the requesting origin belongs to your domain context
-            if origin and ('bindersoftware.com' in origin or 'localhost' in origin):
+            if _allowed_origin(origin):
                 response.headers['Access-Control-Allow-Origin'] = origin
                 response.headers['Access-Control-Allow-Credentials'] = 'true'
                 response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Refresh-Token'
@@ -71,12 +81,19 @@ def create_app(config_name: str = 'default') -> Flask:
     def append_cors_to_responses(response):
         """Append credentials and origin headers to standard responses automatically."""
         origin = request.headers.get('Origin')
-        if origin and ('bindersoftware.com' in origin or 'localhost' in origin):
+        if _allowed_origin(origin):
             response.headers['Access-Control-Allow-Origin'] = origin
             response.headers['Access-Control-Allow-Credentials'] = 'true'
             # Prevent duplication issues if headers were already set
             if 'Access-Control-Allow-Headers' not in response.headers:
                 response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Refresh-Token'
+            response.headers['Vary'] = 'Origin'
+        # Responses carry patient and client records: never let browsers or proxies cache them
+        if request.path.startswith('/api/'):
+            response.headers['Cache-Control'] = 'no-store'
+        response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+        response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+        response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
         return response
 
     @app.errorhandler(HTTPException)
@@ -98,14 +115,18 @@ def create_app(config_name: str = 'default') -> Flask:
         SESSION_COOKIE_DOMAIN='.bindersoftware.com', 
         SESSION_COOKIE_SAMESITE='Lax', 
         SESSION_COOKIE_SECURE=True,      # Forces HTTPS transmission
-        SESSION_COOKIE_HTTPONLY=True     # Safeguards cookie against XSS
+        SESSION_COOKIE_HTTPONLY=True,    # Safeguards cookie against XSS
+        PERMANENT_SESSION_LIFETIME=timedelta(days=app.config.get("SESSION_LIFETIME_DAYS", 7)),
+        # Files go straight to storage, so API bodies are small JSON
+        MAX_CONTENT_LENGTH=4 * 1024 * 1024,
     )
-    app.secret_key = app.config.get("SECRET_KEY","supersecretkey")
 
     # Ensure there's a JWT secret available for AuthService
     jwt_secret = app.config.get("JWT_SECRET") or app.config.get("SECRET_KEY")
     if not jwt_secret:
         raise RuntimeError("Missing JWT_SECRET or SECRET_KEY in app config for AuthService")
+    # Session cookies must be signed with a real secret, never a well-known fallback
+    app.secret_key = app.config.get("SECRET_KEY") or jwt_secret
 
     # Resolve credential and oauth secret file paths robustly
     oauth_secrets = app.config.get("OAUTH_CLIENT_SECRETS_FILE")
@@ -113,7 +134,8 @@ def create_app(config_name: str = 'default') -> Flask:
     if not oauth_secrets:
         raise FileNotFoundError(f"OAuth client secrets not found at : {oauth_secrets}")
     
-    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+    if app.config.get("DEBUG"):
+        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # plain-http OAuth for local development only
 
     # Adapter + domain binders
     supabase_adapter = SupabaseAdapter(url=app.config["SUPABASE_URL"], key=app.config["SUPABASE_KEY"])

@@ -111,8 +111,8 @@ create policy "binder_api_files_update" on public.file_metadata_v1
   for update to anon using (user_id is not null) with check (user_id is not null);
 
 -- ---------- Storage bucket for uploaded files ----------
--- Uploads go to <user_id>/<client_no>/<folder>/<file>. Files are served through public URLs,
--- so the bucket itself must be public for downloads; the API only needs to upload.
+-- The bucket is PRIVATE: see migrations/2026-10-21_private_file_storage.sql, which creates it and
+-- adds the read policy used for signed download URLs.
 drop policy if exists "binder_api_assets_upload" on storage.objects;
 create policy "binder_api_assets_upload" on storage.objects
   for insert to anon
