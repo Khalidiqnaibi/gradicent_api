@@ -138,7 +138,7 @@ def delete_employee(eid):
 
 
     service.delete_employee(eid)
-    return make_response(message="Client deleted.", code=200)
+    return make_response(message="Employee deleted.", code=200)
 
 @employee_blueprint.route("/employee/search", methods=["POST"])
 def employee_search():
