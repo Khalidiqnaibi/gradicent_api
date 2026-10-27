@@ -145,11 +145,13 @@ class FileService:
             raise FileServiceError(f"Files can be at most {MAX_FILE_BYTES // (1024 * 1024)} MB.", 413)
 
         path = f"{self._folder_prefix(domain, user_id, client_id)}{uuid.uuid4().hex}{_extension(display_name)}"
-        signed = self.storage.create_upload_url(path)
+        signed = self.storage.create_upload_url(path, resolved_type)
         return {
             "upload_url": signed["upload_url"],
             "path": path,
             "content_type": resolved_type,
+            # The browser must send exactly these headers with its PUT (they are part of the signature)
+            "headers": signed.get("headers") or {"Content-Type": resolved_type},
             "max_bytes": MAX_FILE_BYTES,
         }
 
@@ -219,9 +221,8 @@ class FileService:
     def _owned(self, domain: str, user_id: str, file_id: str) -> Dict[str, Any]:
         if domain not in CATEGORIES:
             raise FileServiceError("Unknown workspace.")
-        try:
-            uuid.UUID(str(file_id))
-        except ValueError:
+        # Supabase rows use UUIDs, Firestore documents 20-character ids
+        if not _SAFE_ID.match(str(file_id or "")):
             raise FileServiceError("File not found.", 404)
         row = self.storage.get_file(file_id=str(file_id), user_id=user_id, domain=domain)
         if not row:

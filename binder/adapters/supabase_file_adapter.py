@@ -35,10 +35,13 @@ class SupabaseFileStorageAdapter:
 
     # ---------- Storage ----------
 
-    def create_upload_url(self, storage_path: str) -> Dict[str, str]:
+    def create_upload_url(self, storage_path: str, content_type: str) -> Dict[str, Any]:
         """One-time URL the browser PUTs the file to. Never overwrites an existing object."""
         signed = self._bucket.create_signed_upload_url(storage_path)
-        return {"upload_url": signed["signed_url"], "token": signed["token"], "path": storage_path}
+        return {
+            "upload_url": signed["signed_url"], "token": signed["token"], "path": storage_path,
+            "headers": {"Content-Type": content_type, "x-upsert": "false"},
+        }
 
     def object_info(self, storage_path: str) -> Optional[Dict[str, Any]]:
         """Size/type of an uploaded object, or None when nothing was uploaded at that path."""

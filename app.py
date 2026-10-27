@@ -46,6 +46,30 @@ from config import DefaultConfig
 from utils.make_res import make_response
 from services.binder_service import BinderService, BinderServiceError
 
+def _document_store(app: Flask, fallback):
+    """
+    Patient/client documents live in Firebase (Storage + the Firestore "gradicent files" collection)
+    when FIREBASE_SERVICE_ACCOUNT holds a service-account key (JSON); otherwise in Supabase Storage.
+    """
+    raw = os.getenv("FIREBASE_SERVICE_ACCOUNT", "").strip()
+    if not raw:
+        app.logger.warning("FIREBASE_SERVICE_ACCOUNT not set: documents are stored in Supabase Storage")
+        return fallback
+    import firebase_admin
+    from firebase_admin import credentials
+    from binder.adapters.firebase_document_store import FirebaseDocumentStore
+
+    info = json.loads(raw)
+    bucket = os.getenv("FIREBASE_STORAGE_BUCKET", "").strip() or f"{info['project_id']}.appspot.com"
+    try:
+        fb_app = firebase_admin.get_app("documents")
+    except ValueError:
+        fb_app = firebase_admin.initialize_app(
+            credentials.Certificate(info), {"storageBucket": bucket, "projectId": info["project_id"]}, name="documents",
+        )
+    return FirebaseDocumentStore(fb_app, collection=os.getenv("FIREBASE_FILES_COLLECTION", "gradicent files"))
+
+
 def create_app(config_name: str = 'default') -> Flask:
     app = Flask(__name__, template_folder='templates', static_folder='static')
     app.config.from_object(DefaultConfig())
@@ -161,7 +185,7 @@ def create_app(config_name: str = 'default') -> Flask:
         client_kwargs={'scope': 'openid email profile'}
     )
 
-    file_service = FileService(supabase_file_adapter)
+    file_service = FileService(_document_store(app, supabase_file_adapter))
     
     auth = AuthService(
         adapter=supabase_adapter,
