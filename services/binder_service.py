@@ -486,7 +486,7 @@ class BinderService:
             raise BinderServiceError("interaction payload cannot be empty")
         return self._wrap_and_log("create_interaction", self._op("create_interaction"), client_id, interaction)
 
-    def list_interactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_interactions(self, client_id: str, limit: Optional[int] = None, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         List interactions for a client with pagination.
 
@@ -869,7 +869,7 @@ class BinderService:
         record.setdefault("date", now.date().isoformat())
         return self._wrap_and_log("create_transaction", self._op("create_transaction"), client_id, record)
 
-    def list_transactions(self, client_id: str, limit: int = 30, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_transactions(self, client_id: str, limit: Optional[int] = None, start_at: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         List transactions for a client with pagination.
 

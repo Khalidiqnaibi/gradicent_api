@@ -182,7 +182,7 @@ def list_employees():
     domain = request.args.get("domain", DEFAULT_DOMAIN)
     user_id = request.args.get("user_id")
     start_at = request.args.get("start_at", type=int, default=0)
-    limit = request.args.get("limit", type=int, default=100)
+    limit = request.args.get("limit", type=int)
 
     if user_id and not user_id == session.get("user_id"):
         return make_response(status="error" , message="Unauthorized action", code=401)

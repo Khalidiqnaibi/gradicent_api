@@ -75,7 +75,7 @@ class ClientMixin:
             client_id,
         )
 
-    def list_clients(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
+    def list_clients(self, start_at:str=None,limit:Optional[int]=None) -> List[Dict[str, Any]]:
         return self.adapter.list_child(
             self.domain,
             self.current_user,
@@ -135,7 +135,7 @@ class EmployeeMixin:
             emp_id,
         )
 
-    def list_employees(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
+    def list_employees(self, start_at:str=None,limit:Optional[int]=None) -> List[Dict[str, Any]]:
         return self.adapter.list_child(
             self.domain,
             self.current_user,
@@ -221,7 +221,7 @@ class ProductMixin:
             prod_id,
         )
 
-    def list_products(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
+    def list_products(self, start_at:str=None,limit:Optional[int]=None) -> List[Dict[str, Any]]:
         return self.adapter.list_child(
             self.domain,
             self.current_user,
@@ -300,7 +300,7 @@ class ServiceMixin:
             svc_id,
         )
 
-    def list_services(self, start_at:str=None,limit:int=30) -> List[Dict[str, Any]]:
+    def list_services(self, start_at:str=None,limit:Optional[int]=None) -> List[Dict[str, Any]]:
         return self.adapter.list_child(
             self.domain,
             self.current_user,
@@ -347,7 +347,7 @@ class InteractionMixin:
         )
         return data
 
-    def list_interactions(self, client_id: str, limit: int = 30, start_at: str = None) -> List[Dict[str, Any]]:
+    def list_interactions(self, client_id: str, limit: Optional[int] = None, start_at: str = None) -> List[Dict[str, Any]]:
         return self.adapter.list_nested(
             self.domain,
             self.current_user,
@@ -403,7 +403,7 @@ class TransactionMixin:
         )
         return data
 
-    def list_transactions(self, client_id: str, limit: int = 30, start_at: str = None) -> List[Dict[str, Any]]:
+    def list_transactions(self, client_id: str, limit: Optional[int] = None, start_at: str = None) -> List[Dict[str, Any]]:
         return self.adapter.list_nested(
             self.domain,
             self.current_user,

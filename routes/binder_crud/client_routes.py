@@ -181,6 +181,6 @@ def list_clients():
 
     clients = service.list_clients(
         start_at=request.args.get("start_at", 0, type=int),
-        limit=request.args.get("limit", 30, type=int)
+        limit=request.args.get("limit", type=int)
     )
     return make_response(data={"clients": clients}, message="Clients retrieved successfully.", code=200)

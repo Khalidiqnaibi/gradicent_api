@@ -72,7 +72,7 @@ def list_transactions(client_id: str):
     user_id = request.args.get("user_id", session.get("user_id"))
     
     start_at = request.args.get("start_at", 0, type=int)
-    limit = request.args.get("limit", 10, type=int)
+    limit = request.args.get("limit", type=int)
 
     service = _get_domain_and_service({"domain": domain})
     if user_id:

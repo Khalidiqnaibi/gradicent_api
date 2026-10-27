@@ -91,7 +91,7 @@ def list_interactions(client_id: str):
     user_id = request.args.get("user_id", session.get("user_id"))
     
     start_at = request.args.get("start_at", 0, type=int)
-    limit = request.args.get("limit", 30, type=int)
+    limit = request.args.get("limit", type=int)
     
     service = _get_domain_and_service({"domain": domain})
     if user_id:
@@ -105,7 +105,7 @@ def list_interactions(client_id: str):
         limit=limit
     )
     
-    return make_response(data=interactions, message=f"{limit} Interactions retrieved.", code=200)
+    return make_response(data=interactions, message=f"{len(interactions)} Interactions retrieved.", code=200)
 
 @interaction_blueprint.route("/clients/<client_id>/interactions/<int:interaction_no>", methods=["GET"])
 def get_interaction(client_id: str, interaction_no: int):

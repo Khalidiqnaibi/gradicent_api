@@ -191,7 +191,7 @@ def list_services():
     user_id = request.args.get("user_id")
     try:
         start_at = request.args.get("start_at", 0, type=int)
-        limit = request.args.get("limit", 30, type=int)
+        limit = request.args.get("limit", type=int)
     except ValueError:
         raise BadRequest("start_at and limit must be integers")
 
