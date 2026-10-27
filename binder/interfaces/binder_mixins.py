@@ -95,12 +95,11 @@ class ClientMixin:
         if found:
             return found
 
-        # 2. Search by Numeric ID
+        # 2. Search by record number (the number shown in the app)
         if q.isdigit():
-            target_id = str(int(q) - 1) if int(q) > 0 else q
-            found = self.adapter.find_children_by_field(self.domain, self.current_user, "clients", "id", target_id)
+            found = self.adapter.get_child(self.domain, self.current_user, "clients", str(int(q)))
             if found:
-                return found
+                return [found]
 
         # 3. Search by Phone
         found = self.adapter.find_by_phone(self.domain, self.current_user, "clients", q)
